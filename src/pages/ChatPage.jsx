@@ -7,7 +7,7 @@ function ChatPage() {
   document.title = "HomeServer | Chat";
 
   return (
-    <div className="home">
+    <div className="chat-page">
       <NavBar />
       <div className="main">
         <SideBar />

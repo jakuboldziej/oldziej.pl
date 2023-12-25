@@ -14,10 +14,11 @@ function NavBar() {
     <>
       <Navbar collapseOnSelect expand="lg" className="px-2" style={{ background: "#9152f8" }} >
         <Container>
-          <Navbar.Brand><Link to="/" className="link"><b>Home</b></Link></Navbar.Brand>
+          <Link to="/" className="link navbar-brand"><b>Home</b></Link>
           <Nav className="me-auto">
-            <Nav.Link href="/chat"><b>Chat</b></Nav.Link>
-            <Nav.Link href="/ftp"><b>FTP</b></Nav.Link>
+            <Link to="/chat" className="nav-link"><b>Chat</b></Link>
+            <Link to="/darts" className="nav-link"><b>Darts</b></Link>
+            <Link to="/ftp" className="nav-link"><b>FTP</b></Link>
           </Nav>
         </Container>
         <Navbar.Collapse className="justify-content-end">

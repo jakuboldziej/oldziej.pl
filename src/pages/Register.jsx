@@ -94,7 +94,7 @@ function Register() {
 
   return (
     <>
-      <div className="limiter">
+      <div className="register-page">
         <div className="container-login100">
           <div className="wrap-login100">
             <form className="login100-form validate-form" onSubmit={handleSubmit}>

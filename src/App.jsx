@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import "bootstrap/dist/css/bootstrap.min.css";
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
@@ -7,7 +8,8 @@ import Login from './pages/Login'
 import Register from './pages/Register';
 import ChatPage from './pages/ChatPage';
 import NotFound from './pages/NotFound';
-import "bootstrap/dist/css/bootstrap.min.css";
+import DartsPage from './pages/DartsPage';
+import DartsGame from './components/Darts/DartsGame';
  
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -26,8 +28,12 @@ function App() {
         <Route path="/">
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-          <Route index element={<ProtectedRoute><Home /></ProtectedRoute>}/>
+          <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+        </Route>
+        <Route path="/darts/*">
+          <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />          
+          <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
         </Route>
         <Route path="*" element={<NotFound />}/>
       </Routes>
