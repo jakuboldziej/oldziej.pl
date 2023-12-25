@@ -41,7 +41,7 @@ function DartsPage() {
           </div>
         </div>
       </div>
-        <CreateGame show={show} fullscreen={fullscreen} setShow={setShow}/>
+      <CreateGame show={show} fullscreen={fullscreen} setShow={setShow}/>
     </>
   )
 }

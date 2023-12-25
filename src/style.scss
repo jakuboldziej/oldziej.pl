@@ -70,6 +70,31 @@ body, html {
   }
 }
 
+// Card
+.card-body {
+  .users {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .user {
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      border-radius: 15px;
+      background-color: red;
+      padding: 10px;
+      transition: opacity 0.8s ease;
+      
+      &.playing {
+        background-color: green;
+      }
+    }
+    .user:hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+  }
+}
+
 // Modal
 .modal {
   .modal-content {
