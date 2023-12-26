@@ -5,6 +5,7 @@ import Keyboard from "./Keyboard";
 import RedDot from "../../images/red_dot.png";
 import GreenDot from "../../images/green_dot.png";
 import GameSummary from "./GameSummary";
+import { handleRound } from "./utils";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
@@ -17,6 +18,7 @@ function DartsGame() {
 
   const { game } = useContext(DartsGameContext);
   const [users, setUsers] = useState(game.users);
+  const [specialState, setSpecialState] = useState([false, ""]);
 
   useEffect(() => {
     // first round
@@ -24,78 +26,6 @@ function DartsGame() {
     updatedUsers[0].turn = true;
     setUsers(updatedUsers);
   }, [game.round]);
-
-  useEffect(() => {
-    console.log(users)
-  }, [users]);
-
-  const handlePoints = (currentUser) => {
-    currentUser.points -= currentUser.turns[currentUser.currentTurn];
-    const initialUserPoints = parseInt(currentUser.points) + currentUser.turns["1"] + currentUser.turns["2"] + currentUser.turns["3"];
-
-    if (currentUser.points < 0) {
-      currentUser.points = initialUserPoints;
-      currentUser.turns = {1: null, 2: null, 3: null}
-      currentUser.turnsSum = 0;
-      currentUser.currentTurn = 3;
-
-      console.log('Overthrow.')
-    } else if (currentUser.points === 0) {
-      game.userWon = currentUser;
-      handleShow();
-    }
-  }
-
-  const handleUsersState = (currentUser, value) => {
-    // current user
-    currentUser.turns[currentUser.currentTurn] = value;
-    currentUser.turnsSum = currentUser.turns["1"] + currentUser.turns["2"] + currentUser.turns["3"]
-    handlePoints(currentUser);
-
-    if (currentUser.currentTurn === 3) {
-      currentUser.currentTurn = 1;
-      currentUser.turn = false;
-      setUsers(prevUsers => {
-        const updatedUsers = prevUsers.map(user =>
-          user.uid === currentUser.uid ? currentUser : user
-        );
-        return updatedUsers;
-      });
-      // next user
-      const nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
-      const nextUser = users[nextUserIndex]
-      nextUser.turn = true;
-      nextUser.turns = {1: null, 2: null, 3: null}
-      nextUser.turnsSum = 0;
-      setUsers(prevUsers => {
-        const updatedUsers = prevUsers.map(user =>
-          user.uid === nextUser.uid ? nextUser : user
-          );
-          return updatedUsers;
-        });
-      // game info
-      game.turn = nextUser.displayName;
-      nextUserIndex === 0 ? game.round += 1 : null
-
-      return;
-    }
-    currentUser.currentTurn += 1;
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user =>
-        user.uid === currentUser.uid ? currentUser : user
-      );
-      return updatedUsers;
-    });
-  }
-
-  const handleRound = (value) => {
-    const currentUser = users.find(user => user.turn);
-    if (Number.isInteger(value)){
-      handleUsersState(currentUser, value);
-    } else if (!Number.isInteger(value)) {
-      console.log('addon');
-    }
-  }
 
   return (
     <div className="darts-wrapper">
@@ -130,7 +60,7 @@ function DartsGame() {
             </Row>
           ))}
         </div>
-        <Keyboard handleRound={handleRound} />
+        <Keyboard params={{ handleRound, users, game, handleShow, setUsers, specialState, setSpecialState}} />
       </div>
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>
     </div>

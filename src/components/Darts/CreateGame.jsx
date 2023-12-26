@@ -73,6 +73,12 @@ function CreateGame({ show, fullscreen, setShow }) {
         2: null,
         3: null
       },
+      shots: {
+        drzwi: 0,
+        doubles: 0,
+        triples: 0,
+        normals: 0,
+      },
       legs: 0,
       sets: 0,
       avgPointsPerSet: 0,
@@ -82,7 +88,7 @@ function CreateGame({ show, fullscreen, setShow }) {
       users: updatedUsers,
       userWon: null,
       turn: updatedUsers[0].displayName,
-      randomizePlayers,
+      // randomizePlayers,
       active: true,
       gameMode: selectGameMode,
       startPoints: selectStartPoints,

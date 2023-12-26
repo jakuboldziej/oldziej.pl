@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useContext } from 'react';
-import { Button, Modal } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
 

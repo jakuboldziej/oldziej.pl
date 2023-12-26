@@ -45,6 +45,16 @@ function Register() {
         uid: res.user.uid,
         displayName,
         wins: 0,
+        overAllPoints: 0,
+        avgPointsPerShow: 0,
+        dartsThrown: 0,
+        shots: {
+          drzwi: 0,
+          doubles: 0,
+          triples: 0,
+          normals: 0,
+        },
+        highestOuts: 0,
       });
 
       const q = await getDocs(collection(db, "users"));
