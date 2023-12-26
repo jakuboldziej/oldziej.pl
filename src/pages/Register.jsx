@@ -40,7 +40,12 @@ function Register() {
         uid: res.user.uid,
         displayName,
         email
-      })
+      });
+      await setDoc(doc(db, "dartUsers", res.user.uid), {
+        uid: res.user.uid,
+        displayName,
+        wins: 0,
+      });
 
       const q = await getDocs(collection(db, "users"));
       const users = q.docs.map((doc) => ({...doc.data()}));
