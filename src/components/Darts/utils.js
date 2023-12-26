@@ -14,7 +14,7 @@ export const handleRound = (value, users, gameP, handleShowP, setUsers, specialS
     handleSpecialValue(currentUser, value, users, setUsers, specialState, setSpecialState);
   }
 }
-
+//
 export const handleTurnsSum = (currentUser, action) => {
   const firstTurn = currentUser.turns["1"];
   const secondTurn = currentUser.turns["2"];
