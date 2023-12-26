@@ -15,14 +15,14 @@ export const handleRound = (value, users, gameP, handleShowP, setUsers, specialS
   }
 }
 
-export const handleTurnsSum = (currentUser) => {
+export const handleTurnsSum = (currentUser, action) => {
   const firstTurn = currentUser.turns["1"];
   const secondTurn = currentUser.turns["2"];
   const thirdTurn = currentUser.turns["3"];
-  currentUser.turnsSum = firstTurn + secondTurn + thirdTurn; 
-
-  if (firstTurn === "DOUBLE")  {
+  if (action === 'special') {
     console.log(firstTurn)
+  } else {
+    currentUser.turnsSum = firstTurn + secondTurn + thirdTurn; 
   }
 }
 
@@ -59,7 +59,7 @@ export const handleDartsUserStats = (users) => {
 
 export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
   if(value === "DRZWI") {
-    handleUsersState(currentUser, 0, users, setUsers);
+    handleUsersState(currentUser, 0, users, setUsers, specialState);
     currentUser.shots["drzwi"] += 1;
     setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
@@ -67,11 +67,12 @@ export const handleSpecialValue = async (currentUser, value, users, setUsers, sp
       );
       return updatedUsers;
     });
+    console.log(currentUser)
     return;
   } else if (value === "DOUBLE") {
-    setSpecialState([true, "DOUBLE"]);
+    specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, "DOUBLE"]);
   } else if (value === "TRIPLE") {
-    setSpecialState([true, "TRIPLE"]);
+    specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, "TRIPLE"]);
   }
 }
 
@@ -80,17 +81,22 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
   if (specialState[0]) {
     if (specialState[1] === "DOUBLE") {
       currentUser.turns[currentUser.currentTurn] = value * 2;
-      console.log(currentUser.turns)
+      handleTurnsSum(currentUser, 'special');
+      handlePoints(currentUser, game);
+      currentUser.turns[currentUser.currentTurn] = `D${value}`
     } else if (specialState[1] === "TRIPLE") {
       currentUser.turns[currentUser.currentTurn] = value * 3;
+      handleTurnsSum(currentUser, 'special');
+      handlePoints(currentUser, game);
+      currentUser.turns[currentUser.currentTurn] = `T${value}`
     }
     setSpecialState([false, ""])
   } else {
-    console.log('normal')
     currentUser.turns[currentUser.currentTurn] = value;
+    handleTurnsSum(currentUser);
+    handlePoints(currentUser, game);
   }
-  handleTurnsSum(currentUser);
-  handlePoints(currentUser, game);
+  
   if (currentUser.currentTurn === 3) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;

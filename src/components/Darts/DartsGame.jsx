@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "../../context/DartsGameContext"
 import { Col, Row } from "react-bootstrap";
 import Keyboard from "./Keyboard";
@@ -20,6 +20,19 @@ function DartsGame() {
   const [users, setUsers] = useState(game.users);
   const [specialState, setSpecialState] = useState([false, ""]);
 
+  const usersContainerRef = useRef(null);
+
+  useEffect(() => {
+    const userWithTurn = game.users.find((user) => user.turn);
+
+    if (userWithTurn && usersContainerRef.current) {
+      const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn.uid}"]`);
+      if (userElement) {
+        userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [game.users, game.turn]);
+
   useEffect(() => {
     // first round
     const updatedUsers = [...users];
@@ -35,9 +48,9 @@ function DartsGame() {
           <h2>Turn: {game.turn}</h2>
           <h2>{game.active ? 'In Progress' : 'Ended'} <img src={game.active ? GreenDot : RedDot}/></h2>
         </div>
-        <div className="users">
+        <div className="users" ref={usersContainerRef}>
           {game.users.map((user) => (
-            <Row className="user" style={{borderLeft: `15px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`}} key={user.uid}>
+            <Row className="user" data-userid={user.uid} style={{borderLeft: `15px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`}} key={user.uid}>
               <Col sm>
                 <Row><b>{user.points}</b></Row>
                 <Row>{user.displayName}</Row>

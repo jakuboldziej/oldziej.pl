@@ -110,7 +110,7 @@ function CreateGame({ show, fullscreen, setShow }) {
         </Modal.Header>
         <Modal.Body>
           <div className="settings">
-            <Card bg="dark" text="light" style={{ width: '18rem' }}>
+            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 650  }}>
               <Card.Header>Add Users</Card.Header>
               <Card.Body>
                 <Card.Title>Not Playing</Card.Title>
