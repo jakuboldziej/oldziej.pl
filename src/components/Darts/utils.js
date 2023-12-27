@@ -100,7 +100,7 @@ export const handleDartsUserStats = (users) => {
 export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
   if(value === "DRZWI") {
     handleUsersState(currentUser, 0, users, setUsers, specialState);
-    currentUser.shots["drzwi"] += 1;
+    currentUser.throws["drzwi"] += 1;
     setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
         user.uid === currentUser.uid ? currentUser : user

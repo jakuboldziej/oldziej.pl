@@ -73,15 +73,15 @@ function CreateGame({ show, fullscreen, setShow }) {
         2: null,
         3: null
       },
-      shots: {
+      throws: {
         drzwi: 0,
         doubles: 0,
         triples: 0,
-        normals: 0,
+        normal: 0,
       },
       legs: 0,
       sets: 0,
-      avgPointsPerSet: 0,
+      avgPointsPerThrow: 0,
     }));
     const game = {
       id: gameId,

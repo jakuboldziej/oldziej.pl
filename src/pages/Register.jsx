@@ -46,14 +46,16 @@ function Register() {
         displayName,
         wins: 0,
         overAllPoints: 0,
-        avgPointsPerShow: 0,
+        avgPointsPerThrow: 0,
         dartsThrown: 0,
-        shots: {
+        throws: {
           drzwi: 0,
           doubles: 0,
           triples: 0,
-          normals: 0,
+          normal: 0,
         },
+        legsWon: 0,
+        setsWon: 0,
         highestOuts: 0,
       });
 
