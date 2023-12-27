@@ -15,10 +15,25 @@ function DartsGame() {
     setFullscreen(breakpoint);
     setShow(true);
   }
-
+  
   const { game } = useContext(DartsGameContext);
   const [users, setUsers] = useState(game.users);
   const [specialState, setSpecialState] = useState([false, ""]);
+  const [overthrow, setOverthrow] = useState(false);
+
+  useEffect(() => {
+    let timer;
+
+    if (overthrow) {
+      timer = setTimeout(() => {
+        setOverthrow(false); // Set overthrow to false after 3 seconds
+      }, 3000);
+    }
+
+    return () => {
+      clearTimeout(timer); // Clear the timer if component unmounts before 3 seconds
+    };
+  }, [overthrow]);
 
   const usersContainerRef = useRef(null);
 
@@ -34,14 +49,24 @@ function DartsGame() {
   }, [game.users, game.turn]);
 
   useEffect(() => {
-    // first round
     const updatedUsers = [...users];
     updatedUsers[0].turn = true;
     setUsers(updatedUsers);
   }, [game.round]);
 
+  const keyboardParams = {
+    handleRound, 
+    users, 
+    game, 
+    handleShow, 
+    setUsers, 
+    specialState, 
+    setSpecialState
+  }
   return (
     <div className="darts-wrapper">
+      <div className="stats">
+      </div>
       <div className="darts-game">
         <div className="info">
           <h2>Round: {game.round}</h2>
@@ -68,13 +93,13 @@ function DartsGame() {
                   <Col className="legs">{user.legs}</Col>
                   <Col className="sets">{user.sets}</Col>
                 </Row>
-                <Row>Ø 0</Row>
+                <Row>Ø {user.avgPointsPerSet}</Row>
               </Col>
             </Row>
           ))}
         </div>
-        <Keyboard params={{ handleRound, users, game, handleShow, setUsers, specialState, setSpecialState}} />
       </div>
+      <Keyboard params={keyboardParams} />
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>
     </div>
   )

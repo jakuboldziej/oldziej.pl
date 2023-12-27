@@ -14,34 +14,75 @@ export const handleRound = (value, users, gameP, handleShowP, setUsers, specialS
     handleSpecialValue(currentUser, value, users, setUsers, specialState, setSpecialState);
   }
 }
-//
-export const handleTurnsSum = (currentUser, action) => {
-  const firstTurn = currentUser.turns["1"];
-  const secondTurn = currentUser.turns["2"];
-  const thirdTurn = currentUser.turns["3"];
-  if (action === 'special') {
-    console.log(firstTurn)
-  } else {
-    currentUser.turnsSum = firstTurn + secondTurn + thirdTurn; 
-  }
+
+export const handleTurnsSum = (currentUser) => {
+  const currentTurn = currentUser.turns[currentUser.currentTurn];
+  currentUser.turnsSum += currentTurn;
 }
 
-export const handlePoints = (currentUser) => {
+export const handlePoints = (currentUser, action, value) => {
+  let firstTurn = currentUser.turns["1"];
+  let secondTurn = currentUser.turns["2"];
+  let thirdTurn = currentUser.turns["3"];
+  const isNumericRegex = (str) => {
+    return /^\d+$/.test(str);
+  };
   currentUser.points -= currentUser.turns[currentUser.currentTurn];
-  const initialUserPoints = parseInt(currentUser.points) + currentUser.turns["1"] + currentUser.turns["2"] + currentUser.turns["3"];
+  
+  // optimize
+  if(!isNumericRegex(firstTurn) && firstTurn) {
+    if(firstTurn[0] === "D") {
+      firstTurn = parseInt(firstTurn.slice(1));
+      firstTurn *= 2;
+    }
+    if(firstTurn[0] === "T") {
+      firstTurn = parseInt(firstTurn.slice(1));
+      firstTurn *= 3;
+    }
+  }
+  if(!isNumericRegex(secondTurn) && secondTurn) {
+    if(secondTurn[0] === "D") {
+      secondTurn = parseInt(secondTurn.slice(1));
+      secondTurn *= 2;
+    }
+    if(secondTurn[0] === "T") {
+      secondTurn = parseInt(secondTurn.slice(1));
+      secondTurn *= 3;
+    }
+  }
+  if(!isNumericRegex(thirdTurn) && thirdTurn) {
+    if(thirdTurn[0] === "D") {
+      thirdTurn = parseInt(thirdTurn.slice(1));
+      thirdTurn *= 2;
+    }
+    if(thirdTurn[0] === "T") {
+      thirdTurn = parseInt(thirdTurn.slice(1));
+      thirdTurn *= 3;
+    }
+  }
+  const initialUserPoints = parseInt(currentUser.points) + firstTurn + secondTurn + thirdTurn;
+  console.log(firstTurn, secondTurn, thirdTurn, initialUserPoints);
   // handleDartsUserStats(users);
 
   if (currentUser.points < 0) {
     currentUser.points = initialUserPoints;
-    currentUser.turns = {1: null, 2: null, 3: null}
     currentUser.turnsSum = 0;
     currentUser.currentTurn = 3;
-
-    console.log('Overthrow.')
+    currentUser.turns = {1: null, 2: null, 3: null};
+    
+    console.log('Overthrow.');
   } else if (currentUser.points === 0) {
     game.userWon = currentUser;
     game.active = false;
     handleShow();
+  } else {
+    if(action) {
+      if (action === 'DOUBLE'){
+        currentUser.turns[currentUser.currentTurn] = `D${value}`;
+      } else if (action === 'TRIPLE'){
+        currentUser.turns[currentUser.currentTurn] = `T${value}`;
+      }
+    }
   }
 }
 
@@ -55,7 +96,6 @@ export const handleDartsUserStats = (users) => {
     // console.log(user)
   })
 }
-
 
 export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
   if(value === "DRZWI") {
@@ -81,20 +121,18 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
   if (specialState[0]) {
     if (specialState[1] === "DOUBLE") {
       currentUser.turns[currentUser.currentTurn] = value * 2;
-      handleTurnsSum(currentUser, 'special');
-      handlePoints(currentUser, game);
-      currentUser.turns[currentUser.currentTurn] = `D${value}`
+      handleTurnsSum(currentUser);
+      handlePoints(currentUser, 'DOUBLE', value);
     } else if (specialState[1] === "TRIPLE") {
       currentUser.turns[currentUser.currentTurn] = value * 3;
-      handleTurnsSum(currentUser, 'special');
-      handlePoints(currentUser, game);
-      currentUser.turns[currentUser.currentTurn] = `T${value}`
+      handleTurnsSum(currentUser);
+      handlePoints(currentUser, 'TRIPLE', value);
     }
     setSpecialState([false, ""])
   } else {
     currentUser.turns[currentUser.currentTurn] = value;
     handleTurnsSum(currentUser);
-    handlePoints(currentUser, game);
+    handlePoints(currentUser);
   }
   
   if (currentUser.currentTurn === 3) {
