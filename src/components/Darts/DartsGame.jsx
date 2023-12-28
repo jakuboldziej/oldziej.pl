@@ -93,7 +93,7 @@ function DartsGame() {
                   <Col className="legs">{user.legs}</Col>
                   <Col className="sets">{user.sets}</Col>
                 </Row>
-                <Row>Ø {user.avgPointsPerSet}</Row>
+                <Row>Ø {user.avgPointsPerThrow}</Row>
               </Col>
             </Row>
           ))}

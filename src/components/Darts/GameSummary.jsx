@@ -8,8 +8,8 @@ function GameSummary({ show, fullscreen, setShow }) {
   const { game } = useContext(DartsGameContext);
 
   return (
-    <Modal show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
-      <Modal.Header closeButton>
+    <Modal backdrop="static" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
+      <Modal.Header>
         <Modal.Title>Game Summary</Modal.Title>
       </Modal.Header>
       <Modal.Body>

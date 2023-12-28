@@ -20,70 +20,55 @@ export const handleTurnsSum = (currentUser) => {
   currentUser.turnsSum += currentTurn;
 }
 
+const isNumericRegex = /^\d+$/;
+
+export const calculatePoints = (turnValue) => {
+  if (!isNumericRegex.test(turnValue) && turnValue) {
+    if (turnValue[0] === "D") {
+      return parseInt(turnValue.slice(1)) * 2;
+    }
+    if (turnValue[0] === "T") {
+      return parseInt(turnValue.slice(1)) * 3;
+    }
+  }
+  return turnValue ? parseInt(turnValue) : turnValue;
+};
+
+export const handleGameEnd = (currentUser) => {
+  game.userWon = currentUser;
+  game.active = false;
+  handleShow();
+}
+
 export const handlePoints = (currentUser, action, value) => {
-  let firstTurn = currentUser.turns["1"];
-  let secondTurn = currentUser.turns["2"];
-  let thirdTurn = currentUser.turns["3"];
-  const isNumericRegex = (str) => {
-    return /^\d+$/.test(str);
-  };
-  currentUser.points -= currentUser.turns[currentUser.currentTurn];
-  
-  // optimize
-  if(!isNumericRegex(firstTurn) && firstTurn) {
-    if(firstTurn[0] === "D") {
-      firstTurn = parseInt(firstTurn.slice(1));
-      firstTurn *= 2;
-    }
-    if(firstTurn[0] === "T") {
-      firstTurn = parseInt(firstTurn.slice(1));
-      firstTurn *= 3;
-    }
-  }
-  if(!isNumericRegex(secondTurn) && secondTurn) {
-    if(secondTurn[0] === "D") {
-      secondTurn = parseInt(secondTurn.slice(1));
-      secondTurn *= 2;
-    }
-    if(secondTurn[0] === "T") {
-      secondTurn = parseInt(secondTurn.slice(1));
-      secondTurn *= 3;
-    }
-  }
-  if(!isNumericRegex(thirdTurn) && thirdTurn) {
-    if(thirdTurn[0] === "D") {
-      thirdTurn = parseInt(thirdTurn.slice(1));
-      thirdTurn *= 2;
-    }
-    if(thirdTurn[0] === "T") {
-      thirdTurn = parseInt(thirdTurn.slice(1));
-      thirdTurn *= 3;
-    }
-  }
-  const initialUserPoints = parseInt(currentUser.points) + firstTurn + secondTurn + thirdTurn;
-  console.log(firstTurn, secondTurn, thirdTurn, initialUserPoints);
-  // handleDartsUserStats(users);
+  const { turns, currentTurn } = currentUser;
+  const currentTurnValue = turns[currentTurn];
+
+  currentUser.points -= calculatePoints(currentTurnValue);
+  const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
 
   if (currentUser.points < 0) {
-    currentUser.points = initialUserPoints;
+    currentUser.points = initialPoints;
     currentUser.turnsSum = 0;
     currentUser.currentTurn = 3;
-    currentUser.turns = {1: null, 2: null, 3: null};
-    
+    currentUser.turns = { 1: null, 2: null, 3: null };
     console.log('Overthrow.');
   } else if (currentUser.points === 0) {
-    game.userWon = currentUser;
-    game.active = false;
-    handleShow();
+    handleGameEnd(currentUser);
   } else {
-    if(action) {
-      if (action === 'DOUBLE'){
-        currentUser.turns[currentUser.currentTurn] = `D${value}`;
-      } else if (action === 'TRIPLE'){
-        currentUser.turns[currentUser.currentTurn] = `T${value}`;
+    if (action) {
+      if (action === 'DOUBLE') {
+        turns[currentTurn] = `D${value}`;
+      } else if (action === 'TRIPLE') {
+        turns[currentTurn] = `T${value}`;
       }
     }
   }
+};
+
+export const handleAvgPointsPerThrow = (currentUser) => {
+  const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);;
+  currentUser.avgPointsPerThrow = ((game.startPoints - currentUser.points) / throws).toFixed(2);
 }
 
 export const handleDartsUserStats = (users) => {
@@ -93,47 +78,35 @@ export const handleDartsUserStats = (users) => {
     console.log(dartUser)
     await updateDoc(doc(db, "dartUsers", user.uid), {
     });
-    // console.log(user)
   })
 }
 
 export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
   if(value === "DRZWI") {
-    handleUsersState(currentUser, 0, users, setUsers, specialState);
     currentUser.throws["drzwi"] += 1;
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user =>
-        user.uid === currentUser.uid ? currentUser : user
-      );
-      return updatedUsers;
-    });
-    console.log(currentUser)
-    return;
-  } else if (value === "DOUBLE") {
-    specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, "DOUBLE"]);
-  } else if (value === "TRIPLE") {
-    specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, "TRIPLE"]);
+    handleUsersState(currentUser, 0, users, setUsers, specialState, "DRZWI");
+  } else if (value === "DOUBLE" || value === "TRIPLE") {
+    specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
 }
 
 const handleUsersState = (currentUser, value, users, setUsers, specialState, setSpecialState) => {
-  // current user
   if (specialState[0]) {
-    if (specialState[1] === "DOUBLE") {
-      currentUser.turns[currentUser.currentTurn] = value * 2;
-      handleTurnsSum(currentUser);
-      handlePoints(currentUser, 'DOUBLE', value);
-    } else if (specialState[1] === "TRIPLE") {
-      currentUser.turns[currentUser.currentTurn] = value * 3;
-      handleTurnsSum(currentUser);
-      handlePoints(currentUser, 'TRIPLE', value);
-    }
-    setSpecialState([false, ""])
+    const multiplier = specialState[1] === "DOUBLE" ? 2 : 3;
+    currentUser.turns[currentUser.currentTurn] = value * multiplier;
+    specialState[1] === "DOUBLE" ? currentUser.throws["doubles"] += 1 : currentUser.throws["triples"] += 1;
+    handleTurnsSum(currentUser);
+    handlePoints(currentUser, specialState[1], value);
+    handleAvgPointsPerThrow(currentUser);
+    setSpecialState([false, ""]);
   } else {
+    if (setSpecialState !== "DRZWI") currentUser.throws["normal"] += 1;
     currentUser.turns[currentUser.currentTurn] = value;
     handleTurnsSum(currentUser);
     handlePoints(currentUser);
+    handleAvgPointsPerThrow(currentUser);
   }
+  // console.log(currentUser.avgPointsPerThrow);
   
   if (currentUser.currentTurn === 3) {
     currentUser.currentTurn = 1;
@@ -159,7 +132,6 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
     // game info
     game.turn = nextUser.displayName;
     nextUserIndex === 0 ? game.round += 1 : null
-
     return;
   }
   currentUser.currentTurn += 1;

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Button, Card, Form, Modal } from "react-bootstrap"
 import { useContext, useEffect, useState } from "react";
-import { collection, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useNavigate } from "react-router";
 import { v4 as uuid } from "uuid";
@@ -85,6 +85,7 @@ function CreateGame({ show, fullscreen, setShow }) {
     }));
     const game = {
       id: gameId,
+      created_at: serverTimestamp(),
       users: updatedUsers,
       userWon: null,
       turn: updatedUsers[0].displayName,
@@ -109,8 +110,9 @@ function CreateGame({ show, fullscreen, setShow }) {
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
           <div className="settings">
-            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 650  }}>
+            <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem'}}>
               <Card.Header>Add Users</Card.Header>
               <Card.Body>
                 <Card.Title>Not Playing</Card.Title>
@@ -136,7 +138,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 </div>
               </Card.Body>
             </Card>
-            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 650 }}>
+            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 650}}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
                 <Card.Title>Gamemode</Card.Title>
@@ -189,7 +191,6 @@ function CreateGame({ show, fullscreen, setShow }) {
               </Card.Body>
             </Card>
           </div>
-          <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
         </Modal.Body>
       </Modal>
     </>

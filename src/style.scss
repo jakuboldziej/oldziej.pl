@@ -121,6 +121,10 @@ body, html {
     .settings {
       display: flex;
       justify-content: space-evenly;
+
+      .usersCard {
+        max-height: 650px;
+      }
     }
 
     .btn {
