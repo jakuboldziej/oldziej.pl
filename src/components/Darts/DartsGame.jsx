@@ -38,7 +38,7 @@ function DartsGame() {
   const usersContainerRef = useRef(null);
 
   useEffect(() => {
-    const userWithTurn = game.users.find((user) => user.turn);
+    const userWithTurn = users.find((user) => user.turn);
 
     if (userWithTurn && usersContainerRef.current) {
       const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn.uid}"]`);
@@ -46,13 +46,13 @@ function DartsGame() {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-  }, [game.users, game.turn]);
+  }, [users, game.turn]);
 
   useEffect(() => {
     const updatedUsers = [...users];
     updatedUsers[0].turn = true;
     setUsers(updatedUsers);
-  }, [game.round]);
+  }, []);
 
   const keyboardParams = {
     handleRound, 
@@ -63,6 +63,14 @@ function DartsGame() {
     specialState, 
     setSpecialState
   }
+
+  const userDynamicStyle = (user) => {
+    return {
+      borderLeft: `15px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`,
+      backgroundColor: `${user.points === 0 ? 'gold' : 'transparent'}`,
+    }
+  }
+
   return (
     <div className="darts-wrapper">
       <div className="stats">
@@ -74,8 +82,8 @@ function DartsGame() {
           <h2>{game.active ? 'In Progress' : 'Ended'} <img src={game.active ? GreenDot : RedDot}/></h2>
         </div>
         <div className="users" ref={usersContainerRef}>
-          {game.users.map((user) => (
-            <Row className="user" data-userid={user.uid} style={{borderLeft: `15px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`}} key={user.uid}>
+          {users.map((user) => (
+            <Row className="user" data-userid={user.uid} style={userDynamicStyle(user)} key={user.uid}>
               <Col sm>
                 <Row><b>{user.points}</b></Row>
                 <Row>{user.displayName}</Row>

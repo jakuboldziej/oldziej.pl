@@ -120,6 +120,18 @@ body, html {
     flex-direction: column;
     gap: 20px;
 
+    .podium {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-evenly;
+      gap: 20px;
+
+      .place {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+
     .settings {
       display: flex;
       justify-content: space-evenly;

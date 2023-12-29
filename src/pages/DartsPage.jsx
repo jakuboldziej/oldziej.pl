@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
 import { Button } from "react-bootstrap";
@@ -26,9 +26,9 @@ function DartsPage() {
     getGames();
   }, []);
 
-  useEffect(() => {
-    console.log(games)
-  }, [games]);
+  // useEffect(() => {
+  //   console.log(games)
+  // }, [games]);
 
   return (
     <>

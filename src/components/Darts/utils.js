@@ -8,7 +8,7 @@ export const handleRound = (value, users, gameP, handleShowP, setUsers, specialS
   handleShow = handleShowP;
   game = gameP;
   const currentUser = users.find(user => user.turn);
-  if (Number.isInteger(value)){
+  if (Number.isInteger(value)) {
     handleUsersState(currentUser, value, users, setUsers, specialState, setSpecialState);
   } else if (!Number.isInteger(value)) {
     handleSpecialValue(currentUser, value, users, setUsers, specialState, setSpecialState);
@@ -36,33 +36,51 @@ export const calculatePoints = (turnValue) => {
 
 export const handleGameEnd = (currentUser) => {
   if (game.podiums > 1) {
+    // handle currentuser place
+    currentUser.place = 1;
     let usersPodiums = [];
     game.users.map((user) => {
-      if (user.place !== 0) usersPodiums.push([user, user.place])
-    })
-    if (usersPodiums.length > 0) {
-      const lastPodiumUser = usersPodiums[usersPodiums.length - 1];
-      const winner = usersPodiums[0][0];
-      currentUser.place = lastPodiumUser[1] + 1;
-      console.log(winner);
-      if (currentUser.place == game.podiums) {
-        game.userWon = winner;
-        game.active = false;
-        handleShow();
-      }
-    } else {
-      currentUser.place = 1;
-    }
+      if (user.place !== 0) usersPodiums.push(user)
+    });
+  //   if (usersPodiums.length > 0) {
+  //     const lastPodiumUser = usersPodiums[usersPodiums.length - 1];
+  //     currentUser.place = lastPodiumUser[1] + 1;
+  //     game.users.map((user) => {
+  //       if (user.place !== 0) usersPodiums.push([user, user.place])
+  //     });
+  //     let firstPlace = null;
+  //     let secondPlace = null;
+  //     let thirdPlace = null;
+  //     if (currentUser.place == game.podiums) {
+  //       if (usersPodiums[0]) firstPlace = usersPodiums[0][0];
+  //       if (usersPodiums[1]) secondPlace = usersPodiums[1][0];
+  //       if (usersPodiums[2]) thirdPlace = usersPodiums[2][0];
+  //       game.podium = {
+  //         firstPlace,
+  //         secondPlace,
+  //         thirdPlace
+  //       };
+  //       game.userWon = firstPlace;
+  //       game.active = false;
+  //       handleShow();
+  //     }
+  //   } else {
+  //     game.users.map((user) => {
+  //       if (user.place !== 0) usersPodiums.push([user, user.place])
+  //     });
+  //     currentUser.place = 1;
+  //   }
   } else {
     game.userWon = currentUser;
     game.active = false;
     handleShow();
+    return;
   }
 }
 
 export const handlePoints = (currentUser, action, value) => {
-  const { turns, currentTurn } = currentUser;
-  const currentTurnValue = turns[currentTurn];
+  const { turns } = currentUser;
+  const currentTurnValue = turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
   const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
@@ -78,21 +96,22 @@ export const handlePoints = (currentUser, action, value) => {
   }
   if (action) {
     if (action === 'DOUBLE') {
-      turns[currentTurn] = `D${value}`;
+      turns[currentUser.currentTurn] = `D${value}`;
     } else if (action === 'TRIPLE') {
-      turns[currentTurn] = `T${value}`;
+      turns[currentUser.currentTurn] = `T${value}`;
     }
   }
 };
 
 export const handleAvgPointsPerThrow = (currentUser) => {
   const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
-  currentUser.avgPointsPerThrow = ((game.startPoints - currentUser.points) / throws).toFixed(2);
+  // console.log(currentUser.turnsSum);
+  currentUser.avgPointsPerThrow = ((game.startPoints - currentUser.turnsSum) / throws).toFixed(2);
 }
 
 export const handleDartsUserStats = (users) => {
   // statistics
-  users.map(async(user) => {
+  users.map(async (user) => {
     const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
     console.log(dartUser)
     await updateDoc(doc(db, "dartUsers", user.uid), {
@@ -101,13 +120,47 @@ export const handleDartsUserStats = (users) => {
 }
 
 export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
-  if(value === "DRZWI") {
+  if (value === "DRZWI") {
     currentUser.throws["drzwi"] += 1;
     handleUsersState(currentUser, 0, users, setUsers, specialState, "DRZWI");
   } else if (value === "DOUBLE" || value === "TRIPLE") {
     specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
 }
+
+export const handleNextUser = (currentUser, users, setUsers) => {
+  const remainingUsers = users.filter(user => user.place === 0 && user.points > 0);
+
+  if (remainingUsers.length === 0) {
+    // handle game end
+    return;
+  }
+
+  let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
+  let nextUser = users[nextUserIndex];
+
+  while (nextUser.place !== 0 || nextUser.points === 0) {
+    nextUserIndex = (nextUserIndex + 1) % users.length;
+    nextUser = users[nextUserIndex];
+  }
+  
+  const isFirstUser = remainingUsers[0].uid === nextUser.uid;
+
+  nextUser.turn = true;
+  nextUser.turns = { 1: null, 2: null, 3: null };
+  nextUser.turnsSum = 0;
+
+  setUsers(prevUsers => {
+    const updatedUsers = prevUsers.map(user =>
+      user.uid === nextUser.uid ? nextUser : user
+      );
+      return updatedUsers;
+  });
+
+  game.turn = nextUser.displayName;
+  console.log(isFirstUser);
+  isFirstUser ? game.round += 1: null;
+};
 
 const handleUsersState = (currentUser, value, users, setUsers, specialState, setSpecialState) => {
   if (specialState[0]) {
@@ -126,7 +179,7 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
     handleAvgPointsPerThrow(currentUser);
   }
   // console.log(currentUser.avgPointsPerThrow);
-  
+
   if (currentUser.currentTurn === 3) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
@@ -136,33 +189,15 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
       );
       return updatedUsers;
     });
-    // next user
-    let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
-    let nextUser = users[nextUserIndex]
-    if (nextUser.place !== 0) {
-      nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 2) % users.length;
-      nextUser = users[nextUserIndex];
-      console.log(nextUser);
-    }
-    nextUser.turn = true;
-    nextUser.turns = {1: null, 2: null, 3: null}
-    nextUser.turnsSum = 0;
+    handleNextUser(currentUser, users, setUsers);
+    return;
+  } else {
+    currentUser.currentTurn += 1;
     setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
-        user.uid === nextUser.uid ? nextUser : user
+        user.uid === currentUser.uid ? currentUser : user
         );
-        return updatedUsers;
-      });
-    // game info
-    game.turn = nextUser.displayName;
-    nextUserIndex === 0 ? game.round += 1 : null
-    return;
+      return updatedUsers;
+    });
   }
-  currentUser.currentTurn += 1;
-  setUsers(prevUsers => {
-    const updatedUsers = prevUsers.map(user =>
-      user.uid === currentUser.uid ? currentUser : user
-    );
-    return updatedUsers;
-  });
 }
