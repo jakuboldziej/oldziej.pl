@@ -156,7 +156,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 </div>
               </Card.Body>
             </Card>
-            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 750}}>
+            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 770}}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
                 <Card.Title>Podium</Card.Title>
@@ -165,6 +165,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                   {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
                 </Form.Select>
                 <br />
+                <Card.Title>Gamemode</Card.Title>
                 <hr />
                 <Form.Select value={selectGameMode} onChange={(e)=> setSelectGameMode(e.target.value)}>
                   <option>X01</option>
