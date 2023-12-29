@@ -35,9 +35,29 @@ export const calculatePoints = (turnValue) => {
 };
 
 export const handleGameEnd = (currentUser) => {
-  game.userWon = currentUser;
-  game.active = false;
-  handleShow();
+  if (game.podiums > 1) {
+    let usersPodiums = [];
+    game.users.map((user) => {
+      if (user.place !== 0) usersPodiums.push([user, user.place])
+    })
+    if (usersPodiums.length > 0) {
+      const lastPodiumUser = usersPodiums[usersPodiums.length - 1];
+      const winner = usersPodiums[0][0];
+      currentUser.place = lastPodiumUser[1] + 1;
+      console.log(winner);
+      if (currentUser.place == game.podiums) {
+        game.userWon = winner;
+        game.active = false;
+        handleShow();
+      }
+    } else {
+      currentUser.place = 1;
+    }
+  } else {
+    game.userWon = currentUser;
+    game.active = false;
+    handleShow();
+  }
 }
 
 export const handlePoints = (currentUser, action, value) => {
@@ -55,19 +75,18 @@ export const handlePoints = (currentUser, action, value) => {
     console.log('Overthrow.');
   } else if (currentUser.points === 0) {
     handleGameEnd(currentUser);
-  } else {
-    if (action) {
-      if (action === 'DOUBLE') {
-        turns[currentTurn] = `D${value}`;
-      } else if (action === 'TRIPLE') {
-        turns[currentTurn] = `T${value}`;
-      }
+  }
+  if (action) {
+    if (action === 'DOUBLE') {
+      turns[currentTurn] = `D${value}`;
+    } else if (action === 'TRIPLE') {
+      turns[currentTurn] = `T${value}`;
     }
   }
 };
 
 export const handleAvgPointsPerThrow = (currentUser) => {
-  const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);;
+  const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
   currentUser.avgPointsPerThrow = ((game.startPoints - currentUser.points) / throws).toFixed(2);
 }
 
@@ -118,8 +137,13 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
       return updatedUsers;
     });
     // next user
-    const nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
-    const nextUser = users[nextUserIndex]
+    let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
+    let nextUser = users[nextUserIndex]
+    if (nextUser.place !== 0) {
+      nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 2) % users.length;
+      nextUser = users[nextUserIndex];
+      console.log(nextUser);
+    }
     nextUser.turn = true;
     nextUser.turns = {1: null, 2: null, 3: null}
     nextUser.turnsSum = 0;

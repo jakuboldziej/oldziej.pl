@@ -44,7 +44,11 @@ function Register() {
       await setDoc(doc(db, "dartUsers", res.user.uid), {
         uid: res.user.uid,
         displayName,
-        wins: 0,
+        podiums: {
+          firstPlace: 0,
+          secondPlace: 0,
+          thirdPlace: 0,
+        },
         overAllPoints: 0,
         avgPointsPerThrow: 0,
         dartsThrown: 0,

@@ -10,12 +10,14 @@ import { DartsGameContext } from "../../context/DartsGameContext";
 function CreateGame({ show, fullscreen, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
+  const [userPodiumsCount, setUserPodiumsCount] = useState([]);
   const [randomizePlayers, setRandomizePlayers] = useState(true);
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
   const [selectCheckOut, setSelectCheckOut] = useState('Double Out');
   const [selectSets, setSelectSets] = useState('1');
   const [selectLegs, setSelectLegs] = useState('1');
+  const [usersPodium, setUsersPodium] = useState(0);
 
   const { setGame } = useContext(DartsGameContext);
 
@@ -23,6 +25,16 @@ function CreateGame({ show, fullscreen, setShow }) {
 
   const numbersLegsSets = [];
   for (let i = 1; i <= 21; i++) numbersLegsSets.push(<option key={i}>{i}</option>);
+
+  useEffect(() => {
+    const podiumOptions = [];
+    if (usersPlaying) {
+      for (let i = 1; i <= usersPlaying.length; i++) {
+        podiumOptions.push(<option key={i}>{i}</option>);
+      }
+      setUserPodiumsCount(podiumOptions);
+    }
+  }, [usersPlaying]);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -68,6 +80,7 @@ function CreateGame({ show, fullscreen, setShow }) {
       turn: false,
       turnsSum: 0,
       currentTurn: 1,
+      place: 0,
       turns: {
         1: null,
         2: null,
@@ -87,7 +100,12 @@ function CreateGame({ show, fullscreen, setShow }) {
       id: gameId,
       created_at: serverTimestamp(),
       users: updatedUsers,
-      userWon: null,
+      podiums: usersPodium,
+      podium: {
+        firstPlace: null,
+        secondPlace: null,
+        thirdPlace: null
+      },
       turn: updatedUsers[0].displayName,
       // randomizePlayers,
       active: true,
@@ -118,11 +136,11 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <Card.Title>Not Playing</Card.Title>
                 <hr />
                 <div className="users">
-                  {usersNotPlaying.map((user) => (
+                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
                     <div onClick={()=>handleSelect(user, 'add')} className="user" key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
-                  ))}
+                  )) : <Card.Text>None</Card.Text>}
                 </div>
                 <Card.Title className="mt-3 d-flex justify-content-between">
                   <span>Playing</span>
@@ -130,18 +148,23 @@ function CreateGame({ show, fullscreen, setShow }) {
                 </Card.Title>
                 <hr />
                 <div className="users">
-                  {usersPlaying.map((user) => (
+                  {usersPlaying.length > 0 ? usersPlaying.map((user) => (
                     <div onClick={()=>handleSelect(user, 'del')} className="user playing" key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
-                  ))}
+                  )) : <Card.Text>None</Card.Text>}
                 </div>
               </Card.Body>
             </Card>
-            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 650}}>
+            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 750}}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
-                <Card.Title>Gamemode</Card.Title>
+                <Card.Title>Podium</Card.Title>
+                <hr />
+                <Form.Select value={usersPodium} onChange={(e)=> setUsersPodium(e.target.value)}>
+                  {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
+                </Form.Select>
+                <br />
                 <hr />
                 <Form.Select value={selectGameMode} onChange={(e)=> setSelectGameMode(e.target.value)}>
                   <option>X01</option>

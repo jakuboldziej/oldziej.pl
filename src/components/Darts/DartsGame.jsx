@@ -26,12 +26,12 @@ function DartsGame() {
 
     if (overthrow) {
       timer = setTimeout(() => {
-        setOverthrow(false); // Set overthrow to false after 3 seconds
-      }, 3000);
+        setOverthrow(false);
+      }, 1000);
     }
 
     return () => {
-      clearTimeout(timer); // Clear the timer if component unmounts before 3 seconds
+      clearTimeout(timer);
     };
   }, [overthrow]);
 
