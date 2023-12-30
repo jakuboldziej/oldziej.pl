@@ -85,7 +85,13 @@ function DartsGame() {
           {users.map((user) => (
             <Row className="user" data-userid={user.uid} style={userDynamicStyle(user)} key={user.uid}>
               <Col sm>
-                <Row><b>{user.points}</b></Row>
+                <Row>
+                  <b>{user.points}</b>
+                  <span className="darts-thrown">
+                    <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon"/>
+                    {Object.values(user.throws).reduce((accumulator, value) => accumulator + value, 0)}
+                  </span>
+                </Row>
                 <Row>{user.displayName}</Row>
               </Col>
               <Col sm>

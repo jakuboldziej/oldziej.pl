@@ -36,42 +36,31 @@ export const calculatePoints = (turnValue) => {
 
 export const handleGameEnd = (currentUser) => {
   if (game.podiums > 1) {
-    // handle currentuser place
-    currentUser.place = 1;
-    let usersPodiums = [];
-    game.users.map((user) => {
-      if (user.place !== 0) usersPodiums.push(user)
-    });
-  //   if (usersPodiums.length > 0) {
-  //     const lastPodiumUser = usersPodiums[usersPodiums.length - 1];
-  //     currentUser.place = lastPodiumUser[1] + 1;
-  //     game.users.map((user) => {
-  //       if (user.place !== 0) usersPodiums.push([user, user.place])
-  //     });
-  //     let firstPlace = null;
-  //     let secondPlace = null;
-  //     let thirdPlace = null;
-  //     if (currentUser.place == game.podiums) {
-  //       if (usersPodiums[0]) firstPlace = usersPodiums[0][0];
-  //       if (usersPodiums[1]) secondPlace = usersPodiums[1][0];
-  //       if (usersPodiums[2]) thirdPlace = usersPodiums[2][0];
-  //       game.podium = {
-  //         firstPlace,
-  //         secondPlace,
-  //         thirdPlace
-  //       };
-  //       game.userWon = firstPlace;
-  //       game.active = false;
-  //       handleShow();
-  //     }
-  //   } else {
-  //     game.users.map((user) => {
-  //       if (user.place !== 0) usersPodiums.push([user, user.place])
-  //     });
-  //     currentUser.place = 1;
-  //   }
+    if (game.podium[1] !== null) {
+      let lastNonNullElement = null;
+      for (let i = Object.keys(game.podium).length - 1; i >= 0; i--) {
+        if (game.podium[i] !== null) {
+          lastNonNullElement = [i, game.podium[i]];
+          break;
+        }
+      }
+      console.log(currentUser);
+      currentUser.place = lastNonNullElement[1].place + 1;
+      game.podium[lastNonNullElement[0] + 1] = currentUser;
+    } else {
+      currentUser.place = 1;
+      game.podium[1] = currentUser;
+    }
   } else {
+    currentUser.place = 1;
+    game.podium[1] = currentUser;
     game.userWon = currentUser;
+    game.active = false;
+    handleShow();
+    return;
+  }
+  if (currentUser.place == game.podiums) {
+    game.userWon = game.podium[1];
     game.active = false;
     handleShow();
     return;
@@ -105,8 +94,8 @@ export const handlePoints = (currentUser, action, value) => {
 
 export const handleAvgPointsPerThrow = (currentUser) => {
   const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
-  // console.log(currentUser.turnsSum);
-  currentUser.avgPointsPerThrow = ((game.startPoints - currentUser.turnsSum) / throws).toFixed(2);
+  let avg = currentUser.turnsSum / throws * 3;
+  currentUser.avgPointsPerThrow = (avg).toFixed(2);
 }
 
 export const handleDartsUserStats = (users) => {
@@ -132,19 +121,18 @@ export const handleNextUser = (currentUser, users, setUsers) => {
   const remainingUsers = users.filter(user => user.place === 0 && user.points > 0);
 
   if (remainingUsers.length === 0) {
-    // handle game end
     return;
   }
 
   let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
   let nextUser = users[nextUserIndex];
-
+  
   while (nextUser.place !== 0 || nextUser.points === 0) {
     nextUserIndex = (nextUserIndex + 1) % users.length;
     nextUser = users[nextUserIndex];
   }
   
-  const isFirstUser = remainingUsers[0].uid === nextUser.uid;
+  const isLastUser = remainingUsers[remainingUsers.length - 1].uid === currentUser.uid;
 
   nextUser.turn = true;
   nextUser.turns = { 1: null, 2: null, 3: null };
@@ -158,8 +146,11 @@ export const handleNextUser = (currentUser, users, setUsers) => {
   });
 
   game.turn = nextUser.displayName;
-  console.log(isFirstUser);
-  isFirstUser ? game.round += 1: null;
+  if (isLastUser) {
+    game.round += 1;
+  } else if (remainingUsers.length === 1) {
+    game.round += 1;
+  }
 };
 
 const handleUsersState = (currentUser, value, users, setUsers, specialState, setSpecialState) => {
@@ -178,9 +169,8 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
     handlePoints(currentUser);
     handleAvgPointsPerThrow(currentUser);
   }
-  // console.log(currentUser.avgPointsPerThrow);
 
-  if (currentUser.currentTurn === 3) {
+  if (currentUser.currentTurn === 3 || currentUser.points == 0) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
     setUsers(prevUsers => {

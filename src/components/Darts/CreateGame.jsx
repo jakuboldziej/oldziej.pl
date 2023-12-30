@@ -14,7 +14,7 @@ function CreateGame({ show, fullscreen, setShow }) {
   const [randomizePlayers, setRandomizePlayers] = useState(true);
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
-  const [selectCheckOut, setSelectCheckOut] = useState('Double Out');
+  const [selectCheckOut, setSelectCheckOut] = useState('Straight Out');
   const [selectSets, setSelectSets] = useState('1');
   const [selectLegs, setSelectLegs] = useState('1');
   const [usersPodium, setUsersPodium] = useState(0);
@@ -72,9 +72,13 @@ function CreateGame({ show, fullscreen, setShow }) {
     }
   };
 
+  const randomizeList = (list) => {
+    return list.slice().sort(() => Math.random() - 0.5);
+  };
+
   const handleGameStart = async () => {
     const gameId = uuid();
-    const updatedUsers = usersPlaying.map((user) => ({
+    let updatedUsers = usersPlaying.map((user) => ({
       ...user,
       points: selectStartPoints,
       turn: false,
@@ -96,15 +100,18 @@ function CreateGame({ show, fullscreen, setShow }) {
       sets: 0,
       avgPointsPerThrow: 0,
     }));
+    if (randomizePlayers) {
+      updatedUsers = randomizeList(updatedUsers);
+    }
     const game = {
       id: gameId,
       created_at: serverTimestamp(),
       users: updatedUsers,
       podiums: usersPodium,
       podium: {
-        firstPlace: null,
-        secondPlace: null,
-        thirdPlace: null
+        1: null,
+        2: null,
+        3: null
       },
       turn: updatedUsers[0].displayName,
       // randomizePlayers,
@@ -144,7 +151,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 </div>
                 <Card.Title className="mt-3 d-flex justify-content-between">
                   <span>Playing</span>
-                  <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={()=>setRandomizePlayers((prevState) => !prevState)}/>
+                  <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={()=>setRandomizePlayers(prev=>!prev)}/>
                 </Card.Title>
                 <hr />
                 <div className="users">

@@ -123,12 +123,17 @@ body, html {
     .podium {
       display: flex;
       flex-direction: row;
-      justify-content: space-evenly;
+      justify-content: center;
       gap: 20px;
+
+      .first-place {
+        transform: translateY(-10px);
+      }
 
       .place {
         display: flex;
         flex-direction: column;
+        align-items: center;
       }
     }
 
@@ -221,10 +226,25 @@ body, html {
           display: grid;
           border: 1px solid lightgrey;
           border-right: none;
+
           .row {
+            position: relative;
             display: flex;
             justify-content: center;
             border-bottom: 1px solid lightgrey;
+
+            .darts-thrown {
+              display: flex;
+              align-items: center;
+              gap: 2px;
+              position: absolute;
+              right: 10px;
+              top: 2px;
+              padding: 0;
+              width: 20px;
+              height: 12px;
+              font-size: 12px;
+            }
 
             &:last-child {
               border-bottom: none;
@@ -234,7 +254,6 @@ body, html {
               justify-content: center;
             }
           }
-
           .turns {
             .turn {
               text-align: center;
