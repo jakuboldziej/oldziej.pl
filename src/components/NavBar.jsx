@@ -12,7 +12,7 @@ function NavBar() {
   const toggleOffcanvas = () => setShowOffcanvas((prev) => !prev);
   return (
     <>
-      <Navbar collapseOnSelect expand="lg" className="px-2" style={{ background: "#9152f8" }} >
+      <Navbar collapseOnSelect className="px-2" style={{ background: "#9152f8" }} >
         <Container>
           <Link to="/" className="link navbar-brand"><b>Home</b></Link>
           <Nav className="me-auto">

@@ -130,7 +130,7 @@ function CreateGame({ show, fullscreen, setShow }) {
 
   return (
     <>
-      <Modal show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
+      <Modal className="create-game-modal" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
@@ -163,7 +163,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 </div>
               </Card.Body>
             </Card>
-            <Card bg="dark" text="light" style={{ width: '18rem', minHeight: 770}}>
+            <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem'}}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
                 <Card.Title>Podium</Card.Title>

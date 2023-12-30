@@ -38,6 +38,10 @@ body, html {
   background: -o-linear-gradient(top, #7579ff, #b224ef);
   background: -moz-linear-gradient(top, #7579ff, #b224ef);
   background: linear-gradient(top, #7579ff, #b224ef);
+  
+  @media screen and (max-width: 576px) {
+    background: #7579ff;
+  }
 }
 
 #error_message {
@@ -102,7 +106,7 @@ body, html {
 }
 
 // Modal
-.modal {
+.create-game-modal {
   .modal-content {
     background-color: black;
     color: white;
@@ -119,6 +123,10 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    @media screen and (max-width: 576px) {
+      padding: 16px 0 0 0;
+    }
 
     .podium {
       display: flex;
@@ -141,8 +149,23 @@ body, html {
       display: flex;
       justify-content: space-evenly;
 
-      .usersCard {
+      .usersCard, .settingsCard {
         max-height: 770px;
+        
+        .card-body {
+          
+        }
+      }
+      .usersCard {
+        .card-body {
+          .card-title {
+            @media screen and (max-width: 576px) {
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+            }
+          }
+        }
       }
     }
 
@@ -159,11 +182,14 @@ body, html {
   justify-content: space-evenly;
   align-items: center;
   height: 100vh;
+
+  @media screen and (max-width: 576px) {
+    flex-direction: column;
+  }
   
   .keyboard {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    justify-content: center;
     padding: 10px;
     gap: 10px;
     background-color: grey;
@@ -172,6 +198,11 @@ body, html {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     user-select: none;
+
+    @media screen and (max-width: 576px) {
+      width: 100%;
+      border-radius: 0;
+    }
 
     .input, .special {
       display: flex;
@@ -199,6 +230,12 @@ body, html {
     width: 60%;
     height: 95vh;
     padding: 15px;
+    
+    @media screen and (max-width: 576px) {
+      width: 100%;
+      padding: 5px;
+      border-radius: 0;
+    }
 
     .info {
       display: flex;
@@ -206,21 +243,45 @@ body, html {
       justify-content: space-between;
       width: 100%;
       gap: 20px;
+
+      * {
+        @media screen and (max-width: 576px) {
+          font-size: 17px;
+        }
+      }
     }
 
     .users {
+      position: relative;
       display: flex;
       flex-direction: column;
       gap: 20px;
       width: 95%;
-      overflow-y: auto;
       padding: 20px;
+      overflow-y: auto;
+
+      * {
+        @media screen and (max-width: 576px) {
+          font-size: 17px;
+        }
+      }
+
+      @media screen and (max-width: 576px) {
+        width: 100%;
+        padding: 0;
+        height: 50%;
+      }
 
       .user {
         display: flex;
         flex-direction: row;
-        font-size: 2vw;
+        font-size: 15px;
         border-right: 1px solid lightgrey;
+        min-height: 70px;
+        
+        @media screen and (max-width: 576px) {
+          width: 100%;
+        }
 
         .col-sm {
           display: grid;
@@ -231,6 +292,7 @@ body, html {
             position: relative;
             display: flex;
             justify-content: center;
+            align-items: center;
             border-bottom: 1px solid lightgrey;
 
             .darts-thrown {
@@ -259,7 +321,7 @@ body, html {
               text-align: center;
               border-bottom: none;
               border-right: 1px solid lightgrey;
-              min-height: 45px;
+              min-height: 22px;
 
               &:last-child {
                 border: none;
@@ -298,15 +360,23 @@ body, html {
     flex-direction: row;
     justify-content: space-evenly;
     gap: 30px;
+
+    @media screen and (max-width: 576px) {
+      flex-direction: column;
+    }
     
     .games, .statistics, .leaderboard {
       display: flex;
       flex-direction: column;
-      width: 500px;
+      width: 33%;
       height: 80vh;
       border-radius: 20px;
       box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
   
+      @media screen and (max-width: 576px) {
+        width: 100%;
+      }
+
       h3 {
         padding-top: 10px;
         text-align: center;
@@ -316,10 +386,11 @@ body, html {
         flex-direction: column;
         gap: 10px;
         padding: 10px;
+        margin: 10px 0 10px 0;
+        border-radius: 25px;
         border-top: 1px solid grey;
         height: 100vh;
         overflow-y: auto;
-
   
         .element {
           border-radius: 15px;
