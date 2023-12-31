@@ -159,8 +159,6 @@ html {
       .usersCard,
       .settingsCard {
         max-height: 770px;
-
-        .card-body {}
       }
 
       .usersCard {
@@ -451,11 +449,9 @@ html {
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
 
-          .username,
-          .gamesWon,
-          .gameActive {
+          span {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             gap: 3px;

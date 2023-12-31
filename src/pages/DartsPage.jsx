@@ -72,9 +72,21 @@ function DartsPage() {
                 return (
                 <div key={dartUser.id} className="element">
                   <span className="username">{dartUser.displayName}</span>
-                  <span className="gamesWon">
+                  <span>
+                    <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon"/>
                     {dartUser.podiums["firstPlace"]}
-                    <img width="20" height="20" src="https://img.icons8.com/color/20/trophy.png" alt="trophy"/>
+                  </span>
+                  <span>
+                    <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon"/>
+                    {dartUser.podiums["secondPlace"]}
+                  </span>
+                  <span>
+                    <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon"/>
+                    {dartUser.podiums["thirdPlace"]}
+                  </span>
+                  <span>
+                    <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1"/>
+                    {dartUser.gamesPlayed}
                   </span>
                 </div>
                 )
@@ -89,8 +101,8 @@ function DartsPage() {
                 <div key={dartUser.id} className="element">
                   <span className="username">{dartUser.displayName}</span>
                   <span className="gamesWon">
-                    {dartUser.podiums["firstPlace"]}
                     <img width="20" height="20" src="https://img.icons8.com/color/20/trophy.png" alt="trophy"/>
+                    {dartUser.podiums["firstPlace"]}
                   </span>
                 </div>
                 )

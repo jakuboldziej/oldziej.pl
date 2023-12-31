@@ -104,9 +104,9 @@ export const handleAvgPointsPerThrow = () => {
 }
 
 export const handleDartsData = async () => {
-  // statistics
   users.map(async (user) => {
     const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
+
     user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
     user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
     user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
@@ -115,10 +115,13 @@ export const handleDartsData = async () => {
     dartUser.throws["triples"] += user.throws["triples"];
     dartUser.throws["normal"] += user.throws["normal"];
     dartUser.overAllPoints += game.startPoints - user.points;
+    dartUser.gamesPlayed += 1;
+
     await updateDoc(doc(db, "dartUsers", user.uid), {
       ...dartUser
     });
   })
+
   await updateDoc(doc(db, "dartGames", game.id), {
     ...game
   });
@@ -142,12 +145,12 @@ export const handleNextUser = (setUsers) => {
 
   let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
   let nextUser = users[nextUserIndex];
-  
+
   while (nextUser.place !== 0 || nextUser.points === 0) {
     nextUserIndex = (nextUserIndex + 1) % users.length;
     nextUser = users[nextUserIndex];
   }
-  
+
   const isLastUser = remainingUsers[remainingUsers.length - 1].uid === currentUser.uid;
 
   nextUser.turn = true;
@@ -157,8 +160,8 @@ export const handleNextUser = (setUsers) => {
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>
       user.uid === nextUser.uid ? nextUser : user
-      );
-      return updatedUsers;
+    );
+    return updatedUsers;
   });
 
   game.turn = nextUser.displayName;
@@ -202,7 +205,7 @@ const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
     setUsers(prevUsers => {
       const updatedUsers = prevUsers.map(user =>
         user.uid === currentUser.uid ? currentUser : user
-        );
+      );
       return updatedUsers;
     });
   }
