@@ -410,7 +410,7 @@ html {
     }
 
     .games,
-    .statistics,
+    .highlights,
     .leaderboard {
       display: flex;
       flex-direction: column;
@@ -449,6 +449,8 @@ html {
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
 
+          
+
           span {
             display: flex;
             flex-direction: column;
@@ -457,6 +459,10 @@ html {
             gap: 3px;
             padding: 10px;
             border-right: 1px solid black;
+            
+            &:first-child {
+              width: 80px;
+            }
           }
         }
 

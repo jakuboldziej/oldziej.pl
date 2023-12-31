@@ -29,7 +29,14 @@ function DartsPage() {
     const getDartUsers = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartUsers'));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setDartUsers(gamesData);
+      // sorting on wins
+      const sortedUsers = gamesData.slice().sort((a, b) => {
+        const firstPlaceA = a.podiums["firstPlace"];
+        const firstPlaceB = b.podiums["firstPlace"];
+      
+        return firstPlaceB - firstPlaceA;
+      });
+      setDartUsers(sortedUsers);
     }
     getDartUsers();
     getGames();
@@ -65,8 +72,14 @@ function DartsPage() {
               })}
             </div>
           </div>
-          <div className="statistics">
-            <h3>Statistics</h3>
+          <div className="highlights">
+            <h3>Highlights</h3>
+            <div className="info">
+              
+            </div>
+          </div>
+          <div className="leaderboard">
+            <h3>Leaderboard</h3>
             <div className="info">
             {dartUsers && dartUsers.map((dartUser) => {
                 return (
@@ -87,22 +100,6 @@ function DartsPage() {
                   <span>
                     <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1"/>
                     {dartUser.gamesPlayed}
-                  </span>
-                </div>
-                )
-              })}
-            </div>
-          </div>
-          <div className="leaderboard">
-            <h3>Leaderboard</h3>
-            <div className="info">
-            {dartUsers && dartUsers.map((dartUser) => {
-                return (
-                <div key={dartUser.id} className="element">
-                  <span className="username">{dartUser.displayName}</span>
-                  <span className="gamesWon">
-                    <img width="20" height="20" src="https://img.icons8.com/color/20/trophy.png" alt="trophy"/>
-                    {dartUser.podiums["firstPlace"]}
                   </span>
                 </div>
                 )
