@@ -3,19 +3,22 @@ import { db } from "../../firebase";
 
 let game;
 let handleShow;
+let currentUser;
+let users;
 
-export const handleRound = (value, users, gameP, handleShowP, setUsers, specialState, setSpecialState) => {
+export const handleRound = (value, usersP, gameP, handleShowP, setUsers, specialState, setSpecialState) => {
   handleShow = handleShowP;
   game = gameP;
-  const currentUser = users.find(user => user.turn);
+  users = usersP;
+  currentUser = users.find(user => user.turn);
   if (Number.isInteger(value)) {
-    handleUsersState(currentUser, value, users, setUsers, specialState, setSpecialState);
+    handleUsersState(value, setUsers, specialState, setSpecialState);
   } else if (!Number.isInteger(value)) {
-    handleSpecialValue(currentUser, value, users, setUsers, specialState, setSpecialState);
+    handleSpecialValue(value, setUsers, specialState, setSpecialState);
   }
 }
 
-export const handleTurnsSum = (currentUser) => {
+export const handleTurnsSum = () => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
 }
@@ -34,7 +37,7 @@ export const calculatePoints = (turnValue) => {
   return turnValue ? parseInt(turnValue) : turnValue;
 };
 
-export const handleGameEnd = (currentUser) => {
+export const handleGameEnd = () => {
   if (game.podiums > 1) {
     if (game.podium[1] !== null) {
       let lastNonNullElement = null;
@@ -44,7 +47,6 @@ export const handleGameEnd = (currentUser) => {
           break;
         }
       }
-      console.log(currentUser);
       currentUser.place = lastNonNullElement[1].place + 1;
       game.podium[lastNonNullElement[0] + 1] = currentUser;
     } else {
@@ -56,18 +58,20 @@ export const handleGameEnd = (currentUser) => {
     game.podium[1] = currentUser;
     game.userWon = currentUser;
     game.active = false;
+    handleDartsData();
     handleShow();
     return;
   }
   if (currentUser.place == game.podiums) {
     game.userWon = game.podium[1];
     game.active = false;
+    handleDartsData();
     handleShow();
     return;
   }
 }
 
-export const handlePoints = (currentUser, action, value) => {
+export const handlePoints = (action, value) => {
   const { turns } = currentUser;
   const currentTurnValue = turns[currentUser.currentTurn];
 
@@ -81,7 +85,7 @@ export const handlePoints = (currentUser, action, value) => {
     currentUser.turns = { 1: null, 2: null, 3: null };
     console.log('Overthrow.');
   } else if (currentUser.points === 0) {
-    handleGameEnd(currentUser);
+    handleGameEnd();
   }
   if (action) {
     if (action === 'DOUBLE') {
@@ -92,32 +96,44 @@ export const handlePoints = (currentUser, action, value) => {
   }
 };
 
-export const handleAvgPointsPerThrow = (currentUser) => {
+export const handleAvgPointsPerThrow = () => {
+  // dalej nie działa
   const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
   let avg = currentUser.turnsSum / throws * 3;
   currentUser.avgPointsPerThrow = (avg).toFixed(2);
 }
 
-export const handleDartsUserStats = (users) => {
+export const handleDartsData = async () => {
   // statistics
   users.map(async (user) => {
     const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
-    console.log(dartUser)
+    user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
+    user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
+    user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
+    dartUser.throws["drzwi"] += user.throws["drzwi"];
+    dartUser.throws["doubles"] += user.throws["doubles"];
+    dartUser.throws["triples"] += user.throws["triples"];
+    dartUser.throws["normal"] += user.throws["normal"];
+    dartUser.overAllPoints += game.startPoints - user.points;
     await updateDoc(doc(db, "dartUsers", user.uid), {
+      ...dartUser
     });
   })
+  await updateDoc(doc(db, "dartGames", game.id), {
+    ...game
+  });
 }
 
-export const handleSpecialValue = async (currentUser, value, users, setUsers, specialState, setSpecialState) => {
+export const handleSpecialValue = async (value, setUsers, specialState, setSpecialState) => {
   if (value === "DRZWI") {
     currentUser.throws["drzwi"] += 1;
-    handleUsersState(currentUser, 0, users, setUsers, specialState, "DRZWI");
+    handleUsersState(0, setUsers, specialState, "DRZWI");
   } else if (value === "DOUBLE" || value === "TRIPLE") {
     specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
 }
 
-export const handleNextUser = (currentUser, users, setUsers) => {
+export const handleNextUser = (setUsers) => {
   const remainingUsers = users.filter(user => user.place === 0 && user.points > 0);
 
   if (remainingUsers.length === 0) {
@@ -153,21 +169,21 @@ export const handleNextUser = (currentUser, users, setUsers) => {
   }
 };
 
-const handleUsersState = (currentUser, value, users, setUsers, specialState, setSpecialState) => {
+const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
   if (specialState[0]) {
     const multiplier = specialState[1] === "DOUBLE" ? 2 : 3;
     currentUser.turns[currentUser.currentTurn] = value * multiplier;
     specialState[1] === "DOUBLE" ? currentUser.throws["doubles"] += 1 : currentUser.throws["triples"] += 1;
-    handleTurnsSum(currentUser);
-    handlePoints(currentUser, specialState[1], value);
-    handleAvgPointsPerThrow(currentUser);
+    handleTurnsSum();
+    handlePoints(specialState[1], value);
+    handleAvgPointsPerThrow();
     setSpecialState([false, ""]);
   } else {
     if (setSpecialState !== "DRZWI") currentUser.throws["normal"] += 1;
     currentUser.turns[currentUser.currentTurn] = value;
-    handleTurnsSum(currentUser);
-    handlePoints(currentUser);
-    handleAvgPointsPerThrow(currentUser);
+    handleTurnsSum();
+    handlePoints();
+    handleAvgPointsPerThrow();
   }
 
   if (currentUser.currentTurn === 3 || currentUser.points == 0) {
@@ -179,7 +195,7 @@ const handleUsersState = (currentUser, value, users, setUsers, specialState, set
       );
       return updatedUsers;
     });
-    handleNextUser(currentUser, users, setUsers);
+    handleNextUser(setUsers);
     return;
   } else {
     currentUser.currentTurn += 1;

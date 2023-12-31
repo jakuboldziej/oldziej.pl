@@ -106,7 +106,7 @@ body, html {
 }
 
 // Modal
-.create-game-modal {
+.create-game-modal, .game-summary-modal {
   .modal-content {
     background-color: black;
     color: white;
@@ -393,11 +393,24 @@ body, html {
         overflow-y: auto;
   
         .element {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
           border-radius: 15px;
           min-height: 60px;
           background-color: #d676ff;
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
+
+          .username, .gamesWon, .gameActive {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            padding: 10px;
+            border-right: 1px solid black;
+          }
         }
         .element:hover {
           transform: translateY(-5px);

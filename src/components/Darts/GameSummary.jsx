@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useContext, useEffect } from 'react';
+import { useContext } from 'react';
 import { Modal } from 'react-bootstrap'
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
@@ -7,12 +7,8 @@ import { Link } from 'react-router-dom';
 function GameSummary({ show, fullscreen, setShow }) {
   const { game } = useContext(DartsGameContext);
 
-  // useEffect(() => {
-  //   console.log(game);
-  // }, [game]);
-
   return (
-    <Modal backdrop="static" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
+    <Modal className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
       <Modal.Header>
         <Modal.Title>Game Summary</Modal.Title>
       </Modal.Header>

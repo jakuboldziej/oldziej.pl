@@ -51,7 +51,6 @@ function Register() {
         },
         overAllPoints: 0,
         avgPointsPerThrow: 0,
-        dartsThrown: 0,
         throws: {
           drzwi: 0,
           doubles: 0,

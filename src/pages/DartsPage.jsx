@@ -4,6 +4,8 @@ import NavBar from "../components/NavBar"
 import { Button } from "react-bootstrap";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import RedDot from "../images/red_dot.png";
+import GreenDot from "../images/green_dot.png";
 
 function DartsPage() {
   document.title = "HomeServer | Darts";
@@ -11,6 +13,7 @@ function DartsPage() {
   const [fullscreen, setFullscreen] = useState(true);
   const [show, setShow] = useState(false);
   const [games, setGames] = useState([]);
+  const [dartUsers, setDartUsers] = useState([]);
 
   function handleShow(breakpoint) {
     setFullscreen(breakpoint);
@@ -23,6 +26,12 @@ function DartsPage() {
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setGames(gamesData);
     }
+    const getDartUsers = async () => {
+      const querySnapshot = await getDocs(collection(db, 'dartUsers'));
+      const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setDartUsers(gamesData);
+    }
+    getDartUsers();
     getGames();
   }, []);
 
@@ -40,14 +49,36 @@ function DartsPage() {
             <h3>Games</h3>
             <div className="info">
               {games && games.map((game) => {
-                return (<div key={game.id} className="element">game</div>)
+                return (
+                game.active ? 
+                  <div key={game.id} className="element">
+                    <span className="gameActive">
+                      {game.active ? 'In Progress' : 'Ended'}
+                      <img src={game.active ? GreenDot : RedDot}/>
+                    </span>
+                  </div>
+                :
+                <div key={game.id} className="element">
+                  <span className="username">{game.userWon.displayName}</span>
+                </div>
+                )
               })}
             </div>
           </div>
           <div className="statistics">
             <h3>Statistics</h3>
             <div className="info">
-              <div className="element"></div>
+            {dartUsers && dartUsers.map((dartUser) => {
+                return (
+                <div key={dartUser.id} className="element">
+                  <span className="username">{dartUser.displayName}</span>
+                  <span className="gamesWon">
+                    {dartUser.podiums["firstPlace"]}
+                    <img width="20" height="20" src="https://img.icons8.com/color/20/trophy.png" alt="trophy"/>
+                  </span>
+                </div>
+                )
+              })}
             </div>
           </div>
           <div className="leaderboard">
