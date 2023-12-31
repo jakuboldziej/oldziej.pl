@@ -84,7 +84,17 @@ function DartsPage() {
           <div className="leaderboard">
             <h3>Leaderboard</h3>
             <div className="info">
-              <div>asdf</div>
+            {dartUsers && dartUsers.map((dartUser) => {
+                return (
+                <div key={dartUser.id} className="element">
+                  <span className="username">{dartUser.displayName}</span>
+                  <span className="gamesWon">
+                    {dartUser.podiums["firstPlace"]}
+                    <img width="20" height="20" src="https://img.icons8.com/color/20/trophy.png" alt="trophy"/>
+                  </span>
+                </div>
+                )
+              })}
             </div>
           </div>
         </div>

@@ -152,6 +152,7 @@ export const handleNextUser = (setUsers) => {
 
   nextUser.turn = true;
   nextUser.turns = { 1: null, 2: null, 3: null };
+  nextUser.turnsSum = 0;
 
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>

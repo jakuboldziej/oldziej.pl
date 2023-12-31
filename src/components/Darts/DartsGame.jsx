@@ -66,7 +66,7 @@ function DartsGame() {
 
   const userDynamicStyle = (user) => {
     return {
-      borderLeft: `15px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`,
+      borderLeft: `17px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`,
       backgroundColor: `${user.points === 0 ? 'gold' : 'transparent'}`,
     }
   }
@@ -84,7 +84,7 @@ function DartsGame() {
         <div className="users" ref={usersContainerRef}>
           {users.map((user) => (
             <Row className="user" data-userid={user.uid} style={userDynamicStyle(user)} key={user.uid}>
-              <Col sm>
+              <Col className="main-col" sm={4} xs={4}>
                 <Row>
                   <b>{user.points}</b>
                   <span className="darts-thrown">
@@ -94,7 +94,7 @@ function DartsGame() {
                 </Row>
                 <Row>{user.displayName}</Row>
               </Col>
-              <Col sm>
+              <Col className="main-col" sm={4} xs={4}>
                 <Row className="turns">
                   {Object.entries(user.turns).map((turn) => {
                     return (<Col className="turn" key={turn[0]}>{turn[1]}</Col>);
@@ -102,7 +102,7 @@ function DartsGame() {
                 </Row>
                 <Row>{user.turnsSum}</Row>
               </Col>
-              <Col sm>
+              <Col className="main-col" sm={4} xs={4}>
                 <Row className="legs-sets">
                   <Col className="legs">{user.legs}</Col>
                   <Col className="sets">{user.sets}</Col>
