@@ -89,7 +89,7 @@ function DartsGame() {
                   <b>{user.points}</b>
                   <span className="darts-thrown">
                     <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon"/>
-                    {Object.values(user.throws).reduce((accumulator, value) => accumulator + value, 0)}
+                    {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
                   </span>
                 </Row>
                 <Row>{user.displayName}</Row>

@@ -97,9 +97,9 @@ export const handlePoints = (action, value) => {
 };
 
 export const handleAvgPointsPerThrow = () => {
-  // dalej nie działa
-  const throws = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
-  let avg = currentUser.turnsSum / throws * 3;
+  const pointsThrown = game.startPoints - currentUser.points;
+  const dartsThrown = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
+  const avg = pointsThrown / dartsThrown * 3;
   currentUser.avgPointsPerThrow = (avg).toFixed(2);
 }
 
@@ -152,7 +152,6 @@ export const handleNextUser = (setUsers) => {
 
   nextUser.turn = true;
   nextUser.turns = { 1: null, 2: null, 3: null };
-  nextUser.turnsSum = 0;
 
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>
