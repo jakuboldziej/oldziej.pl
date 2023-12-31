@@ -189,6 +189,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <hr />
                 <Form.Select value={selectStartPoints} onChange={(e)=> setSelectStartPoints(e.target.value)}>
                   <option>101</option>
+                  <option>201</option>
                   <option>301</option>
                   <option>501</option>
                   <option>601</option>
