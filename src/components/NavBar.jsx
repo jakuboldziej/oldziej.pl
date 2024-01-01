@@ -29,7 +29,7 @@ function NavBar() {
       </Navbar>
 
       <Offcanvas className="bg-dark text-white" show={showOffcanvas} onHide={toggleOffcanvas} placement="end">
-        <Offcanvas.Header closeButton>
+        <Offcanvas.Header closeButton closeVariant="white">
           <Offcanvas.Title>{currentUser.displayName}</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>

@@ -52,32 +52,6 @@ function DartsPage() {
       <div className="darts-page">
         <Button variant="outline-info" onClick={handleShow}>Create</Button>
         <div className="cards">
-          <div className="games">
-            <h3>Games</h3>
-            <div className="info">
-              {games && games.map((game) => {
-                return (
-                game.active ? 
-                  <div key={game.id} className="element">
-                    <span className="gameActive">
-                      {game.active ? 'In Progress' : 'Ended'}
-                      <img src={game.active ? GreenDot : RedDot}/>
-                    </span>
-                  </div>
-                :
-                <div key={game.id} className="element">
-                  <span className="username">{game.userWon.displayName}</span>
-                </div>
-                )
-              })}
-            </div>
-          </div>
-          <div className="highlights">
-            <h3>Highlights</h3>
-            <div className="info">
-              
-            </div>
-          </div>
           <div className="leaderboard">
             <h3>Leaderboard</h3>
             <div className="info">
@@ -101,6 +75,32 @@ function DartsPage() {
                     <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1"/>
                     {dartUser.gamesPlayed}
                   </span>
+                </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="highlights">
+            <h3>Highlights</h3>
+            <div className="info">
+              
+            </div>
+          </div>
+          <div className="games">
+            <h3>Games</h3>
+            <div className="info">
+              {games && games.map((game) => {
+                return (
+                game.active ? 
+                  <div key={game.id} className="element">
+                    <span className="gameActive">
+                      {game.active ? 'In Progress' : 'Ended'}
+                      <img src={game.active ? GreenDot : RedDot}/>
+                    </span>
+                  </div>
+                :
+                <div key={game.id} className="element">
+                  <span className="username">{game.userWon.displayName}</span>
                 </div>
                 )
               })}

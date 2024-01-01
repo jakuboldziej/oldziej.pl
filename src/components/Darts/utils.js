@@ -24,7 +24,6 @@ export const handleTurnsSum = () => {
 }
 
 const isNumericRegex = /^\d+$/;
-
 export const calculatePoints = (turnValue) => {
   if (!isNumericRegex.test(turnValue) && turnValue) {
     if (turnValue[0] === "D") {
@@ -131,6 +130,8 @@ export const handleSpecialValue = async (value, setUsers, specialState, setSpeci
   if (value === "DRZWI") {
     currentUser.throws["drzwi"] += 1;
     handleUsersState(0, setUsers, specialState, "DRZWI");
+  } else if (value === "BACK") {
+    handleRecord("back", setUsers);
   } else if (value === "DOUBLE" || value === "TRIPLE") {
     specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
@@ -192,21 +193,27 @@ const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
   if (currentUser.currentTurn === 3 || currentUser.points == 0) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user =>
-        user.uid === currentUser.uid ? currentUser : user
-      );
-      return updatedUsers;
-    });
     handleNextUser(setUsers);
-    return;
   } else {
     currentUser.currentTurn += 1;
-    setUsers(prevUsers => {
-      const updatedUsers = prevUsers.map(user =>
-        user.uid === currentUser.uid ? currentUser : user
-      );
-      return updatedUsers;
-    });
   }
+  setUsers(prevUsers => {
+    const updatedUsers = prevUsers.map(user =>
+      user.uid === currentUser.uid ? currentUser : user
+    );
+    return updatedUsers;
+  });
 }
+
+const handleRecord = (action, setUsers) => {
+  if (action === "save") {
+    const currentUserCopy = { ...currentUser };
+    game.record.push({
+      user: currentUserCopy,
+      game: game,
+    });
+    console.log(game.record);
+  } else if (action === "back") {
+    console.log('back');
+  }
+};

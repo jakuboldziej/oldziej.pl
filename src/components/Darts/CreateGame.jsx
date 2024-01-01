@@ -122,6 +122,7 @@ function CreateGame({ show, fullscreen, setShow }) {
       sets: selectSets,
       legs: selectLegs,
       round: 1,
+      record: []
     }
     await setDoc(doc(db, "dartGames", gameId), game);
     setGame(game);
