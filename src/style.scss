@@ -226,7 +226,7 @@ html {
       display: flex;
       flex-direction: column;
       width: 33%;
-      height: 80vh;
+      height: 75vh;
       border-radius: 20px;
       box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 
@@ -344,7 +344,8 @@ html {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px;
+  padding: 20px 20px 0 20px;
+  height: calc(100vh - 56px);
 
   .btn {
     display: flex;
