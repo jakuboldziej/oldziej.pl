@@ -87,7 +87,7 @@ function DartsPage() {
 
     // Managing live game
     const liveGame = localStorage.getItem('dartsGame');
-    if (liveGame !== "null") {
+    if (liveGame !== "null" || liveGame !== null) {
       setPlayerInGame(true);
       showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
     }
