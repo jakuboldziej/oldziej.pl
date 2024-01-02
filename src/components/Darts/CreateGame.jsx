@@ -8,6 +8,7 @@ import { v4 as uuid } from "uuid";
 import { DartsGameContext } from "../../context/DartsGameContext";
 import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
+import { ToastsContext } from "../../context/ToastsContext";
 
 function CreateGame({ show, fullscreen, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -23,6 +24,7 @@ function CreateGame({ show, fullscreen, setShow }) {
 
   const { setGame } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
+  const { showNewToast } = useContext(ToastsContext);
 
   const navigate = useNavigate();
 
@@ -47,7 +49,7 @@ function CreateGame({ show, fullscreen, setShow }) {
 
         const fetchedUsers = [];
         querySnapshot.forEach((doc) => {
-          fetchedUsers.push({...doc.data()});
+          fetchedUsers.push({ ...doc.data() });
         });
 
         setUsersNotPlaying(fetchedUsers);
@@ -62,7 +64,7 @@ function CreateGame({ show, fullscreen, setShow }) {
   const handleSelect = (user, action) => {
     if (action === 'add') {
       setUsersPlaying((prevUsersPlaying) => [...prevUsersPlaying, user]);
-  
+
       setUsersNotPlaying((prevUsersNotPlaying) =>
         prevUsersNotPlaying.filter((notPlayingUser) => notPlayingUser.uid !== user.uid)
       );
@@ -70,7 +72,7 @@ function CreateGame({ show, fullscreen, setShow }) {
       setUsersPlaying((prevUsersPlaying) =>
         prevUsersPlaying.filter((playingUser) => playingUser.uid !== user.uid)
       );
-  
+
       setUsersNotPlaying((prevUsersNotPlaying) => [...prevUsersNotPlaying, user]);
     }
   };
@@ -79,7 +81,7 @@ function CreateGame({ show, fullscreen, setShow }) {
     return list.slice().sort(() => Math.random() - 0.5);
   };
 
-  const handleGameStart = async () => {
+  const handleGameStart = async (training = false) => {
     const gameId = uuid();
     let updatedUsers = usersPlaying.map((user) => ({
       ...user,
@@ -103,9 +105,8 @@ function CreateGame({ show, fullscreen, setShow }) {
       sets: 0,
       avgPointsPerThrow: 0,
     }));
-    if (randomizePlayers) {
-      updatedUsers = randomizeList(updatedUsers);
-    }
+    if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
+    if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
     const game = {
       id: gameId,
       created_at: serverTimestamp(),
@@ -127,7 +128,6 @@ function CreateGame({ show, fullscreen, setShow }) {
       legs: selectLegs,
       round: 1,
     }
-    await setDoc(doc(db, "dartGames", gameId), game);
     updatedUsers[0].turn = true;
     const currentUserCopy = _.cloneDeep(updatedUsers[0]);
     const gameCopy = _.pick(game, ['round', 'turn', 'record']);
@@ -135,9 +135,15 @@ function CreateGame({ show, fullscreen, setShow }) {
       game: {
         round: gameCopy.round,
         turn: gameCopy.turn
-      }, 
+      },
       user: currentUserCopy
     }];
+    console.log(training);
+    if (training === true){
+      game.training = true;
+    } else {
+      await setDoc(doc(db, "dartGames", gameId), game);
+    }
     setGame(game);
     navigate("game");
   }
@@ -149,46 +155,49 @@ function CreateGame({ show, fullscreen, setShow }) {
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
+          <div className="d-flex justify-content-center gap-3">
+            <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
+            <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
+          </div>
           <div className="settings">
-            <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem'}}>
+            <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
               <Card.Header>Add Users</Card.Header>
               <Card.Body>
                 <Card.Title>Not Playing</Card.Title>
                 <hr />
                 <div className="users">
                   {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={()=>handleSelect(user, 'add')} className="user" key={user.uid}>
+                    <div onClick={() => handleSelect(user, 'add')} className="user" key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : <Card.Text>None</Card.Text>}
                 </div>
                 <Card.Title className="mt-3 d-flex justify-content-between">
                   <span>Playing</span>
-                  <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={()=>setRandomizePlayers(prev=>!prev)}/>
+                  <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} />
                 </Card.Title>
                 <hr />
                 <div className="users">
                   {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={()=>handleSelect(user, 'del')} className="user playing" key={user.uid}>
+                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : <Card.Text>None</Card.Text>}
                 </div>
               </Card.Body>
             </Card>
-            <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem'}}>
+            <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
                 <Card.Title>Podium</Card.Title>
                 <hr />
-                <Form.Select value={usersPodium} onChange={(e)=> setUsersPodium(e.target.value)}>
+                <Form.Select value={usersPodium} onChange={(e) => setUsersPodium(e.target.value)}>
                   {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
                 </Form.Select>
                 <br />
                 <Card.Title>Gamemode</Card.Title>
                 <hr />
-                <Form.Select value={selectGameMode} onChange={(e)=> setSelectGameMode(e.target.value)}>
+                <Form.Select value={selectGameMode} onChange={(e) => setSelectGameMode(e.target.value)}>
                   <option>X01</option>
                   <option>Cricket</option>
                   <option>Around the Clock</option>
@@ -201,7 +210,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <br />
                 <Card.Title>Startpoints</Card.Title>
                 <hr />
-                <Form.Select value={selectStartPoints} onChange={(e)=> setSelectStartPoints(e.target.value)}>
+                <Form.Select value={selectStartPoints} onChange={(e) => setSelectStartPoints(e.target.value)}>
                   <option>101</option>
                   <option>201</option>
                   <option>301</option>
@@ -215,7 +224,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <br />
                 <Card.Title>Check-Out</Card.Title>
                 <hr />
-                <Form.Select value={selectCheckOut} onChange={(e)=> setSelectCheckOut(e.target.value)}>
+                <Form.Select value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
                   <option>Straight Out</option>
                   <option>Double Out</option>
                   <option>Triple Out</option>
@@ -225,13 +234,13 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <br />
                 <Card.Title>Sets</Card.Title>
                 <hr />
-                <Form.Select value={selectSets} onChange={(e)=> setSelectSets(e.target.value)}>
+                <Form.Select value={selectSets} onChange={(e) => setSelectSets(e.target.value)}>
                   {numbersLegsSets}
                 </Form.Select>
                 <br />
                 <Card.Title>Legs</Card.Title>
                 <hr />
-                <Form.Select value={selectLegs} onChange={(e)=> setSelectLegs(e.target.value)}>
+                <Form.Select value={selectLegs} onChange={(e) => setSelectLegs(e.target.value)}>
                   {numbersLegsSets}
                 </Form.Select>
               </Card.Body>

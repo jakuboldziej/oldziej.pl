@@ -6,11 +6,13 @@ let game;
 let handleShow;
 let currentUser;
 let users;
+let showNewToast;
 
-export const handleRound = (value, usersP, gameP, handleShowP, setUsers, specialState, setSpecialState) => {
+export const handleRound = (value, usersP, gameP, handleShowP, setUsers, specialState, setSpecialState, showNewToastP) => {
   handleShow = handleShowP;
   game = gameP;
   users = usersP;
+  showNewToast = showNewToastP;
   currentUser = users.find(user => user.turn);
   if (Number.isInteger(value)) {
     handleUsersState(value, setUsers, specialState, setSpecialState);
@@ -56,14 +58,14 @@ export const handleGameEnd = () => {
   } else {
     currentUser.place = 1;
     game.podium[1] = currentUser;
-    game.userWon = currentUser;
+    game.userWon = currentUser.displayName;
     game.active = false;
     handleDartsData();
     handleShow();
     return;
   }
   if (currentUser.place == game.podiums) {
-    game.userWon = game.podium[1];
+    game.userWon = game.podium[1].displayName;
     game.active = false;
     handleDartsData();
     handleShow();
@@ -117,12 +119,12 @@ export const handleDartsData = async () => {
     dartUser.overAllPoints += game.startPoints - user.points;
     dartUser.gamesPlayed += 1;
 
-    await updateDoc(doc(db, "dartUsers", user.uid), {
+    if(!game.training) await updateDoc(doc(db, "dartUsers", user.uid), {
       ...dartUser
     });
   })
 
-  await updateDoc(doc(db, "dartGames", game.id), {
+  if(!game.training) await updateDoc(doc(db, "dartGames", game.id), {
     ...game
   });
 }
@@ -230,6 +232,8 @@ const handleRecord = (action) => {
         game.round = restoredState.game.round;
         game.turn = restoredState.game.turn;
       }
+    } else {
+      showNewToast("Back button", "This is the start of the game")
     }
   }
 };

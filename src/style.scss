@@ -1,6 +1,4 @@
-/*//////////////////////////////////////////////////////////////////
-[ FONT ]*/
-
+// Fonts
 @font-face {
   font-family: Poppins-Regular;
   src: url('fonts/poppins/Poppins-Regular.ttf');
@@ -21,9 +19,31 @@
   src: url('fonts/poppins/Poppins-SemiBold.ttf');
 }
 
-/*//////////////////////////////////////////////////////////////////
-[ RESTYLE TAG ]*/
+// Scroll
+@media screen and (min-width: 769px) {
+  ::-webkit-scrollbar {
+    border-radius: 10px;
+    width: 10px;
+    height: 10px;
+  }
 
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #555;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+  }
+}
+
+// Public
 * {
   margin: 0px;
   padding: 0px;
@@ -63,9 +83,31 @@ html {
   color: black;
 }
 
+
+// Dropdown
+.dropdown {
+  .custom-dropdown-toggle {
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+  
+    &::after {
+      display: none;
+    }
+  
+    .background {
+      background-image: url("https://img.icons8.com/ios-filled/30/filter--v1.png");
+      background-size: cover !important;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
 // Card
 .card {
   max-height: 360px;
+
   .card-body {
     .users {
       display: flex;
@@ -92,12 +134,6 @@ html {
         opacity: 0.8;
       }
     }
-  }
-}
-
-// OffCanvas
-.offcanvas-header {
-  .btn-close {
   }
 }
 
@@ -173,6 +209,161 @@ html {
   }
 }
 
+// Home Page / Darts Page
+.darts-page,
+.home-page {
+  .cards {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: 30px;
+
+    @media screen and (max-width: 576px) {
+      flex-direction: column;
+    }
+
+    .myCard {
+      display: flex;
+      flex-direction: column;
+      width: 33%;
+      height: 80vh;
+      border-radius: 20px;
+      box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+
+      @media screen and (max-width: 576px) {
+        width: 100%;
+      }
+
+      span {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+
+        h3 {
+          padding-top: 10px;
+          text-align: center;
+        }
+      }
+
+      .info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+        margin: 10px 0 10px 0;
+        border-radius: 25px;
+        border-top: 1px solid grey;
+        height: 100vh;
+        overflow-y: auto;
+
+        .element {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          border-radius: 15px;
+          min-height: 60px;
+          background-color: #d676ff;
+          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+          transition: transform 0.3s ease;
+
+          span {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 3px;
+            padding: 10px;
+            border-right: 1px solid black;
+            width: 10%;
+            max-height: 67px;
+
+            &:first-child {
+              flex-direction: row;
+              width: 60px;
+            }
+          }
+        }
+
+        .element:hover {
+          transform: translateY(-5px);
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}
+
+// Home Page
+.home-page {
+  height: calc(100vh - 56px);
+  padding: 20px;
+
+  .cards {
+    height: 100%;
+    align-items: center;
+
+    @media screen and (max-width: 576px) {
+      height: auto;
+    }
+
+    .myCard {
+      .info {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        .miniCard {
+          width: 50%;
+          height: 100%;
+
+          .info {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            .element {
+              span {
+                width: 15%;
+                max-height: 60px;
+
+                &:first-child {
+                  width: 60px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Darts Page
+.darts-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+
+  .btn {
+    display: flex;
+    align-self: center;
+  }
+
+  .games {
+    .element {
+      span {
+        width: 14% !important;
+
+        &:first-child {
+          width: 80px !important;
+        }
+      }
+    }
+  }
+}
+
 // Darts Game
 .darts-wrapper {
   display: flex;
@@ -194,6 +385,7 @@ html {
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     user-select: none;
+    border-radius: 20px;
 
     @media screen and (max-width: 576px) {
       width: 100%;
@@ -210,9 +402,12 @@ html {
       background-color: rgb(175, 175, 175);
       font-size: 30px;
       border: none;
+      border-radius: 20px;
+      height: 50px;
 
       @media screen and (max-width: 576px) {
         font-size: 1.5rem;
+        height: 6vh;
       }
     }
 
@@ -266,6 +461,7 @@ html {
       border-radius: 0;
       overflow: hidden;
       height: 50%;
+      box-shadow: none;
     }
 
     .info {
@@ -300,14 +496,14 @@ html {
       .user {
         display: flex;
         flex-direction: row;
-        font-size: 20px;
+        font-size: 25px;
         border-right: 1px solid lightgrey;
         height: 90px;
 
         @media screen and (max-width: 576px) {
           min-height: 80px;
           width: 100%;
-          font-size: 15px;
+          font-size: 20px;
         }
 
         .main-col {
@@ -350,10 +546,10 @@ html {
               text-align: center;
               border-bottom: none;
               border-right: 1px solid lightgrey;
-              min-height: 30px;
+              min-height: 36px;
 
               @media screen and (max-width: 576px) {
-                min-height: 22px;
+                min-height: 30px;
                 padding: 0;
               }
 
@@ -374,94 +570,6 @@ html {
               border-right: 1px solid lightgrey;
             }
           }
-        }
-      }
-    }
-  }
-}
-
-// Darts Page
-.darts-page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-
-  .btn {
-    display: flex;
-    align-self: center;
-  }
-
-  .cards {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    gap: 30px;
-
-    @media screen and (max-width: 576px) {
-      flex-direction: column;
-    }
-
-    .games,
-    .highlights,
-    .leaderboard {
-      display: flex;
-      flex-direction: column;
-      width: 33%;
-      height: 80vh;
-      border-radius: 20px;
-      box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-
-      @media screen and (max-width: 576px) {
-        width: 100%;
-      }
-
-      h3 {
-        padding-top: 10px;
-        text-align: center;
-      }
-
-      .info {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-        margin: 10px 0 10px 0;
-        border-radius: 25px;
-        border-top: 1px solid grey;
-        height: 100vh;
-        overflow-y: auto;
-
-        .element {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          border-radius: 15px;
-          min-height: 60px;
-          background-color: #d676ff;
-          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-          transition: transform 0.3s ease;
-
-          
-
-          span {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 3px;
-            padding: 10px;
-            border-right: 1px solid black;
-            
-            &:first-child {
-              width: 80px;
-            }
-          }
-        }
-
-        .element:hover {
-          transform: translateY(-5px);
-          cursor: pointer;
         }
       }
     }
@@ -880,9 +988,7 @@ html {
   }
 
 
-  /*//////////////////////////////////////////////////////////////////
-  [ login ]*/
-
+  // Login
   .limiter {
     width: 100%;
     margin: 0 auto;
@@ -926,9 +1032,7 @@ html {
   }
 
 
-  /*------------------------------------------------------------------
-  [ Form ]*/
-
+  // Form
   .login100-form {
     width: 100%;
   }
@@ -944,9 +1048,7 @@ html {
     display: block;
   }
 
-  /*------------------------------------------------------------------
-  [ Input ]*/
-
+  // Input
   .wrap-input100 {
     width: 100%;
     position: relative;
@@ -1042,9 +1144,7 @@ html {
   }
 
 
-  /*==================================================================
-  [ Restyle Checkbox ]*/
-
+  // Restyle Checkbox
   .contact100-form-checkbox {
     padding-left: 5px;
     padding-top: 5px;
@@ -1099,8 +1199,7 @@ html {
   }
 
 
-  /*------------------------------------------------------------------
-  [ Button ]*/
+  // Button
   .container-login100-form-btn {
     width: 100%;
     display: -webkit-box;
@@ -1172,18 +1271,14 @@ html {
   }
 
 
-  /*------------------------------------------------------------------
-  [ Responsive ]*/
-
+  // Responsive
   @media (max-width: 576px) {
     .wrap-login100 {
       padding: 55px 15px 37px 15px;
     }
   }
 
-  /*------------------------------------------------------------------
-  [ Alert validate ]*/
-
+  // Alert validate
   .validate-input {
     position: relative;
   }

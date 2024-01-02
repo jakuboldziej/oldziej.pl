@@ -16,8 +16,8 @@ function NavBar() {
         <Container>
           <Link to="/" className="link navbar-brand"><b>Home</b></Link>
           <Nav className="me-auto">
-            <Link to="/chat" className="nav-link"><b>Chat</b></Link>
             <Link to="/darts" className="nav-link"><b>Darts</b></Link>
+            <Link to="/chat" className="nav-link"><b>Chat</b></Link>
             <Link to="/ftp" className="nav-link"><b>FTP</b></Link>
           </Nav>
         </Container>

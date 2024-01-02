@@ -8,6 +8,8 @@ import GreenDot from "../../images/green_dot.png";
 import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
+import { ToastsContext } from "../../context/ToastsContext";
+import MyToasts from "../MyToasts";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
@@ -19,6 +21,7 @@ function DartsGame() {
   }
   
   const { game } = useContext(DartsGameContext);
+  const { showNewToast } = useContext(ToastsContext);
 
   if (!game) {
     return (
@@ -32,8 +35,6 @@ function DartsGame() {
   const [users, setUsers] = useState(game?.users || null);
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
-
-  
 
   useEffect(() => {
     let timer;
@@ -60,13 +61,17 @@ function DartsGame() {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-    game.users = users;
-    localStorage.setItem('dartsGame', JSON.stringify(game));
+    if (game) {
+      game.users = users;
+      localStorage.setItem('dartsGame', JSON.stringify(game));
+    }
   }, [users, game.turn]);
 
   useEffect(() => {
-    localStorage.setItem('dartsGame', null);
-  }, [game.userWon]);
+    if (game?.userWon) {
+      localStorage.setItem('dartsGame', null);
+    }
+  }, [game?.userWon]);
 
   const keyboardParams = {
     handleRound, 
@@ -76,6 +81,7 @@ function DartsGame() {
     setUsers, 
     specialState, 
     setSpecialState,
+    showNewToast
   }
 
   const userDynamicStyle = (user) => {
@@ -129,6 +135,7 @@ function DartsGame() {
       </div>
       <Keyboard params={keyboardParams} />
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>
+      <MyToasts />
     </div>
   )
 }

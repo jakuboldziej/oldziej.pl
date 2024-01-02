@@ -13,7 +13,7 @@ function ChatPage() {
         <SideBar />
         <Chat />  
       </div>
-    </div>  
+    </div>
   )
 }
 
