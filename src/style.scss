@@ -216,6 +216,11 @@ html {
       }
     }
 
+    .input:not([disabled]):hover {
+      cursor: pointer;
+      opacity: 0.8;
+    }
+
     .numbers {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
@@ -224,10 +229,6 @@ html {
       @media screen and (max-width: 576px) {
         grid-template-columns: repeat(auto-fill, minmax(22vw, 1fr));
         gap: 5px;
-      }
-
-      .input:hover {
-        cursor: pointer;
       }
     }
 

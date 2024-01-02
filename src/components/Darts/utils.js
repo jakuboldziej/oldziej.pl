@@ -1,5 +1,6 @@
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
+import _ from 'lodash';
 
 let game;
 let handleShow;
@@ -109,7 +110,7 @@ export const handleDartsData = async () => {
     user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
     user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
     user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
-    dartUser.throws["drzwi"] += user.throws["drzwi"];
+    dartUser.throws["doors"] += user.throws["doors"];
     dartUser.throws["doubles"] += user.throws["doubles"];
     dartUser.throws["triples"] += user.throws["triples"];
     dartUser.throws["normal"] += user.throws["normal"];
@@ -127,11 +128,14 @@ export const handleDartsData = async () => {
 }
 
 export const handleSpecialValue = async (value, setUsers, specialState, setSpecialState) => {
-  if (value === "DRZWI") {
-    currentUser.throws["drzwi"] += 1;
-    handleUsersState(0, setUsers, specialState, "DRZWI");
+  if (value === "DOORS") {
+    currentUser.throws["doors"] += 1;
+    handleUsersState(0, setUsers, specialState, "DOORS");
   } else if (value === "BACK") {
-    handleRecord("back", setUsers);
+    if (game.record.length > 1) currentUser.turn = false;
+    setUserState(setUsers);
+    handleRecord("back");
+    setUserState(setUsers);
   } else if (value === "DOUBLE" || value === "TRIPLE") {
     specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
@@ -158,12 +162,7 @@ export const handleNextUser = (setUsers) => {
   nextUser.turns = { 1: null, 2: null, 3: null };
   nextUser.turnsSum = 0;
 
-  setUsers(prevUsers => {
-    const updatedUsers = prevUsers.map(user =>
-      user.uid === nextUser.uid ? nextUser : user
-    );
-    return updatedUsers;
-  });
+  setUserState(setUsers);
 
   game.turn = nextUser.displayName;
   if (isLastUser) {
@@ -171,6 +170,7 @@ export const handleNextUser = (setUsers) => {
   } else if (remainingUsers.length === 1) {
     game.round += 1;
   }
+  return nextUser;
 };
 
 const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
@@ -183,20 +183,58 @@ const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
     handleAvgPointsPerThrow();
     setSpecialState([false, ""]);
   } else {
-    if (setSpecialState !== "DRZWI") currentUser.throws["normal"] += 1;
+    if (setSpecialState !== "DOORS") currentUser.throws["normal"] += 1;
     currentUser.turns[currentUser.currentTurn] = value;
     handleTurnsSum();
     handlePoints();
     handleAvgPointsPerThrow();
   }
 
+  if (game.userWon) return;
+
   if (currentUser.currentTurn === 3 || currentUser.points == 0) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
-    handleNextUser(setUsers);
+    const nextUser = handleNextUser(setUsers);
+    currentUser = nextUser;
   } else {
     currentUser.currentTurn += 1;
   }
+  setUserState(setUsers);
+  handleRecord("save");
+}
+
+const handleRecord = (action) => {
+  if (action === "save") {
+    const currentUserCopy = _.cloneDeep(currentUser);
+    const gameCopy = _.pick(game, ['round', 'turn', 'record']);
+    game.record.push({
+      game: {
+        round: gameCopy.round,
+        turn: gameCopy.turn
+      },
+      user: currentUserCopy,
+    });
+  } else if (action === "back") {
+    if (game.record.length >= 2) {
+      game.record.splice(-1);
+      const restoredState = game.record[game.record.length - 1];
+
+      if (restoredState) {
+        const currentUserCopy = { ...restoredState.user };
+        currentUser = {
+          ...currentUserCopy,
+          turns: { ...currentUserCopy.turns },
+          throws: { ...currentUserCopy.throws },
+        };
+        game.round = restoredState.game.round;
+        game.turn = restoredState.game.turn;
+      }
+    }
+  }
+};
+
+const setUserState = (setUsers) => {
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>
       user.uid === currentUser.uid ? currentUser : user
@@ -204,16 +242,3 @@ const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
     return updatedUsers;
   });
 }
-
-const handleRecord = (action, setUsers) => {
-  if (action === "save") {
-    const currentUserCopy = { ...currentUser };
-    game.record.push({
-      user: currentUserCopy,
-      game: game,
-    });
-    console.log(game.record);
-  } else if (action === "back") {
-    console.log('back');
-  }
-};

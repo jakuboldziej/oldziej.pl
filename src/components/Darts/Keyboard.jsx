@@ -17,10 +17,10 @@ function Keyboard({ params }) {
           <button className="input number" disabled={specialState[0]} onClick={() => onclick(0)}>0</button>
         </span>
         <span className="specials">
-          <button className="input special" style={{backgroundColor: "#dbff00"}} onClick={() => onclick('DRZWI')}>DRZWI</button>
-          <button className="input special" style={{backgroundColor: "#ffd100", opacity: `${specialState[1] === 'DOUBLE' ? 0.8 : 1}`}} onClick={() => onclick('DOUBLE')}>DOUBLE</button>
-          <button className="input special" style={{backgroundColor: "#ff8a00", opacity: `${specialState[1] === 'TRIPLE' ? 0.8 : 1}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
-          <button className="input special" style={{backgroundColor: "#ff3800"}} onClick={() => onclick('BACK')} disabled>BACK</button>
+          <button className="input special" style={{backgroundColor: "#dbff00"}} onClick={() => onclick('DOORS')}>DOORS</button>
+          <button className="input special" style={{backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}`}} onClick={() => onclick('DOUBLE')}>DOUBLE</button>
+          <button className="input special" style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
+          <button className="input special" style={{backgroundColor: "#ff3800"}} onClick={() => onclick('BACK')}>BACK</button>
         </span>
       </div>
     </>

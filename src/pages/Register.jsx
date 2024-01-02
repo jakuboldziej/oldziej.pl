@@ -53,7 +53,7 @@ function Register() {
         overAllPoints: 0,
         avgPointsPerThrow: 0,
         throws: {
-          drzwi: 0,
+          doors: 0,
           doubles: 0,
           triples: 0,
           normal: 0,

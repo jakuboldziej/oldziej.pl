@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "../../context/DartsGameContext"
 import { Col, Row } from "react-bootstrap";
@@ -6,6 +7,7 @@ import RedDot from "../../images/red_dot.png";
 import GreenDot from "../../images/green_dot.png";
 import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
+import { Link } from "react-router-dom";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
@@ -17,9 +19,21 @@ function DartsGame() {
   }
   
   const { game } = useContext(DartsGameContext);
-  const [users, setUsers] = useState(game.users);
+
+  if (!game) {
+    return (
+    <div className="d-flex flex-column gap-3 justify-content-center align-items-center vh-100">
+      <h1>You are not currently in a game.</h1>
+      <Link className="btn btn-outline-dark" to="/darts">Create New One</Link>
+    </div>
+    )
+  }
+
+  const [users, setUsers] = useState(game?.users || null);
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
+
+  
 
   useEffect(() => {
     let timer;
@@ -46,13 +60,13 @@ function DartsGame() {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
+    game.users = users;
+    localStorage.setItem('dartsGame', JSON.stringify(game));
   }, [users, game.turn]);
 
   useEffect(() => {
-    const updatedUsers = [...users];
-    updatedUsers[0].turn = true;
-    setUsers(updatedUsers);
-  }, []);
+    localStorage.setItem('dartsGame', null);
+  }, [game.userWon]);
 
   const keyboardParams = {
     handleRound, 
@@ -61,7 +75,7 @@ function DartsGame() {
     handleShow, 
     setUsers, 
     specialState, 
-    setSpecialState
+    setSpecialState,
   }
 
   const userDynamicStyle = (user) => {

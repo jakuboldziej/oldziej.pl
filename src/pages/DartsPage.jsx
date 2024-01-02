@@ -75,6 +75,10 @@ function DartsPage() {
                     <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1"/>
                     {dartUser.gamesPlayed}
                   </span>
+                  <span>
+                    <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door"/>
+                    {dartUser.throws["doors"]}
+                  </span>
                 </div>
                 )
               })}

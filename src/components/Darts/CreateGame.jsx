@@ -6,6 +6,8 @@ import { db } from "../../firebase";
 import { useNavigate } from "react-router";
 import { v4 as uuid } from "uuid";
 import { DartsGameContext } from "../../context/DartsGameContext";
+import _ from 'lodash';
+import { AuthContext } from "../../context/AuthContext";
 
 function CreateGame({ show, fullscreen, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -20,6 +22,7 @@ function CreateGame({ show, fullscreen, setShow }) {
   const [usersPodium, setUsersPodium] = useState(0);
 
   const { setGame } = useContext(DartsGameContext);
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -91,7 +94,7 @@ function CreateGame({ show, fullscreen, setShow }) {
         3: null
       },
       throws: {
-        drzwi: 0,
+        doors: 0,
         doubles: 0,
         triples: 0,
         normal: 0,
@@ -106,6 +109,7 @@ function CreateGame({ show, fullscreen, setShow }) {
     const game = {
       id: gameId,
       created_at: serverTimestamp(),
+      created_by: currentUser.displayName,
       users: updatedUsers,
       podiums: usersPodium,
       podium: {
@@ -122,9 +126,18 @@ function CreateGame({ show, fullscreen, setShow }) {
       sets: selectSets,
       legs: selectLegs,
       round: 1,
-      record: []
     }
     await setDoc(doc(db, "dartGames", gameId), game);
+    updatedUsers[0].turn = true;
+    const currentUserCopy = _.cloneDeep(updatedUsers[0]);
+    const gameCopy = _.pick(game, ['round', 'turn', 'record']);
+    game.record = [{
+      game: {
+        round: gameCopy.round,
+        turn: gameCopy.turn
+      }, 
+      user: currentUserCopy
+    }];
     setGame(game);
     navigate("game");
   }
