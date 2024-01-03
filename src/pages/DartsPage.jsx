@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
@@ -8,22 +9,23 @@ import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
 import MyToasts from "../components/MyToasts";
+import { useLocation } from "react-router";
 
 function DartsPage() {
   document.title = "HomeServer | Darts";
 
+  const location = useLocation();
+
   const { showNewToast } = useContext(ToastsContext);
 
-  const [fullscreen, setFullscreen] = useState(true);
   const [show, setShow] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
   const [games, setGames] = useState([]);
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
 
-  const handleShow = (breakpoint) => {
+  const handleShow = () => {
     if (!playerInGame) {
-      setFullscreen(breakpoint);
       setShow(true);
     } else {
       showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
@@ -71,6 +73,7 @@ function DartsPage() {
   }, [filterUsersType]);
 
   useEffect(() => {
+    // Getting data
     const getGames = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartGames'));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -91,6 +94,10 @@ function DartsPage() {
       setPlayerInGame(true);
       showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
     }
+
+    // Create New Game Auto
+    const params = location.state;
+    if (params && params.createNewGame) handleShow();
   }, []);
 
   return (
@@ -221,9 +228,8 @@ function DartsPage() {
             </div>
           </div>
         </div>
-        <CreateGame show={show} fullscreen={fullscreen} setShow={setShow} />
+        <CreateGame show={show} setShow={setShow} />
       </div>
-
       <MyToasts />
     </>
   )

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { Button, Card, Form, Modal } from "react-bootstrap"
 import { useContext, useEffect, useState } from "react";
-import { collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, doc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useNavigate } from "react-router";
 import { v4 as uuid } from "uuid";
@@ -10,7 +10,7 @@ import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
 import { ToastsContext } from "../../context/ToastsContext";
 
-function CreateGame({ show, fullscreen, setShow }) {
+function CreateGame({ show, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
@@ -21,6 +21,8 @@ function CreateGame({ show, fullscreen, setShow }) {
   const [selectSets, setSelectSets] = useState('1');
   const [selectLegs, setSelectLegs] = useState('1');
   const [usersPodium, setUsersPodium] = useState(0);
+  const [showCustomPoints, setShowCustomPoints] = useState(false);
+  const [customStartPoints, setCustomStartPoints] = useState('');
 
   const { setGame } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
@@ -59,6 +61,16 @@ function CreateGame({ show, fullscreen, setShow }) {
     };
 
     getUsers();
+
+    // get previous settings
+    const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
+    if (previousSettings) {
+      setSelectGameMode(previousSettings.gamemode)
+      setSelectStartPoints(previousSettings.startPoints)
+      setSelectCheckOut(previousSettings.checkout)
+      setSelectLegs(previousSettings.legs)
+      setSelectSets(previousSettings.sets)
+    }
   }, []);
 
   const handleSelect = (user, action) => {
@@ -76,6 +88,21 @@ function CreateGame({ show, fullscreen, setShow }) {
       setUsersNotPlaying((prevUsersNotPlaying) => [...prevUsersNotPlaying, user]);
     }
   };
+
+  const handleSelectStartPoints = (e) => {
+    const selectedValue = e.target.value;
+
+    if (selectedValue === "Custom") {
+      setShowCustomPoints(true);
+    } else {
+      setSelectStartPoints(selectedValue);
+    }
+  };
+
+  const handleCustomStartPoints = () => {
+    setShowCustomPoints(false);
+    setSelectStartPoints(customStartPoints);
+  }
 
   const randomizeList = (list) => {
     return list.slice().sort(() => Math.random() - 0.5);
@@ -109,7 +136,7 @@ function CreateGame({ show, fullscreen, setShow }) {
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
     const game = {
       id: gameId,
-      created_at: serverTimestamp(),
+      created_at: Date.now(),
       created_by: currentUser.displayName,
       users: updatedUsers,
       podiums: usersPodium,
@@ -138,19 +165,26 @@ function CreateGame({ show, fullscreen, setShow }) {
       },
       user: currentUserCopy
     }];
-    console.log(training);
-    if (training === true){
+    if (training === true) {
       game.training = true;
     } else {
       await setDoc(doc(db, "dartGames", gameId), game);
     }
     setGame(game);
     navigate("game");
+
+    localStorage.setItem("gameSettings", JSON.stringify({
+      gamemode: selectGameMode,
+      startPoints: selectStartPoints,
+      checkout: selectCheckOut,
+      sets: selectSets,
+      legs: selectLegs,
+    }))
   }
 
   return (
     <>
-      <Modal className="create-game-modal" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
+      <Modal className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
@@ -210,7 +244,7 @@ function CreateGame({ show, fullscreen, setShow }) {
                 <br />
                 <Card.Title>Startpoints</Card.Title>
                 <hr />
-                <Form.Select value={selectStartPoints} onChange={(e) => setSelectStartPoints(e.target.value)}>
+                <Form.Select value={selectStartPoints} onChange={handleSelectStartPoints}>
                   <option>101</option>
                   <option>201</option>
                   <option>301</option>
@@ -219,7 +253,8 @@ function CreateGame({ show, fullscreen, setShow }) {
                   <option>701</option>
                   <option>901</option>
                   <option>1001</option>
-                  <option>Custom</option>
+                  <option onClick={() => setShowCustomPoints(true)}>Custom</option>
+                  <option className="d-none" value={customStartPoints}>{customStartPoints}</option>
                 </Form.Select>
                 <br />
                 <Card.Title>Check-Out</Card.Title>
@@ -247,6 +282,27 @@ function CreateGame({ show, fullscreen, setShow }) {
             </Card>
           </div>
         </Modal.Body>
+      </Modal>
+
+      <Modal centered show={showCustomPoints} onHide={() => setShowCustomPoints(false)}>
+        <Modal.Header data-bs-theme="dark" closeButton className="bg-dark text-light">
+          <Modal.Title>Set Custom StartPoints</Modal.Title>
+        </Modal.Header>
+        <Modal.Body  className="bg-dark text-light">
+          <Form.Control type="number" name="custom-startpoints" autoFocus onChange={(e) => {
+          const enteredValue = e.target.value;
+          if (enteredValue >= 0) {
+            setCustomStartPoints(enteredValue);
+          } else {
+            setCustomStartPoints(1);
+          }
+        }} min={1}/>
+        </Modal.Body>
+        <Modal.Footer  className="bg-dark text-light">
+          <Button variant="outline-primary" onClick={handleCustomStartPoints}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
       </Modal>
     </>
   )

@@ -209,6 +209,18 @@ html {
   }
 }
 
+.game-summary-modal {
+  .summary {
+    
+  }
+  .training-stats {
+    .col {
+      text-align: center;
+      border: 1px solid black;
+    }
+  }
+}
+
 // Home Page / Darts Page
 .darts-page,
 .home-page {

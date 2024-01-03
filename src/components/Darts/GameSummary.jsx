@@ -1,24 +1,70 @@
 /* eslint-disable react/prop-types */
-import { useContext } from 'react';
-import { Modal } from 'react-bootstrap'
+import { useContext, useState } from 'react';
+import { Col, Modal, Row } from 'react-bootstrap'
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
 
 function GameSummary({ show, fullscreen, setShow }) {
   const { game } = useContext(DartsGameContext);
+  const [timePlayed, setTimePlayed] = useState(0);
+
+  const handleTimePlayed = () => {
+    const date = new Date(game.created_at);
+    const currentDate = new Date();
+
+    const timeDifference = currentDate.getTime() - date.getTime();
+
+    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+    const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+
+    const formattedTimeDifference = `${hoursDifference.toString().padStart(2, '0')}:${minutesDifference.toString().padStart(2, '0')}`;
+    setTimePlayed(formattedTimeDifference);
+  }
 
   return (
-    <Modal className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onHide={() => setShow(false)}>
+    <Modal className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onShow={handleTimePlayed} onHide={() => setShow(false)}>
       <Modal.Header>
         <Modal.Title>Game Summary</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <div className="podium">
-          <span className="place seconds-place">{game.podium[2] ? game.podium[2].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon"/></span>
-          <span className="place first-place">{game.podium[1] ? game.podium[1].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon"/></span>
-          <span className="place third-place">{game.podium[3] ? game.podium[3].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon"/></span>
-        </div>
-        <Link className="btn btn-outline-dark" to="/darts">Create New Game</Link>
+        {!game.training ?
+          <div className='summary d-flex flex-column align-items-center gap-2'>
+            <div className="podium">
+              <span className="place seconds-place">{game.podium[2] ? game.podium[2].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+              <span className="place first-place">{game.podium[1] ? game.podium[1].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+              <span className="place third-place">{game.podium[3] ? game.podium[3].displayName : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+            </div>
+            <div>
+              Time played: {timePlayed}
+            </div>
+          </div>
+          :
+          <div className="training-stats d-flex flex-column align-items-center gap-2">
+            <h5>Training Stats</h5>
+            <div className="d-flex gap-2">
+              <span>Time played: {timePlayed}</span>
+              <span>StartPoints: {game.startPoints}</span>
+            </div>
+            <div className='table'>
+              <Row>
+                <Col>Nick</Col>
+                <Col>Points</Col>
+                <Col>Throws</Col>
+                <Col>AVG</Col>
+              </Row>
+              {game.users.map(user => (
+                <Row key={user.uid}>
+                  <Col>{user.displayName}</Col>
+                  <Col>{game.startPoints - user.points}</Col>
+                  <Col>{Object.values(user.throws).reduce((acc, val) => acc + val, 0)}</Col>
+                  <Col>{user.avgPointsPerThrow}</Col>
+                </Row>
+              ))}
+            </div>
+          </div>
+        }
+        <Link className="btn btn-outline-dark" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>
+        <Link className="btn btn-outline-primary" to='/darts'>Back to Darts</Link>
       </Modal.Body>
     </Modal>
   )
