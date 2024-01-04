@@ -38,6 +38,7 @@ function CreateGame({ show, setShow }) {
     if (usersPlaying) {
       for (let i = 1; i <= usersPlaying.length; i++) {
         podiumOptions.push(<option key={i}>{i}</option>);
+        setUsersPodium(i);
       }
       setUserPodiumsCount(podiumOptions);
     }
@@ -157,7 +158,7 @@ function CreateGame({ show, setShow }) {
     }
     updatedUsers[0].turn = true;
     const currentUserCopy = _.cloneDeep(updatedUsers[0]);
-    const gameCopy = _.pick(game, ['round', 'turn', 'record']);
+    const gameCopy = _.pick(game, ['round', 'turn']);
     game.record = [{
       game: {
         round: gameCopy.round,

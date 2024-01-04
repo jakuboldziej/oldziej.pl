@@ -15,6 +15,19 @@ function Keyboard({ params }) {
     handleShow();
   }
 
+  const handleDisabledSpecial = (type) => {
+    if (type === 'DOORS') {
+      return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE';
+    } else if (type === 'DOUBLE') {
+      return specialState[1] === 'TRIPLE';
+    } else if (type === 'TRIPLE') {
+      return specialState[1] === 'DOUBLE';
+    } else if (type === 'BACK') {
+      return specialState[1] === 'DOUBLE' || specialState[1] === 'TRIPLE';
+    }
+    return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
+  };
+
   return (
     <>
       <div className="keyboard">
@@ -24,10 +37,10 @@ function Keyboard({ params }) {
           <button className="input number" disabled={specialState[0]} onClick={() => onclick(0)}>0</button>
         </span>
         <span className="specials">
-          <button className="input special" style={{backgroundColor: "#dbff00"}} onClick={() => onclick('DOORS')}>DOORS</button>
-          <button className="input special" style={{backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}`}} onClick={() => onclick('DOUBLE')}>DOUBLE</button>
-          <button className="input special" style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
-          <button className="input special" style={{backgroundColor: "#ff3800"}} onClick={() => onclick('BACK')}>BACK</button>
+          <button className="input special" disabled={handleDisabledSpecial('DOORS')} style={{backgroundColor: "#dbff00"}} onClick={() => onclick('DOORS')}>DOORS</button>
+          <button className="input special" disabled={handleDisabledSpecial('DOUBLE')} style={{backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}`}} onClick={() => onclick('DOUBLE')}>DOUBLE</button>
+          <button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
+          <button className="input special" disabled={handleDisabledSpecial('BACK')} style={{backgroundColor: "#ff3800"}} onClick={() => onclick('BACK')}>BACK</button>
           {game.training && <button className="input special" style={{backgroundColor: "red"}} onClick={handleEndTraining}>END</button>}
         </span>
       </div>

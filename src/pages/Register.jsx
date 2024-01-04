@@ -88,7 +88,6 @@ function Register() {
             }
           });
           try{
-            console.log('created from other users to this user')
             await updateDoc(doc(db, "userChats", userQ.uid), {
               [combinedId]: {
                 userInfo: {

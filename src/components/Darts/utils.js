@@ -43,30 +43,41 @@ export const handleGameEnd = () => {
   if (game.podiums > 1) {
     if (game.podium[1] !== null) {
       let lastNonNullElement = null;
-      for (let i = Object.keys(game.podium).length - 1; i >= 0; i--) {
+      for (let i = Object.keys(game.podium).length; i >= 0; i--) {
         if (game.podium[i] !== null) {
           lastNonNullElement = [i, game.podium[i]];
           break;
         }
       }
-      currentUser.place = lastNonNullElement[1].place + 1;
-      game.podium[lastNonNullElement[0] + 1] = currentUser;
+      currentUser.place = lastNonNullElement[0] + 1;
+      game.podium[lastNonNullElement[0] + 1] = currentUser.displayName;
     } else {
       currentUser.place = 1;
-      game.podium[1] = currentUser;
+      game.podium[1] = currentUser.displayName;
     }
   } else {
     currentUser.place = 1;
-    game.podium[1] = currentUser;
+    game.podium[1] = currentUser.displayName;
     game.userWon = currentUser.displayName;
     game.active = false;
     handleDartsData();
     handleShow();
     return;
   }
+  const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (currentUser.place == game.podiums) {
-    game.userWon = game.podium[1].displayName;
+    game.userWon = game.podium[1];
     game.active = false;
+    handleDartsData();
+    handleShow();
+    return;
+  }
+  if (usersWithoutPodium.length === 1 ) {
+    const user = game.users.find(user => user === usersWithoutPodium[0]);
+    game.podium[game.podiums] = user.displayName;
+    game.userWon = game.podium[1];
+    game.active = false;
+    console.log(game.podium);
     handleDartsData();
     handleShow();
     return;
@@ -105,6 +116,15 @@ export const handleAvgPointsPerThrow = () => {
   currentUser.avgPointsPerThrow = (avg).toFixed(2);
 }
 
+export const convertRecord = (record) => {
+  const userTurns = record.user.turns;
+  const userThrows = Object.values(record.user.throws).reduce((acc, val) => acc + val, 0);
+  record.user = {
+    turns: userTurns,
+    throws: userThrows
+  }
+}
+
 export const handleDartsData = async () => {
   users.map(async (user) => {
     const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
@@ -123,6 +143,15 @@ export const handleDartsData = async () => {
       ...dartUser
     });
   })
+
+  game.record.map((record) => {
+    convertRecord(record);
+  })
+  game.podium = {
+    1: game.podium[1],
+    2: game.podium[2],
+    3: game.podium[3],
+  }
 
   if(!game.training) await updateDoc(doc(db, "dartGames", game.id), {
     ...game
@@ -198,6 +227,7 @@ const handleUsersState = (value, setUsers, specialState, setSpecialState) => {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
     const nextUser = handleNextUser(setUsers);
+    nextUser.previousUserPlace = currentUser.place;
     currentUser = nextUser;
   } else {
     currentUser.currentTurn += 1;
@@ -224,6 +254,11 @@ const handleRecord = (action) => {
 
       if (restoredState) {
         const currentUserCopy = { ...restoredState.user };
+
+        if (currentUser.previousUserPlace !== 0 && currentUser.currentTurn === 1) {
+          game.podium[currentUser.previousUserPlace] = null;
+        }
+
         currentUser = {
           ...currentUserCopy,
           turns: { ...currentUserCopy.turns },

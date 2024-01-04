@@ -185,7 +185,7 @@ function DartsPage() {
                       </span>
                       {game.users[0] && <span>
                         <h6>{game.users[0].displayName}</h6>
-                        <h6>{game.users[1].points}</h6>
+                        <h6>{game.users[0].points}</h6>
                       </span>}
                       {game.users[1] && <span>
                         <h6>{game.users[1].displayName}</h6>
@@ -195,6 +195,10 @@ function DartsPage() {
                         <h6>{game.users[2].displayName}</h6>
                         <h6>{game.users[2].points}</h6>
                       </span>}
+                      <span className="usersCount position-absolute end-0">
+                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
+                        {game.users.length}
+                      </span>
                     </div>
                     :
                     <div key={game.id} className="element">
@@ -204,16 +208,20 @@ function DartsPage() {
                       </span>
                       <span>
                         <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[1].displayName}
+                        {game.podium[1]}
                       </span>
                       {game.podium[2] && <span>
                         <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[2].displayName}
+                        {game.podium[2]}
                       </span>}
                       {game.podium[3] && <span>
                         <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[3].displayName}
+                        {game.podium[3]}
                       </span>}
+                      <span className="usersCount position-absolute end-0">
+                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
+                        {game.users.length}
+                      </span>
                     </div>
                 )
               })}
