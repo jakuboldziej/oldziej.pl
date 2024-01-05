@@ -68,7 +68,7 @@ export const handlePodium = () => {
   }
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (currentUser.place == game.podiums) {
-    game.userWon = game.podium[1];
+    game.userWon = game.podium[1].displayName;
     game.active = false;
     handleDartsData();
     handleShow();
@@ -77,7 +77,7 @@ export const handlePodium = () => {
   if (usersWithoutPodium.length === 1 ) {
     const user = game.users.find(user => user === usersWithoutPodium[0]);
     game.podium[game.podiums] = user.displayName;
-    game.userWon = game.podium[1];
+    game.userWon = game.podium[1].displayName;
     game.active = false;
     handleDartsData();
     handleShow();

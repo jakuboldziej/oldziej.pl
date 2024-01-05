@@ -186,22 +186,13 @@ function CreateGame({ show, setShow }) {
 
   useEffect(() => {
     const estimatedGameTime = () => {
-      let minutesPerTurn = 1;
-      if (selectGameMode === 'X01') minutesPerTurn = 1; // 1 minute per turn
+      let minutes = 0;
+      if (selectGameMode === 'X01' && selectStartPoints == '501') {
+        minutes += (usersPlaying.length * 10) / 2;
+        minutes *= selectLegs;
+        minutes *= selectSets;
+      }
       
-      const pointsToGain = parseInt(selectStartPoints); // Points to gain per round
-
-      const roundsPerLeg = usersPlaying.length * pointsToGain; // Number of rounds to determine leg winner
-      const legsPerSet = parseInt(selectLegs); // Legs per set
-      const sets = parseInt(selectSets); // Total sets
-
-      const estimatedTimePerRound = minutesPerTurn * roundsPerLeg; // Total estimated time per round
-      const estimatedTimePerLeg = estimatedTimePerRound * roundsPerLeg; // Total estimated time per leg
-      const estimatedTimePerSet = estimatedTimePerLeg * legsPerSet; // Total estimated time per set
-      const totalEstimatedTime = estimatedTimePerSet * sets * parseInt(usersPodium); // Total estimated time for the whole game
-
-
-      const minutes = Math.floor(totalEstimatedTime / (1000 * 60));
       setEgt(minutes); // Set the estimated time state
     }
 
@@ -218,7 +209,7 @@ function CreateGame({ show, setShow }) {
           <div className="sticky-top d-flex flex-column align-items-center gap-3">
             <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
             <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
-            {/* <span>EGT: {egt}</span> */}
+            <span>EGT: {egt}</span>
           </div>
           <div className="settings">
             <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
