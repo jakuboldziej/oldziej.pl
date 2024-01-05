@@ -150,6 +150,10 @@ function DartsPage() {
                       <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                       {dartUser.throws["doors"]}
                     </span>
+                    <span>
+                      <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph"/>
+                      <h6 style={{fontSize: 13}}>{dartUser.highestEndingAvg}</h6>
+                    </span>
                   </div>
                 )
               })}

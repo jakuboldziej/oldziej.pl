@@ -98,7 +98,9 @@ function DartsGame() {
       <div className="darts-game">
         <div className="info">
           <h2>Round: {game.round}</h2>
+          <h5>L: {game.legs}</h5>
           <h2>Turn: {game.turn}</h2>
+          <h5>S: {game.sets}</h5>
           <h2>{game.active ? 'In Progress' : 'Ended'} <img src={game.active ? GreenDot : RedDot}/></h2>
         </div>
         <div className="users" ref={usersContainerRef}>

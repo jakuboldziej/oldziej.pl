@@ -51,15 +51,13 @@ function Register() {
           thirdPlace: 0,
         },
         overAllPoints: 0,
-        avgPointsPerThrow: 0,
+        highestEndingAvg: 0,
         throws: {
           doors: 0,
           doubles: 0,
           triples: 0,
           normal: 0,
         },
-        legsWon: 0,
-        setsWon: 0,
         highestOuts: 0,
       });
 

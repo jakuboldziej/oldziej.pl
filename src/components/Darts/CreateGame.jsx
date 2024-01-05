@@ -114,6 +114,7 @@ function CreateGame({ show, setShow }) {
     let updatedUsers = usersPlaying.map((user) => ({
       ...user,
       points: selectStartPoints,
+      allGainedPoints: 0,
       turn: false,
       turnsSum: 0,
       currentTurn: 1,
@@ -147,7 +148,6 @@ function CreateGame({ show, setShow }) {
         3: null
       },
       turn: updatedUsers[0].displayName,
-      // randomizePlayers,
       active: true,
       gameMode: selectGameMode,
       startPoints: selectStartPoints,
@@ -190,7 +190,7 @@ function CreateGame({ show, setShow }) {
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="d-flex justify-content-center gap-3">
+          <div className="sticky-top d-flex justify-content-center gap-3">
             <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
             <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
           </div>
