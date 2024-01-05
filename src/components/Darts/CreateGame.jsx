@@ -23,6 +23,7 @@ function CreateGame({ show, setShow }) {
   const [usersPodium, setUsersPodium] = useState(0);
   const [showCustomPoints, setShowCustomPoints] = useState(false);
   const [customStartPoints, setCustomStartPoints] = useState('');
+  const [egt, setEgt] = useState(0);
 
   const { setGame } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
@@ -183,6 +184,30 @@ function CreateGame({ show, setShow }) {
     }))
   }
 
+  useEffect(() => {
+    const estimatedGameTime = () => {
+      let minutesPerTurn = 1;
+      if (selectGameMode === 'X01') minutesPerTurn = 1; // 1 minute per turn
+      
+      const pointsToGain = parseInt(selectStartPoints); // Points to gain per round
+
+      const roundsPerLeg = usersPlaying.length * pointsToGain; // Number of rounds to determine leg winner
+      const legsPerSet = parseInt(selectLegs); // Legs per set
+      const sets = parseInt(selectSets); // Total sets
+
+      const estimatedTimePerRound = minutesPerTurn * roundsPerLeg; // Total estimated time per round
+      const estimatedTimePerLeg = estimatedTimePerRound * roundsPerLeg; // Total estimated time per leg
+      const estimatedTimePerSet = estimatedTimePerLeg * legsPerSet; // Total estimated time per set
+      const totalEstimatedTime = estimatedTimePerSet * sets * parseInt(usersPodium); // Total estimated time for the whole game
+
+
+      const minutes = Math.floor(totalEstimatedTime / (1000 * 60));
+      setEgt(minutes); // Set the estimated time state
+    }
+
+    estimatedGameTime();
+  }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
+
   return (
     <>
       <Modal className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
@@ -190,9 +215,10 @@ function CreateGame({ show, setShow }) {
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="sticky-top d-flex justify-content-center gap-3">
+          <div className="sticky-top d-flex flex-column align-items-center gap-3">
             <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
             <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
+            {/* <span>EGT: {egt}</span> */}
           </div>
           <div className="settings">
             <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
@@ -222,7 +248,7 @@ function CreateGame({ show, setShow }) {
               </Card.Body>
             </Card>
             <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
-              <Card.Header>Settings <span style={{fontSize: 12}}>est. game time: 0</span></Card.Header>
+              <Card.Header>Settings</Card.Header>
               <Card.Body>
                 <Card.Title>Podium</Card.Title>
                 <hr />
@@ -289,17 +315,17 @@ function CreateGame({ show, setShow }) {
         <Modal.Header data-bs-theme="dark" closeButton className="bg-dark text-light">
           <Modal.Title>Set Custom StartPoints</Modal.Title>
         </Modal.Header>
-        <Modal.Body  className="bg-dark text-light">
+        <Modal.Body className="bg-dark text-light">
           <Form.Control type="number" name="custom-startpoints" autoFocus onChange={(e) => {
-          const enteredValue = e.target.value;
-          if (enteredValue >= 0) {
-            setCustomStartPoints(enteredValue);
-          } else {
-            setCustomStartPoints(1);
-          }
-        }} min={1}/>
+            const enteredValue = e.target.value;
+            if (enteredValue >= 0) {
+              setCustomStartPoints(enteredValue);
+            } else {
+              setCustomStartPoints(1);
+            }
+          }} min={1} />
         </Modal.Body>
-        <Modal.Footer  className="bg-dark text-light">
+        <Modal.Footer className="bg-dark text-light">
           <Button variant="outline-primary" onClick={handleCustomStartPoints}>
             Save Changes
           </Button>

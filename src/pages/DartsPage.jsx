@@ -55,8 +55,15 @@ function DartsPage() {
         break;
       case "gamesPlayed":
         sortedUsers = users.slice().sort((a, b) => {
-          const firstData = a["gamesPlayed"];
-          const secondData = b["gamesPlayed"];
+          const firstData = a.gamesPlayed;
+          const secondData = b.gamesPlayed;
+          return secondData - firstData;
+        });
+        break;
+      case "highestAvg":
+        sortedUsers = users.slice().sort((a, b) => {
+          const firstData = a.highestEndingAvg;
+          const secondData = b.highestEndingAvg;
           return secondData - firstData;
         });
         break;
@@ -76,6 +83,13 @@ function DartsPage() {
         sortedGames = games.slice().sort((a, b) => {
           const firstData = a.created_at;
           const secondData = b.created_at;
+          return secondData - firstData;
+        });
+        break;
+      case "most_users":
+        sortedGames = games.slice().sort((a, b) => {
+          const firstData = a.users.length;
+          const secondData = b.users.length;
           return secondData - firstData;
         });
         break;
@@ -148,6 +162,7 @@ function DartsPage() {
                   <Dropdown.Item onClick={() => setFilterUsersType("gamesPlayed")}>Games Played</Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={() => setFilterUsersType("doors")}>Doors</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterUsersType("highestAvg")}>highestAvg</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </span>
@@ -177,8 +192,8 @@ function DartsPage() {
                       {dartUser.throws["doors"]}
                     </span>
                     <span>
-                      <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph"/>
-                      <h6 style={{fontSize: 13}}>{dartUser.highestEndingAvg}</h6>
+                      <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
                     </span>
                   </div>
                 )
@@ -221,7 +236,7 @@ function DartsPage() {
                         <h6>{game.users[2].points}</h6>
                       </span>}
                       <span className="usersCount position-absolute end-0">
-                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
+                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
                       </span>
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
@@ -245,7 +260,7 @@ function DartsPage() {
                         {game.podium[3]}
                       </span>}
                       <span className="usersCount position-absolute end-0">
-                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
+                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
                       </span>
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>

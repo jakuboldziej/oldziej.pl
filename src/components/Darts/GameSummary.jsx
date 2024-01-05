@@ -41,6 +41,11 @@ function GameSummary({ show, fullscreen, setShow }) {
           :
           <div className="training-stats d-flex flex-column align-items-center gap-2">
             <h5>Training Stats</h5>
+            <div className="podium">
+              <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+              <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+              <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+            </div>
             <div className="d-flex gap-2">
               <span>Time played: {timePlayed}</span>
               <span>StartPoints: {game.startPoints}</span>
