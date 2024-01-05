@@ -222,7 +222,7 @@ function CreateGame({ show, setShow }) {
               </Card.Body>
             </Card>
             <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
-              <Card.Header>Settings</Card.Header>
+              <Card.Header>Settings <span style={{fontSize: 12}}>est. game time: 0</span></Card.Header>
               <Card.Body>
                 <Card.Title>Podium</Card.Title>
                 <hr />

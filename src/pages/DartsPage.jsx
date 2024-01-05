@@ -23,6 +23,7 @@ function DartsPage() {
   const [games, setGames] = useState([]);
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
+  const [filterGamesType, setFilterGamesType] = useState("created_at");
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -67,17 +68,42 @@ function DartsPage() {
     return sortedUsers;
   };
 
+  const handleFilterGames = (games, action) => {
+    let sortedGames;
+
+    switch (action) {
+      case "created_at":
+        sortedGames = games.slice().sort((a, b) => {
+          const firstData = a.created_at;
+          const secondData = b.created_at;
+          return secondData - firstData;
+        });
+        break;
+      default:
+        sortedGames = games.slice();
+        break;
+    }
+
+    return sortedGames;
+  };
+
   useEffect(() => {
     const sortedUsers = handleFilterUsers(dartUsers, filterUsersType);
     setDartUsers(sortedUsers);
   }, [filterUsersType]);
 
   useEffect(() => {
+    const sortedGames = handleFilterGames(games, filterGamesType);
+    setGames(sortedGames);
+  }, [filterGamesType]);
+
+  useEffect(() => {
     // Getting data
     const getGames = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartGames'));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setGames(gamesData);
+      const sortedGames = handleFilterGames(gamesData, filterGamesType);
+      setGames(sortedGames);
     }
     const getDartUsers = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartUsers'));
@@ -168,13 +194,8 @@ function DartsPage() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu onChange={() => console.log('close')}>
-                  <Dropdown.Item onClick={() => setFilterUsersType("firstPlace")}>First Places</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("secondPlace")}>Second Places</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("thirdPlace")}>Third Places</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => setFilterUsersType("gamesPlayed")}>Games Played</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => setFilterUsersType("doors")}>Doors</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterUsersType("most_users")}>Most Users</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </span>
@@ -203,6 +224,7 @@ function DartsPage() {
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
                         {game.users.length}
                       </span>
+                      <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                     :
                     <div key={game.id} className="element">
@@ -226,6 +248,7 @@ function DartsPage() {
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3"/>
                         {game.users.length}
                       </span>
+                      <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                 )
               })}

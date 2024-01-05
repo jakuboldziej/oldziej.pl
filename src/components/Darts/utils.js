@@ -112,7 +112,9 @@ export const handleGameEnd = () => {
         user.currentTurn = 1;
       }
     });
-    handleNextUser();
+    const nextUser = handleNextUser();
+    currentUser = nextUser;
+    currentUser.currentTurn = 0;
   }
 }
 
@@ -179,15 +181,13 @@ export const handleDartsData = async () => {
     });
   })
 
-  game.record.map((record) => {
-    convertRecord(record);
-  })
   game.podium = {
     1: game.podium[1],
     2: game.podium[2],
     3: game.podium[3],
   }
-
+  if (!game.active) delete game.record;
+  
   if(!game.training) await updateDoc(doc(db, "dartGames", game.id), {
     ...game
   });
@@ -257,23 +257,28 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   }
 
   if (game.userWon || !currentUser.turn) return;
+  
 
-  if (currentUser.currentTurn === 3 || currentUser.points == 0) {
+  if (currentUser.currentTurn === 3 || currentUser.points == 0 ) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
     const nextUser = handleNextUser();
     nextUser.previousUserPlace = currentUser.place;
+    nextUser.turn = true;
     currentUser = nextUser;
   } else {
     currentUser.currentTurn += 1;
   }
+  console.log(currentUser);
   setUserState();
   handleRecord("save");
 }
 
 const handleRecord = (action) => {
+  if (!game.active) return;
   if (action === "save") {
     const currentUserCopy = _.cloneDeep(currentUser);
+    currentUserCopy.turn = true;
     const gameCopy = _.pick(game, ['round', 'turn', 'record']);
     game.record.push({
       game: {
@@ -282,8 +287,10 @@ const handleRecord = (action) => {
       },
       user: currentUserCopy,
     });
+    console.log(game.record);
   } else if (action === "back") {
     if (game.record.length >= 2) {
+      console.log(game.record);
       game.record.splice(-1);
       const restoredState = game.record[game.record.length - 1];
 
