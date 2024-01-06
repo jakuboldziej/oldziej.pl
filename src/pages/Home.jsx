@@ -4,7 +4,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 
 function Home() {
-  document.title = "HomeServer";
+  document.title = "HomeServer | Home";
 
   const [dartUsers, setDartUsers] = useState([]);
 
@@ -41,20 +41,20 @@ function Home() {
                   {dartUsers && dartUsers.map((dartUser) => {
                     return (
                       <div key={dartUser.id} className="element">
-                        <span className="username">{dartUser.displayName}</span>
-                        <span>
+                        <span className="elementInfo username">{dartUser.displayName}</span>
+                        <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                           {dartUser.podiums["firstPlace"]}
                         </span>
-                        <span>
+                        <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                           {dartUser.throws["doors"]}
                         </span>
-                        <span>
+                        <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
                           {dartUser.gamesPlayed}
                         </span>
-                        <span>
+                        <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph"/>
                           <h6 style={{fontSize: 13}}>{dartUser.highestEndingAvg}</h6>
                         </span>

@@ -137,6 +137,14 @@ html {
   }
 }
 
+// Tooltip
+.tooltip-trigger {
+  font-size: inherit;
+  background-color: transparent;
+  color: inherit;
+  padding: 0 !important;
+}
+
 // Modal
 .create-game-modal,
 .game-summary-modal {
@@ -194,6 +202,12 @@ html {
         min-width: 0;
       }
 
+      .card-title {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+      }
+
       .usersCard,
       .settingsCard {
         max-height: 770px;
@@ -202,6 +216,8 @@ html {
       .usersCard {
         .card-body {
           .card-title {
+            display: flex;
+            flex-direction: row;
             @media screen and (max-width: 576px) {
               display: flex;
               flex-direction: column;
@@ -229,9 +245,19 @@ html {
 
 .game-summary-modal {
   .training-stats {
+    position: relative;
     .col {
       text-align: center;
       border: 1px solid black;
+
+      span {
+        color: white;
+        background-color: transparent;
+      }
+    }
+    .table {
+      width: 90%;
+      font-size: 0.7rem;
     }
   }
 }
@@ -296,7 +322,7 @@ html {
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
 
-          span {
+          .elementInfo {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -306,6 +332,7 @@ html {
             border-right: 1px solid black;
             width: 10%;
             max-height: 67px;
+            min-height: 67px;
 
             &:first-child {
               flex-direction: row;
@@ -357,7 +384,7 @@ html {
             justify-content: flex-start;
 
             .element {
-              span {
+              .elementInfo {
                 max-height: 60px;
 
                 &:first-child {
@@ -391,7 +418,7 @@ html {
 
   .games {
     .element {
-      span {
+      .elementInfo {
         width: 14% !important;
         max-height: 60px !important;
 

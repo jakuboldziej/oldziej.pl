@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { Button, Card, Form, Modal } from "react-bootstrap"
 import { useContext, useEffect, useState } from "react";
@@ -134,6 +135,7 @@ function CreateGame({ show, setShow }) {
       legs: 0,
       sets: 0,
       avgPointsPerThrow: 0,
+      highestRoundPoints: 0,
     }));
     if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
@@ -170,7 +172,8 @@ function CreateGame({ show, setShow }) {
     if (training === true) {
       game.training = true;
     } else {
-      await setDoc(doc(db, "dartGames", gameId), game);
+      const { record, ...gameWithoutRecord } = game;
+      await setDoc(doc(db, "dartGames", gameId), gameWithoutRecord);
     }
     setGame(game);
     navigate("game");
@@ -187,13 +190,12 @@ function CreateGame({ show, setShow }) {
   useEffect(() => {
     const estimatedGameTime = () => {
       let minutes = 0;
-      if (selectGameMode === 'X01' && selectStartPoints == '501') {
-        minutes += (usersPlaying.length * 10) / 2;
-        minutes *= selectLegs;
-        minutes *= selectSets;
-      }
-      
-      setEgt(minutes); // Set the estimated time state
+      let minutesPerStartPoints = 0;
+      minutesPerStartPoints += selectStartPoints / 75;
+      usersPlaying.length;
+
+      if (usersPlaying.length > 0) minutes = (minutesPerStartPoints * selectLegs * selectSets) * usersPlaying.length;
+      setEgt(minutes.toFixed());
     }
 
     estimatedGameTime();
@@ -285,13 +287,21 @@ function CreateGame({ show, setShow }) {
                   <option>Splitscore</option>
                 </Form.Select>
                 <br />
-                <Card.Title>Sets</Card.Title>
+                <Card.Title>
+                  <span>Sets</span>
+                </Card.Title>
                 <hr />
                 <Form.Select value={selectSets} onChange={(e) => setSelectSets(e.target.value)}>
                   {numbersLegsSets}
                 </Form.Select>
                 <br />
-                <Card.Title>Legs</Card.Title>
+                <Card.Title>
+                  <span>Legs</span>
+                  {/* <Form.Select style={{width: 50}} value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
+                    <option>Best-of</option>
+                    <option>First-to</option>
+                  </Form.Select> */}
+                </Card.Title>
                 <hr />
                 <Form.Select value={selectLegs} onChange={(e) => setSelectLegs(e.target.value)}>
                   {numbersLegsSets}

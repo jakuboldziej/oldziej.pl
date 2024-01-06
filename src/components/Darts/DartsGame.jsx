@@ -68,10 +68,10 @@ function DartsGame() {
   }, [users, game.turn]);
 
   useEffect(() => {
-    if (game?.userWon) {
+    if (!game?.active) {
       localStorage.setItem('dartsGame', null);
     }
-  }, [game?.userWon]);
+  }, [game?.active]);
 
   const keyboardParams = {
     handleRound, 

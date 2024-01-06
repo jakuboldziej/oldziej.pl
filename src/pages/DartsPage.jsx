@@ -10,6 +10,7 @@ import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
 import MyToasts from "../components/MyToasts";
 import { useLocation } from "react-router";
+import MyTooltip from "../components/myTooltip";
 
 function DartsPage() {
   document.title = "HomeServer | Darts";
@@ -67,6 +68,13 @@ function DartsPage() {
           return secondData - firstData;
         });
         break;
+        case "highestRPT":
+          sortedUsers = users.slice().sort((a, b) => {
+            const firstData = a.highestRoundPoints;
+            const secondData = b.highestRoundPoints;
+            return secondData - firstData;
+          });
+          break;
       default:
         sortedUsers = users.slice();
         break;
@@ -162,7 +170,9 @@ function DartsPage() {
                   <Dropdown.Item onClick={() => setFilterUsersType("gamesPlayed")}>Games Played</Dropdown.Item>
                   <Dropdown.Divider />
                   <Dropdown.Item onClick={() => setFilterUsersType("doors")}>Doors</Dropdown.Item>
+                  <Dropdown.Divider />
                   <Dropdown.Item onClick={() => setFilterUsersType("highestAvg")}>highestAvg</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterUsersType("highestRPT")}>highestRPT</Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </span>
@@ -170,31 +180,35 @@ function DartsPage() {
               {dartUsers && dartUsers.map((dartUser) => {
                 return (
                   <div key={dartUser.id} className="element">
-                    <span className="username">{dartUser.displayName}</span>
-                    <span>
+                    <span className="elementInfo username">{dartUser.displayName}</span>
+                    <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                       {dartUser.podiums["firstPlace"]}
                     </span>
-                    <span>
+                    <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
                       {dartUser.podiums["secondPlace"]}
                     </span>
-                    <span>
+                    <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
                       {dartUser.podiums["thirdPlace"]}
                     </span>
-                    <span>
+                    <MyTooltip title="Games played" className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
                       {dartUser.gamesPlayed}
-                    </span>
-                    <span>
+                    </MyTooltip>
+                    <MyTooltip title="Doors hit" className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                       {dartUser.throws["doors"]}
-                    </span>
-                    <span>
+                    </MyTooltip>
+                    <MyTooltip title="Your highest Points Average" className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
                       <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
-                    </span>
+                    </MyTooltip>
+                    <MyTooltip title="Your highest Round Points Thrown" className="elementInfo">
+                      <img width="20" height="20" src="https://img.icons8.com/color/20/mountain.png" alt="mountain" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
+                    </MyTooltip>
                   </div>
                 )
               })}
@@ -219,19 +233,19 @@ function DartsPage() {
                 return (
                   game.active ?
                     <div key={game.id} className="element">
-                      <span className="gameActive">
+                      <span className="elementInfo gameActive">
                         {game.active ? 'Active' : 'Ended'}
                         <img src={game.active ? GreenDot : RedDot} />
                       </span>
-                      {game.users[0] && <span>
+                      {game.users[0] && <span className="elementInfo">
                         <h6>{game.users[0].displayName}</h6>
                         <h6>{game.users[0].points}</h6>
                       </span>}
-                      {game.users[1] && <span>
+                      {game.users[1] && <span className="elementInfo">
                         <h6>{game.users[1].displayName}</h6>
                         <h6>{game.users[1].points}</h6>
                       </span>}
-                      {game.users[2] && <span>
+                      {game.users[2] && <span className="elementInfo">
                         <h6>{game.users[2].displayName}</h6>
                         <h6>{game.users[2].points}</h6>
                       </span>}
@@ -243,23 +257,23 @@ function DartsPage() {
                     </div>
                     :
                     <div key={game.id} className="element">
-                      <span className="gameActive">
+                      <span className="elementInfo gameActive">
                         {game.active ? 'Active' : 'Ended'}
                         <img src={game.active ? GreenDot : RedDot} />
                       </span>
-                      <span>
+                      <span className="elementInfo">
                         <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                         {game.podium[1]}
                       </span>
-                      {game.podium[2] && <span>
+                      {game.podium[2] && <span className="elementInfo">
                         <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
                         {game.podium[2]}
                       </span>}
-                      {game.podium[3] && <span>
+                      {game.podium[3] && <span className="elementInfo">
                         <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
                         {game.podium[3]}
                       </span>}
-                      <span className="usersCount position-absolute end-0">
+                      <span className="elementInfo usersCount position-absolute end-0">
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
                       </span>

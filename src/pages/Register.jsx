@@ -52,13 +52,14 @@ function Register() {
         },
         overAllPoints: 0,
         highestEndingAvg: 0,
+        highestOuts: 0,
+        highestRoundPoints: 0,
         throws: {
           doors: 0,
           doubles: 0,
           triples: 0,
           normal: 0,
         },
-        highestOuts: 0,
       });
 
       const q = await getDocs(collection(db, "users"));

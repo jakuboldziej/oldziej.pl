@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import _ from 'lodash';
@@ -26,6 +27,7 @@ export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specia
 export const handleTurnsSum = () => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
+  if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestRoundPoints) currentUser.highestRoundPoints = currentUser.turnsSum;
 }
 
 const isNumericRegex = /^\d+$/;
@@ -64,30 +66,32 @@ export const handlePodium = () => {
     game.active = false;
     handleDartsData();
     handleShow();
-    return;
+    return true;
   }
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (currentUser.place == game.podiums) {
-    game.userWon = game.podium[1].displayName;
+    game.userWon = game.podium[1];
     game.active = false;
     handleDartsData();
     handleShow();
-    return;
+    return true;
   }
   if (usersWithoutPodium.length === 1 ) {
     const user = game.users.find(user => user === usersWithoutPodium[0]);
+    user.place = game.podiums;
     game.podium[game.podiums] = user.displayName;
-    game.userWon = game.podium[1].displayName;
+    game.userWon = game.podium[1];
     game.active = false;
     handleDartsData();
     handleShow();
-    return;
+    return true;
   }
 }
 
 export const handleGameEnd = () => {
-  if (game.legs === 1 && game.sets === 1){
-    handlePodium();
+  if (game.legs == 1 && game.sets == 1){
+    const end = handlePodium();
+    if (end) return true;
   } else {
     currentUser.legs += 1;
     currentUser.avgPointsPerThrow = 0.00;
@@ -98,7 +102,8 @@ export const handleGameEnd = () => {
       });
       currentUser.sets += 1;
       if (currentUser.sets == game.sets) {
-        handlePodium();
+        const end = handlePodium();
+        if (end) return true;
       }
     }
     handleDartsData();
@@ -132,7 +137,8 @@ export const handlePoints = (action, value) => {
     currentUser.turns = { 1: null, 2: null, 3: null };
     console.log('Overthrow.');
   } else if (currentUser.points === 0) {
-    handleGameEnd();
+    const end = handleGameEnd();
+    if (end) return;
   }
   if (action) {
     if (action === 'DOUBLE') {
@@ -172,9 +178,13 @@ export const handleDartsData = async () => {
     dartUser.throws["triples"] += user.throws["triples"];
     dartUser.throws["normal"] += user.throws["normal"];
     dartUser.overAllPoints += game.startPoints - user.points;
+    dartUser.highestEndingAvg = user.highestEndingAvg;
     !game.active ? dartUser.gamesPlayed += 1 : null;
-    
+
+    if (parseFloat(user.highestRoundPoints) > parseFloat(dartUser.highestRoundPoints)) dartUser.highestRoundPoints = parseFloat(user.highestRoundPoints);
     if (parseFloat(user.avgPointsPerThrow) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerThrow);
+
+    console.log(user);
 
     if(!game.training) await updateDoc(doc(db, "dartUsers", user.uid), {
       ...dartUser
@@ -186,10 +196,10 @@ export const handleDartsData = async () => {
     2: game.podium[2],
     3: game.podium[3],
   }
-  if (!game.active) delete game.record;
   
+  const { record, ...gameWithoutRecord } = game;
   if(!game.training) await updateDoc(doc(db, "dartGames", game.id), {
-    ...game
+    ...gameWithoutRecord
   });
 }
 
@@ -256,8 +266,7 @@ const handleUsersState = (value, specialState, setSpecialState) => {
     handleAvgPointsPerThrow();
   }
 
-  if (game.userWon || !currentUser.turn) return;
-  
+  if (game.userWon || !currentUser.turn || !game.active) return;
 
   if (currentUser.currentTurn === 3 || currentUser.points == 0 ) {
     currentUser.currentTurn = 1;
@@ -269,7 +278,6 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   } else {
     currentUser.currentTurn += 1;
   }
-  console.log(currentUser);
   setUserState();
   handleRecord("save");
 }
@@ -287,10 +295,8 @@ const handleRecord = (action) => {
       },
       user: currentUserCopy,
     });
-    console.log(game.record);
   } else if (action === "back") {
     if (game.record.length >= 2) {
-      console.log(game.record);
       game.record.splice(-1);
       const restoredState = game.record[game.record.length - 1];
 
