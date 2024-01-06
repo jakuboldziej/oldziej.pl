@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
 import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "../../context/DartsGameContext"

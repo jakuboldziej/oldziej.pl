@@ -256,8 +256,11 @@ html {
       }
     }
     .table {
-      width: 90%;
-      font-size: 0.7rem;
+      width: 100%;
+      @media screen and (max-width: 576px) {
+        width: 90%;
+        font-size: 0.7rem;
+      }
     }
   }
 }
