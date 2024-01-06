@@ -8,7 +8,7 @@ function Keyboard({ params }) {
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => onclick(i)}>{i}</button>);
 
   const handleEndTraining = () => {
-    game.podium[1] = {displayName:game.turn};
+    game.podium[1] = game.turn;
     if (game.podium[1]) {
       localStorage.setItem('dartsGame', null);
     }

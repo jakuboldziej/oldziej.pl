@@ -208,11 +208,6 @@ function CreateGame({ show, setShow }) {
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div className="sticky-top d-flex flex-column align-items-center gap-3">
-            <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
-            <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
-            <span>EGT: {egt}</span>
-          </div>
           <div className="settings">
             <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
               <Card.Header>Add Users</Card.Header>
@@ -240,6 +235,11 @@ function CreateGame({ show, setShow }) {
                 </div>
               </Card.Body>
             </Card>
+            <div className="sticky-top d-flex flex-column align-items-center gap-3">
+              <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
+              <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
+              <span>EGT: {egt}</span>
+            </div>
             <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
               <Card.Header>Settings</Card.Header>
               <Card.Body>
