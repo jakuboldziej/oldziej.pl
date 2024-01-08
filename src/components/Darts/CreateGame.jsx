@@ -203,7 +203,7 @@ function CreateGame({ show, setShow }) {
 
   return (
     <>
-      <Modal className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
+      <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Create New Game</Modal.Title>
         </Modal.Header>
@@ -236,8 +236,8 @@ function CreateGame({ show, setShow }) {
               </Card.Body>
             </Card>
             <div className="sticky-top d-flex flex-column align-items-center gap-3">
-              <Button variant="outline-info" onClick={handleGameStart}>Start</Button>
-              <Button variant="outline-warning" onClick={() => handleGameStart(true)}>Training</Button>
+              <Button variant="outline-danger glow-button" onClick={handleGameStart}>Start</Button>
+              <Button variant="outline-success glow-button" onClick={() => handleGameStart(true)}>Training</Button>
               <span>EGT: {egt}</span>
             </div>
             <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>

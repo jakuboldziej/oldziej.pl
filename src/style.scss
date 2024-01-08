@@ -50,19 +50,16 @@
   box-sizing: border-box;
 }
 
+// Colors
+$creamy: #F3F0D2;
+$green: #00B524;
+$red: #E00000;
+
 body,
 html {
   height: 100vh;
   font-family: Poppins-Regular, sans-serif;
-  background: #9152f8;
-  background: -webkit-linear-gradient(top, #7579ff, #b224ef);
-  background: -o-linear-gradient(top, #7579ff, #b224ef);
-  background: -moz-linear-gradient(top, #7579ff, #b224ef);
-  background: linear-gradient(top, #7579ff, #b224ef);
-
-  @media screen and (max-width: 576px) {
-    background: #7579ff;
-  }
+  background: black;
 }
 
 #error_message {
@@ -83,6 +80,24 @@ html {
   color: black;
 }
 
+// Glowing buttons
+.glow-button {
+  --box-shadow-color: black;
+  box-shadow: 0 0 30px var(--box-shadow-color);
+}
+.btn-outline-danger.glow-button {
+  --box-shadow-color: #E00000;
+  --bs-btn-color: #E00000;
+  --bs-btn-border-color: #E00000;
+  --bs-btn-hover-bg: #E00000;
+}
+
+.btn-outline-success.glow-button {
+  --box-shadow-color: #00B524;
+  --bs-btn-color: #00B524;
+  --bs-btn-border-color: #00B524;
+  --bs-btn-hover-bg: #00B524;
+}
 
 // Dropdown
 .dropdown {
@@ -96,10 +111,10 @@ html {
     }
 
     .background {
-      background-image: url("https://img.icons8.com/ios-filled/30/filter--v1.png");
+      background-image: url("https://img.icons8.com/color/48/filter.png");
       background-size: cover !important;
-      width: 20px;
-      height: 20px;
+      width: 25px;
+      height: 25px;
     }
   }
 }
@@ -107,7 +122,6 @@ html {
 // Card
 .card {
   max-height: 360px;
-
   .card-body {
     .users {
       display: flex;
@@ -115,17 +129,17 @@ html {
       gap: 10px;
       max-height: 500px;
       overflow: auto;
+      color: black;
 
       .user {
-        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
         border-radius: 15px;
-        background-color: red;
+        background-color: $red;
         padding: 10px;
         transition: opacity 0.8s ease;
         user-select: none;
 
         &.playing {
-          background-color: green;
+          background-color: $creamy;
         }
       }
 
@@ -145,17 +159,20 @@ html {
   padding: 0 !important;
 }
 
+// Navbar
+.navbar {
+  border-bottom: 1px solid $green;
+  box-sizing: border-box;
+  max-height: 56px;
+
+}
+
 // Modal
 .create-game-modal,
 .game-summary-modal {
   .modal-content {
     background-color: black;
     color: white;
-    background: #9152f8;
-    background: -webkit-linear-gradient(top, #7579ff, #b224ef);
-    background: -o-linear-gradient(top, #7579ff, #b224ef);
-    background: -moz-linear-gradient(top, #7579ff, #b224ef);
-    background: linear-gradient(top, #7579ff, #b224ef);
   }
 
   .modal-header {
@@ -209,6 +226,18 @@ html {
       .settingsCard {
         max-height: 770px;
         z-index: 9999;
+        background-color: $green !important;
+        color: black !important;
+
+        .card-body{
+          .form-select {
+            background-color: $creamy;
+            color: black;
+          }
+        }
+        .card-header {
+          background-color: #01d42b;
+        }
       }
 
       .usersCard {
@@ -247,13 +276,25 @@ html {
   }
 }
 
+.create-game-modal {
+  .modal-body, .modal-header {
+    background-color: black;
+  }
+  .modal-header {
+    border-bottom: 1px solid $green;
+  }
+}
+
 .game-summary-modal {
+  .modal-body {
+    
+  }
   .training-stats {
     position: relative;
 
     .col {
       text-align: center;
-      border: 1px solid black;
+      border: 1px solid $creamy;
 
       span {
         color: white;
@@ -280,6 +321,7 @@ html {
     flex-direction: row;
     justify-content: space-evenly;
     gap: 30px;
+    color: white;
 
     @media screen and (max-width: 576px) {
       flex-direction: column;
@@ -292,7 +334,7 @@ html {
       width: 33%;
       height: 75vh;
       border-radius: 20px;
-      box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+      box-shadow: $creamy 0px 1px 4px;
 
       @media screen and (max-width: 576px) {
         width: 100%;
@@ -316,7 +358,6 @@ html {
         gap: 10px;
         padding: 10px;
         margin: 10px 0 10px 0;
-        border-radius: 25px;
         border-top: 1px solid grey;
         height: 100vh;
         overflow-y: auto;
@@ -328,9 +369,19 @@ html {
           align-items: center;
           border-radius: 15px;
           min-height: 60px;
-          background-color: #d676ff;
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
+          color: black;
+
+          &:nth-child(3n + 1) {
+            background-color: $red;
+          }
+          &:nth-child(3n + 2) {
+            background-color: $green;
+          }
+          &:nth-child(3n + 3) {
+            background-color: $creamy;
+          }
 
           .elementInfo {
             display: flex;
@@ -471,7 +522,7 @@ html {
     flex-direction: column;
     gap: 20px;
     padding: 10px;
-    background-color: grey;
+    box-shadow: $creamy 0px 1px 4px;
     width: 35%;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
@@ -490,7 +541,7 @@ html {
       display: flex;
       justify-content: center;
       align-items: center;
-      background-color: rgb(175, 175, 175);
+      background-color: $creamy;
       font-size: 30px;
       border: none;
       border-radius: 20px;
@@ -531,6 +582,13 @@ html {
       .special {
         font-size: 14px;
         padding: 15px;
+
+        &:nth-child(1) {
+          background-color: $green;
+        }
+        &:nth-child(4) {
+          background-color: $red;
+        }
       }
     }
   }
@@ -540,11 +598,12 @@ html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    box-shadow: $creamy 0px 1px 4px;
     border-radius: 10px;
     width: 60%;
     height: 95vh;
     padding: 15px;
+    color: white;
 
     @media screen and (max-width: 576px) {
       width: 100%;
@@ -594,8 +653,9 @@ html {
         display: flex;
         flex-direction: row;
         font-size: 25px;
-        border-right: 1px solid lightgrey;
+        border-right: 1px solid $creamy;
         height: 90px;
+        transition: all 0.1s;
 
         @media screen and (max-width: 576px) {
           min-height: 80px;
@@ -605,7 +665,7 @@ html {
 
         .main-col {
           display: grid;
-          border: 1px solid lightgrey;
+          border: 1px solid $creamy;
           border-right: none;
 
           .row {
@@ -613,7 +673,7 @@ html {
             display: flex;
             justify-content: center;
             align-items: center;
-            border-bottom: 1px solid lightgrey;
+            border-bottom: 1px solid $creamy;
 
             .darts-thrown {
               display: flex;
@@ -657,15 +717,27 @@ html {
           }
 
           .legs-sets {
-
+            position: relative;
             .legs,
             .sets {
+              position: inherit;
               text-align: center;
+
+              .SL {
+                position: absolute;
+                top: -4px;
+                right: 2px;
+                font-size: 12px;
+              }
             }
 
             .legs {
               border-right: 1px solid lightgrey;
             }
+            
+          }
+          .avg {
+            color: $red;
           }
         }
       }
@@ -690,41 +762,6 @@ html {
       width: 30vw;
       background-color: #3e3c61;
       position: relative;
-
-      .navbar {
-        display: flex;
-        align-items: center;
-        background-color: #2f2d52;
-        height: 50px;
-        padding: 10px;
-        justify-content: space-between;
-        color: #ddddf7;
-
-        .logo {
-          font-weight: bold;
-        }
-
-        .user {
-          display: flex;
-          gap: 10px;
-
-          img {
-            background-color: #ddddf7;
-            height: 24px;
-            width: 24px;
-            border-radius: 50%;
-            object-fit: cover;
-          }
-
-          button {
-            background-color: #5d5b8d;
-            color: #ddddf7;
-            font-size: 10px;
-            border: none;
-            cursor: pointer;
-          }
-        }
-      }
 
       .info {
         display: flex;

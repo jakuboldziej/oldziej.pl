@@ -9,13 +9,15 @@ let currentUser;
 let users;
 let setUsers;
 let showNewToast;
+let setOverthrow;
 
-export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specialState, setSpecialState, showNewToastP) => {
+export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specialState, setSpecialState, showNewToastP, setOverthrowP) => {
   handleShow = handleShowP;
   game = gameP;
   users = usersP;
   setUsers = setUsersP;
   showNewToast = showNewToastP;
+  setOverthrow = setOverthrowP;
   currentUser = users.find(user => user.turn);
   if (Number.isInteger(value)) {
     handleUsersState(value, specialState, setSpecialState);
@@ -135,7 +137,7 @@ export const handlePoints = (action, value) => {
     currentUser.turnsSum = 0;
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
-    console.log('Overthrow.');
+    setOverthrow(currentUser.displayName);
   } else if (currentUser.points === 0) {
     const end = handleGameEnd();
     if (end) return;

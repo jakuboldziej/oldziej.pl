@@ -23,7 +23,7 @@ function GameSummary({ show, fullscreen, setShow }) {
   }
 
   return (
-    <Modal className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onShow={handleTimePlayed} onHide={() => setShow(false)}>
+    <Modal data-bs-theme="dark" className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onShow={handleTimePlayed} onHide={() => setShow(false)}>
       <Modal.Header>
         <Modal.Title>Game Summary</Modal.Title>
       </Modal.Header>
@@ -71,8 +71,8 @@ function GameSummary({ show, fullscreen, setShow }) {
             </div>
           </div>
         }
-        <Link className="btn btn-outline-dark" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>
-        <Link className="btn btn-outline-primary" to='/darts'>Back to Darts</Link>
+        <Link className="btn btn-outline-danger glow-button" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>
+        <Link className="btn btn-outline-success glow-button" to='/darts'>Back to Darts</Link>
       </Modal.Body>
     </Modal>
   )

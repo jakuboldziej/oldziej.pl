@@ -74,21 +74,14 @@ function DartsGame() {
     }
   }, [game?.active]);
 
-  const keyboardParams = {
-    handleRound, 
-    users, 
-    game, 
-    handleShow, 
-    setUsers, 
-    specialState, 
-    setSpecialState,
-    showNewToast
-  }
+  const keyboardParams = { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, showNewToast, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {
-      borderLeft: `17px solid ${user.turn ? 'lightgreen' : 'lightgrey'}`,
-      backgroundColor: `${user.points === 0 ? 'gold' : 'transparent'}`,
+      borderLeft: `17px solid ${user.turn ? '#E00000' : '#FFF'}`,
+      backgroundColor: `${user.points === 0 ? 'gold' : '#00B524'}`,
+      color: overthrow === user.displayName ? 'red' : 'white',
+      boxShadow: overthrow === user.displayName ? '0 0 30px #E00000' : null,
     }
   }
 
@@ -99,9 +92,9 @@ function DartsGame() {
       <div className="darts-game">
         <div className="info">
           <h2>Round: {game.round}</h2>
-          <h5>L: {game.legs}</h5>
-          <h2>Turn: {game.turn}</h2>
-          <h5>S: {game.sets}</h5>
+          <h5 style={{color: '#E00000'}}>L: {game.legs}</h5>
+          <h2 style={{color: '#E00000'}}>Turn: {game.turn}</h2>
+          <h5 style={{color: '#E00000'}}>S: {game.sets}</h5>
           <h2>{game.active ? 'In Progress' : 'Ended'} <img src={game.active ? GreenDot : RedDot}/></h2>
         </div>
         <div className="users" ref={usersContainerRef}>
@@ -115,7 +108,7 @@ function DartsGame() {
                     {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
                   </span>
                 </Row>
-                <Row>{user.displayName}</Row>
+                <Row style={{color: '#F3F0D2'}}>{user.displayName}</Row>
               </Col>
               <Col className="main-col" sm={4} xs={4}>
                 <Row className="turns">
@@ -127,10 +120,16 @@ function DartsGame() {
               </Col>
               <Col className="main-col" sm={4} xs={4}>
                 <Row className="legs-sets">
-                  <Col className="legs">{user.legs}</Col>
-                  <Col className="sets">{user.sets}</Col>
+                  <Col className="legs">
+                    {user.legs}
+                    <span className="SL">L</span>
+                  </Col>
+                  <Col className="sets">
+                    {user.sets}
+                    <span className="SL">S</span>
+                  </Col>
                 </Row>
-                <Row>Ø {user.avgPointsPerThrow}</Row>
+                <Row className="avg">Ø {user.avgPointsPerThrow}</Row>
               </Col>
             </Row>
           ))}

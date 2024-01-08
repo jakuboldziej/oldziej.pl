@@ -12,9 +12,9 @@ function NavBar() {
   const toggleOffcanvas = () => setShowOffcanvas((prev) => !prev);
   return (
     <>
-      <Navbar collapseOnSelect className="px-2" style={{ background: "#9152f8" }} >
+      <Navbar collapseOnSelect className="px-2" variant="dark" >
         <Container>
-          <Link to="/" className="link navbar-brand"><b>Home</b></Link>
+          <Link to="/" className="link link-light navbar-brand"><b>Home</b></Link>
           <Nav className="me-auto">
             <Link to="/darts" className="nav-link"><b>Darts</b></Link>
             <Link to="/chat" className="nav-link"><b>Chat</b></Link>
@@ -22,7 +22,7 @@ function NavBar() {
           </Nav>
         </Container>
         <Navbar.Collapse className="justify-content-end">
-        <Button variant="outline-dark" onClick={toggleOffcanvas}>
+        <Button variant="outline-light" onClick={toggleOffcanvas}>
             {currentUser.displayName}
           </Button>
         </Navbar.Collapse>

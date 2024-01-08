@@ -3,7 +3,7 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 function MyTooltip({ children, title, className }) {
   const renderTooltip = (props) => (
-    <Tooltip {...props}>
+    <Tooltip data-bs-theme="dark" {...props}>
       {title}
     </Tooltip>
   );

@@ -3,7 +3,7 @@
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
-import { Button, Dropdown } from "react-bootstrap";
+import { Button, Dropdown, Form, InputGroup } from "react-bootstrap";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import RedDot from "../images/red_dot.png";
@@ -26,6 +26,7 @@ function DartsPage() {
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
   const [filterGamesType, setFilterGamesType] = useState("created_at");
+  const [filterUser, setFilterUser] = useState('None');
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -35,7 +36,7 @@ function DartsPage() {
     }
   }
 
-  const handleFilterUsers = (users, action) => {
+  const handleFilterUsers = (action, users) => {
     let sortedUsers;
 
     switch (action) {
@@ -69,13 +70,13 @@ function DartsPage() {
           return secondData - firstData;
         });
         break;
-        case "highestRPT":
-          sortedUsers = users.slice().sort((a, b) => {
-            const firstData = a.highestRoundPoints;
-            const secondData = b.highestRoundPoints;
-            return secondData - firstData;
-          });
-          break;
+      case "highestRPT":
+        sortedUsers = users.slice().sort((a, b) => {
+          const firstData = a.highestRoundPoints;
+          const secondData = b.highestRoundPoints;
+          return secondData - firstData;
+        });
+        break;
       default:
         sortedUsers = users.slice();
         break;
@@ -84,7 +85,7 @@ function DartsPage() {
     return sortedUsers;
   };
 
-  const handleFilterGames = (games, action) => {
+  const handleFilterGames = (action, games) => {
     let sortedGames;
 
     switch (action) {
@@ -102,6 +103,13 @@ function DartsPage() {
           return secondData - firstData;
         });
         break;
+      case "user":
+        sortedGames = games.filter(game => {
+          const matchedUser = game.users.some(user => user.displayName === filterUser);
+          return matchedUser;
+        });
+        console.log(sortedGames);
+      break;
       default:
         sortedGames = games.slice();
         break;
@@ -111,27 +119,35 @@ function DartsPage() {
   };
 
   useEffect(() => {
-    const sortedUsers = handleFilterUsers(dartUsers, filterUsersType);
+    const sortedUsers = handleFilterUsers(filterUsersType, dartUsers);
     setDartUsers(sortedUsers);
   }, [filterUsersType]);
 
   useEffect(() => {
-    const sortedGames = handleFilterGames(games, filterGamesType);
+    const sortedGames = handleFilterGames(filterGamesType, games);
     setGames(sortedGames);
   }, [filterGamesType]);
+
+  useEffect(() => {
+    if (filterUser == 'None') {
+      console.log('none');
+    } else {
+      handleFilterGames("user", games);
+    }
+  }, [filterUser]);
 
   useEffect(() => {
     // Getting data
     const getGames = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartGames'));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const sortedGames = handleFilterGames(gamesData, filterGamesType);
+      const sortedGames = handleFilterGames(filterGamesType, gamesData);
       setGames(sortedGames);
     }
     const getDartUsers = async () => {
       const querySnapshot = await getDocs(collection(db, 'dartUsers'));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const sortedUsers = handleFilterUsers(gamesData, filterUsersType);
+      const sortedUsers = handleFilterUsers(filterUsersType, gamesData);
       setDartUsers(sortedUsers);
     }
     getDartUsers();
@@ -153,7 +169,7 @@ function DartsPage() {
     <>
       <NavBar />
       <div className="darts-page">
-        <Button variant="outline-info" onClick={handleShow}>Create</Button>
+        <Button variant="outline-danger glow-button" onClick={handleShow}>Create</Button>
         <div className="cards">
           <div className="myCard leaderboard">
             <span>
@@ -222,10 +238,14 @@ function DartsPage() {
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>
                 </Dropdown.Toggle>
-
-                <Dropdown.Menu onChange={() => console.log('close')}>
+                <Dropdown.Menu>
                   <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("most_users")}>Most Users</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
+                  <Dropdown.Divider />
+                  {/* <Form.Select value={filterUser} onChange={(e) => {setFilterUser(e.target.value)}}>
+                    <option>None</option>
+                    {dartUsers.map(user=> (<option key={user.id} value={user.displayName}>{user.displayName}</option>))}
+                  </Form.Select> */}
                 </Dropdown.Menu>
               </Dropdown>
             </span>
@@ -250,10 +270,10 @@ function DartsPage() {
                         <h6>{game.users[2].displayName}</h6>
                         <h6>{game.users[2].points}</h6>
                       </span>}
-                      <span className="usersCount position-absolute end-0">
+                      <MyTooltip title="asdf" className="usersCount position-absolute end-0">
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
-                      </span>
+                      </MyTooltip>
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                     :
@@ -274,10 +294,10 @@ function DartsPage() {
                         <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
                         {game.podium[3]}
                       </span>}
-                      <span className="elementInfo usersCount position-absolute end-0">
+                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')} className="elementInfo usersCount position-absolute end-0">
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
-                      </span>
+                      </MyTooltip>
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                 )

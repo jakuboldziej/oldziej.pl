@@ -23,13 +23,13 @@ function MyToasts() {
   return (
     <ToastContainer className="position-fixed bottom-0 end-0 p-3">
       {toasts.map((toast, index) => (
-        <Toast data-bs-theme="dark" key={index} onClose={() => handleClosingToast(index)} show={toast.show} delay={5000} autohide>
+        <Toast key={index} onClose={() => handleClosingToast(index)} show={toast.show} delay={5000} autohide>
           <Toast.Header>
             <img src="holder.js/20x20?text=%20" className="rounded me-2" alt="" />
             <strong className="me-auto">{toast.title}</strong>
             <small>{toMMSS(toast.timestamp)}</small>
           </Toast.Header>
-          <Toast.Body className="text-white">
+          <Toast.Body>
             <div dangerouslySetInnerHTML={renderHTML(toast.description)} />
           </Toast.Body> 
         </Toast>
