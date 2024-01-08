@@ -217,7 +217,7 @@ function CreateGame({ show, setShow }) {
                 <hr />
                 <div className="users">
                   {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'add')} className="user" key={user.uid}>
+                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : <Card.Text>None</Card.Text>}

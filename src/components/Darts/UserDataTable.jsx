@@ -19,7 +19,7 @@ function UserDataTable({ game }) {
       </thead>
       <tbody>
         {game.users.map(user => (
-          <tr key={user.uid}>
+          <tr key={user.uid} style={user.turn ? {borderLeft: '1px solid #E00000'} : null}>
             <td>{user.displayName}</td>
             <td>{game.startPoints - user.points}</td>
             <td>{Object.values(user.throws).reduce((acc, val) => acc + val, 0)}</td>

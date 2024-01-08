@@ -359,16 +359,19 @@ html {
           min-height: 60px;
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
-          color: black;
 
           &:nth-child(3n + 1) {
             background-color: $red;
+            color: 'white';
           }
           &:nth-child(3n + 2) {
             background-color: $green;
+            color: black;
+
           }
           &:nth-child(3n + 3) {
             background-color: $creamy;
+            color: black;
           }
 
           .elementInfo {
