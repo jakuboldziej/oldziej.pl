@@ -286,9 +286,6 @@ html {
 }
 
 .game-summary-modal {
-  .modal-body {
-    
-  }
   .training-stats {
     position: relative;
 
@@ -299,15 +296,6 @@ html {
       span {
         color: white;
         background-color: transparent;
-      }
-    }
-
-    .table {
-      width: 100%;
-
-      @media screen and (max-width: 576px) {
-        width: 90%;
-        font-size: 0.7rem;
       }
     }
   }
@@ -517,13 +505,16 @@ html {
     flex-direction: column;
   }
 
-  .keyboard {
+  .right-panel {
+    position: relative;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 20px;
     padding: 10px;
     box-shadow: $creamy 0px 1px 4px;
     width: 35%;
+    height: 95vh;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
     user-select: none;
@@ -532,62 +523,95 @@ html {
     @media screen and (max-width: 576px) {
       width: 100%;
       border-radius: 0;
-      height: 50%;
-      gap: 2vw;
+      height: auto;
     }
 
-    .input,
-    .special {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: $creamy;
-      font-size: 30px;
-      border: none;
-      border-radius: 20px;
-      height: 50px;
+    // Accordion
+    .accordion {
+      position: absolute;
+      top: 10px;
+      width: calc(100% - 20px);
+      max-height: 52px;
 
-      @media screen and (max-width: 576px) {
-        font-size: 1.5rem;
-        height: 5.3vh;
-      }
-    }
+      .accordion-body {
+        overflow-y: auto;
+        max-height: 100vh;
+        padding: 0;
 
-    .input:not([disabled]):hover {
-      cursor: pointer;
-      opacity: 0.8;
-    }
-
-    .numbers {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 10px;
-
-      @media screen and (max-width: 576px) {
-        grid-template-columns: repeat(auto-fill, minmax(21.5vw, 1fr));
-        gap: 5px;
-      }
-    }
-
-    .specials {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 10px;
-
-      @media screen and (max-width: 576px) {
-        grid-template-columns: repeat(auto-fill, minmax(20vw, 1fr));
-        gap: 5px;
-      }
-
-      .special {
-        font-size: 14px;
-        padding: 15px;
-
-        &:nth-child(1) {
-          background-color: $green;
+        @media screen and (max-width: 576px) {
+          max-height: 50vh;
+          position: relative;
+          width: 100%;
         }
-        &:nth-child(4) {
-          background-color: $red;
+      }
+
+      @media screen and (max-width: 576px) {
+        position: relative;
+        width: 100%;
+      }
+    }
+
+    // Keyboard
+    .keyboard {
+      width: 100%;
+      box-shadow: $creamy 0px 1px 4px;
+      padding: 10px;
+      border-radius: 20px;
+  
+      .input,
+      .special {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: $creamy;
+        font-size: 30px;
+        border: none;
+        border-radius: 20px;
+        height: 50px;
+  
+        @media screen and (max-width: 576px) {
+          font-size: 1.5rem;
+          height: 5.3vh;
+        }
+      }
+  
+      .input:not([disabled]):hover {
+        cursor: pointer;
+        opacity: 0.8;
+      }
+  
+      .numbers {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+        padding-bottom: 10px;
+  
+        @media screen and (max-width: 576px) {
+          grid-template-columns: repeat(auto-fill, minmax(21.5vw, 1fr));
+          gap: 5px;
+        }
+      }
+  
+      .specials {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+  
+        @media screen and (max-width: 576px) {
+          grid-template-columns: repeat(auto-fill, minmax(20vw, 1fr));
+          gap: 5px;
+        }
+  
+        .special {
+          font-size: 14px;
+          padding: 15px;
+  
+          &:nth-child(1) {
+            background-color: $green;
+          }
+          &:nth-child(4) {
+            background-color: $red;
+          }
         }
       }
     }
@@ -599,7 +623,7 @@ html {
     flex-direction: column;
     align-items: center;
     box-shadow: $creamy 0px 1px 4px;
-    border-radius: 10px;
+    border-radius: 20px;
     width: 60%;
     height: 95vh;
     padding: 15px;
@@ -661,6 +685,7 @@ html {
           min-height: 80px;
           width: 100%;
           font-size: 20px;
+          margin: 0;
         }
 
         .main-col {

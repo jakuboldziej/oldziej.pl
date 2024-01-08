@@ -1,9 +1,9 @@
 /* eslint-disable react/prop-types */
 import { useContext, useState } from 'react';
-import { Col, Modal, Row } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap'
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
-import MyTooltip from '../myTooltip';
+import UserDataTable from './UserDataTable';
 
 function GameSummary({ show, fullscreen, setShow }) {
   const { game } = useContext(DartsGameContext);
@@ -51,24 +51,7 @@ function GameSummary({ show, fullscreen, setShow }) {
               <span>Time played: {timePlayed}</span>
               <span>StartPoints: {game.startPoints}</span>
             </div>
-            <div className='table'>
-              <Row>
-                <Col>Nick</Col>
-                <Col>Points</Col>
-                <Col>Throws</Col>
-                <Col><MyTooltip title="Your average of points in the set">AVG</MyTooltip></Col>
-                <Col><MyTooltip title="Your highest Round Points Thrown">HRP</MyTooltip></Col>
-              </Row>
-              {game.users.map(user => (
-                <Row key={user.uid}>
-                  <Col>{user.displayName}</Col>
-                  <Col>{game.startPoints - user.points}</Col>
-                  <Col>{Object.values(user.throws).reduce((acc, val) => acc + val, 0)}</Col>
-                  <Col>{user.avgPointsPerThrow}</Col>
-                  <Col>{user.highestRoundPoints}</Col>
-                </Row>
-              ))}
-            </div>
+            <UserDataTable game={game}/>
           </div>
         }
         <Link className="btn btn-outline-danger glow-button" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>

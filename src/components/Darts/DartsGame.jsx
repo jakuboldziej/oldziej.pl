@@ -11,6 +11,7 @@ import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
 import { ToastsContext } from "../../context/ToastsContext";
 import MyToasts from "../MyToasts";
+import MyAccordion from "../MyAccordion";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
@@ -26,9 +27,9 @@ function DartsGame() {
 
   if (!game) {
     return (
-    <div className="d-flex flex-column gap-3 justify-content-center align-items-center vh-100">
+    <div className="d-flex flex-column gap-3 justify-content-center align-items-center vh-100 text-light">
       <h1>You are not currently in a game.</h1>
-      <Link className="btn btn-outline-dark" to="/darts">Create New One</Link>
+      <Link className="btn btn-outline-danger glow-button" to="/darts">Create New One</Link>
     </div>
     )
   }
@@ -135,7 +136,11 @@ function DartsGame() {
           ))}
         </div>
       </div>
-      <Keyboard params={keyboardParams} />
+
+      <div className="right-panel">
+        <MyAccordion game={game} />
+        <Keyboard params={keyboardParams} />
+      </div>
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>
       <MyToasts />
     </div>

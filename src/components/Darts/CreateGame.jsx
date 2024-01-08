@@ -131,6 +131,7 @@ function CreateGame({ show, setShow }) {
         doubles: 0,
         triples: 0,
         normal: 0,
+        overthrows: 0,
       },
       legs: 0,
       sets: 0,

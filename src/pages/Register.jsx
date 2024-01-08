@@ -59,6 +59,7 @@ function Register() {
           doubles: 0,
           triples: 0,
           normal: 0,
+          overthrows: 0,
         },
       });
 
