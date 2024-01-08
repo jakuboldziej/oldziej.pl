@@ -3,7 +3,7 @@
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
-import { Button, Dropdown, Form, InputGroup, Table } from "react-bootstrap";
+import { Button, Dropdown } from "react-bootstrap";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import RedDot from "../images/red_dot.png";
@@ -26,7 +26,7 @@ function DartsPage() {
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
   const [filterGamesType, setFilterGamesType] = useState("created_at");
-  const [filterUser, setFilterUser] = useState('None');
+  // const [filterUser, setFilterUser] = useState('None');
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -103,13 +103,13 @@ function DartsPage() {
           return secondData - firstData;
         });
         break;
-      case "user":
-        sortedGames = games.filter(game => {
-          const matchedUser = game.users.some(user => user.displayName === filterUser);
-          return matchedUser;
-        });
-        console.log(sortedGames);
-      break;
+      // case "user":
+      //   sortedGames = games.filter(game => {
+      //     const matchedUser = game.users.some(user => user.displayName === filterUser);
+      //     return matchedUser;
+      //   });
+      //   console.log(sortedGames);
+      // break;
       default:
         sortedGames = games.slice();
         break;
@@ -128,13 +128,13 @@ function DartsPage() {
     setGames(sortedGames);
   }, [filterGamesType]);
 
-  useEffect(() => {
-    if (filterUser == 'None') {
-      console.log('none');
-    } else {
-      handleFilterGames("user", games);
-    }
-  }, [filterUser]);
+  // useEffect(() => {
+  //   if (filterUser == 'None') {
+  //     console.log('none');
+  //   } else {
+  //     handleFilterGames("user", games);
+  //   }
+  // }, [filterUser]);
 
   useEffect(() => {
     // Getting data
