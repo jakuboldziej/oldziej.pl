@@ -514,7 +514,7 @@ html {
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 20px;
     padding: 10px;
     box-shadow: $creamy 0px 1px 4px;
@@ -797,6 +797,7 @@ html {
       width: 30vw;
       background-color: #3e3c61;
       position: relative;
+      overflow: auto;
 
       .info {
         display: flex;
@@ -1034,6 +1035,7 @@ html {
   h5,
   h6 {
     margin: 0px;
+    color: white;
   }
 
   p {

@@ -52,7 +52,7 @@ function Keyboard({ params }) {
           <button className="input special" disabled={handleDisabledSpecial('DOUBLE')} style={{backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}`}} onClick={() => onclick('DOUBLE')}>DOUBLE</button>
           <button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
           <button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => onclick('BACK')}>BACK</button>
-          {game.training && <button className="input special" style={{backgroundColor: "#E00000"}} onClick={handleEndTraining}>END</button>}
+          {game.training && <button className="input special" style={{backgroundColor: "#E55555"}} onClick={handleEndTraining}>END</button>}
           {game.record.length === 1 && <button className="input special" style={{backgroundColor: '#E55555'}} onClick={handleQuitTraining}>QUIT</button>}
         </span>
       </div>
