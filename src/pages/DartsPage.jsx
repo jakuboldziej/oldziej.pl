@@ -270,7 +270,7 @@ function DartsPage() {
                         <h6>{game.users[2].displayName}</h6>
                         <h6>{game.users[2].points}</h6>
                       </span>}
-                      <MyTooltip title="asdf" className="usersCount position-absolute end-0">
+                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')} className="elementInfo usersCount position-absolute end-0">
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
                       </MyTooltip>
@@ -298,6 +298,11 @@ function DartsPage() {
                         <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                         {game.users.length}
                       </MyTooltip>
+                      <MyTooltip title="Start Points" className="elementInfo">
+                      < img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag"/>
+                        {game.startPoints}
+                      </MyTooltip>
+                      
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                 )
