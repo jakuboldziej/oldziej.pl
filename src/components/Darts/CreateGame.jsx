@@ -220,7 +220,7 @@ function CreateGame({ show, setShow }) {
                     <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
-                  )) : <Card.Text>None</Card.Text>}
+                  )) : null}
                 </div>
                 <Card.Title className="mt-3 d-flex justify-content-between">
                   <span>Playing</span>
@@ -232,7 +232,7 @@ function CreateGame({ show, setShow }) {
                     <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user.uid}>
                       <span>{user.displayName}</span>
                     </div>
-                  )) : <Card.Text>None</Card.Text>}
+                  )) : null}
                 </div>
               </Card.Body>
             </Card>

@@ -137,6 +137,8 @@ export const handlePoints = (action, value) => {
     currentUser.turnsSum = 0;
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
+    currentUser.throws["overthrows"] += 1;
+    setUserState();
     setOverthrow(currentUser.displayName);
   } else if (currentUser.points === 0) {
     const end = handleGameEnd();
@@ -179,6 +181,7 @@ export const handleDartsData = async () => {
     dartUser.throws["doubles"] += user.throws["doubles"];
     dartUser.throws["triples"] += user.throws["triples"];
     dartUser.throws["normal"] += user.throws["normal"];
+    dartUser.throws["overthrows"] += user.throws["overthrows"];
     dartUser.overAllPoints += game.startPoints - user.points;
     dartUser.highestEndingAvg = user.highestEndingAvg;
     !game.active ? dartUser.gamesPlayed += 1 : null;

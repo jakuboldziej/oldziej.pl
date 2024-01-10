@@ -138,7 +138,7 @@ function DartsGame() {
       </div>
 
       <div className="right-panel">
-        <MyAccordion game={game} />
+        <MyAccordion users={users} game={game} />
         <Keyboard params={keyboardParams} />
       </div>
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>

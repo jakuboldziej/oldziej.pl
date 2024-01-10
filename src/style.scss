@@ -214,6 +214,7 @@ html {
       @media screen and (max-width: 576px) {
         flex-direction: column;
         align-items: center;
+        gap: 10px;
       }
 
       .card-title {
@@ -277,6 +278,7 @@ html {
 }
 
 .create-game-modal {
+  
   .modal-body, .modal-header {
     background-color: black;
   }
@@ -536,9 +538,14 @@ html {
       width: calc(100% - 20px);
       max-height: 52px;
 
+      // Table
+      .table {
+        --bs-table-color: '#fff';
+      }
+
       .accordion-body {
         overflow-y: auto;
-        max-height: 100vh;
+        max-height: 87vh;
         padding: 0;
 
         @media screen and (max-width: 576px) {

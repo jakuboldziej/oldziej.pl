@@ -51,7 +51,7 @@ function GameSummary({ show, fullscreen, setShow }) {
               <span>Time played: {timePlayed}</span>
               <span>StartPoints: {game.startPoints}</span>
             </div>
-            <UserDataTable game={game}/>
+            <UserDataTable users={game.users} game={game}/>
           </div>
         }
         <Link className="btn btn-outline-danger glow-button" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>

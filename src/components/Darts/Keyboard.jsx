@@ -1,3 +1,6 @@
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "../../firebase";
+
 /* eslint-disable react/prop-types */
 function Keyboard({ params }) {
   const { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, showNewToast, setOverthrow } = params;
@@ -12,6 +15,14 @@ function Keyboard({ params }) {
     if (game.podium[1]) {
       localStorage.setItem('dartsGame', null);
     }
+    handleShow();
+  }
+
+  const handleQuitTraining = async () => {
+    const docRef = doc(db, 'dartGames', game.id);
+    await deleteDoc(docRef);
+
+    localStorage.setItem('dartsGame', null);
     handleShow();
   }
 
@@ -42,6 +53,7 @@ function Keyboard({ params }) {
           <button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
           <button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => onclick('BACK')}>BACK</button>
           {game.training && <button className="input special" style={{backgroundColor: "#E00000"}} onClick={handleEndTraining}>END</button>}
+          {game.record.length === 1 && <button className="input special" style={{backgroundColor: '#E55555'}} onClick={handleQuitTraining}>QUIT</button>}
         </span>
       </div>
     </>

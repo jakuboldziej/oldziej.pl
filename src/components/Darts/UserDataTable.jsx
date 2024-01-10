@@ -2,9 +2,27 @@
 import { Table } from 'react-bootstrap'
 import MyTooltip from '../myTooltip'
 
-function UserDataTable({ game }) {
+function UserDataTable({ users, game }) {
+  const displayUserThrows = (user) => {
+    return (
+      <MyTooltip title={`N: ${user.throws['normal']} | D: ${user.throws['doubles']} | T: ${user.throws['triples']} | D: ${user.throws['doors']} | O: ${user.throws['overthrows']}`}>
+        {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
+      </MyTooltip>
+    )
+  }
+
+  const dynamicUserStyle = (user) => {
+    let style = {};
+    if (user.turn) {
+      style = { ...style, borderLeft: '1px solid #E00000' };
+    }
+    if (user.points === 0) {
+      style = { ...style, color: 'gold' };
+    }
+    return style;
+  }
   return (
-    <Table>
+    <Table responsive="sm">
       <thead>
         <tr>
           <th>Player</th>
@@ -14,20 +32,18 @@ function UserDataTable({ game }) {
           <th><MyTooltip title="Your average of points in the set">AVG</MyTooltip></th>
           <th>Legs</th>
           <th>Sets</th>
-          <th><MyTooltip title="Throws: Normal, Doubles, Triples, Doors">N/D/T/D</MyTooltip></th>
         </tr>
       </thead>
       <tbody>
-        {game.users.map(user => (
-          <tr key={user.uid} style={user.turn ? {borderLeft: '1px solid #E00000'} : null}>
+        {users && users.map(user => (
+          <tr key={user.uid} style={dynamicUserStyle(user)}>
             <td>{user.displayName}</td>
             <td>{game.startPoints - user.points}</td>
-            <td>{Object.values(user.throws).reduce((acc, val) => acc + val, 0)}</td>
+            <td>{displayUserThrows(user)}</td>
             <td>{user.highestRoundPoints}</td>
             <td>{user.avgPointsPerThrow}</td>
             <td>{user.legs}</td>
             <td>{user.sets}</td>
-            <td>{`${user.throws['normal']}/${user.throws['doubles']}/${user.throws['triples']}/${user.throws['doors']}`}</td>
           </tr>
         ))}
       </tbody>

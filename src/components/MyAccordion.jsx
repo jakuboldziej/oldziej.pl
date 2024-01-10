@@ -2,14 +2,13 @@
 import { Accordion } from "react-bootstrap"
 import UserDataTable from "./Darts/UserDataTable";
 
-function MyAccordion({ game }) {
-  console.log(game);
+function MyAccordion({ users, game }) {
   return (
     <Accordion data-bs-theme="dark">
       <Accordion.Item eventKey="0">
         <Accordion.Header>Live Data</Accordion.Header>
         <Accordion.Body>
-          <UserDataTable game={game}/>
+          <UserDataTable users={users} game={game} />
         </Accordion.Body>
       </Accordion.Item>
     </Accordion>
