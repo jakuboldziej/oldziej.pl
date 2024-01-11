@@ -66,6 +66,10 @@ export const handlePodium = () => {
     game.podium[1] = currentUser.displayName;
     game.userWon = currentUser.displayName;
     game.active = false;
+    const usersWithoutPodium = game.users.filter(({ place }) => !place);
+    const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
+    game.podium[2] = sortedUsers[0].displayName;
+    game.podium[3] = sortedUsers[1].displayName;
     handleDartsData();
     handleShow();
     return true;
@@ -274,6 +278,8 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   if (currentUser.currentTurn === 3 || currentUser.points == 0 ) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
+    currentUser.allGainedPoints = game.startPoints - currentUser.points;
+
     const nextUser = handleNextUser();
     nextUser.previousUserPlace = currentUser.place;
     nextUser.turn = true;
