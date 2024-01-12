@@ -67,9 +67,11 @@ export const handlePodium = () => {
     game.userWon = currentUser.displayName;
     game.active = false;
     const usersWithoutPodium = game.users.filter(({ place }) => !place);
-    const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
-    game.podium[2] = sortedUsers[0].displayName;
-    game.podium[3] = sortedUsers[1].displayName;
+    if (usersWithoutPodium.length > 0) {
+      const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
+      if(sortedUsers[0]) game.podium[2] = sortedUsers[0].displayName;
+      if(sortedUsers[1]) game.podium[3] = sortedUsers[1].displayName;
+    }
     handleDartsData();
     handleShow();
     return true;
