@@ -40,7 +40,6 @@ function CreateGame({ show, setShow }) {
     if (usersPlaying) {
       for (let i = 1; i <= usersPlaying.length; i++) {
         podiumOptions.push(<option key={i}>{i}</option>);
-        setUsersPodium(i);
       }
       setUserPodiumsCount(podiumOptions);
     }
@@ -201,6 +200,10 @@ function CreateGame({ show, setShow }) {
 
     estimatedGameTime();
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
+
+  useEffect(() => {
+    console.log(userPodiumsCount);
+  }, [userPodiumsCount]);
 
   return (
     <>

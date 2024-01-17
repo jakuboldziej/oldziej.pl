@@ -26,14 +26,14 @@ export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specia
   }
 }
 
-export const handleTurnsSum = () => {
+const handleTurnsSum = () => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
   if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestRoundPoints) currentUser.highestRoundPoints = currentUser.turnsSum;
 }
 
 const isNumericRegex = /^\d+$/;
-export const calculatePoints = (turnValue) => {
+const calculatePoints = (turnValue) => {
   if (!isNumericRegex.test(turnValue) && turnValue) {
     if (turnValue[0] === "D") {
       return parseInt(turnValue.slice(1)) * 2;
@@ -45,7 +45,7 @@ export const calculatePoints = (turnValue) => {
   return turnValue ? parseInt(turnValue) : turnValue;
 };
 
-export const handlePodium = () => {
+const handlePodium = () => {
   if (game.podiums > 1) {
     if (game.podium[1] !== null) {
       let lastNonNullElement = null;
@@ -96,7 +96,7 @@ export const handlePodium = () => {
   }
 }
 
-export const handleGameEnd = () => {
+const handleGameEnd = () => {
   if (game.legs == 1 && game.sets == 1){
     const end = handlePodium();
     if (end) return true;
@@ -131,7 +131,7 @@ export const handleGameEnd = () => {
   }
 }
 
-export const handlePoints = (action, value) => {
+const handlePoints = (action, value) => {
   const { turns } = currentUser;
   const currentTurnValue = turns[currentUser.currentTurn];
 
@@ -159,7 +159,7 @@ export const handlePoints = (action, value) => {
   }
 };
 
-export const handleAvgPointsPerThrow = () => {
+const handleAvgPointsPerThrow = () => {
   const pointsThrown = game.startPoints - currentUser.points;
   const dartsThrown = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
   const avg = pointsThrown / dartsThrown * 3;
@@ -167,16 +167,7 @@ export const handleAvgPointsPerThrow = () => {
   if (isNaN(avg)) currentUser.avgPointsPerThrow = 0;
 }
 
-export const convertRecord = (record) => {
-  const userTurns = record.user.turns;
-  const userThrows = Object.values(record.user.throws).reduce((acc, val) => acc + val, 0);
-  record.user = {
-    turns: userTurns,
-    throws: userThrows
-  }
-}
-
-export const handleDartsData = async () => {
+const handleDartsData = async () => {
   users.map(async (user) => {
     const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
 
@@ -212,7 +203,7 @@ export const handleDartsData = async () => {
   });
 }
 
-export const handleSpecialValue = async (value, specialState, setSpecialState) => {
+const handleSpecialValue = async (value, specialState, setSpecialState) => {
   if (value === "DOORS") {
     currentUser.throws["doors"] += 1;
     handleUsersState(0, specialState, "DOORS");
@@ -226,7 +217,7 @@ export const handleSpecialValue = async (value, specialState, setSpecialState) =
   }
 }
 
-export const handleNextUser = () => {
+const handleNextUser = () => {
   const remainingUsers = users.filter(user => user.place === 0 && user.points > 0);
 
   if (remainingUsers.length === 0) {

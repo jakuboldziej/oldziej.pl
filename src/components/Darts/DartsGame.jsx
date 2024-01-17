@@ -86,6 +86,10 @@ function DartsGame() {
     }
   }
 
+  useEffect(() => {
+    console.log(users[0].throws);
+  }, [users]);
+
   return (
     <div className="darts-wrapper">
       <div className="stats">
