@@ -201,10 +201,6 @@ function CreateGame({ show, setShow }) {
     estimatedGameTime();
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
-  useEffect(() => {
-    console.log(userPodiumsCount);
-  }, [userPodiumsCount]);
-
   return (
     <>
       <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>

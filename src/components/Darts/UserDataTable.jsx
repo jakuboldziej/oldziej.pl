@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Table } from 'react-bootstrap'
-import MyTooltip from '../myTooltip'
+import MyTooltip from '../MyTooltip'
 
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {

@@ -10,6 +10,7 @@ import ChatPage from './pages/ChatPage';
 import NotFound from './pages/NotFound';
 import DartsPage from './pages/DartsPage';
 import DartsGame from './components/Darts/DartsGame';
+import DartsUser from "./pages/DartsUser";
  
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -34,6 +35,7 @@ function App() {
         <Route path="/darts/*">
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />          
           <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
+          <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>}/>
         </Route>
         <Route path="*" element={<NotFound />}/>
       </Routes>

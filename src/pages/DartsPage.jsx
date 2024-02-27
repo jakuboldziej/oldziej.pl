@@ -11,7 +11,7 @@ import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
 import MyToasts from "../components/MyToasts";
 import { useLocation } from "react-router";
-import MyTooltip from "../components/myTooltip";
+import MyTooltip from "../components/MyTooltip";
 
 function DartsPage() {
   document.title = "HomeServer | Darts";
@@ -196,7 +196,7 @@ function DartsPage() {
             <div className="info">
               {dartUsers && dartUsers.map((dartUser) => {
                 return (
-                  <div key={dartUser.id} className="element">
+                  <a href={`/darts/users/${dartUser.displayName}`} key={dartUser.id} className="element">
                     <span className="elementInfo username">{dartUser.displayName}</span>
                     <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
@@ -226,7 +226,7 @@ function DartsPage() {
                       <img width="20" height="20" src="https://img.icons8.com/color/20/mountain.png" alt="mountain" />
                       <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
                     </MyTooltip>
-                  </div>
+                  </a>
                 )
               })}
             </div>
@@ -299,10 +299,10 @@ function DartsPage() {
                         {game.users.length}
                       </MyTooltip>
                       <MyTooltip title="Start Points" className="elementInfo">
-                      < img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag"/>
+                        <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
                         {game.startPoints}
                       </MyTooltip>
-                      
+
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                 )
