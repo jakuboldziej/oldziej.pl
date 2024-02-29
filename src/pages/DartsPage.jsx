@@ -309,9 +309,9 @@ function DartsPage() {
               })}
             </div>
           </div>
-          <div className="myCard highlights">
+          <div className="myCard statistics">
             <span>
-              <h3>Highlights</h3>
+              <h3>Statistics</h3>
             </span>
             <div className="info">
 

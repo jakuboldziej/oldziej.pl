@@ -791,13 +791,27 @@ html {
 
 // DartsUser Page
 .dartUser {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   color: white;
-  text-align: center;
   height: $containerHeight;
   padding-top: 20px;
 
+  .header {
+    text-align: center;
+    width: 100%;
+  }
   .charts {
-    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 75%;
+
+    canvas {
+      border: 1px $creamy solid;
+    }
   }
 }
 

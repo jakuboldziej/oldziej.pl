@@ -40,7 +40,7 @@ function Home() {
                 <div className="info">
                   {dartUsers && dartUsers.map((dartUser) => {
                     return (
-                      <div key={dartUser.id} className="element">
+                      <a href={`/darts/users/${dartUser.displayName}`} key={dartUser.id} className="element">
                         <span className="elementInfo username">{dartUser.displayName}</span>
                         <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
@@ -58,7 +58,7 @@ function Home() {
                           <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph"/>
                           <h6 style={{fontSize: 13}}>{dartUser.highestEndingAvg}</h6>
                         </span>
-                      </div>
+                      </a>
                     )
                   })}
                 </div>
