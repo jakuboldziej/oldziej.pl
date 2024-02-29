@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
 import { Button, Dropdown } from "react-bootstrap";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, limitToLast } from "firebase/firestore";
 import { db } from "../firebase";
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
@@ -139,7 +139,7 @@ function DartsPage() {
   useEffect(() => {
     // Getting data
     const getGames = async () => {
-      const querySnapshot = await getDocs(collection(db, 'dartGames'));
+      const querySnapshot = await getDocs(collection(db, 'dartGames'), limitToLast(50));
       const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       const sortedGames = handleFilterGames(filterGamesType, gamesData);
       setGames(sortedGames);

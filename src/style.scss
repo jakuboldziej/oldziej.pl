@@ -790,7 +790,7 @@ html {
 }
 
 // DartsUser Page
-.dartUser {
+.dart-user {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -802,17 +802,28 @@ html {
     text-align: center;
     width: 100%;
   }
-  .charts {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 75%;
 
-    canvas {
-      border: 1px $creamy solid;
+    .charts {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: $containerHeight;
+  
+      div {
+        display: flex;
+        width: 80%;
+        
+        canvas {
+          border: 1px white solid;
+        }
+
+        .options {
+          padding: 10px;
+        }
+      }
     }
-  }
 }
 
 // Chat Page

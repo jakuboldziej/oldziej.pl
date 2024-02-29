@@ -3,10 +3,11 @@
 import { useParams } from 'react-router';
 import NavBar from '../components/NavBar'
 import { useEffect, useState } from 'react';
-import { FieldPath, collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
+import { Form } from 'react-bootstrap';
 
 function DartsUser() {
   const { username } = useParams();
@@ -14,6 +15,7 @@ function DartsUser() {
   const [chartThrowsOverall, setChartThrowsOverall] = useState();
   const [chartThrowsDates, setChartThrowsDates] = useState();
   const [chartSpecialData, setChartSpecialData] = useState();
+  const [chartPodiums, setChartPodiums] = useState()
 
   useEffect(() => {
     const getUser = async () => {
@@ -118,21 +120,51 @@ function DartsUser() {
         },
       ]
     })
-
   }, [user]);
 
   return (
     <>
       <NavBar />
-      <div className='dartUser'>
+      <div className='dart-user'>
         <div className='header'>
           <h2>{user?.displayName}</h2>
           <hr />
         </div>
         <div className='charts'>
-          {chartThrowsOverall && <Bar data={chartThrowsOverall} />}
-          {chartThrowsDates && <Line data={chartThrowsDates} />}
-          {chartSpecialData && <Line data={chartSpecialData} />}
+          {chartThrowsOverall &&
+            <div>
+              <Bar data={chartThrowsOverall} />
+              <div className='options'>
+                <Form.Check
+                  inline
+                  type="radio"
+                  label={
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      <img width="64" height="64" src="https://img.icons8.com/color/64/bar-chart--v1.png" alt="bar-chart--v1" />
+                    </span>
+                  }
+                />
+                <Form.Check
+                  inline
+                  type="radio"
+                  label={
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      <img width="64" height="64" src="https://img.icons8.com/dusk/64/chart.png" alt="chart" />
+                    </span>
+                  }
+                />
+              </div>
+            </div>
+          }
+          {chartThrowsDates &&
+            <div>
+              <Line data={chartThrowsDates} />
+            </div>}
+          {chartSpecialData &&
+            <div>
+              <Line data={chartSpecialData} />
+            </div>
+          }
         </div>
       </div>
     </>
