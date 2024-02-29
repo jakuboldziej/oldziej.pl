@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { useEffect, useState } from "react";
 import NavBar from "../components/NavBar"
 import { collection, getDocs } from "firebase/firestore";
@@ -10,15 +11,24 @@ function Home() {
 
   useEffect(() => {
     const getDartUsers = async () => {
-      const querySnapshot = await getDocs(collection(db, 'dartUsers'));
-      const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const sortedUsers = gamesData.slice().sort((a, b) => {
-        const firstPlaceA = a.podiums["firstPlace"];
-        const firstPlaceB = b.podiums["firstPlace"];
+      try {
+        const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+        const response = await fetch(`${mongodbApiUrl}/dartsUsers`)
+        const users = await response.json()
+        console.log(users);
+        setDartUsers(users);
+      } catch (err) {
+        console.log('Error fetching', err);
+      }
+      // const querySnapshot = await getDocs(collection(db, 'dartUsers'));
+      // const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      // const sortedUsers = gamesData.slice().sort((a, b) => {
+      //   const firstPlaceA = a.podiums["firstPlace"];
+      //   const firstPlaceB = b.podiums["firstPlace"];
 
-        return firstPlaceB - firstPlaceA;
-      });
-      setDartUsers(sortedUsers);
+      //   return firstPlaceB - firstPlaceA;
+      // });
+      // setDartUsers(sortedUsers);
     }
     getDartUsers();
   }, []);
@@ -40,7 +50,7 @@ function Home() {
                 <div className="info">
                   {dartUsers && dartUsers.map((dartUser) => {
                     return (
-                      <a href={`/darts/users/${dartUser.displayName}`} key={dartUser.id} className="element">
+                      <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                         <span className="elementInfo username">{dartUser.displayName}</span>
                         <span className="elementInfo">
                           <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
