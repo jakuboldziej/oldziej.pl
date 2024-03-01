@@ -3,10 +3,10 @@ import "../style.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { collection, doc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { auth } from "../firebase";
 import { Spinner } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
+import { postUser, postDartsUser } from "../fetch";
 
 function Register() {
   document.title = "HomeServer | Register";
@@ -32,76 +32,37 @@ function Register() {
 
     try {
       setLoading(true);
-      const res = await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
       user ? await updateProfile(user, {displayName: displayName}) : null
       
-      await setDoc(doc(db, "users", res.user.uid), {
-        uid: res.user.uid,
-        displayName,
-        email
-      });
-      await setDoc(doc(db, "dartUsers", res.user.uid), {
-        uid: res.user.uid,
-        displayName,
-        gamesPlayed: 0,
-        podiums: {
-          firstPlace: 0,
-          secondPlace: 0,
-          thirdPlace: 0,
-        },
-        overAllPoints: 0,
-        highestEndingAvg: 0,
-        highestOuts: 0,
-        highestRoundPoints: 0,
-        throws: {
-          doors: 0,
-          doubles: 0,
-          triples: 0,
-          normal: 0,
-          overthrows: 0,
-        },
-      });
-
-      const q = await getDocs(collection(db, "users"));
-      const users = q.docs.map((doc) => ({...doc.data()}));
-
-      await setDoc(doc(db, "userChats", user.uid), {});
-
-      if(users) {
-        users.map(async(userQ) => {
-          if (userQ.displayName === user.displayName) {
-            return;
-          }
-          const combinedId = user.uid > userQ.uid ? user.uid + userQ.uid : userQ.uid + user.uid;
-          
-          await setDoc(doc(db, "chats", combinedId), { messages: [] });
-          await setDoc(doc(db, "userChats", user.uid), {});
-          await updateDoc(doc(db, "userChats", user.uid), {
-            [combinedId]: {
-              userInfo: {
-                uid: userQ.uid,
-                displayName: userQ.displayName,
-              },
-              date: serverTimestamp(),
-              read: true,
-            }
-          });
-          try{
-            await updateDoc(doc(db, "userChats", userQ.uid), {
-              [combinedId]: {
-                userInfo: {
-                  uid: user.uid,
-                  displayName: user.displayName,
-                },
-                date: serverTimestamp(),
-                read: true,
-              }
-            });
-          } catch (err) {
-            console.log(err)
+      try {
+        await postUser({
+          displayName: user.displayName,
+          email: user.email
+        });
+        await postDartsUser({
+          displayName: user.displayName,
+          gamesPlayed: 0,
+          podiums: {
+            firstPlace: 0,
+            secondPlace: 0,
+            thirdPlace: 0
+          },
+          overAllPoints: 0,
+          highestEndingAvg: 0,
+          highestOuts: 0,
+          highestRoundPoints: 0,
+          throws: {
+            normal: 0,
+            doubles: 0,
+            tripes: 0,
+            overthrows: 0,
+            doors: 0
           }
         });
+      } catch (err) {
+        console.log("Error fetching", err);
       }
 
       navigate("/login");

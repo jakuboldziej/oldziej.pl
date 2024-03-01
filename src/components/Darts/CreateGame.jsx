@@ -2,14 +2,12 @@
 /* eslint-disable react/prop-types */
 import { Button, Card, Form, Modal } from "react-bootstrap"
 import { useContext, useEffect, useState } from "react";
-import { collection, doc, getDocs, setDoc } from "firebase/firestore";
-import { db } from "../../firebase";
 import { useNavigate } from "react-router";
-import { v4 as uuid } from "uuid";
 import { DartsGameContext } from "../../context/DartsGameContext";
 import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
 import { ToastsContext } from "../../context/ToastsContext";
+import { getDartsUsers } from "../../fetch";
 
 function CreateGame({ show, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -48,15 +46,9 @@ function CreateGame({ show, setShow }) {
   useEffect(() => {
     const getUsers = async () => {
       try {
-        const colRef = collection(db, "dartUsers");
-        const querySnapshot = await getDocs(colRef);
+        const users = await getDartsUsers();
 
-        const fetchedUsers = [];
-        querySnapshot.forEach((doc) => {
-          fetchedUsers.push({ ...doc.data() });
-        });
-
-        setUsersNotPlaying(fetchedUsers);
+        setUsersNotPlaying(users);
       } catch (error) {
         console.error("Error getting users: ", error);
       }
@@ -80,11 +72,11 @@ function CreateGame({ show, setShow }) {
       setUsersPlaying((prevUsersPlaying) => [...prevUsersPlaying, user]);
 
       setUsersNotPlaying((prevUsersNotPlaying) =>
-        prevUsersNotPlaying.filter((notPlayingUser) => notPlayingUser.uid !== user.uid)
+        prevUsersNotPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id)
       );
     } else if (action === 'del') {
       setUsersPlaying((prevUsersPlaying) =>
-        prevUsersPlaying.filter((playingUser) => playingUser.uid !== user.uid)
+        prevUsersPlaying.filter((playingUser) => playingUser._id !== user._id)
       );
 
       setUsersNotPlaying((prevUsersNotPlaying) => [...prevUsersNotPlaying, user]);
@@ -111,7 +103,6 @@ function CreateGame({ show, setShow }) {
   };
 
   const handleGameStart = async (training = false) => {
-    const gameId = uuid();
     let updatedUsers = usersPlaying.map((user) => ({
       ...user,
       points: selectStartPoints,
@@ -140,7 +131,6 @@ function CreateGame({ show, setShow }) {
     if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
     const game = {
-      id: gameId,
       created_at: Date.now(),
       created_by: currentUser.displayName,
       users: updatedUsers,
@@ -216,7 +206,7 @@ function CreateGame({ show, setShow }) {
                 <hr />
                 <div className="users">
                   {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user.uid}>
+                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user._id}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : null}
@@ -228,7 +218,7 @@ function CreateGame({ show, setShow }) {
                 <hr />
                 <div className="users">
                   {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user.uid}>
+                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : null}

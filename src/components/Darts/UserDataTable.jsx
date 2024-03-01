@@ -36,7 +36,7 @@ function UserDataTable({ users, game }) {
       </thead>
       <tbody>
         {users && users.map(user => (
-          <tr key={user.uid} style={dynamicUserStyle(user)}>
+          <tr key={user._id} style={dynamicUserStyle(user)}>
             <td>{user.displayName}</td>
             <td>{game.startPoints - user.points}</td>
             <td>{displayUserThrows(user)}</td>

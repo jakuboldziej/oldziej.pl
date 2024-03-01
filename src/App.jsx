@@ -6,7 +6,6 @@ import { useContext } from 'react';
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register';
-import ChatPage from './pages/ChatPage';
 import NotFound from './pages/NotFound';
 import DartsPage from './pages/DartsPage';
 import DartsGame from './components/Darts/DartsGame';
@@ -30,7 +29,6 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
-          <Route path="chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
         </Route>
         <Route path="/darts/*">
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />          

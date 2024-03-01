@@ -58,7 +58,7 @@ function DartsGame() {
     const userWithTurn = users.find((user) => user.turn);
 
     if (userWithTurn && usersContainerRef.current) {
-      const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn.uid}"]`);
+      const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn._id}"]`);
       if (userElement) {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
@@ -100,7 +100,7 @@ function DartsGame() {
         </div>
         <div className="users" ref={usersContainerRef}>
           {users.map((user) => (
-            <Row className="user" data-userid={user.uid} style={userDynamicStyle(user)} key={user.uid}>
+            <Row className="user" data-userid={user._id} style={userDynamicStyle(user)} key={user._id}>
               <Col className="main-col" sm={4} xs={4}>
                 <Row>
                   <b>{user.points}</b>

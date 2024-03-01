@@ -4,14 +4,14 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
 import { Button, Dropdown } from "react-bootstrap";
-import { collection, getDocs, limitToLast } from "firebase/firestore";
-import { db } from "../firebase";
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
 import MyToasts from "../components/MyToasts";
 import { useLocation } from "react-router";
 import MyTooltip from "../components/MyTooltip";
+import MySpinner from "../components/MySpinner";
+import { getDartsGames, getDartsUsers } from "../fetch";
 
 function DartsPage() {
   document.title = "HomeServer | Darts";
@@ -27,6 +27,7 @@ function DartsPage() {
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
   const [filterGamesType, setFilterGamesType] = useState("created_at");
   // const [filterUser, setFilterUser] = useState('None');
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -138,20 +139,20 @@ function DartsPage() {
 
   useEffect(() => {
     // Getting data
-    const getGames = async () => {
-      const querySnapshot = await getDocs(collection(db, 'dartGames'), limitToLast(50));
-      const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const sortedGames = handleFilterGames(filterGamesType, gamesData);
-      setGames(sortedGames);
-    }
-    const getDartUsers = async () => {
-      const querySnapshot = await getDocs(collection(db, 'dartUsers'));
-      const gamesData = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      const sortedUsers = handleFilterUsers(filterUsersType, gamesData);
-      setDartUsers(sortedUsers);
-    }
-    getDartUsers();
-    getGames();
+    const fetchData = async () => {
+      try {
+        const sortedGames = handleFilterGames(filterGamesType, await getDartsGames());
+        setGames(sortedGames);
+        const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
+        setDartUsers(sortedUsers);
+        setIsLoading(false);
+      } catch (err) {
+        console.log("Error fetching", err);
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
 
     // Managing live game
     const liveGame = localStorage.getItem('dartsGame');
@@ -194,9 +195,14 @@ function DartsPage() {
               </Dropdown>
             </span>
             <div className="info">
+              {isLoading && (
+                <div className="d-flex justify-content-center mt-5">
+                  <MySpinner />
+                </div>
+              )}
               {dartUsers && dartUsers.map((dartUser) => {
                 return (
-                  <a href={`/darts/users/${dartUser.displayName}`} key={dartUser.id} className="element">
+                  <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                     <span className="elementInfo username">{dartUser.displayName}</span>
                     <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
@@ -250,10 +256,15 @@ function DartsPage() {
               </Dropdown>
             </span>
             <div className="info">
+              {isLoading && (
+                <div className="d-flex justify-content-center mt-5">
+                  <MySpinner />
+                </div>
+              )}
               {games && games.map((game) => {
                 return (
                   game.active ?
-                    <div key={game.id} className="element">
+                    <div key={game._id} className="element">
                       <span className="elementInfo gameActive">
                         {game.active ? 'Active' : 'Ended'}
                         <img src={game.active ? GreenDot : RedDot} />
@@ -277,7 +288,7 @@ function DartsPage() {
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                     :
-                    <div key={game.id} className="element">
+                    <div key={game._id} className="element">
                       <span className="elementInfo gameActive">
                         {game.active ? 'Active' : 'Ended'}
                         <img src={game.active ? GreenDot : RedDot} />
