@@ -18,7 +18,7 @@ function Keyboard({ params }) {
     handleShow();
   }
 
-  const handleQuitTraining = async () => {
+  const handleQuit = async () => {
     const docRef = doc(db, 'dartGames', game.id);
     await deleteDoc(docRef);
 
@@ -53,7 +53,7 @@ function Keyboard({ params }) {
           <button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}`}} onClick={() => onclick('TRIPLE')}>TRIPLE</button>
           <button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => onclick('BACK')}>BACK</button>
           {game.training && <button className="input special" style={{backgroundColor: "#E55555"}} onClick={handleEndTraining}>END</button>}
-          {game.record.length === 1 && <button className="input special" style={{backgroundColor: '#E55555'}} onClick={handleQuitTraining}>QUIT</button>}
+          {game.record.length === 1 && <button className="input special" style={{backgroundColor: '#E55555'}} onClick={handleQuit}>QUIT</button>}
         </span>
       </div>
     </>

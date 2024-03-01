@@ -2,6 +2,7 @@
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import _ from 'lodash';
+import { getDartsUser } from "../../fetch";
 
 let game;
 let handleShow;
@@ -169,7 +170,7 @@ const handleAvgPointsPerThrow = () => {
 
 const handleDartsData = async () => {
   users.map(async (user) => {
-    const dartUser = (await getDoc(doc(db, "dartUsers", user.uid))).data();
+    const dartUser = await getDartsUser(user.displayName);
 
     user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
     user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
@@ -186,7 +187,10 @@ const handleDartsData = async () => {
     if (parseFloat(user.highestRoundPoints) > parseFloat(dartUser.highestRoundPoints)) dartUser.highestRoundPoints = parseFloat(user.highestRoundPoints);
     if (parseFloat(user.avgPointsPerThrow) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerThrow);
 
-    if(!game.training) await updateDoc(doc(db, "dartUsers", user.uid), {
+    console.log(dartUser);
+
+
+    if(!game.training) await updateDoc(doc(db, "dartUsers", user._id), {
       ...dartUser
     });
   })
@@ -224,7 +228,7 @@ const handleNextUser = () => {
     return;
   }
 
-  let nextUserIndex = (users.findIndex(user => user.uid === currentUser.uid) + 1) % users.length;
+  let nextUserIndex = (users.findIndex(user => user._id === currentUser._id) + 1) % users.length;
   let nextUser = users[nextUserIndex];
 
   while (nextUser.place !== 0 || nextUser.points === 0) {
@@ -232,7 +236,7 @@ const handleNextUser = () => {
     nextUser = users[nextUserIndex];
   }
 
-  const isLastUser = remainingUsers[remainingUsers.length - 1].uid === currentUser.uid;
+  const isLastUser = remainingUsers[remainingUsers.length - 1]._id === currentUser._id;
 
   nextUser.turn = true;
   nextUser.turns = { 1: null, 2: null, 3: null };
@@ -326,7 +330,7 @@ const handleRecord = (action) => {
 const setUserState = () => {
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>
-      user.uid === currentUser.uid ? currentUser : user
+      user._id === currentUser._id ? currentUser : user
     );
     return updatedUsers;
   });

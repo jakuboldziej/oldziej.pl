@@ -7,6 +7,31 @@ export const getDartsUsers = async () => {
   return users;
 }
 
+export const getDartsUser = async (uDisplayName) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${uDisplayName}`);
+  const user = await userResponse.json();
+  return user;
+}
+
+export const updateDartsUser = async (userData) => {
+  await fetch(`${mongodbApiUrl}/users/:displayName`, {
+    method: "PUT",
+    body: JSON.stringify({
+      displayName: userData?.displayName,
+      gamesPlayed: userData?.gamesPlayed,
+      podiums: userData?.podiums,
+      overAllPoints: userData?.overAllPoints,
+      highestEndingAvg: userData?.highestEndingAvg,
+      highestOuts: userData?.highestOuts,
+      highestRoundPoints: userData?.highestRoundPoints,
+      throws: userData?.throws,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 export const postDartsUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
     method: "POST",
@@ -27,25 +52,22 @@ export const postDartsUser = async (userData) => {
 }
 
 export const postDartsGame = async (gameData) => {
-  await fetch(`${mongodbApiUrl}/dartsGames`, {
+  await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
     method: "POST",
     body: JSON.stringify({
-      created_by: gameData.user.displayName,
-      users: gameData.updatedUsers,
-      podiums: gameData.usersPodium,
-      podium: {
-        1: null,
-        2: null,
-        3: null
-      },
-      turn: gameData.updatedUsers[0].displayName,
-      active: true,
-      gameMode: gameData.selectGameMode,
-      startPoints: gameData.selectStartPoints,
-      checkOut: gameData.selectCheckOut,
-      sets: gameData.selectSets,
-      legs: gameData.selectLegs,
-      round: 1,
+      created_at: gameData.created_at,
+      created_by: gameData.created_by,
+      users: gameData.users,
+      podiums: gameData.podiums,
+      podium: gameData.podium,
+      turn: gameData.turn,
+      active: gameData.active,
+      gameMode: gameData.gameMode,
+      startPoints: gameData.startPoints,
+      checkOut: gameData.checkOut,
+      sets: gameData.sets,
+      legs: gameData.legs,
+      round: gameData.round,
     }),
     headers: {
       "Content-Type": "application/json",

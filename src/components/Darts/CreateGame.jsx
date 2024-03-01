@@ -7,7 +7,7 @@ import { DartsGameContext } from "../../context/DartsGameContext";
 import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
 import { ToastsContext } from "../../context/ToastsContext";
-import { getDartsUsers } from "../../fetch";
+import { getDartsUsers, postDartsGame } from "../../fetch";
 
 function CreateGame({ show, setShow }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -163,7 +163,7 @@ function CreateGame({ show, setShow }) {
       game.training = true;
     } else {
       const { record, ...gameWithoutRecord } = game;
-      await setDoc(doc(db, "dartGames", gameId), gameWithoutRecord);
+      await postDartsGame(gameWithoutRecord);
     }
     setGame(game);
     navigate("game");
