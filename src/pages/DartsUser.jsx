@@ -8,6 +8,7 @@ import { db } from '../firebase';
 import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
 import { Form } from 'react-bootstrap';
+import { getDartsGames, getDartsUser } from '../fetch';
 
 function DartsUser() {
   const { username } = useParams();
@@ -19,24 +20,18 @@ function DartsUser() {
 
   useEffect(() => {
     const getUser = async () => {
-      const userQ = query(collection(db, 'dartUsers'), where("displayName", "==", username));
-      const userQSnapshot = await getDocs(userQ);
-      const userQData = userQSnapshot.docs[0].data();
-      userQData.throws = {
-        normal: userQData.throws.normal,
-        triples: userQData.throws.triples,
-        doubles: userQData.throws.doubles,
-        doors: userQData.throws.doors,
-        overthrows: userQData.throws.overthrows,
+      const userQ = await getDartsUser(username)
+      userQ.throws = {
+        normal: userQ.throws.normal,
+        triples: userQ.throws.triples,
+        doubles: userQ.throws.doubles,
+        doors: userQ.throws.doors,
+        overthrows: userQ.throws.overthrows,
       }
-      setUser(userQData);
+      setUser(userQ);
 
-      const gamesQ = await getDocs(
-        query(collection(db, "dartGames"))
-      );
-
-      const gamesQData = gamesQ.docs.map((doc) => ({ ...doc.data() }));
-      const filteredGames = gamesQData.filter((game) => game.users.some((user) => user.displayName === username));
+      const games = await getDartsGames(userQ._id);
+      const filteredGames = games.filter((game) => game.users.some((user) => user.displayName === username));
       setUser((prev) => ({ ...prev, games: filteredGames }));
     }
     getUser();
@@ -60,6 +55,10 @@ function DartsUser() {
     const userDoorsThrows = userThrows.map((throws) => throws.doors);
     const userOverthrowsThrows = userThrows.map((throws) => throws?.overthrows ?? 0);
     const userAllThrows = userThrows.map((throws) => Object.values(throws).reduce((acc, value) => acc + value, 0));
+    
+    user.games.map((game) => {
+      console.log(game);
+    })
 
     setChartThrowsDates({
       labels: user.games.map((game) => {

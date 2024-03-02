@@ -130,7 +130,7 @@ function CreateGame({ show, setShow }) {
     }));
     if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
-    const game = {
+    const gameData = {
       created_at: Date.now(),
       created_by: currentUser.displayName,
       users: updatedUsers,
@@ -151,8 +151,8 @@ function CreateGame({ show, setShow }) {
     }
     updatedUsers[0].turn = true;
     const currentUserCopy = _.cloneDeep(updatedUsers[0]);
-    const gameCopy = _.pick(game, ['round', 'turn']);
-    game.record = [{
+    const gameCopy = _.pick(gameData, ['round', 'turn']);
+    gameData.record = [{
       game: {
         round: gameCopy.round,
         turn: gameCopy.turn
@@ -160,12 +160,16 @@ function CreateGame({ show, setShow }) {
       user: currentUserCopy
     }];
     if (training === true) {
-      game.training = true;
+      gameData.training = true;
+      setGame(gameData);
     } else {
-      const { record, ...gameWithoutRecord } = game;
-      await postDartsGame(gameWithoutRecord);
+      const { record, ...gameWithoutRecord } = gameData;
+      const game = await postDartsGame(gameWithoutRecord);
+      setGame({
+        _id: game._id,
+        ...gameData,
+      });
     }
-    setGame(game);
     navigate("game");
 
     localStorage.setItem("gameSettings", JSON.stringify({

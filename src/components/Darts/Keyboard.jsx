@@ -1,5 +1,4 @@
-import { deleteDoc, doc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { deleteDartsGame } from "../../fetch";
 
 /* eslint-disable react/prop-types */
 function Keyboard({ params }) {
@@ -19,9 +18,7 @@ function Keyboard({ params }) {
   }
 
   const handleQuit = async () => {
-    const docRef = doc(db, 'dartGames', game.id);
-    await deleteDoc(docRef);
-
+    if(!game.training) {await deleteDartsGame(game)}
     localStorage.setItem('dartsGame', null);
     handleShow();
   }

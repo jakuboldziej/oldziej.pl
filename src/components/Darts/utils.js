@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../firebase";
 import _ from 'lodash';
-import { getDartsUser } from "../../fetch";
+import { getDartsUser, putDartsGame, putDartsUser } from "../../fetch";
 
 let game;
 let handleShow;
@@ -70,8 +68,8 @@ const handlePodium = () => {
     const usersWithoutPodium = game.users.filter(({ place }) => !place);
     if (usersWithoutPodium.length > 0) {
       const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
-      if(sortedUsers[0]) game.podium[2] = sortedUsers[0].displayName;
-      if(sortedUsers[1]) game.podium[3] = sortedUsers[1].displayName;
+      if(sortedUsers[0]) {game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2}
+      if(sortedUsers[1]) {game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3}
     }
     handleDartsData();
     handleShow();
@@ -147,6 +145,7 @@ const handlePoints = (action, value) => {
     currentUser.throws["overthrows"] += 1;
     setUserState();
     setOverthrow(currentUser.displayName);
+    console.log(currentUser.throws);
   } else if (currentUser.points === 0) {
     const end = handleGameEnd();
     if (end) return;
@@ -171,7 +170,7 @@ const handleAvgPointsPerThrow = () => {
 const handleDartsData = async () => {
   users.map(async (user) => {
     const dartUser = await getDartsUser(user.displayName);
-
+    
     user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
     user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
     user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
@@ -189,10 +188,7 @@ const handleDartsData = async () => {
 
     console.log(dartUser);
 
-
-    if(!game.training) await updateDoc(doc(db, "dartUsers", user._id), {
-      ...dartUser
-    });
+    if(!game.training) await putDartsUser(dartUser)
   })
 
   game.podium = {
@@ -200,11 +196,9 @@ const handleDartsData = async () => {
     2: game.podium[2],
     3: game.podium[3],
   }
-  
+
   const { record, ...gameWithoutRecord } = game;
-  if(!game.training) await updateDoc(doc(db, "dartGames", game.id), {
-    ...gameWithoutRecord
-  });
+  if(!game.trainnig) await putDartsGame(gameWithoutRecord);
 }
 
 const handleSpecialValue = async (value, specialState, setSpecialState) => {

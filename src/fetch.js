@@ -7,24 +7,17 @@ export const getDartsUsers = async () => {
   return users;
 }
 
-export const getDartsUser = async (uDisplayName) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${uDisplayName}`);
+export const getDartsUser = async (displayName) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`);
   const user = await userResponse.json();
   return user;
 }
 
-export const updateDartsUser = async (userData) => {
-  await fetch(`${mongodbApiUrl}/users/:displayName`, {
+export const putDartsUser = async (userData) => {
+  await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
     method: "PUT",
     body: JSON.stringify({
-      displayName: userData?.displayName,
-      gamesPlayed: userData?.gamesPlayed,
-      podiums: userData?.podiums,
-      overAllPoints: userData?.overAllPoints,
-      highestEndingAvg: userData?.highestEndingAvg,
-      highestOuts: userData?.highestOuts,
-      highestRoundPoints: userData?.highestRoundPoints,
-      throws: userData?.throws,
+      ...userData
     }),
     headers: {
       "Content-Type": "application/json",
@@ -36,14 +29,7 @@ export const postDartsUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
     method: "POST",
     body: JSON.stringify({
-      displayName: userData.displayName,
-      gamesPlayed: userData.gamesPlayed,
-      podiums: userData.podiums,
-      overAllPoints: userData.overAllPoints,
-      highestEndingAvg: userData.highestEndingAvg,
-      highestOuts: userData.highestOuts,
-      highestRoundPoints: userData.highestRoundPoints,
-      throws: userData.throws,
+      ...userData
     }),
     headers: {
       "Content-Type": "application/json",
@@ -52,7 +38,7 @@ export const postDartsUser = async (userData) => {
 }
 
 export const postDartsGame = async (gameData) => {
-  await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
     method: "POST",
     body: JSON.stringify({
       created_at: gameData.created_at,
@@ -73,13 +59,38 @@ export const postDartsGame = async (gameData) => {
       "Content-Type": "application/json",
     },
   })
+  return await response.json();
 }
 
-export const getDartsGames = async () => {
-  const gamesResponse = await fetch(`${mongodbApiUrl}/darts/dartsGames`);
+export const putDartsGame = async (gameData) => {
+  await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameData._id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...gameData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export const deleteDartsGame = async (gameData) => {
+  await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameData._id}`, {
+    method: "DELETE",
+  });
+}
+
+export const getDartsGames = async (userId) => {
+  let url = `${mongodbApiUrl}/darts/dartsGames`;
+  if (userId) {
+    url += `?user=${userId}`;
+  }
+
+  const gamesResponse = await fetch(url);
   const games = await gamesResponse.json();
   return games;
-}
+};
+
 
 // Users
 export const getUser = async (uDisplayName) => {
