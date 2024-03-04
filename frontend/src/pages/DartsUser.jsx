@@ -13,12 +13,15 @@ import MySpinner from '../components/MySpinner';
 
 function DartsUser() {
   const { username } = useParams();
+  document.title = `Oldziej | ${username}`
   const [user, setUser] = useState();
+  const [isLoading, setIsLoading] = useState(true);
+  const [range, setRange] = useState(50);
+
   const [chartThrowsOverall, setChartThrowsOverall] = useState();
   const [chartThrowsDates, setChartThrowsDates] = useState();
   const [chartSpecialData, setChartSpecialData] = useState();
   const [chartPodiums, setChartPodiums] = useState()
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,9 +35,8 @@ function DartsUser() {
       }
       setUser(userQ);
 
-      const games = await getDartsGames(userQ.displayName);
-      const filteredGames = games.filter((game) => game.users.some((user) => user.displayName === username));
-      setUser((prev) => ({ ...prev, games: filteredGames }));
+      const games = await getDartsGames(userQ.displayName, 20);
+      setUser((prev) => ({ ...prev, games: games }));
       setIsLoading(false);
     }
     getUser();
@@ -59,10 +61,19 @@ function DartsUser() {
     const userOverthrowsThrows = userThrows.map((throws) => throws?.overthrows ?? 0);
     const userAllThrows = userThrows.map((throws) => Object.values(throws).reduce((acc, value) => acc + value, 0));
 
+    let previousDate = 0;
+    let dateCounter = 2;
     setChartThrowsDates({
       labels: user.games.map((game) => {
-        const date = new Date(Number(game.created_at));
-        return date.toLocaleDateString();
+        let date = new Date(game.created_at).toLocaleDateString();
+        if (previousDate === date) {
+          date = date + ` (${dateCounter})`;
+          dateCounter += 1;
+        } else {
+          dateCounter = 2;
+          previousDate = date;
+        }
+        return date;
       }),
       datasets: [
         {
@@ -102,7 +113,7 @@ function DartsUser() {
 
     setChartSpecialData({
       labels: user.games.map((game) => {
-        const date = new Date(Number(game.created_at));
+        const date = new Date(game.created_at);
         return date.toLocaleDateString();
       }),
       datasets: [
@@ -120,6 +131,14 @@ function DartsUser() {
     })
   }, [user]);
 
+  const handleRangeChange = (event) => {
+    setRange(event.target.value)
+  }
+
+  useEffect(() => {
+    console.log(range);
+  }, [range]);
+
   return (
     <>
       <NavBar />
@@ -133,43 +152,41 @@ function DartsUser() {
             <MySpinner />
             Loading Statistics...
           </div>
-        ) : 
-        <div className='charts'>
-          {chartThrowsOverall &&
-            <div>
-              <Bar data={chartThrowsOverall} />
-              <div className='options'>
-                <Form.Check
-                  inline
-                  type="radio"
-                  label={
+        ) :
+          <div className='charts'>
+            {chartThrowsOverall &&
+              <div>
+                <Bar data={chartThrowsOverall} />
+                <div className='options'>
+                  <Form.Check inline type="radio" label={
                     <span style={{ display: 'flex', alignItems: 'center' }}>
                       <img width="64" height="64" src="https://img.icons8.com/color/64/bar-chart--v1.png" alt="bar-chart--v1" />
                     </span>
                   }
-                />
-                <Form.Check
-                  inline
-                  type="radio"
-                  label={
+                  />
+                  <Form.Check inline type="radio" label={
                     <span style={{ display: 'flex', alignItems: 'center' }}>
                       <img width="64" height="64" src="https://img.icons8.com/dusk/64/chart.png" alt="chart" />
                     </span>
                   }
-                />
+                  />
+                  <div className='d-flex flex-column'>
+                    <Form.Label>Range {range}</Form.Label>
+                    <Form.Range value={range} onChange={handleRangeChange} />
+                  </div>
+                </div>
               </div>
-            </div>
-          }
-          {chartThrowsDates &&
-            <div>
-              <Line data={chartThrowsDates} />
-            </div>}
-          {chartSpecialData &&
-            <div>
-              <Line data={chartSpecialData} />
-            </div>
-          }
-        </div>}
+            }
+            {chartThrowsDates &&
+              <div>
+                <Line data={chartThrowsDates} />
+              </div>}
+            {chartSpecialData &&
+              <div>
+                <Line data={chartSpecialData} />
+              </div>
+            }
+          </div>}
       </div>
     </>
   )

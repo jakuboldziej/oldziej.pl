@@ -36,7 +36,7 @@ router.get('/dartsGames', async (req, res) => {
     const limit = req.query.limit
     if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
     
-    const dartsGames = await DartsGame.find(filter, null, {limit: limit});
+    const dartsGames = await DartsGame.find(filter, null, {limit: limit, sort: {created_at: -1}});
     res.json(dartsGames)
   } catch (err) {
     res.json({ message: err.message })

@@ -141,9 +141,9 @@ function DartsPage() {
     // Getting data
     const fetchData = async () => {
       try {
-        const sortedGames = handleFilterGames(filterGamesType, await getDartsGames());
-        setGames(sortedGames);
+        const sortedGames = handleFilterGames(filterGamesType, await getDartsGames(null, 10));
         const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
+        setGames(sortedGames);
         setDartUsers(sortedUsers);
         setIsLoading(false);
       } catch (err) {

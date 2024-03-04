@@ -6,8 +6,9 @@ const dartsGameSchema = new mongoose.Schema ({
     required: true
   },
   created_at: {
-    type: Number,
-    required: true
+    type: Date,
+    required: true,
+    default: Date.now
   },
   users: {
     type: Array,
