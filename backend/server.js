@@ -1,9 +1,12 @@
 const dotenv = require('dotenv');
+const path = require('path');
 dotenv.config();
 
 const express = require("express")
 const app = express()
 const mongoose = require("mongoose")
+
+app.use(express.static(path.join(__dirname, '../frontend', 'dist')));
 
 app.use((req, res, next) => {
   res.setHeader("Content-Security-Policy", "upgrade-insecure-requests");
@@ -25,5 +28,9 @@ app.use('/api/darts', dartsRouter)
 
 const usersRouter = require('./routes/users')
 app.use('/api/users', usersRouter)
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
+});
 
 app.listen(3000, () => console.log('Server Started on port 3000'))

@@ -10,7 +10,7 @@ const getDartsUser = async (req, res, next) => {
     user = await DartsUser.findOne({ displayName });
     if (user == null) return res.status(404);
   } catch (err) {
-    return res.status(500)
+    return res.json({message: err.message })
   }
   res.user = user;
   next();
@@ -31,7 +31,12 @@ const getDartsGame = async (req, res, next) => {
 // Darts Games
 router.get('/dartsGames', async (req, res) => {
   try {
-    const dartsGames = await DartsGame.find()
+    let filter = {};
+    const userDisplayName = req.query.user
+    const limit = req.query.limit
+    if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
+    
+    const dartsGames = await DartsGame.find(filter, null, {limit: limit});
     res.json(dartsGames)
   } catch (err) {
     res.json({ message: err.message })
