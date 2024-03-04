@@ -9,6 +9,7 @@ import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
 import { Form } from 'react-bootstrap';
 import { getDartsGames, getDartsUser } from '../fetch';
+import MySpinner from '../components/MySpinner';
 
 function DartsUser() {
   const { username } = useParams();
@@ -17,6 +18,7 @@ function DartsUser() {
   const [chartThrowsDates, setChartThrowsDates] = useState();
   const [chartSpecialData, setChartSpecialData] = useState();
   const [chartPodiums, setChartPodiums] = useState()
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUser = async () => {
@@ -30,9 +32,10 @@ function DartsUser() {
       }
       setUser(userQ);
 
-      const games = await getDartsGames(userQ._id);
+      const games = await getDartsGames(userQ.displayName);
       const filteredGames = games.filter((game) => game.users.some((user) => user.displayName === username));
       setUser((prev) => ({ ...prev, games: filteredGames }));
+      setIsLoading(false);
     }
     getUser();
   }, [username]);
@@ -55,10 +58,6 @@ function DartsUser() {
     const userDoorsThrows = userThrows.map((throws) => throws.doors);
     const userOverthrowsThrows = userThrows.map((throws) => throws?.overthrows ?? 0);
     const userAllThrows = userThrows.map((throws) => Object.values(throws).reduce((acc, value) => acc + value, 0));
-    
-    user.games.map((game) => {
-      console.log(game);
-    })
 
     setChartThrowsDates({
       labels: user.games.map((game) => {
@@ -129,6 +128,12 @@ function DartsUser() {
           <h2>{user?.displayName}</h2>
           <hr />
         </div>
+        {isLoading ? (
+          <div className="d-flex flex-column align-items-center justify-content-center mt-5 gap-2">
+            <MySpinner />
+            Loading Statistics...
+          </div>
+        ) : 
         <div className='charts'>
           {chartThrowsOverall &&
             <div>
@@ -164,7 +169,7 @@ function DartsUser() {
               <Line data={chartSpecialData} />
             </div>
           }
-        </div>
+        </div>}
       </div>
     </>
   )

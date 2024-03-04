@@ -239,7 +239,7 @@ function DartsPage() {
           </div>
           <div className="myCard games">
             <span>
-              <h3>Games</h3>
+              <span><h3>Games</h3> <h6>({games.length})</h6></span>
               <Dropdown data-bs-theme="dark">
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>

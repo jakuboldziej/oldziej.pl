@@ -186,8 +186,6 @@ const handleDartsData = async () => {
     if (parseFloat(user.highestRoundPoints) > parseFloat(dartUser.highestRoundPoints)) dartUser.highestRoundPoints = parseFloat(user.highestRoundPoints);
     if (parseFloat(user.avgPointsPerThrow) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerThrow);
 
-    console.log(dartUser);
-
     if(!game.training) await putDartsUser(dartUser)
   })
 

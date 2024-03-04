@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -80,17 +80,25 @@ export const deleteDartsGame = async (gameData) => {
   });
 }
 
-export const getDartsGames = async (userId) => {
+export const getDartsGames = async (userDisplayName = null, limit = 10) => {
   let url = `${mongodbApiUrl}/darts/dartsGames`;
-  if (userId) {
-    url += `?user=${userId}`;
+
+  const queryParams = [];
+  if (userDisplayName) {
+    queryParams.push(`user=${userDisplayName}`);
+  }
+  if (limit) {
+    queryParams.push(`limit=${limit}`);
+  }
+
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join('&')}`;
   }
 
   const gamesResponse = await fetch(url);
   const games = await gamesResponse.json();
   return games;
 };
-
 
 // Users
 export const getUser = async (uDisplayName) => {

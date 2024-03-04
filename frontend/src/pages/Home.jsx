@@ -16,7 +16,7 @@ function Home() {
         setDartUsers(await getDartsUsers());
         setIsLoading(false);
       } catch (err) {
-        console.log('Error fetching', err);
+        console.log('Error fetching', err.message);
         setIsLoading(false);
       }
     }
