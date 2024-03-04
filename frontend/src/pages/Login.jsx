@@ -9,7 +9,7 @@ import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css
 import { AuthContext } from "../context/AuthContext";
 
 function Login() {
-  document.title = "HomeServer | Login";
+  document.title = "Oldziej | Login";
 
   const { currentUser } = useContext(AuthContext);
   const [err, setErr] = useState("");

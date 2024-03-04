@@ -21,9 +21,9 @@ db.once('open', () => console.log('Connected Database'))
 app.use(express.json())
 
 const dartsRouter = require('./routes/darts')
-app.use('/darts', dartsRouter)
+app.use('/api/darts', dartsRouter)
 
 const usersRouter = require('./routes/users')
-app.use('/users', usersRouter)
+app.use('/api/users', usersRouter)
 
-app.listen(3000, () => console.log('Server Started'))
+app.listen(3000, () => console.log('Server Started on port 3000'))

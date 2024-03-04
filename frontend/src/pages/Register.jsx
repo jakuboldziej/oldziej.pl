@@ -9,7 +9,7 @@ import { AuthContext } from "../context/AuthContext";
 import { postUser, postDartsUser } from "../fetch";
 
 function Register() {
-  document.title = "HomeServer | Register";
+  document.title = "Oldziej | Register";
   
   const { currentUser } = useContext(AuthContext);
   const [err, setErr] = useState(false);

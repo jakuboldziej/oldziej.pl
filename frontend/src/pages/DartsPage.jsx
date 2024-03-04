@@ -14,7 +14,7 @@ import MySpinner from "../components/MySpinner";
 import { getDartsGames, getDartsUsers } from "../fetch";
 
 function DartsPage() {
-  document.title = "HomeServer | Darts";
+  document.title = "Oldziej | Darts";
 
   const location = useLocation();
 

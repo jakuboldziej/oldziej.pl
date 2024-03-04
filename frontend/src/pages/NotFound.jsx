@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 
 const NotFound = () => {
-  document.title = "HomeServer | 404 - Not Found";
+  document.title = "Oldziej | 404 - Not Found";
   const navigate = useNavigate();
 
   return (
