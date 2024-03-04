@@ -3,7 +3,7 @@
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
-import { Button, Dropdown } from "react-bootstrap";
+import { Button, Dropdown, Form } from "react-bootstrap";
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
@@ -23,11 +23,12 @@ function DartsPage() {
   const [show, setShow] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
   const [games, setGames] = useState([]);
+  const [gamesShown, setGamesShown] = useState([]);
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
   const [filterGamesType, setFilterGamesType] = useState("created_at");
-  // const [filterUser, setFilterUser] = useState('None');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -86,37 +87,48 @@ function DartsPage() {
     return sortedUsers;
   };
 
-  const handleFilterGames = (action, games) => {
+  const handleFilterGames = (action, gamesToFilter) => {
     let sortedGames;
 
     switch (action) {
       case "created_at":
-        sortedGames = games.slice().sort((a, b) => {
+        sortedGames = gamesToFilter.slice().sort((a, b) => {
           const firstData = a.created_at;
           const secondData = b.created_at;
           return secondData - firstData;
         });
         break;
       case "most_users":
-        sortedGames = games.slice().sort((a, b) => {
+        sortedGames = gamesToFilter.slice().sort((a, b) => {
           const firstData = a.users.length;
           const secondData = b.users.length;
           return secondData - firstData;
         });
         break;
-      // case "user":
-      //   sortedGames = games.filter(game => {
-      //     const matchedUser = game.users.some(user => user.displayName === filterUser);
-      //     return matchedUser;
-      //   });
-      //   console.log(sortedGames);
-      // break;
       default:
-        sortedGames = games.slice();
+        sortedGames = gamesToFilter.slice();
         break;
     }
 
     return sortedGames;
+  };
+
+  const handleScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    if (scrollTop + clientHeight >= scrollHeight) {
+      // Reached near the end, load more data
+      if (games.length > 0) setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleGamesShown = (type, amount) => {
+    let gamesAmount;
+    if (type === "scroll") gamesAmount = games.slice(0, 10 * currentPage);
+    else if (type === "filter") { 
+      gamesAmount = games.slice(0, amount) 
+    }
+
+    setGamesShown(gamesAmount);
   };
 
   useEffect(() => {
@@ -125,34 +137,30 @@ function DartsPage() {
   }, [filterUsersType]);
 
   useEffect(() => {
-    const sortedGames = handleFilterGames(filterGamesType, games);
-    setGames(sortedGames);
+    const sortedGames = handleFilterGames(filterGamesType, gamesShown);
+    setGamesShown(sortedGames);
   }, [filterGamesType]);
 
-  // useEffect(() => {
-  //   if (filterUser == 'None') {
-  //     console.log('none');
-  //   } else {
-  //     handleFilterGames("user", games);
-  //   }
-  // }, [filterUser]);
+  useEffect(() => {
+    // Infinite Scroll
+    handleGamesShown("scroll")
+  }, [currentPage]);
+
 
   useEffect(() => {
-    // Getting data
-    const fetchData = async () => {
+    const fetchFirstData = async () => {
       try {
-        const sortedGames = handleFilterGames(filterGamesType, await getDartsGames(null, 10));
+        const fetchedGames = handleFilterGames(filterGamesType, await getDartsGames(null, 10));
         const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
-        setGames(sortedGames);
         setDartUsers(sortedUsers);
+        setGamesShown(fetchedGames)
         setIsLoading(false);
       } catch (err) {
         console.log("Error fetching", err);
         setIsLoading(false);
       }
-    };
-
-    fetchData();
+    }
+    fetchFirstData();
 
     // Managing live game
     const liveGame = localStorage.getItem('dartsGame');
@@ -165,6 +173,16 @@ function DartsPage() {
     const params = location.state;
     if (params && params.createNewGame) handleShow();
   }, []);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      const fetchedGames = handleFilterGames(filterGamesType, await getDartsGames());
+      setGames(fetchedGames);
+    }
+    if (gamesShown.length === 10) {
+      fetchAllData()
+    }
+  }, [gamesShown, isLoading]);
 
   return (
     <>
@@ -179,7 +197,6 @@ function DartsPage() {
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>
                 </Dropdown.Toggle>
-
                 <Dropdown.Menu onChange={() => console.log('close')}>
                   <Dropdown.Item onClick={() => setFilterUsersType("firstPlace")}>First Places</Dropdown.Item>
                   <Dropdown.Item onClick={() => setFilterUsersType("secondPlace")}>Second Places</Dropdown.Item>
@@ -239,7 +256,7 @@ function DartsPage() {
           </div>
           <div className="myCard games">
             <span>
-              <span><h3>Games</h3> <h6>({games.length})</h6></span>
+              <span><h3>Games</h3> <h6>({gamesShown.length})</h6></span>
               <Dropdown data-bs-theme="dark">
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>
@@ -248,20 +265,20 @@ function DartsPage() {
                   <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
                   <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
                   <Dropdown.Divider />
-                  {/* <Form.Select value={filterUser} onChange={(e) => {setFilterUser(e.target.value)}}>
-                    <option>None</option>
-                    {dartUsers.map(user=> (<option key={user.id} value={user.displayName}>{user.displayName}</option>))}
-                  </Form.Select> */}
+                  {/* <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
+                  <Form.Control type="number" placeholder="Games Amount" value={gamesShown.length}
+                    onChange={(event)=> handleGamesShown("filter", event.target.value)}
+                  /> */}
                 </Dropdown.Menu>
               </Dropdown>
             </span>
-            <div className="info">
+            <div className="info" onScroll={handleScroll}>
               {isLoading && (
                 <div className="d-flex justify-content-center mt-5">
                   <MySpinner />
                 </div>
               )}
-              {games && games.map((game) => {
+              {gamesShown && gamesShown.map((game) => {
                 return (
                   game.active ?
                     <div key={game._id} className="element">

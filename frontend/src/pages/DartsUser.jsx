@@ -131,10 +131,6 @@ function DartsUser() {
     })
   }, [user]);
 
-  const handleRangeChange = (event) => {
-    setRange(event.target.value)
-  }
-
   useEffect(() => {
     console.log(range);
   }, [range]);
@@ -172,7 +168,7 @@ function DartsUser() {
                   />
                   <div className='d-flex flex-column'>
                     <Form.Label>Range {range}</Form.Label>
-                    <Form.Range value={range} onChange={handleRangeChange} />
+                    <Form.Range value={range} onChange={(event) => setRange(event.target.value)} />
                   </div>
                 </div>
               </div>
