@@ -10,18 +10,18 @@ function Home() {
   const [dartUsers, setDartUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const getDartUsers = async () => {
-      try {
-        setDartUsers(await getDartsUsers());
-        setIsLoading(false);
-      } catch (err) {
-        console.log('Error fetching', err);
-        setIsLoading(false);
-      }
-    }
-    getDartUsers();
-  }, []);
+  // useEffect(() => {
+  //   const getDartUsers = async () => {
+  //     try {
+  //       setDartUsers(await getDartsUsers());
+  //       setIsLoading(false);
+  //     } catch (err) {
+  //       console.log('Error fetching', err);
+  //       setIsLoading(false);
+  //     }
+  //   }
+  //   getDartUsers();
+  // }, []);
 
   return (
     <>
