@@ -4,7 +4,6 @@ import NavBar from "../components/NavBar"
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
-import MyToasts from "../components/MyComponents/MyToasts";
 import { useLocation } from "react-router";
 import MyTooltip from "../components/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "../fetch";
@@ -220,21 +219,41 @@ function DartsPage() {
                   <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                     <span className="elementInfo username">{dartUser.displayName}</span>
                     <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
+                      <img width="25" height="25" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                       {dartUser.podiums["firstPlace"]}
                     </span>
                     <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
+                      <img width="25" height="25" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
+                      {dartUser.podiums["secondPlace"]}
+                    </span>
+                    <span className="elementInfo">
+                      <img width="25" height="25" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
+                      {dartUser.podiums["thirdPlace"]}
+                    </span>
+                    <MyTooltip title="Doors Hit">
+                    <span className="elementInfo">
+                      <img width="25" height="25" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                       {dartUser.throws["doors"]}
                     </span>
+                    </MyTooltip>
+                    <MyTooltip title="Games Played">
                     <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
+                      <img width="25" height="25" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
                       {dartUser.gamesPlayed}
                     </span>
+                    </MyTooltip>
+                    <MyTooltip title="Highest Ending Average">
                     <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
+                      <img width="25" height="25" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
                       <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
                     </span>
+                    </MyTooltip>
+                    <MyTooltip title="Highest Turn Points">
+                    <span className="elementInfo">
+                      <img width="25" height="25" src="https://img.icons8.com/color/20/mountain.png" alt="graph" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
+                    </span>
+                    </MyTooltip>
                   </a>
                 )
               })}
@@ -267,10 +286,11 @@ function DartsPage() {
                   return (
                     game.active ?
                       <div key={game._id} className="element">
-                        <span className="elementInfo gameActive">
-                          {game.active ? 'Active' : 'Ended'}
-                          <img src={game.active ? GreenDot : RedDot} />
-                        </span>
+                        <MyTooltip title="Game Online">
+                          <span className="elementInfo gameActive">
+                            <img src={game.active ? GreenDot : RedDot} />
+                          </span>
+                        </MyTooltip>
                         {game.users[0] && <span className="elementInfo">
                           <h6>{game.users[0].displayName}</h6>
                           <h6>{game.users[0].points}</h6>
@@ -285,7 +305,7 @@ function DartsPage() {
                         </span>}
                         <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
                           <span className="elementInfo usersCount absolute right-0">
-                            <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
+                            <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                             {game.users.length}
                           </span>
                         </MyTooltip>
@@ -293,35 +313,38 @@ function DartsPage() {
                       </div>
                       :
                       <div key={game._id} className="element">
-                        <span className="elementInfo gameActive">
-                          {game.active ? 'Active' : 'Ended'}
-                          <img src={game.active ? GreenDot : RedDot} />
-                        </span>
+                        <MyTooltip title="Game Ended">
+                          <span className="elementInfo gameActive">
+                            <img src={game.active ? GreenDot : RedDot} />
+                          </span>
+                        </MyTooltip>
                         <span className="elementInfo">
-                          <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
+                          <img width="25" height="25" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                           {game.podium[1]}
                         </span>
                         {game.podium[2] && <span className="elementInfo">
-                          <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
+                          <img width="25" height="25" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
                           {game.podium[2]}
                         </span>}
                         {game.podium[3] && <span className="elementInfo">
-                          <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
+                          <img width="25" height="25" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
                           {game.podium[3]}
                         </span>}
                         <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
                           <span className="elementInfo usersCount absolute right-0">
-                            <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
+                            <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                             {game.users.length}
                           </span>
                         </MyTooltip>
                         <MyTooltip title="Start Points">
                           <span className="elementInfo">
-                            <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
+                            <img width="25" height="25" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
                             {game.startPoints}
                           </span>
                         </MyTooltip>
-                        <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
+                        <MyTooltip title={new Date(game.created_at).toLocaleString()}>
+                          <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
+                        </MyTooltip>
                       </div>
                   )
                 })}
@@ -347,7 +370,6 @@ function DartsPage() {
           </Card>
         </div>
       </div>
-      <MyToasts />
     </>
   )
 }

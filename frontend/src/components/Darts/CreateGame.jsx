@@ -9,6 +9,7 @@ import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
+import { toast } from "sonner";
 
 function CreateGame({ children }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -32,13 +33,13 @@ function CreateGame({ children }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 21; i++) numbersLegsSets.push(<option key={i}>{i}</option>);
+  for (let i = 1; i <= 21; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
     if (usersPlaying) {
       for (let i = 1; i <= usersPlaying.length; i++) {
-        podiumOptions.push(<option key={i}>{i}</option>);
+        podiumOptions.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
       }
       setUserPodiumsCount(podiumOptions);
     }
@@ -196,8 +197,6 @@ function CreateGame({ children }) {
     estimatedGameTime();
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
-  const [position, setPosition] = useState("bottom")
-
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -205,67 +204,141 @@ function CreateGame({ children }) {
       </DrawerTrigger>
       <DrawerContent className="create-game-modal">
         <DrawerHeader>
-          <DrawerTitle className="text-white border-b-2 border-[#00B524] p-3">Create New Game</DrawerTitle>
-          <div className="settings pt-3">
-            <Card className="usersCard">
-              <CardHeader className="text-lg">
-                Add Users
-              </CardHeader>
-              <hr />
-              <CardContent className="card-content p-0">
-                <div className="users">
-                  <div className="text-xl py-3">Not Playing</div>
-                  <hr />
-                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
-                      <span>{user.displayName}</span>
-                    </div>
-                  )) : null}
-                </div>
-                {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
-                <div className="text-xl py-3">Playing</div>
-                {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
-                {/* </Card.Title> */}
-                <hr />
-                <div className="users pt-3">
-                  {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
-                      <span>{user.displayName}</span>
-                    </div>
-                  )) : null}
-                </div>
-              </CardContent>
-            </Card>
-            <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
-              <Button variant="outline_red" className="glow-button-red" onClick={handleGameStart}>Start</Button>
-              <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
-              <span>EGT: {egt}</span>
-            </div>
-            <Card className="settingsCard">
-              <CardHeader>
-                Settings
-              </CardHeader>
-              <CardContent>
-                <div className="selects">
-                  <Select>
-                    <SelectTrigger className=" text-white">
-                      <SelectValue placeholder="Select podium" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="apple">Apple</SelectItem>
-                        <SelectItem value="banana">Banana</SelectItem>
-                        <SelectItem value="blueberry">Blueberry</SelectItem>
-                        <SelectItem value="grapes">Grapes</SelectItem>
-                        <SelectItem value="pineapple">Pineapple</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
         </DrawerHeader>
+        <div className="settings pt-3">
+          <Card className="usersCard">
+            <CardHeader className="text-lg">
+              Add Users
+            </CardHeader>
+            <hr />
+            <CardContent className="card-content p-0">
+              <div className="users">
+                <div className="text-xl py-3">Not Playing</div>
+                <hr />
+                {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
+                  <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
+                    <span>{user.displayName}</span>
+                  </div>
+                )) : null}
+              </div>
+              {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
+              <div className="text-xl py-3">Playing</div>
+              {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
+              {/* </Card.Title> */}
+              <hr />
+              <div className="users pt-3">
+                {usersPlaying.length > 0 ? usersPlaying.map((user) => (
+                  <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+                    <span>{user.displayName}</span>
+                  </div>
+                )) : null}
+              </div>
+            </CardContent>
+          </Card>
+          <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
+            <Button variant="outline_red" className="glow-button-red" onClick={handleGameStart}>Start</Button>
+            <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
+            <span>EGT: {egt}</span>
+          </div>
+          <Card className="settingsCard">
+            <CardHeader>
+              Settings
+            </CardHeader>
+            <hr />
+            <CardContent className="card-content">
+              <div className="selects">
+                <div className="text-lg">Podium</div>
+                <Select>
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Podium" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {usersPlaying.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <div className="text-lg">Gamemode</div>
+                <Select defaultValue="X01">
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Gamemode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="X01">X01</SelectItem>
+                      <SelectItem value="Cricket">Cricket</SelectItem>
+                      <SelectItem value="Around the Clock">Around the Clock</SelectItem>
+                      <SelectItem value="Shanghai">Shanghai</SelectItem>
+                      <SelectItem value="Elimination">Elimination</SelectItem>
+                      <SelectItem value="Highscore">Highscore</SelectItem>
+                      <SelectItem value="Killer">Killer</SelectItem>
+                      <SelectItem value="Splitscore">Splitscore</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <div className="text-lg">Start Points</div>
+                <Select defaultValue="101">
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Start Points" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="101">101</SelectItem>
+                      <SelectItem value="201">201</SelectItem>
+                      <SelectItem value="301">301</SelectItem>
+                      <SelectItem value="401">401</SelectItem>
+                      <SelectItem value="501">501</SelectItem>
+                      <SelectItem value="601">601</SelectItem>
+                      <SelectItem value="701">701</SelectItem>
+                      <SelectItem value="801">801</SelectItem>
+                      <SelectItem value="901">901</SelectItem>
+                      <SelectItem value="1001">1001</SelectItem>
+                      <SelectItem value="Custom">Custom</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <div className="text-lg">Check-Out</div>
+                <Select defaultValue="Straight Out">
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Check-Out" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="Straight Out">Straight Out</SelectItem>
+                      <SelectItem value="Double Out">Double Out</SelectItem>
+                      <SelectItem value="Triple Out">Triple Out</SelectItem>
+                      <SelectItem value="Master Out">Master Out</SelectItem>
+                      <SelectItem value="Splitscore">Splitscore</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <div className="text-lg">Sets</div>
+                <Select>
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Sets" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {numbersLegsSets}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <div className="text-lg">Legs</div>
+                <Select>
+                  <SelectTrigger className="text-white">
+                    <SelectValue placeholder="Select Legs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {numbersLegsSets}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </DrawerContent>
     </Drawer>
     // {/* <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
@@ -274,92 +347,8 @@ function CreateGame({ children }) {
     //   </Modal.Header>
     //   <Modal.Body>
     //     <div className="settings">
-    //       <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
-    //         <Card.Header>Add Users</Card.Header>
-    //         <Card.Body>
-    //           <Card.Title>Not Playing</Card.Title>
-    //           <hr />
-    //           <div className="users">
-    //             {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-    //               <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user._id}>
-    //                 <span>{user.displayName}</span>
-    //               </div>
-    //             )) : null}
-    //           </div>
-    //           <Card.Title className="mt-3 d-flex justify-content-between">
-    //             <span>Playing</span>
-    //             <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} />
-    //           </Card.Title>
-    //           <hr />
-    //           <div className="users">
-    //             {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-    //               <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
-    //                 <span>{user.displayName}</span>
-    //               </div>
-    //             )) : null}
-    //           </div>
-    //         </Card.Body>
-    //       </Card>
-    //       <div className="sticky-top d-flex flex-column align-items-center gap-3">
-    //         <Button variant="outline-danger glow-button" onClick={handleGameStart}>Start</Button>
-    //         <Button variant="outline-success glow-button" onClick={() => handleGameStart(true)}>Training</Button>
-    //         <span>EGT: {egt}</span>
-    //       </div>
     //       <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
     //         <Card.Header>Settings</Card.Header>
-    //         <Card.Body>
-    //           <Card.Title>Podium</Card.Title>
-    //           <hr />
-    //           <Form.Select value={usersPodium} onChange={(e) => setUsersPodium(e.target.value)}>
-    //             {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
-    //           </Form.Select>
-    //           <br />
-    //           <Card.Title>Gamemode</Card.Title>
-    //           <hr />
-    //           <Form.Select value={selectGameMode} onChange={(e) => setSelectGameMode(e.target.value)}>
-    //             <option>X01</option>
-    //             <option>Cricket</option>
-    //             <option>Around the Clock</option>
-    //             <option>Shanghai</option>
-    //             <option>Elimination</option>
-    //             <option>Highscore</option>
-    //             <option>Killer</option>
-    //             <option>Splitscore</option>
-    //           </Form.Select>
-    //           <br />
-    //           <Card.Title>Startpoints</Card.Title>
-    //           <hr />
-    //           <Form.Select value={selectStartPoints} onChange={handleSelectStartPoints}>
-    //             <option>101</option>
-    //             <option>201</option>
-    //             <option>301</option>
-    //             <option>501</option>
-    //             <option>601</option>
-    //             <option>701</option>
-    //             <option>901</option>
-    //             <option>1001</option>
-    //             <option onClick={() => setShowCustomPoints(true)}>Custom</option>
-    //             <option className="d-none" value={customStartPoints}>{customStartPoints}</option>
-    //           </Form.Select>
-    //           <br />
-    //           <Card.Title>Check-Out</Card.Title>
-    //           <hr />
-    //           <Form.Select value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
-    //             <option>Straight Out</option>
-    //             <option>Double Out</option>
-    //             <option>Triple Out</option>
-    //             <option>Master Out</option>
-    //             <option>Splitscore</option>
-    //           </Form.Select>
-    //           <br />
-    //           <Card.Title>
-    //             <span>Sets</span>
-    //           </Card.Title>
-    //           <hr />
-    //           <Form.Select value={selectSets} onChange={(e) => setSelectSets(e.target.value)}>
-    //             {numbersLegsSets}
-    //           </Form.Select>
-    //           <br />
     //           <Card.Title>
     //             <span>Legs</span>
     //             <Form.Select style={{width: 50}} value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>

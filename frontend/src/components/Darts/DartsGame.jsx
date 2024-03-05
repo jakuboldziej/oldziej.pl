@@ -7,7 +7,6 @@ import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
 import { ToastsContext } from "../../context/ToastsContext";
-import MyToasts from "../MyComponents/MyToasts";
 import MyAccordion from "../MyComponents/MyAccordion";
 
 function DartsGame() {
@@ -141,7 +140,6 @@ function DartsGame() {
         <Keyboard params={keyboardParams} />
       </div>
       <GameSummary show={show} fullscreen={fullscreen} setShow={setShow}/>
-      <MyToasts />
     </div>
   )
 }

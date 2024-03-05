@@ -1,5 +1,7 @@
 import { useContext } from "react";
 import { ToastsContext } from "../../context/ToastsContext";
+import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 function MyToasts() {
   const { toasts, setToasts } = useContext(ToastsContext);
@@ -20,7 +22,20 @@ function MyToasts() {
   const renderHTML = (html) => ({ __html: html });
 
   return (
-    <div>asdf</div>
+    <Button
+      variant="outline"
+      onClick={() =>
+        toast("Event has been created", {
+          description: "Sunday, December 03, 2023 at 9:00 AM",
+          action: {
+            label: "Undo",
+            onClick: () => console.log("Undo"),
+          },
+        })
+      }
+    >
+      Show Toast
+    </Button>
     // <ToastContainer className="position-fixed bottom-0 end-0 p-3">
     //   {/* {toasts.map((toast, index) => (
     //     <Toast key={index} onClose={() => handleClosingToast(index)} show={toast.show} delay={5000} autohide>

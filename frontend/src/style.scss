@@ -53,6 +53,7 @@ html {
 .glow-button-red {
   box-shadow: 0 0 30px $red;
 }
+
 .glow-button-green {
   box-shadow: 0 0 30px $green;
 }
@@ -83,7 +84,8 @@ nav {
 }
 
 // Modal
-.create-game-modal, .game-summary-modal {
+.create-game-modal,
+.game-summary-modal {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -139,9 +141,10 @@ nav {
       .card-content {
         padding: 15px;
 
-        .form-select {
-          background-color: $creamy;
-          color: black;
+        .selects {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
       }
 
@@ -195,19 +198,19 @@ nav {
         max-height: 500px;
         overflow: auto;
         color: black;
-  
+
         .user {
           border-radius: 15px;
           background-color: $red;
           padding: 10px;
           transition: opacity 0.8s ease;
           user-select: none;
-  
+
           &.playing {
             background-color: $creamy;
           }
         }
-  
+
         .user:hover {
           cursor: pointer;
           opacity: 0.8;
@@ -235,8 +238,7 @@ nav {
 }
 
 // Home Page / Darts Page
-.darts-page,
-.home-page {
+.darts-page, .home-page {
   .cards {
     display: flex;
     flex-direction: row;
@@ -320,9 +322,18 @@ nav {
             max-height: 67px;
             min-height: 67px;
 
+            @media screen and (max-width: 1160px) {
+              font-size: 1.2vw;
+            }
+
+            @media screen and (max-width: 576px) {
+              font-size: 16px;
+              width: 11%;
+            }
+
             &:first-child {
               flex-direction: row;
-              width: 60px;
+              width: 65px;
             }
           }
         }
@@ -351,6 +362,10 @@ nav {
 
     .my-card {
       width: 40%;
+
+      @media screen and (max-width: 576px) {
+        width: 100%;
+      }
     }
 
     @media screen and (max-width: 576px) {
@@ -379,7 +394,7 @@ nav {
     .info {
       .element {
         .elementInfo {
-          width: 14% !important;
+          width: 16% !important;
           max-height: 60px !important;
 
           @media screen and (max-width: 1160px) {
@@ -388,10 +403,11 @@ nav {
 
           @media screen and (max-width: 576px) {
             font-size: 16px;
+            width: 16.5% !important;
           }
 
           &:first-child {
-            width: 80px !important;
+            width: 50px !important;
           }
         }
 
@@ -404,7 +420,7 @@ nav {
         .timedate {
           position: absolute;
           border: none !important;
-          width: 100px !important;
+          width: 65px !important;
           padding: 0 !important;
           right: 0;
           bottom: 0;
