@@ -9,7 +9,7 @@ import { useLocation } from "react-router";
 import MyTooltip from "../components/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "../fetch";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 function DartsPage() {
@@ -257,73 +257,75 @@ function DartsPage() {
               </Dropdown> */}
             </CardHeader>
             <ScrollArea onScroll={handleScroll}>
-            <div className="info" >
-              {isLoading && (
-                <div className="d-flex justify-content-center mt-5">
-                  {/* <MySpinner /> */}
-                </div>
-              )}
-              {gamesShown && gamesShown.map((game) => {
-                return (
-                  game.active ?
-                    <div key={game._id} className="element">
-                      <span className="elementInfo gameActive">
-                        {game.active ? 'Active' : 'Ended'}
-                        <img src={game.active ? GreenDot : RedDot} />
-                      </span>
-                      {game.users[0] && <span className="elementInfo">
-                        <h6>{game.users[0].displayName}</h6>
-                        <h6>{game.users[0].points}</h6>
-                      </span>}
-                      {game.users[1] && <span className="elementInfo">
-                        <h6>{game.users[1].displayName}</h6>
-                        <h6>{game.users[1].points}</h6>
-                      </span>}
-                      {game.users[2] && <span className="elementInfo">
-                        <h6>{game.users[2].displayName}</h6>
-                        <h6>{game.users[2].points}</h6>
-                      </span>}
-                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')} className="elementInfo usersCount position-absolute end-0">
-                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
-                        {game.users.length}
-                      </MyTooltip>
-                      <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
-                    </div>
-                    :
-                    <div key={game._id} className="element">
-                      <span className="elementInfo gameActive">
-                        {game.active ? 'Active' : 'Ended'}
-                        <img src={game.active ? GreenDot : RedDot} />
-                      </span>
-                      <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[1]}
-                      </span>
-                      {game.podium[2] && <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[2]}
-                      </span>}
-                      {game.podium[3] && <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
-                        {game.podium[3]}
-                      </span>}
-                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
-                        <span className="elementInfo usersCount absolute right-0">
-                          <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
-                          {game.users.length}
+              <CardContent className="info" onScroll={handleScroll}>
+                {isLoading && (
+                  <div className="d-flex justify-content-center mt-5">
+                    {/* <MySpinner /> */}
+                  </div>
+                )}
+                {gamesShown && gamesShown.map((game) => {
+                  return (
+                    game.active ?
+                      <div key={game._id} className="element">
+                        <span className="elementInfo gameActive">
+                          {game.active ? 'Active' : 'Ended'}
+                          <img src={game.active ? GreenDot : RedDot} />
                         </span>
-                      </MyTooltip>
-                      <MyTooltip title="Start Points">
-                      <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
-                        {game.startPoints}
-                      </span>
-                      </MyTooltip>
-                      <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
-                    </div>
-                )
-              })}
-            </div>
+                        {game.users[0] && <span className="elementInfo">
+                          <h6>{game.users[0].displayName}</h6>
+                          <h6>{game.users[0].points}</h6>
+                        </span>}
+                        {game.users[1] && <span className="elementInfo">
+                          <h6>{game.users[1].displayName}</h6>
+                          <h6>{game.users[1].points}</h6>
+                        </span>}
+                        {game.users[2] && <span className="elementInfo">
+                          <h6>{game.users[2].displayName}</h6>
+                          <h6>{game.users[2].points}</h6>
+                        </span>}
+                        <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
+                          <span className="elementInfo usersCount absolute right-0">
+                            <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
+                            {game.users.length}
+                          </span>
+                        </MyTooltip>
+                        <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
+                      </div>
+                      :
+                      <div key={game._id} className="element">
+                        <span className="elementInfo gameActive">
+                          {game.active ? 'Active' : 'Ended'}
+                          <img src={game.active ? GreenDot : RedDot} />
+                        </span>
+                        <span className="elementInfo">
+                          <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
+                          {game.podium[1]}
+                        </span>
+                        {game.podium[2] && <span className="elementInfo">
+                          <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
+                          {game.podium[2]}
+                        </span>}
+                        {game.podium[3] && <span className="elementInfo">
+                          <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
+                          {game.podium[3]}
+                        </span>}
+                        <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
+                          <span className="elementInfo usersCount absolute right-0">
+                            <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
+                            {game.users.length}
+                          </span>
+                        </MyTooltip>
+                        <MyTooltip title="Start Points">
+                          <span className="elementInfo">
+                            <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
+                            {game.startPoints}
+                          </span>
+                        </MyTooltip>
+                        <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
+                      </div>
+                  )
+                })}
+              </CardContent>
             </ScrollArea>
           </Card>
           <Card className="my-card statistics">

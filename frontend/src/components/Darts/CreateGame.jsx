@@ -6,8 +6,9 @@ import { AuthContext } from "../../context/AuthContext";
 import { ToastsContext } from "../../context/ToastsContext";
 import { getDartsUsers, postDartsGame } from "../../fetch";
 import { Button } from "../ui/button";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Card, CardContent, CardHeader } from "../ui/card";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 
 function CreateGame({ children }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -195,6 +196,8 @@ function CreateGame({ children }) {
     estimatedGameTime();
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
+  const [position, setPosition] = useState("bottom")
+
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -204,32 +207,33 @@ function CreateGame({ children }) {
         <DrawerHeader>
           <DrawerTitle className="text-white border-b-2 border-[#00B524] p-3">Create New Game</DrawerTitle>
           <div className="settings pt-3">
-            <Card>
-              <CardHeader className="border-b-2 border-[#00B524]">
+            <Card className="usersCard">
+              <CardHeader className="text-lg">
                 Add Users
               </CardHeader>
-              <CardContent>
-
-              <div className="users">
-                <span>Not Playing</span>
-                {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                  <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
-                    <span>{user.displayName}</span>
-                  </div>
-                )) : null}
-              </div>
-              {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
-              <span>Playing</span>
-              {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
-              {/* </Card.Title> */}
               <hr />
-              <div className="users">
-                {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-                  <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
-                    <span>{user.displayName}</span>
-                  </div>
-                )) : null}
-              </div>
+              <CardContent className="card-content p-0">
+                <div className="users">
+                  <div className="text-xl py-3">Not Playing</div>
+                  <hr />
+                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
+                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
+                      <span>{user.displayName}</span>
+                    </div>
+                  )) : null}
+                </div>
+                {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
+                <div className="text-xl py-3">Playing</div>
+                {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
+                {/* </Card.Title> */}
+                <hr />
+                <div className="users pt-3">
+                  {usersPlaying.length > 0 ? usersPlaying.map((user) => (
+                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+                      <span>{user.displayName}</span>
+                    </div>
+                  )) : null}
+                </div>
               </CardContent>
             </Card>
             <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
@@ -237,19 +241,31 @@ function CreateGame({ children }) {
               <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
               <span>EGT: {egt}</span>
             </div>
-            <Card>
+            <Card className="settingsCard">
               <CardHeader>
                 Settings
               </CardHeader>
+              <CardContent>
+                <div className="selects">
+                  <Select>
+                    <SelectTrigger className=" text-white">
+                      <SelectValue placeholder="Select podium" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="apple">Apple</SelectItem>
+                        <SelectItem value="banana">Banana</SelectItem>
+                        <SelectItem value="blueberry">Blueberry</SelectItem>
+                        <SelectItem value="grapes">Grapes</SelectItem>
+                        <SelectItem value="pineapple">Pineapple</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
             </Card>
           </div>
         </DrawerHeader>
-        <DrawerFooter>
-          <Button>Submit</Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DrawerClose>
-        </DrawerFooter>
       </DrawerContent>
     </Drawer>
     // {/* <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
