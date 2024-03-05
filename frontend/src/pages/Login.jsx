@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import MySpinner from "../components/MySpinner";
 import { auth, db } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -97,7 +96,7 @@ function Login() {
                 </button>
               </div>
               <div className={loading ? "d-flex justify-content-center pt-3" : "d-none"}>
-                <MySpinner />
+                {/* <MySpinner /> */}
               </div>
               {err && <span id="error_message">{err}</span>}
             </form>

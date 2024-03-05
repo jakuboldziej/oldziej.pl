@@ -4,7 +4,6 @@ import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css
 import { useNavigate } from "react-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
-import { Spinner } from "react-bootstrap";
 import { AuthContext } from "../context/AuthContext";
 import { postUser, postDartsUser } from "../fetch";
 

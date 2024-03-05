@@ -1,17 +1,16 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/prop-types */
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
-import { Button, Dropdown, Form } from "react-bootstrap";
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
 import { ToastsContext } from "../context/ToastsContext";
-import MyToasts from "../components/MyToasts";
+import MyToasts from "../components/MyComponents/MyToasts";
 import { useLocation } from "react-router";
-import MyTooltip from "../components/MyTooltip";
-import MySpinner from "../components/MySpinner";
+import MyTooltip from "../components/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "../fetch";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -124,8 +123,8 @@ function DartsPage() {
   const handleGamesShown = (type, amount) => {
     let gamesAmount;
     if (type === "scroll") gamesAmount = games.slice(0, 10 * currentPage);
-    else if (type === "filter") { 
-      gamesAmount = games.slice(0, amount) 
+    else if (type === "filter") {
+      gamesAmount = games.slice(0, amount)
     }
 
     setGamesShown(gamesAmount);
@@ -150,10 +149,10 @@ function DartsPage() {
   useEffect(() => {
     const fetchFirstData = async () => {
       try {
-        const fetchedGames = handleFilterGames(filterGamesType, await getDartsGames(null, 10));
+        const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(null, 10));
         const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
         setDartUsers(sortedUsers);
-        setGamesShown(fetchedGames)
+        setGamesShown(fetchedGames);
         setIsLoading(false);
       } catch (err) {
         console.log("Error fetching", err);
@@ -176,24 +175,28 @@ function DartsPage() {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      const fetchedGames = handleFilterGames(filterGamesType, await getDartsGames());
+      const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames());
       setGames(fetchedGames);
     }
     if (gamesShown.length === 10) {
       fetchAllData()
     }
-  }, [gamesShown, isLoading]);
+  }, [gamesShown]);
 
   return (
     <>
       <NavBar />
       <div className="darts-page">
-        <Button variant="outline-danger glow-button" onClick={handleShow}>Create</Button>
+        <div className="flex justify-center">
+          <CreateGame>
+            <Button variant="outline_red" className="glow-button-red">Create</Button>
+          </CreateGame>
+        </div>
         <div className="cards">
-          <div className="myCard leaderboard">
-            <span>
-              <h3>Leaderboard</h3>
-              <Dropdown data-bs-theme="dark">
+          <Card className="my-card leaderboard">
+            <CardHeader>
+              <CardTitle>Leaderboard</CardTitle>
+              {/* <Dropdown data-bs-theme="dark">
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>
                 </Dropdown.Toggle>
@@ -209,14 +212,9 @@ function DartsPage() {
                   <Dropdown.Item onClick={() => setFilterUsersType("highestAvg")}>highestAvg</Dropdown.Item>
                   <Dropdown.Item onClick={() => setFilterUsersType("highestRPT")}>highestRPT</Dropdown.Item>
                 </Dropdown.Menu>
-              </Dropdown>
-            </span>
+              </Dropdown> */}
+            </CardHeader>
             <div className="info">
-              {isLoading && (
-                <div className="d-flex justify-content-center mt-5">
-                  <MySpinner />
-                </div>
-              )}
               {dartUsers && dartUsers.map((dartUser) => {
                 return (
                   <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
@@ -226,38 +224,26 @@ function DartsPage() {
                       {dartUser.podiums["firstPlace"]}
                     </span>
                     <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["secondPlace"]}
-                    </span>
-                    <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["thirdPlace"]}
-                    </span>
-                    <MyTooltip title="Games played" className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
-                      {dartUser.gamesPlayed}
-                    </MyTooltip>
-                    <MyTooltip title="Doors hit" className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                       {dartUser.throws["doors"]}
-                    </MyTooltip>
-                    <MyTooltip title="Your highest Points Average" className="elementInfo">
+                    </span>
+                    <span className="elementInfo">
+                      <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
+                      {dartUser.gamesPlayed}
+                    </span>
+                    <span className="elementInfo">
                       <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
                       <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
-                    </MyTooltip>
-                    <MyTooltip title="Your highest Round Points Thrown" className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/20/mountain.png" alt="mountain" />
-                      <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
-                    </MyTooltip>
+                    </span>
                   </a>
                 )
               })}
             </div>
-          </div>
-          <div className="myCard games">
-            <span>
-              <span><h3>Games</h3> <h6>({gamesShown.length})</h6></span>
-              <Dropdown data-bs-theme="dark">
+          </Card>
+          <Card className="my-card games">
+            <CardHeader>
+              <CardTitle>Games ({gamesShown.length})</CardTitle>
+              {/* <Dropdown data-bs-theme="dark">
                 <Dropdown.Toggle className="custom-dropdown-toggle">
                   <span className="background"></span>
                 </Dropdown.Toggle>
@@ -265,17 +251,16 @@ function DartsPage() {
                   <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
                   <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
                   <Dropdown.Divider />
-                  {/* <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
-                  <Form.Control type="number" placeholder="Games Amount" value={gamesShown.length}
-                    onChange={(event)=> handleGamesShown("filter", event.target.value)}
-                  /> */}
+                  <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
+                  <Slider defaultValue={[10]} max={100} step={1} />
                 </Dropdown.Menu>
-              </Dropdown>
-            </span>
-            <div className="info" onScroll={handleScroll}>
+              </Dropdown> */}
+            </CardHeader>
+            <ScrollArea onScroll={handleScroll}>
+            <div className="info" >
               {isLoading && (
                 <div className="d-flex justify-content-center mt-5">
-                  <MySpinner />
+                  {/* <MySpinner /> */}
                 </div>
               )}
               {gamesShown && gamesShown.map((game) => {
@@ -322,31 +307,43 @@ function DartsPage() {
                         <img width="20" height="20" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
                         {game.podium[3]}
                       </span>}
-                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')} className="elementInfo usersCount position-absolute end-0">
-                        <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
-                        {game.users.length}
+                      <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
+                        <span className="elementInfo usersCount absolute right-0">
+                          <img width="20" height="20" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
+                          {game.users.length}
+                        </span>
                       </MyTooltip>
-                      <MyTooltip title="Start Points" className="elementInfo">
+                      <MyTooltip title="Start Points">
+                      <span className="elementInfo">
                         <img width="20" height="20" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
                         {game.startPoints}
+                      </span>
                       </MyTooltip>
-
                       <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
                     </div>
                 )
               })}
             </div>
-          </div>
-          <div className="myCard statistics">
-            <span>
-              <h3>Statistics</h3>
-            </span>
-            <div className="info">
-
-            </div>
-          </div>
+            </ScrollArea>
+          </Card>
+          <Card className="my-card statistics">
+            <CardHeader>
+              <CardTitle>Statistics</CardTitle>
+              {/* <Dropdown data-bs-theme="dark">
+                <Dropdown.Toggle className="custom-dropdown-toggle">
+                  <span className="background"></span>
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
+                  <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
+                  <Dropdown.Divider />
+                  <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
+                  <Slider defaultValue={[10]} max={100} step={1} />
+                </Dropdown.Menu>
+              </Dropdown> */}
+            </CardHeader>
+          </Card>
         </div>
-        <CreateGame show={show} setShow={setShow} />
       </div>
       <MyToasts />
     </>

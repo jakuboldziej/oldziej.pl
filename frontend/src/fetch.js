@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -84,11 +84,11 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   let url = `${mongodbApiUrl}/darts/dartsGames`;
 
   const queryParams = [];
-  if (userDisplayName) {
-    queryParams.push(`user=${userDisplayName}`);
-  }
   if (limit) {
     queryParams.push(`limit=${limit}`);
+  }
+  if (userDisplayName) {
+    queryParams.push(`user=${userDisplayName}`);
   }
 
   if (queryParams.length > 0) {

@@ -1,6 +1,5 @@
 import { deleteDartsGame } from "../../fetch";
 
-/* eslint-disable react/prop-types */
 function Keyboard({ params }) {
   const { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, showNewToast, setOverthrow } = params;
   const onclick = (param) => {

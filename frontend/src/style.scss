@@ -1,3 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 // Fonts
 @font-face {
   font-family: Poppins-Regular;
@@ -19,30 +27,6 @@
   src: url('fonts/poppins/Poppins-SemiBold.ttf');
 }
 
-// Scroll
-@media screen and (min-width: 769px) {
-  ::-webkit-scrollbar {
-    border-radius: 10px;
-    width: 10px;
-    height: 10px;
-  }
-
-  /* Track */
-  ::-webkit-scrollbar-track {
-    background: #555;
-  }
-
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background: #888;
-  }
-
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-    background: #a0a0a0;
-  }
-}
-
 // Public
 * {
   margin: 0px;
@@ -55,7 +39,8 @@ $creamy: #F3F0D2;
 $green: #00B524;
 $red: #E00000;
 
-$containerHeight: calc(100vh - 56px);
+$navHeight: 56px;
+$containerHeight: calc(100vh - $navHeight);
 
 body,
 html {
@@ -63,6 +48,15 @@ html {
   font-family: Poppins-Regular, sans-serif;
   background: black;
 }
+
+// Glowing buttons
+.glow-button-red {
+  box-shadow: 0 0 30px $red;
+}
+.glow-button-green {
+  box-shadow: 0 0 30px $green;
+}
+
 
 #error_message {
   display: flex;
@@ -82,208 +76,119 @@ html {
   color: black;
 }
 
-// Glowing buttons
-.glow-button {
-  --box-shadow-color: black;
-  box-shadow: 0 0 30px var(--box-shadow-color);
-}
-.btn-outline-danger.glow-button {
-  --box-shadow-color: #E00000;
-  --bs-btn-color: #E00000;
-  --bs-btn-border-color: #E00000;
-  --bs-btn-hover-bg: #E00000;
-}
-
-.btn-outline-success.glow-button {
-  --box-shadow-color: #00B524;
-  --bs-btn-color: #00B524;
-  --bs-btn-border-color: #00B524;
-  --bs-btn-hover-bg: #00B524;
-}
-
-// Dropdown
-.dropdown {
-  .custom-dropdown-toggle {
-    background: none !important;
-    border: none !important;
-    padding: 0 !important;
-
-    &::after {
-      display: none;
-    }
-
-    .background {
-      background-image: url("https://img.icons8.com/color/48/filter.png");
-      background-size: cover !important;
-      width: 25px;
-      height: 25px;
-    }
-  }
-}
-
-// Card
-.card {
-  max-height: 360px;
-  .card-body {
-    .users {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      max-height: 500px;
-      overflow: auto;
-      color: black;
-
-      .user {
-        border-radius: 15px;
-        background-color: $red;
-        padding: 10px;
-        transition: opacity 0.8s ease;
-        user-select: none;
-
-        &.playing {
-          background-color: $creamy;
-        }
-      }
-
-      .user:hover {
-        cursor: pointer;
-        opacity: 0.8;
-      }
-    }
-  }
-}
-
-// Tooltip
-.tooltip-trigger {
-  font-size: inherit;
-  background-color: transparent;
-  color: inherit;
-  padding: 0 !important;
-}
-
 // Navbar
-.navbar {
+nav {
   border-bottom: 1px solid $green;
-  box-sizing: border-box;
-  max-height: 56px;
-
+  max-height: $navHeight;
 }
 
 // Modal
 .create-game-modal,
 .game-summary-modal {
-  .modal-content {
-    background-color: black;
-    color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media screen and (max-width: 576px) {
+    padding: 16px 0 0 0;
   }
 
-  .modal-header {
-    justify-content: center;
-  }
-
-  .modal-body {
+  .podium {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
     gap: 20px;
 
-    @media screen and (max-width: 576px) {
-      padding: 16px 0 0 0;
+    .first-place {
+      transform: translateY(-10px);
     }
 
-    .podium {
+    .place {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+
+  .settings {
+    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: flex-start;
+
+    @media screen and (max-width: 576px) {
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title {
       display: flex;
       flex-direction: row;
-      justify-content: center;
-      gap: 20px;
+      gap: 10px;
+    }
 
-      .first-place {
-        transform: translateY(-10px);
+    .usersCard,
+    .settingsCard {
+      max-height: 770px;
+      z-index: 9999;
+      background-color: $green !important;
+      color: black !important;
+
+      .card-body {
+        .form-select {
+          background-color: $creamy;
+          color: black;
+        }
       }
 
-      .place {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      .card-header {
+        background-color: #01d42b;
       }
     }
 
-    .settings {
-      position: relative;
-      display: flex;
-      justify-content: space-evenly;
-      align-items: flex-start;
+    .usersCard {
+      .card-body {
+        .card-title {
+          display: flex;
+          flex-direction: row;
 
-      @media screen and (max-width: 576px) {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .card-title {
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-      }
-
-      .usersCard,
-      .settingsCard {
-        max-height: 770px;
-        z-index: 9999;
-        background-color: $green !important;
-        color: black !important;
-
-        .card-body{
-          .form-select {
-            background-color: $creamy;
-            color: black;
-          }
-        }
-        .card-header {
-          background-color: #01d42b;
-        }
-      }
-
-      .usersCard {
-        .card-body {
-          .card-title {
+          @media screen and (max-width: 576px) {
             display: flex;
-            flex-direction: row;
-
-            @media screen and (max-width: 576px) {
-              display: flex;
-              flex-direction: column;
-              gap: 10px;
-            }
+            flex-direction: column;
+            gap: 10px;
           }
         }
       }
     }
+  }
 
-    .sticky-top {
-      position: sticky;
-      top: 0;
-      width: 100px;
-      z-index: 1;
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    width: 100px;
+    z-index: 1;
 
-      @media screen and (max-width: 576px) {
-        position: relative;
-        width: 100%;
-        order: -1;
-      }
+    @media screen and (max-width: 576px) {
+      position: relative;
+      width: 100%;
+      order: -1;
     }
+  }
 
-    .btn {
-      display: flex;
-      align-self: center;
-    }
+  .btn {
+    display: flex;
+    align-self: center;
   }
 }
 
 .create-game-modal {
-  
-  .modal-body, .modal-header {
+
+  .modal-body,
+  .modal-header {
     background-color: black;
   }
+
   .modal-header {
     border-bottom: 1px solid $green;
   }
@@ -320,13 +225,13 @@ html {
       width: 100%;
     }
 
-    .myCard {
+    .my-card {
       display: flex;
       flex-direction: column;
       width: 33%;
       height: 75vh;
       border-radius: 20px;
-      box-shadow: $creamy 0px 1px 4px;
+      padding: 10px;
 
       @media screen and (max-width: 576px) {
         width: 100%;
@@ -350,8 +255,6 @@ html {
         gap: 10px;
         padding: 10px;
         margin: 10px 0 10px 0;
-        border-top: 1px solid grey;
-        height: 100vh;
         overflow-y: auto;
 
         .element {
@@ -369,11 +272,13 @@ html {
             background-color: $red;
             color: white;
           }
+
           &:nth-child(3n + 2) {
             background-color: $green;
             color: black;
 
           }
+
           &:nth-child(3n + 3) {
             background-color: $creamy;
             color: black;
@@ -420,37 +325,12 @@ html {
     height: 100%;
     align-items: center;
 
-    @media screen and (max-width: 576px) {
-      height: auto;
+    .my-card {
+      width: 40%;
     }
 
-    .myCard {
-      .info {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-evenly;
-
-        .miniCard {
-          width: 100%;
-          height: 100%;
-
-          .info {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-
-            .element {
-              .elementInfo {
-                max-height: 60px;
-
-                &:first-child {
-                  width: 60px;
-                }
-              }
-            }
-          }
-        }
-      }
+    @media screen and (max-width: 576px) {
+      height: auto;
     }
   }
 }
@@ -461,7 +341,6 @@ html {
   flex-direction: column;
   gap: 20px;
   padding: 20px 20px 0 20px;
-  height: $containerHeight;
 
   @media screen and (max-width: 576px) {
     padding: 20px 0 0 0;
@@ -478,24 +357,26 @@ html {
         .elementInfo {
           width: 14% !important;
           max-height: 60px !important;
-  
+
           @media screen and (max-width: 1160px) {
             font-size: 1.2vw;
           }
+
           @media screen and (max-width: 576px) {
             font-size: 16px;
           }
-  
+
           &:first-child {
             width: 80px !important;
           }
         }
-  
+
         .usersCount {
           width: 6% !important;
           border: none !important;
+          padding: 0 !important;
         }
-  
+
         .timedate {
           position: absolute;
           border: none !important;
@@ -578,7 +459,7 @@ html {
       box-shadow: $creamy 0px 1px 4px;
       padding: 10px;
       border-radius: 20px;
-  
+
       .input,
       .special {
         display: flex;
@@ -589,47 +470,48 @@ html {
         border: none;
         border-radius: 20px;
         height: 50px;
-  
+
         @media screen and (max-width: 576px) {
           font-size: 1.5rem;
           height: 5.3vh;
         }
       }
-  
+
       .input:not([disabled]):hover {
         cursor: pointer;
         opacity: 0.8;
       }
-  
+
       .numbers {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 10px;
         padding-bottom: 10px;
-  
+
         @media screen and (max-width: 576px) {
           grid-template-columns: repeat(auto-fill, minmax(21.5vw, 1fr));
           gap: 5px;
         }
       }
-  
+
       .specials {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 10px;
-  
+
         @media screen and (max-width: 576px) {
           grid-template-columns: repeat(auto-fill, minmax(20vw, 1fr));
           gap: 5px;
         }
-  
+
         .special {
           font-size: 14px;
           padding: 15px;
-  
+
           &:nth-child(1) {
             background-color: $green;
           }
+
           &:nth-child(4) {
             background-color: $red;
           }
@@ -764,6 +646,7 @@ html {
 
           .legs-sets {
             position: relative;
+
             .legs,
             .sets {
               position: inherit;
@@ -780,8 +663,9 @@ html {
             .legs {
               border-right: 1px solid lightgrey;
             }
-            
+
           }
+
           .avg {
             color: $red;
           }
@@ -805,250 +689,27 @@ html {
     width: 100%;
   }
 
-    .charts {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      height: $containerHeight;
-  
-      div {
-        display: flex;
-        width: 80%;
-        
-        canvas {
-          border: 1px white solid;
-        }
-
-        .options {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-          padding: 15px;
-        }
-      }
-    }
-}
-
-// Chat Page
-.chat-page {
-  background-color: #a7bcff;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-
-  .main {
+  .charts {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     width: 100%;
     height: $containerHeight;
-    display: flex;
-    overflow: hidden;
 
-    .sidebar {
-      width: 30vw;
-      background-color: #3e3c61;
-      position: relative;
-      overflow: auto;
+    div {
+      display: flex;
+      width: 80%;
 
-      .info {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        border-bottom: 1px solid gray;
-        height: 50px;
-        color: white;
+      canvas {
+        border: 1px white solid;
       }
 
-      .userChat {
-        padding: 10px;
+      .options {
         display: flex;
-        align-items: center;
-        gap: 10px;
-        color: white;
-        cursor: pointer;
-
-        &:hover {
-          background-color: #2f2d52;
-        }
-
-        &.clicked {
-          background-color: #514d9e;
-        }
-
-        img {
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .read {
-          position: absolute;
-          right: 10px;
-          width: 13px;
-          height: 13px;
-          background-color: rgb(81, 81, 255);
-          border: none;
-          border-radius: 50%;
-        }
-
-        .userChatInfo {
-          display: flex;
-          flex-direction: column;
-          max-width: 23vw;
-
-          span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-
-          span:nth-child(0) {
-            font-size: 14px;
-            color: lightgray;
-          }
-
-          span:nth-child(1) {
-            font-size: 18px;
-            font-weight: 500;
-          }
-        }
-      }
-    }
-
-    .chat {
-      width: 70vw;
-      height: $containerHeight;
-
-      .chatInfo {
-        height: 50px;
-        background-color: #5d5b8d;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px;
-        color: lightgray;
-
-        span {
-          font-size: 18px;
-          font-weight: 500;
-        }
-      }
-
-      .chatIcons {
-        display: flex;
-        gap: 10px;
-
-        img {
-          height: 24px;
-          cursor: pointer;
-        }
-      }
-
-      .messages {
-        background-color: #ddddf7;
-        padding: 10px;
-        height: calc(100vh - 50px - 56px - 56px);
-        overflow-y: auto;
-
-        .conv-start {
-          display: flex;
-          justify-content: center;
-        }
-
-        .message {
-          display: flex;
-          gap: 20px;
-          margin-bottom: 20px;
-
-          .messageInfo {
-            display: flex;
-            flex-direction: column;
-            color: gray;
-            font-weight: 300;
-
-            img {
-              width: 40px;
-              height: 40px;
-              border-radius: 50%;
-              object-fit: cover;
-            }
-          }
-
-          .messageContent {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-
-            p {
-              background-color: white;
-              padding: 10px 20px;
-              border-radius: 0px 10px 10px 10px;
-              max-width: 27vw;
-              white-space: pre-wrap;
-              word-wrap: break-word;
-            }
-
-            img {
-              width: 50%;
-            }
-          }
-
-          &.owner {
-            flex-direction: row-reverse;
-
-            .messageContent {
-              align-items: flex-end;
-
-              p {
-                background-color: #8da4f1;
-                color: white;
-                border-radius: 10px 0px 10px 10px;
-              }
-            }
-          }
-        }
-      }
-
-      .input {
-        height: 56px;
-        background-color: white;
-        padding: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        input {
-          width: 100%;
-          border: none;
-          outline: none;
-          color: #2f2d52;
-          font-size: 18px;
-
-          &::placeholder {
-            color: lightgray;
-          }
-        }
-
-        .send {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-
-          img {
-            height: 24px;
-            cursor: pointer;
-          }
-
-          button {
-            border: none;
-            padding: 10px 15px;
-            color: white;
-            background-color: #8da4f1;
-            cursor: pointer;
-          }
-        }
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
       }
     }
   }
@@ -1250,7 +911,6 @@ html {
     background: -webkit-linear-gradient(top, #7579ff, #b224ef);
     background: -o-linear-gradient(top, #7579ff, #b224ef);
     background: -moz-linear-gradient(top, #7579ff, #b224ef);
-    background: linear-gradient(top, #7579ff, #b224ef);
   }
 
 
@@ -1455,7 +1115,6 @@ html {
     background: -webkit-linear-gradient(bottom, #7579ff, #b224ef);
     background: -o-linear-gradient(bottom, #7579ff, #b224ef);
     background: -moz-linear-gradient(bottom, #7579ff, #b224ef);
-    background: linear-gradient(bottom, #7579ff, #b224ef);
     position: relative;
     z-index: 1;
 

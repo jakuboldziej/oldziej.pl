@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
 import { useParams } from 'react-router';
 import NavBar from '../components/NavBar'
 import { useEffect, useState } from 'react';
@@ -7,9 +5,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
-import { Form } from 'react-bootstrap';
 import { getDartsGames, getDartsUser } from '../fetch';
-import MySpinner from '../components/MySpinner';
 
 function DartsUser() {
   const { username } = useParams();
@@ -21,7 +17,10 @@ function DartsUser() {
   const [chartThrowsOverall, setChartThrowsOverall] = useState();
   const [chartThrowsDates, setChartThrowsDates] = useState();
   const [chartSpecialData, setChartSpecialData] = useState();
-  const [chartPodiums, setChartPodiums] = useState()
+  const [chartPodiums, setChartPodiums] = useState();
+  const [gamesShown, setGamesShown] = useState([]);
+  const [games, setGames] = useState([])
+
 
   useEffect(() => {
     const getUser = async () => {
@@ -35,12 +34,24 @@ function DartsUser() {
       }
       setUser(userQ);
 
-      const games = await getDartsGames(userQ.displayName, 20);
+      const games = await getDartsGames(userQ.displayName, 10);
+      setGamesShown(games)
       setUser((prev) => ({ ...prev, games: games }));
       setIsLoading(false);
     }
     getUser();
   }, [username]);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      const fetchedGames = await getDartsGames(user.displayName);
+      setGames(fetchedGames);
+    }
+    if (gamesShown.length === 10) {
+      fetchAllData()
+      console.log(gamesShown.length);
+    }
+  }, [gamesShown]);
 
   useEffect(() => {
     if (!user || !user.games) return;
@@ -113,8 +124,15 @@ function DartsUser() {
 
     setChartSpecialData({
       labels: user.games.map((game) => {
-        const date = new Date(game.created_at);
-        return date.toLocaleDateString();
+        let date = new Date(game.created_at).toLocaleDateString();
+        if (previousDate === date) {
+          date = date + ` (${dateCounter})`;
+          dateCounter += 1;
+        } else {
+          dateCounter = 2;
+          previousDate = date;
+        }
+        return date;
       }),
       datasets: [
         {
@@ -131,10 +149,6 @@ function DartsUser() {
     })
   }, [user]);
 
-  useEffect(() => {
-    console.log(range);
-  }, [range]);
-
   return (
     <>
       <NavBar />
@@ -145,44 +159,50 @@ function DartsUser() {
         </div>
         {isLoading ? (
           <div className="d-flex flex-column align-items-center justify-content-center mt-5 gap-2">
-            <MySpinner />
+            {/* <MySpinner /> */}
             Loading Statistics...
           </div>
         ) :
-          <div className='charts'>
-            {chartThrowsOverall &&
-              <div>
-                <Bar data={chartThrowsOverall} />
-                <div className='options'>
-                  <Form.Check inline type="radio" label={
-                    <span style={{ display: 'flex', alignItems: 'center' }}>
-                      <img width="64" height="64" src="https://img.icons8.com/color/64/bar-chart--v1.png" alt="bar-chart--v1" />
-                    </span>
-                  }
-                  />
-                  <Form.Check inline type="radio" label={
-                    <span style={{ display: 'flex', alignItems: 'center' }}>
-                      <img width="64" height="64" src="https://img.icons8.com/dusk/64/chart.png" alt="chart" />
-                    </span>
-                  }
-                  />
-                  <div className='d-flex flex-column'>
-                    <Form.Label>Range {range}</Form.Label>
-                    <Form.Range value={range} onChange={(event) => setRange(event.target.value)} />
-                  </div>
+          <>
+            <div className='overall-stats'>
+
+            </div>
+            <div className='charts'>
+              {chartThrowsOverall &&
+                // <div>
+                //   <Bar data={chartThrowsOverall} />
+                //   <div className='options'>
+                //     <Form.Check inline type="radio" label={
+                //       <span style={{ display: 'flex', alignItems: 'center' }}>
+                //         <img width="64" height="64" src="https://img.icons8.com/color/64/bar-chart--v1.png" alt="bar-chart--v1" />
+                //       </span>
+                //     }
+                //     />
+                //     <Form.Check inline type="radio" label={
+                //       <span style={{ display: 'flex', alignItems: 'center' }}>
+                //         <img width="64" height="64" src="https://img.icons8.com/dusk/64/chart.png" alt="chart" />
+                //       </span>
+                //     }
+                //     />
+                //     <div className='d-flex flex-column'>
+                //       <Form.Label>Range {range}</Form.Label>
+                //       <Form.Range value={range} onChange={(event) => setRange(event.target.value)} />
+                //     </div>
+                //   </div>
+                // </div>
+                <div>asdf</div>
+              }
+              {chartThrowsDates &&
+                <div>
+                  <Line data={chartThrowsDates} />
+                </div>}
+              {chartSpecialData &&
+                <div>
+                  <Line data={chartSpecialData} />
                 </div>
-              </div>
-            }
-            {chartThrowsDates &&
-              <div>
-                <Line data={chartThrowsDates} />
-              </div>}
-            {chartSpecialData &&
-              <div>
-                <Line data={chartSpecialData} />
-              </div>
-            }
-          </div>}
+              }
+            </div>
+          </>}
       </div>
     </>
   )

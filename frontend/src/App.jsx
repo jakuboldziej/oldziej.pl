@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-import "bootstrap/dist/css/bootstrap.min.css";
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';

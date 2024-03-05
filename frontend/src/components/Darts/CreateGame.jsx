@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
-import { Button, Card, Form, Modal } from "react-bootstrap"
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "../../context/DartsGameContext";
@@ -8,8 +5,11 @@ import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
 import { ToastsContext } from "../../context/ToastsContext";
 import { getDartsUsers, postDartsGame } from "../../fetch";
+import { Button } from "../ui/button";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Card, CardContent, CardHeader } from "../ui/card";
 
-function CreateGame({ show, setShow }) {
+function CreateGame({ children }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
@@ -196,137 +196,191 @@ function CreateGame({ show, setShow }) {
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
   return (
-    <>
-      <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Create New Game</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="settings">
-            <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
-              <Card.Header>Add Users</Card.Header>
-              <Card.Body>
-                <Card.Title>Not Playing</Card.Title>
-                <hr />
-                <div className="users">
-                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user._id}>
-                      <span>{user.displayName}</span>
-                    </div>
-                  )) : null}
-                </div>
-                <Card.Title className="mt-3 d-flex justify-content-between">
-                  <span>Playing</span>
-                  <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} />
-                </Card.Title>
-                <hr />
-                <div className="users">
-                  {usersPlaying.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
-                      <span>{user.displayName}</span>
-                    </div>
-                  )) : null}
-                </div>
-              </Card.Body>
+    <Drawer>
+      <DrawerTrigger asChild>
+        {children}
+      </DrawerTrigger>
+      <DrawerContent className="create-game-modal">
+        <DrawerHeader>
+          <DrawerTitle className="text-white border-b-2 border-[#00B524] p-3">Create New Game</DrawerTitle>
+          <div className="settings pt-3">
+            <Card>
+              <CardHeader className="border-b-2 border-[#00B524]">
+                Add Users
+              </CardHeader>
+              <CardContent>
+
+              <div className="users">
+                <span>Not Playing</span>
+                {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
+                  <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
+                    <span>{user.displayName}</span>
+                  </div>
+                )) : null}
+              </div>
+              {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
+              <span>Playing</span>
+              {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
+              {/* </Card.Title> */}
+              <hr />
+              <div className="users">
+                {usersPlaying.length > 0 ? usersPlaying.map((user) => (
+                  <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+                    <span>{user.displayName}</span>
+                  </div>
+                )) : null}
+              </div>
+              </CardContent>
             </Card>
-            <div className="sticky-top d-flex flex-column align-items-center gap-3">
-              <Button variant="outline-danger glow-button" onClick={handleGameStart}>Start</Button>
-              <Button variant="outline-success glow-button" onClick={() => handleGameStart(true)}>Training</Button>
+            <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
+              <Button variant="outline_red" className="glow-button-red" onClick={handleGameStart}>Start</Button>
+              <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
               <span>EGT: {egt}</span>
             </div>
-            <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
-              <Card.Header>Settings</Card.Header>
-              <Card.Body>
-                <Card.Title>Podium</Card.Title>
-                <hr />
-                <Form.Select value={usersPodium} onChange={(e) => setUsersPodium(e.target.value)}>
-                  {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
-                </Form.Select>
-                <br />
-                <Card.Title>Gamemode</Card.Title>
-                <hr />
-                <Form.Select value={selectGameMode} onChange={(e) => setSelectGameMode(e.target.value)}>
-                  <option>X01</option>
-                  <option>Cricket</option>
-                  <option>Around the Clock</option>
-                  <option>Shanghai</option>
-                  <option>Elimination</option>
-                  <option>Highscore</option>
-                  <option>Killer</option>
-                  <option>Splitscore</option>
-                </Form.Select>
-                <br />
-                <Card.Title>Startpoints</Card.Title>
-                <hr />
-                <Form.Select value={selectStartPoints} onChange={handleSelectStartPoints}>
-                  <option>101</option>
-                  <option>201</option>
-                  <option>301</option>
-                  <option>501</option>
-                  <option>601</option>
-                  <option>701</option>
-                  <option>901</option>
-                  <option>1001</option>
-                  <option onClick={() => setShowCustomPoints(true)}>Custom</option>
-                  <option className="d-none" value={customStartPoints}>{customStartPoints}</option>
-                </Form.Select>
-                <br />
-                <Card.Title>Check-Out</Card.Title>
-                <hr />
-                <Form.Select value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
-                  <option>Straight Out</option>
-                  <option>Double Out</option>
-                  <option>Triple Out</option>
-                  <option>Master Out</option>
-                  <option>Splitscore</option>
-                </Form.Select>
-                <br />
-                <Card.Title>
-                  <span>Sets</span>
-                </Card.Title>
-                <hr />
-                <Form.Select value={selectSets} onChange={(e) => setSelectSets(e.target.value)}>
-                  {numbersLegsSets}
-                </Form.Select>
-                <br />
-                <Card.Title>
-                  <span>Legs</span>
-                  {/* <Form.Select style={{width: 50}} value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
-                    <option>Best-of</option>
-                    <option>First-to</option>
-                  </Form.Select> */}
-                </Card.Title>
-                <hr />
-                <Form.Select value={selectLegs} onChange={(e) => setSelectLegs(e.target.value)}>
-                  {numbersLegsSets}
-                </Form.Select>
-              </Card.Body>
+            <Card>
+              <CardHeader>
+                Settings
+              </CardHeader>
             </Card>
           </div>
-        </Modal.Body>
-      </Modal>
+        </DrawerHeader>
+        <DrawerFooter>
+          <Button>Submit</Button>
+          <DrawerClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
+    // {/* <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
+    //   <Modal.Header closeButton>
+    //     <Modal.Title>Create New Game</Modal.Title>
+    //   </Modal.Header>
+    //   <Modal.Body>
+    //     <div className="settings">
+    //       <Card bg="dark" text="light" className="usersCard" style={{ width: '18rem' }}>
+    //         <Card.Header>Add Users</Card.Header>
+    //         <Card.Body>
+    //           <Card.Title>Not Playing</Card.Title>
+    //           <hr />
+    //           <div className="users">
+    //             {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
+    //               <div onClick={() => handleSelect(user, 'add')} className="user" style={{color: 'white'}} key={user._id}>
+    //                 <span>{user.displayName}</span>
+    //               </div>
+    //             )) : null}
+    //           </div>
+    //           <Card.Title className="mt-3 d-flex justify-content-between">
+    //             <span>Playing</span>
+    //             <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} />
+    //           </Card.Title>
+    //           <hr />
+    //           <div className="users">
+    //             {usersPlaying.length > 0 ? usersPlaying.map((user) => (
+    //               <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+    //                 <span>{user.displayName}</span>
+    //               </div>
+    //             )) : null}
+    //           </div>
+    //         </Card.Body>
+    //       </Card>
+    //       <div className="sticky-top d-flex flex-column align-items-center gap-3">
+    //         <Button variant="outline-danger glow-button" onClick={handleGameStart}>Start</Button>
+    //         <Button variant="outline-success glow-button" onClick={() => handleGameStart(true)}>Training</Button>
+    //         <span>EGT: {egt}</span>
+    //       </div>
+    //       <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
+    //         <Card.Header>Settings</Card.Header>
+    //         <Card.Body>
+    //           <Card.Title>Podium</Card.Title>
+    //           <hr />
+    //           <Form.Select value={usersPodium} onChange={(e) => setUsersPodium(e.target.value)}>
+    //             {usersPlaying.length > 0 ? userPodiumsCount : <option disabled>None</option>}
+    //           </Form.Select>
+    //           <br />
+    //           <Card.Title>Gamemode</Card.Title>
+    //           <hr />
+    //           <Form.Select value={selectGameMode} onChange={(e) => setSelectGameMode(e.target.value)}>
+    //             <option>X01</option>
+    //             <option>Cricket</option>
+    //             <option>Around the Clock</option>
+    //             <option>Shanghai</option>
+    //             <option>Elimination</option>
+    //             <option>Highscore</option>
+    //             <option>Killer</option>
+    //             <option>Splitscore</option>
+    //           </Form.Select>
+    //           <br />
+    //           <Card.Title>Startpoints</Card.Title>
+    //           <hr />
+    //           <Form.Select value={selectStartPoints} onChange={handleSelectStartPoints}>
+    //             <option>101</option>
+    //             <option>201</option>
+    //             <option>301</option>
+    //             <option>501</option>
+    //             <option>601</option>
+    //             <option>701</option>
+    //             <option>901</option>
+    //             <option>1001</option>
+    //             <option onClick={() => setShowCustomPoints(true)}>Custom</option>
+    //             <option className="d-none" value={customStartPoints}>{customStartPoints}</option>
+    //           </Form.Select>
+    //           <br />
+    //           <Card.Title>Check-Out</Card.Title>
+    //           <hr />
+    //           <Form.Select value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
+    //             <option>Straight Out</option>
+    //             <option>Double Out</option>
+    //             <option>Triple Out</option>
+    //             <option>Master Out</option>
+    //             <option>Splitscore</option>
+    //           </Form.Select>
+    //           <br />
+    //           <Card.Title>
+    //             <span>Sets</span>
+    //           </Card.Title>
+    //           <hr />
+    //           <Form.Select value={selectSets} onChange={(e) => setSelectSets(e.target.value)}>
+    //             {numbersLegsSets}
+    //           </Form.Select>
+    //           <br />
+    //           <Card.Title>
+    //             <span>Legs</span>
+    //             <Form.Select style={{width: 50}} value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
+    //               <option>Best-of</option>
+    //               <option>First-to</option>
+    //             </Form.Select>
+    //           </Card.Title>
+    //           <hr />
+    //           <Form.Select value={selectLegs} onChange={(e) => setSelectLegs(e.target.value)}>
+    //             {numbersLegsSets}
+    //           </Form.Select>
+    //         </Card.Body>
+    //       </Card>
+    //     </div>
+    //   </Modal.Body>
+    // </Modal>
 
-      <Modal centered show={showCustomPoints} onHide={() => setShowCustomPoints(false)}>
-        <Modal.Header data-bs-theme="dark" closeButton className="bg-dark text-light">
-          <Modal.Title>Set Custom StartPoints</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="bg-dark text-light">
-          <Form.Control type="number" name="custom-startpoints" autoFocus onChange={(e) => {
-            const enteredValue = e.target.value;
-            if (enteredValue >= 0) {
-              setCustomStartPoints(enteredValue);
-            } else {
-              setCustomStartPoints(1);
-            }
-          }} min={1} />
-        </Modal.Body>
-        <Modal.Footer className="bg-dark text-light">
-          <Button variant="outline-primary" onClick={handleCustomStartPoints}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+    // <Modal centered show={showCustomPoints} onHide={() => setShowCustomPoints(false)}>
+    //   <Modal.Header data-bs-theme="dark" closeButton className="bg-dark text-light">
+    //     <Modal.Title>Set Custom StartPoints</Modal.Title>
+    //   </Modal.Header>
+    //   <Modal.Body className="bg-dark text-light">
+    //     <Form.Control type="number" name="custom-startpoints" autoFocus onChange={(e) => {
+    //       const enteredValue = e.target.value;
+    //       if (enteredValue >= 0) {
+    //         setCustomStartPoints(enteredValue);
+    //       } else {
+    //         setCustomStartPoints(1);
+    //       }
+    //     }} min={1} />
+    //   </Modal.Body>
+    //   <Modal.Footer className="bg-dark text-light">
+    //     <Button variant="outline-primary" onClick={handleCustomStartPoints}>
+    //       Save Changes
+    //     </Button>
+    //   </Modal.Footer>
+    // </Modal> */}
   )
 }
 

@@ -1,8 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "../../context/DartsGameContext"
-import { Col, Row } from "react-bootstrap";
 import Keyboard from "./Keyboard";
 import RedDot from "../../images/red_dot.png";
 import GreenDot from "../../images/green_dot.png";
@@ -10,8 +7,8 @@ import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
 import { ToastsContext } from "../../context/ToastsContext";
-import MyToasts from "../MyToasts";
-import MyAccordion from "../MyAccordion";
+import MyToasts from "../MyComponents/MyToasts";
+import MyAccordion from "../MyComponents/MyAccordion";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
