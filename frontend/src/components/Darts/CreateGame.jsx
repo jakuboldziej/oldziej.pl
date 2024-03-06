@@ -10,6 +10,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from 
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
+import MySelect from "../MyComponents/MySelect";
 
 function CreateGame({ children }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -19,9 +20,9 @@ function CreateGame({ children }) {
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
   const [selectCheckOut, setSelectCheckOut] = useState('Straight Out');
-  const [selectSets, setSelectSets] = useState('1');
-  const [selectLegs, setSelectLegs] = useState('1');
-  const [usersPodium, setUsersPodium] = useState(0);
+  const [selectSets, setSelectSets] = useState(1);
+  const [selectLegs, setSelectLegs] = useState(1);
+  const [usersPodium, setUsersPodium] = useState("None");
   const [showCustomPoints, setShowCustomPoints] = useState(false);
   const [customStartPoints, setCustomStartPoints] = useState('');
   const [egt, setEgt] = useState(0);
@@ -49,7 +50,6 @@ function CreateGame({ children }) {
     const getUsers = async () => {
       try {
         const users = await getDartsUsers();
-
         setUsersNotPlaying(users);
       } catch (error) {
         console.error("Error getting users: ", error);
@@ -70,18 +70,21 @@ function CreateGame({ children }) {
   }, []);
 
   const handleSelect = (user, action) => {
-    if (action === 'add') {
-      setUsersPlaying((prevUsersPlaying) => [...prevUsersPlaying, user]);
+    const updatedUsersPlaying = action === 'add'
+      ? [...usersPlaying, user]
+      : usersPlaying.filter((playingUser) => playingUser._id !== user._id);
 
-      setUsersNotPlaying((prevUsersNotPlaying) =>
-        prevUsersNotPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id)
-      );
-    } else if (action === 'del') {
-      setUsersPlaying((prevUsersPlaying) =>
-        prevUsersPlaying.filter((playingUser) => playingUser._id !== user._id)
-      );
+    const updatedUsersNotPlaying = action === 'add'
+      ? usersNotPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id)
+      : [...usersNotPlaying, user];
 
-      setUsersNotPlaying((prevUsersNotPlaying) => [...prevUsersNotPlaying, user]);
+    setUsersPlaying(updatedUsersPlaying);
+    setUsersNotPlaying(updatedUsersNotPlaying);
+
+    if (action === 'del' && updatedUsersPlaying.length === 0) {
+      setUsersPodium("None");
+    } else if (action === 'add' && usersPodium === "None") {
+      setUsersPodium(1);
     }
   };
 
@@ -249,7 +252,7 @@ function CreateGame({ children }) {
             <CardContent className="card-content">
               <div className="selects">
                 <div className="text-lg">Podium</div>
-                <Select>
+                <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Podium" />
                   </SelectTrigger>
@@ -260,12 +263,12 @@ function CreateGame({ children }) {
                   </SelectContent>
                 </Select>
                 <div className="text-lg">Gamemode</div>
-                <Select defaultValue="X01">
+                <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Gamemode" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
+                    <SelectGroup onChange={(e) => console.log(e.target.value)}>
                       <SelectItem value="X01">X01</SelectItem>
                       <SelectItem value="Cricket">Cricket</SelectItem>
                       <SelectItem value="Around the Clock">Around the Clock</SelectItem>
@@ -278,7 +281,7 @@ function CreateGame({ children }) {
                   </SelectContent>
                 </Select>
                 <div className="text-lg">Start Points</div>
-                <Select defaultValue="101">
+                <Select onValueChange={(value) => setSelectStartPoints(value)} value={selectStartPoints}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Start Points" />
                   </SelectTrigger>
@@ -299,7 +302,7 @@ function CreateGame({ children }) {
                   </SelectContent>
                 </Select>
                 <div className="text-lg">Check-Out</div>
-                <Select defaultValue="Straight Out">
+                <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Check-Out" />
                   </SelectTrigger>
@@ -314,7 +317,7 @@ function CreateGame({ children }) {
                   </SelectContent>
                 </Select>
                 <div className="text-lg">Sets</div>
-                <Select>
+                <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Sets" />
                   </SelectTrigger>
@@ -325,7 +328,7 @@ function CreateGame({ children }) {
                   </SelectContent>
                 </Select>
                 <div className="text-lg">Legs</div>
-                <Select>
+                <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
                   <SelectTrigger className="text-white">
                     <SelectValue placeholder="Select Legs" />
                   </SelectTrigger>
