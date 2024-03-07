@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CreateGame from "../components/Darts/CreateGame";
 import NavBar from "../components/NavBar"
 import RedDot from "../images/red_dot.png";
 import GreenDot from "../images/green_dot.png";
-import { ToastsContext } from "../context/ToastsContext";
 import { useLocation } from "react-router";
 import MyTooltip from "../components/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "../fetch";
@@ -15,8 +14,6 @@ function DartsPage() {
   document.title = "Oldziej | Darts";
 
   const location = useLocation();
-
-  const { showNewToast } = useContext(ToastsContext);
 
   const [show, setShow] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
@@ -32,7 +29,7 @@ function DartsPage() {
     if (!playerInGame) {
       setShow(true);
     } else {
-      showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
+      // showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
     }
   }
 
@@ -164,7 +161,7 @@ function DartsPage() {
     const liveGame = localStorage.getItem('dartsGame');
     if (liveGame !== "null" && liveGame !== null) {
       setPlayerInGame(true);
-      showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
+      // showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
     }
 
     // Create New Game Auto

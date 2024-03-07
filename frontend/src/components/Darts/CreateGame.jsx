@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { DartsGameContext } from "../../context/DartsGameContext";
 import _ from 'lodash';
 import { AuthContext } from "../../context/AuthContext";
-import { ToastsContext } from "../../context/ToastsContext";
 import { getDartsUsers, postDartsGame } from "../../fetch";
 import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
@@ -29,7 +28,6 @@ function CreateGame({ children }) {
 
   const { setGame } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
-  const { showNewToast } = useContext(ToastsContext);
 
   const navigate = useNavigate();
 
@@ -81,8 +79,14 @@ function CreateGame({ children }) {
     setUsersPlaying(updatedUsersPlaying);
     setUsersNotPlaying(updatedUsersNotPlaying);
 
-    if (action === 'del' && updatedUsersPlaying.length === 0) {
-      setUsersPodium("None");
+    if (action === 'del') {
+      if (updatedUsersPlaying.length === 0) {
+        setUsersPodium("None");
+      } else {
+        if (userPodiumsCount.length !== 0 && usersPodium == userPodiumsCount[userPodiumsCount.length - 1].key) {
+          setUsersPodium(Number(userPodiumsCount[userPodiumsCount.length - 2].key))
+        }
+      }
     } else if (action === 'add' && usersPodium === "None") {
       setUsersPodium(1);
     }
@@ -133,7 +137,7 @@ function CreateGame({ children }) {
       avgPointsPerThrow: 0,
       highestRoundPoints: 0,
     }));
-    if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
+    // if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
     const gameData = {
       created_at: Date.now(),

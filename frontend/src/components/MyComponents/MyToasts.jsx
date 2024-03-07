@@ -1,17 +1,7 @@
-import { useContext } from "react";
-import { ToastsContext } from "../../context/ToastsContext";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 
 function MyToasts() {
-  const { toasts, setToasts } = useContext(ToastsContext);
-
-  const handleClosingToast = (index) => {
-    const updatedToasts = [...toasts];
-    updatedToasts[index].show = false;
-    setToasts(updatedToasts);
-  };
-
   const toMMSS = (timestamp) => {
     const date = new Date(timestamp);
     const hours = date.getHours().toString().padStart(2, '0');
