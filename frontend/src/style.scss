@@ -224,16 +224,6 @@ nav {
 .game-summary-modal {
   .training-stats {
     position: relative;
-
-    .col {
-      text-align: center;
-      border: 1px solid $creamy;
-
-      span {
-        color: white;
-        background-color: transparent;
-      }
-    }
   }
 }
 
@@ -561,20 +551,6 @@ nav {
     }
   }
 
-  table {
-    border-collapse: collapse;
-  }
-
-  th,
-  td {
-    border: 1px solid #ddd;
-    text-align: center;
-  }
-
-  th {
-    font-weight: bold;
-  }
-
   .darts-game {
     position: relative;
     display: flex;
@@ -602,6 +578,7 @@ nav {
       justify-content: space-between;
       width: 100%;
       gap: 20px;
+      font-size: 2vw;
 
       h2 {
         @media screen and (max-width: 576px) {
@@ -624,36 +601,64 @@ nav {
       width: 95%;
       padding: 20px;
       height: 100%;
+      overflow-y: auto;
 
       @media screen and (max-width: 576px) {
         width: 100%;
         padding: 0;
       }
 
-      .relative {
-        overflow: hidden;
-        table {
-          table-layout: fixed;
+      .user {
+        table-layout: fixed;
+        transition: all 0.1s;
+        border-collapse: collapse;
 
-          .legs,
-          .sets {
-            position: relative;
+        .darts-thrown {
+          display: flex;
+          align-items: center;
+          gap: 2px;
+          position: absolute;
+          right: 10px;
+          top: 2px;
+          padding: 0;
+          width: 20px;
+          height: 12px;
+          font-size: 12px;
+        }
 
-            .SL {
-              position: absolute;
-              top: -2px;
-              right: 2px;
-              font-size: 12px;
-            }
+        .turn {
+          padding: 0;
+        }
+
+        .legs,
+        .sets {
+          position: relative;
+
+          .SL {
+            position: absolute;
+            top: -2px;
+            right: 2px;
+            font-size: 12px;
           }
+        }
 
-          th, td {
-            color: white;
-            font-size: 1.2rem;
+        th,
+        td {
+          font-size: 25px;
+          border: 1px solid #ddd;
+          text-align: center;
+
+          @media screen and (max-width: 576px) {
+            font-size: 20px;
+          }
+        }
+
+        td {
+          &:last-child {
+            color: $red;
           }
         }
       }
-
     }
   }
 }

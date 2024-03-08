@@ -1,6 +1,6 @@
 import UserDataTable from "../Darts/UserDataTable";
 
-function MyAccordion({ users, game }) {
+function MyDialog({ users, game }) {
   return (
     <div>asdf</div>
     // <Accordion data-bs-theme="dark" defaultActiveKey="0">
@@ -11,7 +11,8 @@ function MyAccordion({ users, game }) {
     //     </Accordion.Body>
     //   </Accordion.Item>
     // </Accordion>
+    
   )
 }
 
-export default MyAccordion
+export default MyDialog

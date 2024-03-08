@@ -7,14 +7,13 @@ import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
 import MyAccordion from "../MyComponents/MyAccordion";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { buttonVariants } from "../ui/button";
 
 function DartsGame() {
-  const [fullscreen, setFullscreen] = useState(true);
   const [show, setShow] = useState(false);
 
   function handleShow(breakpoint) {
-    setFullscreen(breakpoint);
     setShow(true);
   }
 
@@ -22,9 +21,9 @@ function DartsGame() {
 
   if (!game) {
     return (
-      <div className="d-flex flex-column gap-3 justify-content-center align-items-center vh-100 text-light">
-        <h1>You are not currently in a game.</h1>
-        <Link className="btn btn-outline-danger glow-button" to="/darts">Create New One</Link>
+      <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
+        <span className="text-4xl">You are not currently in a game.</span>
+        <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} to="/darts">Create New One</Link>
       </div>
     )
   }
@@ -95,53 +94,26 @@ function DartsGame() {
         </div>
         <div className="users" ref={usersContainerRef}>
           {users.map((user) => (
-            // <Row className="user" data-userid={user._id} style={userDynamicStyle(user)} key={user._id}>
-            //   <Col className="main-col" sm={4} xs={4}>
-            //     <Row>
-            //       <b>{user.points}</b>
-            //       <span className="darts-thrown">
-            //         <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon"/>
-            //         {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
-            //       </span>
-            //     </Row>
-            //     <Row style={{color: '#F3F0D2'}}>{user.displayName}</Row>
-            //   </Col>
-            //   <Col className="main-col" sm={4} xs={4}>
-            //     <Row className="turns">
-            //       {Object.entries(user.turns).map((turn) => {
-            //         return (<Col className="turn" key={turn[0]}>{turn[1]}</Col>);
-            //       })}
-            //     </Row>
-            //     <Row>{user.turnsSum}</Row>
-            //   </Col>
-            //   <Col className="main-col" sm={4} xs={4}>
-            //     <Row className="legs-sets">
-            //       <Col className="legs">
-            //         {user.legs}
-            //         <span className="SL">L</span>
-            //       </Col>
-            //       <Col className="sets">
-            //         {user.sets}
-            //         <span className="SL">S</span>
-            //       </Col>
-            //     </Row>
-            //     <Row className="avg">Ø {user.avgPointsPerThrow}</Row>
-            //   </Col>
-            // </Row>
-            <Table key={user._id} style={userDynamicStyle(user)}>
+            <Table className="user" data-userid={user._id} key={user._id} style={userDynamicStyle(user)}>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{user.points}</TableHead>
+                  <TableHead className="relative w-[33%]">
+                    <span className="font-bold">{user.points}</span>
+                    <span className="darts-thrown">
+                      <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon" />
+                      {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
+                    </span>
+                  </TableHead>
                   {Object.entries(user.turns).map((turn, index) => {
-                    return (<TableHead className="turn" key={turn[0]}>
+                    return (<TableHead className="turn font-bold" key={turn[0]}>
                       {turn[1]}
                     </TableHead>);
                   })}
-                  <TableHead className="legs">
+                  <TableHead className="legs w-[16%]">
                     {user.legs}
                     <span className="SL">L</span>
                   </TableHead>
-                  <TableHead className="sets">
+                  <TableHead className="sets  w-[16%]">
                     {user.sets}
                     <span className="SL">S</span>
                   </TableHead>
@@ -151,21 +123,20 @@ function DartsGame() {
                 <TableRow>
                   <TableCell>{user.displayName}</TableCell>
                   <TableCell colSpan={3}>{user.turnsSum}</TableCell>
-                  <TableCell colSpan={2}>{user.avgPointsPerThrow}</TableCell>
+                  <TableCell colSpan={2}>Ø {user.avgPointsPerThrow}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           ))}
         </div>
       </div>
-
       <div className="right-panel">
         <MyAccordion users={users} game={game} />
         {game.training && <span className="text-white fs-2 text-center">Training</span>}
-
         <Keyboard params={keyboardParams} />
       </div>
-      <GameSummary show={show} fullscreen={fullscreen} setShow={setShow} />
+      
+      <GameSummary show={show} setShow={setShow} />
     </div>
   )
 }
