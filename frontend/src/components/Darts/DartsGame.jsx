@@ -7,7 +7,7 @@ import GameSummary from "./GameSummary";
 import { handleRound } from "./utils";
 import { Link } from "react-router-dom";
 import MyAccordion from "../MyComponents/MyAccordion";
-import { Table } from "../ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 function DartsGame() {
   const [fullscreen, setFullscreen] = useState(true);
@@ -91,7 +91,7 @@ function DartsGame() {
           <h5 style={{ color: '#E00000' }}>L: {game.legs}</h5>
           <h2 style={{ color: '#E00000' }}>Turn: {game.turn}</h2>
           <h5 style={{ color: '#E00000' }}>S: {game.sets}</h5>
-          <h2>{game.active ? 'In Progress' : 'Ended'} <img src={game.active ? GreenDot : RedDot} /></h2>
+          <h2><img src={game.active ? GreenDot : RedDot} /></h2>
         </div>
         <div className="users" ref={usersContainerRef}>
           {users.map((user) => (
@@ -128,22 +128,30 @@ function DartsGame() {
             //     <Row className="avg">Ø {user.avgPointsPerThrow}</Row>
             //   </Col>
             // </Row>
-            <Table>
-              <TableCaption>A list of your recent invoices.</TableCaption>
+            <Table key={user._id} style={userDynamicStyle(user)}>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">Invoice</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>{user.points}</TableHead>
+                  {Object.entries(user.turns).map((turn, index) => {
+                    return (<TableHead className="turn" key={turn[0]}>
+                      {turn[1]}
+                    </TableHead>);
+                  })}
+                  <TableHead className="legs">
+                    {user.legs}
+                    <span className="SL">L</span>
+                  </TableHead>
+                  <TableHead className="sets">
+                    {user.sets}
+                    <span className="SL">S</span>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell className="font-medium">INV001</TableCell>
-                  <TableCell>Paid</TableCell>
-                  <TableCell>Credit Card</TableCell>
-                  <TableCell className="text-right">$250.00</TableCell>
+                  <TableCell>{user.displayName}</TableCell>
+                  <TableCell colSpan={3}>{user.turnsSum}</TableCell>
+                  <TableCell colSpan={2}>{user.avgPointsPerThrow}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

@@ -238,7 +238,8 @@ nav {
 }
 
 // Home Page / Darts Page
-.darts-page, .home-page {
+.darts-page,
+.home-page {
   .cards {
     display: flex;
     flex-direction: row;
@@ -560,6 +561,20 @@ nav {
     }
   }
 
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+
+  th {
+    font-weight: bold;
+  }
+
   .darts-game {
     position: relative;
     display: flex;
@@ -608,7 +623,6 @@ nav {
       gap: 20px;
       width: 95%;
       padding: 20px;
-      overflow-y: auto;
       height: 100%;
 
       @media screen and (max-width: 576px) {
@@ -616,101 +630,30 @@ nav {
         padding: 0;
       }
 
-      .user {
-        display: flex;
-        flex-direction: row;
-        font-size: 25px;
-        border-right: 1px solid $creamy;
-        height: 90px;
-        transition: all 0.1s;
+      .relative {
+        overflow: hidden;
+        table {
+          table-layout: fixed;
 
-        @media screen and (max-width: 576px) {
-          min-height: 80px;
-          width: 100%;
-          font-size: 20px;
-          margin: 0;
-        }
-
-        .main-col {
-          display: grid;
-          border: 1px solid $creamy;
-          border-right: none;
-
-          .row {
+          .legs,
+          .sets {
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid $creamy;
 
-            .darts-thrown {
-              display: flex;
-              align-items: center;
-              gap: 2px;
+            .SL {
               position: absolute;
-              right: 10px;
-              top: 2px;
-              padding: 0;
-              width: 20px;
-              height: 12px;
+              top: -2px;
+              right: 2px;
               font-size: 12px;
             }
-
-            &:last-child {
-              border-bottom: none;
-            }
-
-            b {
-              display: flex;
-              justify-content: center;
-            }
           }
 
-          .turns {
-            .turn {
-              text-align: center;
-              border-bottom: none;
-              border-right: 1px solid lightgrey;
-              min-height: 36px;
-
-              @media screen and (max-width: 576px) {
-                min-height: 30px;
-                padding: 0;
-              }
-
-              &:last-child {
-                border: none;
-              }
-            }
-          }
-
-          .legs-sets {
-            position: relative;
-
-            .legs,
-            .sets {
-              position: inherit;
-              text-align: center;
-
-              .SL {
-                position: absolute;
-                top: -4px;
-                right: 2px;
-                font-size: 12px;
-              }
-            }
-
-            .legs {
-              border-right: 1px solid lightgrey;
-            }
-
-          }
-
-          .avg {
-            color: $red;
+          th, td {
+            color: white;
+            font-size: 1.2rem;
           }
         }
       }
+
     }
   }
 }
