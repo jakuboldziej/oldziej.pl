@@ -1,7 +1,6 @@
-import { Button } from "../ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
-function MyTooltip({ children, title, className }) {
+function MyTooltip({ children, title }) {
   return (
     <TooltipProvider>
       <Tooltip>

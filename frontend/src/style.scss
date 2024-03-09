@@ -57,7 +57,9 @@ html {
 .glow-button-green {
   box-shadow: 0 0 30px $green;
 }
-
+.glow-button-white {
+  box-shadow: 0 0 30px white;
+}
 
 #error_message {
   display: flex;
@@ -445,7 +447,6 @@ nav {
     height: 95vh;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
-    user-select: none;
     border-radius: 20px;
 
     @media screen and (max-width: 576px) {
@@ -459,29 +460,7 @@ nav {
       position: absolute;
       top: 10px;
       width: calc(100% - 20px);
-      max-height: 52px;
-
-      // Table
-      .table {
-        --bs-table-color: '#fff';
-      }
-
-      .accordion-body {
-        overflow-y: auto;
-        max-height: 87vh;
-        padding: 0;
-
-        @media screen and (max-width: 576px) {
-          max-height: 50vh;
-          position: relative;
-          width: 100%;
-        }
-      }
-
-      @media screen and (max-width: 576px) {
-        position: relative;
-        width: 100%;
-      }
+      background-color: black;
     }
 
     // Keyboard
@@ -490,6 +469,7 @@ nav {
       box-shadow: $creamy 0px 1px 4px;
       padding: 10px;
       border-radius: 20px;
+      user-select: none;
 
       .input,
       .special {

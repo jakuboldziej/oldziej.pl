@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import _ from 'lodash';
 import { getDartsUser, putDartsGame, putDartsUser } from "../../fetch";
 
@@ -143,9 +142,9 @@ const handlePoints = (action, value) => {
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
     currentUser.throws["overthrows"] += 1;
+    console.log(currentUser.throws, currentUser.displayName);
     setUserState();
     setOverthrow(currentUser.displayName);
-    console.log(currentUser.throws);
   } else if (currentUser.points === 0) {
     const end = handleGameEnd();
     if (end) return;
@@ -161,7 +160,7 @@ const handlePoints = (action, value) => {
 
 const handleAvgPointsPerThrow = () => {
   const pointsThrown = game.startPoints - currentUser.points;
-  const dartsThrown = Object.values(currentUser.throws).reduce((acc, val) => acc + val, 0);
+  const dartsThrown = totalThrows(currentUser);
   const avg = pointsThrown / dartsThrown * 3;
   currentUser.avgPointsPerThrow = (avg).toFixed(2);
   if (isNaN(avg)) currentUser.avgPointsPerThrow = 0;
@@ -326,4 +325,8 @@ const setUserState = () => {
     );
     return updatedUsers;
   });
+}
+
+export const totalThrows = (user) => {
+  return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"]
 }

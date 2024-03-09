@@ -4,11 +4,12 @@ import Keyboard from "./Keyboard";
 import RedDot from "../../images/red_dot.png";
 import GreenDot from "../../images/green_dot.png";
 import GameSummary from "./GameSummary";
-import { handleRound } from "./utils";
+import { handleRound, totalThrows } from "./utils";
 import { Link } from "react-router-dom";
 import MyAccordion from "../MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { buttonVariants } from "../ui/button";
+import UserDataTable from "./UserDataTable";
 
 function DartsGame() {
   const [show, setShow] = useState(false);
@@ -101,7 +102,7 @@ function DartsGame() {
                     <span className="font-bold">{user.points}</span>
                     <span className="darts-thrown">
                       <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon" />
-                      {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
+                      {totalThrows(user)}
                     </span>
                   </TableHead>
                   {Object.entries(user.turns).map((turn, index) => {
@@ -131,11 +132,12 @@ function DartsGame() {
         </div>
       </div>
       <div className="right-panel">
-        <MyAccordion users={users} game={game} />
+        <MyAccordion>
+          <UserDataTable users={users} game={game} />
+        </MyAccordion>
         {game.training && <span className="text-white fs-2 text-center">Training</span>}
         <Keyboard params={keyboardParams} />
       </div>
-      
       <GameSummary show={show} setShow={setShow} />
     </div>
   )

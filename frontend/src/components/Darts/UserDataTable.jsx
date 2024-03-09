@@ -1,10 +1,14 @@
 import MyTooltip from '../MyComponents/MyTooltip'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { totalThrows } from './utils';
 
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {
     return (
-      <MyTooltip title={`N: ${user.throws['normal']} | D: ${user.throws['doubles']} | T: ${user.throws['triples']} | D: ${user.throws['doors']} | O: ${user.throws['overthrows']}`}>
-        {Object.values(user.throws).reduce((acc, val) => acc + val, 0)}
+      <MyTooltip title={`N: ${user.throws['normal']} | Dou: ${user.throws['doubles']} | T: ${user.throws['triples']} | Doo: ${user.throws['doors']} | O: ${user.throws['overthrows']}`}>
+        <span>
+          {totalThrows(user)}
+        </span>
       </MyTooltip>
     )
   }
@@ -20,31 +24,31 @@ function UserDataTable({ users, game }) {
     return style;
   }
   return (
-    <Table responsive="sm">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Points</th>
-          <th>Throws</th>
-          <th><MyTooltip title="Your highest Round Points Thrown">HRP</MyTooltip></th>
-          <th><MyTooltip title="Your average of points in the set">AVG</MyTooltip></th>
-          <th>Legs</th>
-          <th>Sets</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users && users.map(user => (
-          <tr key={user._id} style={dynamicUserStyle(user)}>
-            <td>{user.displayName}</td>
-            <td>{game.startPoints - user.points}</td>
-            <td>{displayUserThrows(user)}</td>
-            <td>{user.highestRoundPoints}</td>
-            <td>{user.avgPointsPerThrow}</td>
-            <td>{user.legs}</td>
-            <td>{user.sets}</td>
-          </tr>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Player</TableHead>
+          <TableHead>Points</TableHead>
+          <TableHead>Throws</TableHead>
+          <TableHead><MyTooltip title="Your highest Round Points Thrown"><span>HRP</span></MyTooltip></TableHead>
+          <TableHead><MyTooltip title="Your average of points in the set"><span>AVG</span></MyTooltip></TableHead>
+          <TableHead>Legs</TableHead>
+          <TableHead>Sets</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {users.map(user => (
+          <TableRow key={user._id} style={dynamicUserStyle(user)}>
+            <TableCell>{user.displayName}</TableCell>
+            <TableCell>{game.startPoints - user.points}</TableCell>
+            <TableCell>{displayUserThrows(user)}</TableCell>
+            <TableCell>{user.highestRoundPoints}</TableCell>
+            <TableCell>{user.avgPointsPerThrow}</TableCell>
+            <TableCell>{user.legs}</TableCell>
+            <TableCell>{user.sets}</TableCell>
+          </TableRow>
         ))}
-      </tbody>
+      </TableBody>
     </Table>
   )
 }

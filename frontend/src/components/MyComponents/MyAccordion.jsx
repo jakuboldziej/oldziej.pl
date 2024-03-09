@@ -1,17 +1,15 @@
-import UserDataTable from "../Darts/UserDataTable";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
-function MyDialog({ users, game }) {
+function MyDialog({ children }) {
   return (
-    <div>asdf</div>
-    // <Accordion data-bs-theme="dark" defaultActiveKey="0">
-    //   <Accordion.Item eventKey="0">
-    //     <Accordion.Header>Live Data</Accordion.Header>
-    //     <Accordion.Body>
-    //       <UserDataTable users={users} game={game} />
-    //     </Accordion.Body>
-    //   </Accordion.Item>
-    // </Accordion>
-    
+    <Accordion type="single" className="accordion" defaultValue="item-1" collapsible>
+      <AccordionItem value="item-1">
+        <AccordionTrigger>Live Data</AccordionTrigger>
+        <AccordionContent>
+          {children}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }
 

@@ -2,8 +2,8 @@ import { useContext, useState } from 'react';
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { buttonVariants } from '../ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button, buttonVariants } from '../ui/button';
 
 function GameSummary({ show }) {
   const { game } = useContext(DartsGameContext);
@@ -25,12 +25,11 @@ function GameSummary({ show }) {
   return (
     <>
       <Dialog open={show}>
-        {/* <DialogTrigger className='text-white'>Open</DialogTrigger> */}
         <DialogContent className='game-summary-modal'>
           <DialogHeader>
             <DialogTitle className='text-center text-2xl'>Game Summary</DialogTitle>
             <hr />
-            <DialogDescription className='text-white'>
+            <div className='text-white'>
               {!game.training ?
                 <div className='summary flex flex-col items-center gap-5'>
                   <div className="podium">
@@ -54,14 +53,15 @@ function GameSummary({ show }) {
                     <span>Time played: {timePlayed}</span>
                     <span>StartPoints: {game.startPoints}</span>
                   </div>
-                  {/* <UserDataTable users={game.users} game={game}/> */}
+                  <UserDataTable users={game.users} game={game}/>
                 </div>
               }
               <span className='flex flex-col items-center gap-5 mt-5'>
                 <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New Game</Link>
                 <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts">Back to Darts</Link>
+                <Button variant="outline_white" className="glow-button-white" disabled>Play Again</Button>
               </span>
-            </DialogDescription>
+            </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
