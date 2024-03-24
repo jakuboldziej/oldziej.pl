@@ -210,7 +210,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       let minutes = 0;
       let minutesPerStartPoints = 0;
       minutesPerStartPoints += selectStartPoints / 75;
-      usersPlaying.length;
 
       if (usersPlaying.length > 0) minutes = (minutesPerStartPoints * selectLegs * selectSets) * usersPlaying.length;
       setEgt(minutes.toFixed());
@@ -284,7 +283,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {usersPlaying.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
+                      {usersPlaying?.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
