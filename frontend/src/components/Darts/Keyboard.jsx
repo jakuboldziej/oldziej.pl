@@ -2,9 +2,9 @@ import { deleteDartsGame } from "../../fetch";
 import { Button } from "../ui/button";
 
 function Keyboard({ params }) {
-  const { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, showNewToast, setOverthrow } = params;
+  const { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow } = params;
   const onclick = (param) => {
-    handleRound(param, users, game, handleShow, setUsers, specialState, setSpecialState, showNewToast, setOverthrow)
+    handleRound(param, users, game, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow)
   }
   const numbers = [];
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => onclick(i)}>{i}</button>);

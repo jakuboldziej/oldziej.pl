@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 import "../style.scss";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { AuthContext } from "../context/AuthContext";
+import { getUser } from "@/fetch";
 
 function Login() {
   document.title = "Oldziej | Login";
@@ -55,12 +56,10 @@ function Login() {
 
     try {
       setLoading(true);
-      const q = query(collection(db, "users"), where("displayName", "==", displayName));
-      const qSnapshot = await getDocs(q);
+      const userQ = await getUser(displayName);
 
-      if (!qSnapshot.empty) {
-        const user = qSnapshot.docs[0].data();
-        await signInWithEmailAndPassword(auth, user.email, password);
+      if (!userQ.empty) {
+        await signInWithEmailAndPassword(auth, userQ.email, password);
         navigate("/");
       } else {
         handleError("User doesn't exist.", "rgb(248, 126, 126)")

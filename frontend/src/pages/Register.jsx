@@ -99,9 +99,9 @@ function Register() {
                 </button>
               </div>
               <div className={loading ? "d-flex justify-content-center pt-3" : "d-none"}>
-                <Spinner animation="border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </Spinner>
+                {/* <Spinner animation="border" role="status"> */}
+                  {/* <span className="visually-hidden">Loading...</span> */}
+                {/* </Spinner> */}
               </div>
               {err && <span id="error_message">Something went wrong.</span>}
             </form>

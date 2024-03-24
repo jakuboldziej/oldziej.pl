@@ -6,15 +6,15 @@ let handleShow;
 let currentUser;
 let users;
 let setUsers;
-let showNewToast;
+let ShowNewToast;
 let setOverthrow;
 
-export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specialState, setSpecialState, showNewToastP, setOverthrowP) => {
+export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specialState, setSpecialState, ShowNewToastP, setOverthrowP) => {
   handleShow = handleShowP;
   game = gameP;
   users = usersP;
   setUsers = setUsersP;
-  showNewToast = showNewToastP;
+  ShowNewToast = ShowNewToastP;
   setOverthrow = setOverthrowP;
   currentUser = users.find(user => user.turn);
   if (Number.isInteger(value)) {
@@ -313,7 +313,7 @@ const handleRecord = (action) => {
         game.turn = restoredState.game.turn;
       }
     } else {
-      showNewToast("Back button", "This is the start of the game")
+      ShowNewToast("Back button", "This is the start of the game")
     }
   }
 };

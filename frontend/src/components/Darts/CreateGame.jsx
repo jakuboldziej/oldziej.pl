@@ -10,8 +10,12 @@ import { Card, CardContent, CardHeader } from "../ui/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { toast } from "sonner";
 import MySelect from "../MyComponents/MySelect";
+import { Checkbox } from "../ui/checkbox";
+import { ScrollArea } from "../ui/scroll-area";
+import ShowNewToast from "../MyComponents/ShowNewToast";
 
-function CreateGame({ children }) {
+function CreateGame({ children, drawerOpen, setDrawerOpen }) {
+
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
@@ -45,27 +49,36 @@ function CreateGame({ children }) {
   }, [usersPlaying]);
 
   useEffect(() => {
-    const getUsers = async () => {
-      try {
-        const users = await getDartsUsers();
-        setUsersNotPlaying(users);
-      } catch (error) {
-        console.error("Error getting users: ", error);
-      }
-    };
-
-    getUsers();
-
     // get previous settings
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
     if (previousSettings) {
+      setUsersPlaying(previousSettings.users)
       setSelectGameMode(previousSettings.gamemode)
       setSelectStartPoints(previousSettings.startPoints)
       setSelectCheckOut(previousSettings.checkout)
       setSelectLegs(previousSettings.legs)
       setSelectSets(previousSettings.sets)
     }
-  }, []);
+
+    const getUsers = async () => {
+      try {
+        const usersFetch = await getDartsUsers();
+        if (previousSettings) {
+          const usersNotInPreviousSettings = usersFetch.filter(
+            (userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id)
+          );
+          setUsersNotPlaying(usersNotInPreviousSettings);
+          setUsersPodium(1);
+        } else {
+          setUsersNotPlaying(usersFetch);
+        }
+      } catch (error) {
+        console.error("Error getting users: ", error);
+      }
+    };
+
+    getUsers();
+  }, [drawerOpen]);
 
   const handleSelect = (user, action) => {
     const updatedUsersPlaying = action === 'add'
@@ -111,7 +124,7 @@ function CreateGame({ children }) {
     return list.slice().sort(() => Math.random() - 0.5);
   };
 
-  const handleGameStart = async (training = false) => {
+  const handleGameStart = async (training) => {
     let updatedUsers = usersPlaying.map((user) => ({
       ...user,
       points: selectStartPoints,
@@ -137,7 +150,7 @@ function CreateGame({ children }) {
       avgPointsPerThrow: 0,
       highestRoundPoints: 0,
     }));
-    // if (usersPlaying.length === 0) return showNewToast("Game settings", "You have to select users to play");
+    if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = randomizeList(updatedUsers);
     const gameData = {
       created_at: Date.now(),
@@ -182,11 +195,13 @@ function CreateGame({ children }) {
     navigate("game");
 
     localStorage.setItem("gameSettings", JSON.stringify({
+      users: usersPlaying,
       gamemode: selectGameMode,
       startPoints: selectStartPoints,
       checkout: selectCheckOut,
       sets: selectSets,
       legs: selectLegs,
+      training: training
     }))
   }
 
@@ -205,7 +220,7 @@ function CreateGame({ children }) {
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
   return (
-    <Drawer>
+    <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
       <DrawerTrigger asChild>
         {children}
       </DrawerTrigger>
@@ -213,7 +228,7 @@ function CreateGame({ children }) {
         <DrawerHeader>
           <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
         </DrawerHeader>
-        <div className="settings pt-3">
+        <div className="settings pt-3 overflow-y-auto">
           <Card className="usersCard">
             <CardHeader className="text-lg">
               Add Users
@@ -222,18 +237,25 @@ function CreateGame({ children }) {
             <CardContent className="card-content p-0">
               <div className="users">
                 <div className="text-xl py-3">Not Playing</div>
-                <hr />
                 {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
                   <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
                     <span>{user.displayName}</span>
                   </div>
                 )) : null}
               </div>
-              {/* <Card.Title className="mt-3 d-flex justify-content-between"> */}
-              <div className="text-xl py-3">Playing</div>
-              {/* <Form.Check id="checkbox" label="Random" inline checked={randomizePlayers} onChange={() => setRandomizePlayers(prev => !prev)} /> */}
-              {/* </Card.Title> */}
-              <hr />
+              <div className="text-xl py-3 flex items-center gap-5">Playing
+                <div className="items-top flex space-x-2">
+                  <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="checkbox"
+                      className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Random
+                    </label>
+                  </div>
+                </div>
+              </div>
               <div className="users pt-3">
                 {usersPlaying.length > 0 ? usersPlaying.map((user) => (
                   <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
@@ -244,7 +266,7 @@ function CreateGame({ children }) {
             </CardContent>
           </Card>
           <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
-            <Button variant="outline_red" className="glow-button-red" onClick={handleGameStart}>Start</Button>
+            <Button variant="outline_red" className="glow-button-red" onClick={() => handleGameStart(false)}>Start</Button>
             <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
             <span>EGT: {egt}</span>
           </div>
@@ -272,7 +294,7 @@ function CreateGame({ children }) {
                     <SelectValue placeholder="Select Gamemode" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup onChange={(e) => console.log(e.target.value)}>
+                    <SelectGroup>
                       <SelectItem value="X01">X01</SelectItem>
                       <SelectItem value="Cricket">Cricket</SelectItem>
                       <SelectItem value="Around the Clock">Around the Clock</SelectItem>
@@ -348,51 +370,6 @@ function CreateGame({ children }) {
         </div>
       </DrawerContent>
     </Drawer>
-    // {/* <Modal data-bs-theme="dark" className="create-game-modal" show={show} fullscreen={true} onHide={() => setShow(false)}>
-    //   <Modal.Header closeButton>
-    //     <Modal.Title>Create New Game</Modal.Title>
-    //   </Modal.Header>
-    //   <Modal.Body>
-    //     <div className="settings">
-    //       <Card className="settingsCard" bg="dark" text="light" style={{ width: '18rem' }}>
-    //         <Card.Header>Settings</Card.Header>
-    //           <Card.Title>
-    //             <span>Legs</span>
-    //             <Form.Select style={{width: 50}} value={selectCheckOut} onChange={(e) => setSelectCheckOut(e.target.value)}>
-    //               <option>Best-of</option>
-    //               <option>First-to</option>
-    //             </Form.Select>
-    //           </Card.Title>
-    //           <hr />
-    //           <Form.Select value={selectLegs} onChange={(e) => setSelectLegs(e.target.value)}>
-    //             {numbersLegsSets}
-    //           </Form.Select>
-    //         </Card.Body>
-    //       </Card>
-    //     </div>
-    //   </Modal.Body>
-    // </Modal>
-
-    // <Modal centered show={showCustomPoints} onHide={() => setShowCustomPoints(false)}>
-    //   <Modal.Header data-bs-theme="dark" closeButton className="bg-dark text-light">
-    //     <Modal.Title>Set Custom StartPoints</Modal.Title>
-    //   </Modal.Header>
-    //   <Modal.Body className="bg-dark text-light">
-    //     <Form.Control type="number" name="custom-startpoints" autoFocus onChange={(e) => {
-    //       const enteredValue = e.target.value;
-    //       if (enteredValue >= 0) {
-    //         setCustomStartPoints(enteredValue);
-    //       } else {
-    //         setCustomStartPoints(1);
-    //       }
-    //     }} min={1} />
-    //   </Modal.Body>
-    //   <Modal.Footer className="bg-dark text-light">
-    //     <Button variant="outline-primary" onClick={handleCustomStartPoints}>
-    //       Save Changes
-    //     </Button>
-    //   </Modal.Footer>
-    // </Modal> */}
   )
 }
 

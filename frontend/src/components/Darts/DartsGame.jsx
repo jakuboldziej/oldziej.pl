@@ -10,6 +10,7 @@ import MyAccordion from "../MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { buttonVariants } from "../ui/button";
 import UserDataTable from "./UserDataTable";
+import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function DartsGame() {
   const [show, setShow] = useState(false);
@@ -70,7 +71,7 @@ function DartsGame() {
     }
   }, [game?.active]);
 
-  const keyboardParams = { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
+  const keyboardParams = { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {

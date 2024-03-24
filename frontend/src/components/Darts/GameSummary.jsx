@@ -1,12 +1,13 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { DartsGameContext } from '../../context/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button, buttonVariants } from '../ui/button';
+import { postDartsGame } from '@/fetch';
 
-function GameSummary({ show }) {
-  const { game } = useContext(DartsGameContext);
+function GameSummary({ show, setShow }) {
+  const { game, setGame } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
 
   const handleTimePlayed = () => {
@@ -21,6 +22,66 @@ function GameSummary({ show }) {
     const formattedTimeDifference = `${hoursDifference.toString().padStart(2, '0')}:${minutesDifference.toString().padStart(2, '0')}`;
     setTimePlayed(formattedTimeDifference);
   }
+
+  const handlePlayAgain = async () => {
+    const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
+    game.users.map((user) => {
+      user.points = game.startPoints
+      user.allGainedPoints = 0
+      user.turn = game.turn === user.displayName ? true : false
+      user.turnsSum = 0
+      user.currentTurn = 1
+      user.place = 0
+      user.turns = {
+        1: null,
+        2: null,
+        3: null
+      }
+      user.throws = {
+        doors: 0,
+        doubles: 0,
+        triples: 0,
+        normal: 0,
+        overthrows: 0,
+      }
+      user.legs = 0
+      user.sets = 0
+      user.avgPointsPerThrow = 0
+      user.highestRoundPoints = 0
+    })
+    game.active = true;
+    game.podium = {
+      1: null,
+      2: null,
+      3: null
+    }
+    game.userWon = "";
+    game.round = 1;
+    game.record = [{
+      game: {
+        round: game.round,
+        turn: game.turn
+      },
+      user: game.users[0]
+    }];
+    setShow(false);
+
+    if (!previousSettings.training) {
+      game.training = false;
+      const gameData = await postDartsGame(game);
+      game._id = gameData._id;
+      setGame(game);
+    } else {
+      game.training = true;
+      setGame(game)
+    }
+  }
+
+  useEffect(() => {
+    if (show) {
+      handleTimePlayed();
+    }
+  }, [show]);
 
   return (
     <>
@@ -53,13 +114,13 @@ function GameSummary({ show }) {
                     <span>Time played: {timePlayed}</span>
                     <span>StartPoints: {game.startPoints}</span>
                   </div>
-                  <UserDataTable users={game.users} game={game}/>
+                  <UserDataTable users={game.users} game={game} />
                 </div>
               }
               <span className='flex flex-col items-center gap-5 mt-5'>
                 <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New Game</Link>
                 <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts">Back to Darts</Link>
-                <Button variant="outline_white" className="glow-button-white" disabled>Play Again</Button>
+                <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
               </span>
             </div>
           </DialogHeader>

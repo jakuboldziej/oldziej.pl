@@ -9,13 +9,14 @@ import { getDartsGames, getDartsUsers } from "../fetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
 
   const location = useLocation();
 
-  const [show, setShow] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
   const [games, setGames] = useState([]);
   const [gamesShown, setGamesShown] = useState([]);
@@ -27,9 +28,9 @@ function DartsPage() {
 
   const handleShow = () => {
     if (!playerInGame) {
-      setShow(true);
+      setDrawerOpen(true);
     } else {
-      // showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
+      ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
     }
   }
 
@@ -161,7 +162,7 @@ function DartsPage() {
     const liveGame = localStorage.getItem('dartsGame');
     if (liveGame !== "null" && liveGame !== null) {
       setPlayerInGame(true);
-      // showNewToast("Live game going", "You are already in a game <a href='/darts/game' class='mx-2 btn btn-outline-danger'>Live Game</a>");
+      ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
     }
 
     // Create New Game Auto
@@ -184,8 +185,8 @@ function DartsPage() {
       <NavBar />
       <div className="darts-page">
         <div className="flex justify-center">
-          <CreateGame>
-            <Button variant="outline_red" className="glow-button-red">Create</Button>
+          <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
+            <Button variant="outline_red" className="glow-button-red" onClick={() => setDrawerOpen(true)}>Create</Button>
           </CreateGame>
         </div>
         <div className="cards">
