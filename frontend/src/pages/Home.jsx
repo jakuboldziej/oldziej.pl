@@ -3,6 +3,7 @@ import NavBar from "../components/NavBar"
 import { getDartsUsers } from "../fetch";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 function Home() {
   document.title = "Oldziej | Home";
@@ -33,7 +34,10 @@ function Home() {
               <CardTitle><Link to={"/darts"} className="hover:cursor-pointer hover:opacity-80">Darts</Link></CardTitle>
             </CardHeader>
             <div className="info">
-              {dartUsers && dartUsers.map((dartUser) => {
+              {isLoading ? <div className="flex justify-center w-100 pt-3">
+                <Loader2 className="h-10 w-10 animate-spin" />
+              </div>
+              : dartUsers && dartUsers.map((dartUser) => {
                 return (
                   <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                     <span className="elementInfo username">{dartUser.displayName}</span>

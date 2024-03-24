@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
 import { getDartsGames, getDartsUser } from '../fetch';
+import { Loader2 } from 'lucide-react';
 
 function DartsUser() {
   const { username } = useParams();
@@ -158,9 +159,9 @@ function DartsUser() {
           <hr />
         </div>
         {isLoading ? (
-          <div className="d-flex flex-column align-items-center justify-content-center mt-5 gap-2">
-            {/* <MySpinner /> */}
-            Loading Statistics...
+          <div className="flex flex-col items-center justify-center mt-5 gap-2">
+            <Loader2 className="h-10 w-10 animate-spin" />
+            <div>Loading Statistics...</div>
           </div>
         ) :
           <>

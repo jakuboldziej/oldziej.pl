@@ -7,12 +7,12 @@ import { getDartsUsers, postDartsGame } from "../../fetch";
 import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Card, CardContent, CardHeader } from "../ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
-import { toast } from "sonner";
-import MySelect from "../MyComponents/MySelect";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
-import { ScrollArea } from "../ui/scroll-area";
 import ShowNewToast from "../MyComponents/ShowNewToast";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
@@ -54,7 +54,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     if (previousSettings) {
       setUsersPlaying(previousSettings.users)
       setSelectGameMode(previousSettings.gamemode)
-      setSelectStartPoints(previousSettings.startPoints)
+      console.log(['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number=> number === previousSettings.startPoints)[0]);
+      if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number=> number === previousSettings.startPoints)[0]) {
+        console.log(previousSettings.startPoints);
+        setSelectStartPoints(previousSettings.startPoints)
+      } else {
+        setCustomStartPoints(previousSettings.startPoints)
+        setSelectStartPoints(previousSettings.startPoints)
+      }
       setSelectCheckOut(previousSettings.checkout)
       setSelectLegs(previousSettings.legs)
       setSelectSets(previousSettings.sets)
@@ -105,13 +112,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
   };
 
-  const handleSelectStartPoints = (e) => {
-    const selectedValue = e.target.value;
+  const handleSelectStartPoints = (value) => {
+    const selectedValue = value;
 
     if (selectedValue === "Custom") {
       setShowCustomPoints(true);
     } else {
       setSelectStartPoints(selectedValue);
+      setCustomStartPoints(0);
     }
   };
 
@@ -219,156 +227,187 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
   return (
-    <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-      <DrawerTrigger asChild>
-        {children}
-      </DrawerTrigger>
-      <DrawerContent className="create-game-modal">
-        <DrawerHeader>
-          <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
-        </DrawerHeader>
-        <div className="settings pt-3 overflow-y-auto">
-          <Card className="usersCard">
-            <CardHeader className="text-lg">
-              Add Users
-            </CardHeader>
-            <hr />
-            <CardContent className="card-content p-0">
-              <div className="users">
-                <div className="text-xl py-3">Not Playing</div>
-                {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                  <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
-                    <span>{user.displayName}</span>
-                  </div>
-                )) : null}
-              </div>
-              <div className="text-xl py-3 flex items-center gap-5">Playing
-                <div className="items-top flex space-x-2">
-                  <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
-                  <div className="grid gap-1.5 leading-none">
-                    <label
-                      htmlFor="checkbox"
-                      className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Random
-                    </label>
+    <>
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+        <DrawerTrigger asChild>
+          {children}
+        </DrawerTrigger>
+        <DrawerContent className="create-game-modal">
+          <DrawerHeader>
+            <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
+          </DrawerHeader>
+          <div className="settings pt-3 overflow-y-auto">
+            <Card className="usersCard">
+              <CardHeader className="text-lg">
+                Add Users
+              </CardHeader>
+              <hr />
+              <CardContent className="card-content p-0">
+                <div className="users">
+                  <div className="text-xl py-3">Not Playing</div>
+                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
+                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
+                      <span>{user.displayName}</span>
+                    </div>
+                  )) : null}
+                </div>
+                <div className="text-xl py-3 flex items-center gap-5">Playing
+                  <div className="items-top flex space-x-2">
+                    <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
+                    <div className="grid gap-1.5 leading-none">
+                      <label
+                        htmlFor="checkbox"
+                        className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Random
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="users pt-3">
-                {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
-                  <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
-                    <span>{user.displayName}</span>
-                  </div>
-                )) : null}
-              </div>
-            </CardContent>
-          </Card>
-          <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
-            <Button variant="outline_red" className="glow-button-red" onClick={() => handleGameStart(false)}>Start</Button>
-            <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
-            <span>EGT: {egt}</span>
+                <div className="users pt-3">
+                  {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
+                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+                      <span>{user.displayName}</span>
+                    </div>
+                  )) : null}
+                </div>
+              </CardContent>
+            </Card>
+            <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
+              <Button variant="outline_red" className="glow-button-red" onClick={() => handleGameStart(false)}>Start</Button>
+              <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
+              <span>EGT: {egt}</span>
+            </div>
+            <Card className="settingsCard">
+              <CardHeader>
+                Settings
+              </CardHeader>
+              <hr />
+              <CardContent className="card-content">
+                <div className="selects">
+                  <div className="text-lg">Podium</div>
+                  <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Podium" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {usersPlaying?.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-lg">Gamemode</div>
+                  <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Gamemode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="X01">X01</SelectItem>
+                        <SelectItem value="Cricket">Cricket</SelectItem>
+                        <SelectItem value="Around the Clock">Around the Clock</SelectItem>
+                        <SelectItem value="Shanghai">Shanghai</SelectItem>
+                        <SelectItem value="Elimination">Elimination</SelectItem>
+                        <SelectItem value="Highscore">Highscore</SelectItem>
+                        <SelectItem value="Killer">Killer</SelectItem>
+                        <SelectItem value="Splitscore">Splitscore</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-lg">Start Points</div>
+                  <Select onValueChange={(value) => handleSelectStartPoints(value)} value={selectStartPoints}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Start Points" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="101">101</SelectItem>
+                        <SelectItem value="201">201</SelectItem>
+                        <SelectItem value="301">301</SelectItem>
+                        <SelectItem value="401">401</SelectItem>
+                        <SelectItem value="501">501</SelectItem>
+                        <SelectItem value="601">601</SelectItem>
+                        <SelectItem value="701">701</SelectItem>
+                        <SelectItem value="801">801</SelectItem>
+                        <SelectItem value="901">901</SelectItem>
+                        <SelectItem value="1001">1001</SelectItem>
+                        <SelectItem value="Custom">Custom</SelectItem>
+                        {customStartPoints !== '' && customStartPoints !== '0' &&
+                          <SelectItem value={customStartPoints}>{customStartPoints}</SelectItem>
+                        }
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-lg">Check-Out</div>
+                  <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Check-Out" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="Straight Out">Straight Out</SelectItem>
+                        <SelectItem value="Double Out">Double Out</SelectItem>
+                        <SelectItem value="Triple Out">Triple Out</SelectItem>
+                        <SelectItem value="Master Out">Master Out</SelectItem>
+                        <SelectItem value="Splitscore">Splitscore</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-lg">Sets</div>
+                  <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Sets" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {numbersLegsSets}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <div className="text-lg">Legs</div>
+                  <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
+                    <SelectTrigger className="text-white">
+                      <SelectValue placeholder="Select Legs" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {numbersLegsSets}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <Card className="settingsCard">
-            <CardHeader>
-              Settings
-            </CardHeader>
-            <hr />
-            <CardContent className="card-content">
-              <div className="selects">
-                <div className="text-lg">Podium</div>
-                <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Podium" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {usersPlaying?.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="text-lg">Gamemode</div>
-                <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Gamemode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="X01">X01</SelectItem>
-                      <SelectItem value="Cricket">Cricket</SelectItem>
-                      <SelectItem value="Around the Clock">Around the Clock</SelectItem>
-                      <SelectItem value="Shanghai">Shanghai</SelectItem>
-                      <SelectItem value="Elimination">Elimination</SelectItem>
-                      <SelectItem value="Highscore">Highscore</SelectItem>
-                      <SelectItem value="Killer">Killer</SelectItem>
-                      <SelectItem value="Splitscore">Splitscore</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="text-lg">Start Points</div>
-                <Select onValueChange={(value) => setSelectStartPoints(value)} value={selectStartPoints}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Start Points" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="101">101</SelectItem>
-                      <SelectItem value="201">201</SelectItem>
-                      <SelectItem value="301">301</SelectItem>
-                      <SelectItem value="401">401</SelectItem>
-                      <SelectItem value="501">501</SelectItem>
-                      <SelectItem value="601">601</SelectItem>
-                      <SelectItem value="701">701</SelectItem>
-                      <SelectItem value="801">801</SelectItem>
-                      <SelectItem value="901">901</SelectItem>
-                      <SelectItem value="1001">1001</SelectItem>
-                      <SelectItem value="Custom">Custom</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="text-lg">Check-Out</div>
-                <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Check-Out" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="Straight Out">Straight Out</SelectItem>
-                      <SelectItem value="Double Out">Double Out</SelectItem>
-                      <SelectItem value="Triple Out">Triple Out</SelectItem>
-                      <SelectItem value="Master Out">Master Out</SelectItem>
-                      <SelectItem value="Splitscore">Splitscore</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="text-lg">Sets</div>
-                <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Sets" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {numbersLegsSets}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div className="text-lg">Legs</div>
-                <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
-                  <SelectTrigger className="text-white">
-                    <SelectValue placeholder="Select Legs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {numbersLegsSets}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </DrawerContent>
+      </Drawer>
+
+      <Dialog open={showCustomPoints}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className='text-center text-2xl'>Set Custom Points</DialogTitle>
+          </DialogHeader>
+          <div className='text-white'>
+            <Label htmlFor="points">
+              Points
+            </Label>
+            <Input
+              id="points"
+              type="number"
+              min={1}
+              max={10000}
+              onChange={(e) => setCustomStartPoints(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+              <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
+                Close
+              </Button>
+            <Button onClick={handleCustomStartPoints} type="submit">Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

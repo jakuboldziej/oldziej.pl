@@ -1,12 +1,12 @@
 import { useContext, useEffect, useState } from "react";
-import { auth, db } from "../firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router";
 import "../style.scss";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { AuthContext } from "../context/AuthContext";
 import { getUser } from "@/fetch";
+import { Loader2  } from "lucide-react";
 
 function Login() {
   document.title = "Oldziej | Login";
@@ -15,7 +15,7 @@ function Login() {
   const [err, setErr] = useState("");
   const [passErr, setPassErr] = useState("");
   const [passValidate, setPassValidate] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [borderBottomColor, setBorderBottomColor] = useState("#fff");
   const dynamicBorderStyle = {"--border-bottom-color": borderBottomColor};
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ function Login() {
     const password = e.target[1].value;
 
     try {
-      setLoading(true);
+      setIsLoading(true);
       const userQ = await getUser(displayName);
 
       if (!userQ.empty) {
@@ -64,10 +64,10 @@ function Login() {
       } else {
         handleError("User doesn't exist.", "rgb(248, 126, 126)")
       }
-      setLoading(false);
+      setIsLoading(false);
     } catch (err) {
       handleError("Wrong password.", "rgb(248, 126, 126)")
-      setLoading(false);
+      setIsLoading(false);
     }
   }
 
@@ -94,8 +94,8 @@ function Login() {
                   Login
                 </button>
               </div>
-              <div className={loading ? "d-flex justify-content-center pt-3" : "d-none"}>
-                {/* <MySpinner /> */}
+              <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
+                <Loader2 className="h-10 w-10 animate-spin"/>
               </div>
               {err && <span id="error_message">{err}</span>}
             </form>

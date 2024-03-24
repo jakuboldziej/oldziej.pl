@@ -6,13 +6,14 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase";
 import { AuthContext } from "../context/AuthContext";
 import { postUser, postDartsUser } from "../fetch";
+import { Loader2 } from "lucide-react";
 
 function Register() {
   document.title = "Oldziej | Register";
   
   const { currentUser } = useContext(AuthContext);
   const [err, setErr] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   // Redirect when already logged in
@@ -30,7 +31,7 @@ function Register() {
     const password = e.target[2].value;
 
     try {
-      setLoading(true);
+      setIsLoading(true);
       await createUserWithEmailAndPassword(auth, email, password);
       const user = auth.currentUser;
       user ? await updateProfile(user, {displayName: displayName}) : null
@@ -69,7 +70,7 @@ function Register() {
       console.log(err)
       setErr(true);
     }
-    setLoading(false);
+    setIsLoading(false);
   }
 
   return (
@@ -98,10 +99,8 @@ function Register() {
                   Register
                 </button>
               </div>
-              <div className={loading ? "d-flex justify-content-center pt-3" : "d-none"}>
-                {/* <Spinner animation="border" role="status"> */}
-                  {/* <span className="visually-hidden">Loading...</span> */}
-                {/* </Spinner> */}
+              <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
+                <Loader2 className="h-10 w-10 animate-spin"/>
               </div>
               {err && <span id="error_message">Something went wrong.</span>}
             </form>
