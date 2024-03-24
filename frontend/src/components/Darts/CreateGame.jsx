@@ -257,7 +257,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                 </div>
               </div>
               <div className="users pt-3">
-                {usersPlaying.length > 0 ? usersPlaying.map((user) => (
+                {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
                   <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
                     <span>{user.displayName}</span>
                   </div>
