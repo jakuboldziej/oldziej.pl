@@ -153,8 +153,7 @@ function DartsUser() {
       <NavBar />
       <div className='dart-user'>
         <div className='header'>
-          <h2>{user?.displayName}</h2>
-          <hr />
+          <b className='text-2xl'>{user?.displayName}</b>
         </div>
         {isLoading ? (
           <div className="flex flex-col items-center justify-center mt-5 gap-2">

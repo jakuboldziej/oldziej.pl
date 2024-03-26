@@ -693,6 +693,45 @@ nav {
   }
 }
 
+// FTP Page
+.left-navbar, .main {
+  height: $containerHeight;
+}
+
+.left-navbar {
+  background-color: $creamy;
+  color: black;
+  width: 15%;
+  font-family: Poppins-SemiBold;
+  .tiles {
+    .tile {
+      display: flex;
+      align-items: center;
+      padding-left: 20px;
+      height: 3rem;
+      transition: 0.2s;
+
+      &:hover {
+        background-color: rgb(184, 181, 158);
+        cursor: pointer;
+      }
+    }
+  }
+}
+.main {
+  display: flex;
+  width: 85%;
+
+  .left-side {
+    padding: 30px;
+    width: 70%;
+  }
+  .right-side {
+    padding: 30px;
+    width: 30%;
+  }
+}
+
 // Login/Register/NotFound Page
 .login-page,
 .register-page,
