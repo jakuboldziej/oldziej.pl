@@ -1,10 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router";
-import "../style.scss";
+import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "@/context/AuthContext";
 import { getUser } from "@/fetch";
 import { Loader2  } from "lucide-react";
 

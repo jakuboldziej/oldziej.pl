@@ -1,9 +1,9 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { DartsGameContext } from "../../context/DartsGameContext";
+import { DartsGameContext } from "@/context/DartsGameContext";
 import _ from 'lodash';
-import { AuthContext } from "../../context/AuthContext";
-import { getDartsUsers, postDartsGame } from "../../fetch";
+import { AuthContext } from "@/context/AuthContext";
+import { getDartsUsers, postDartsGame } from "@/fetch";
 import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { Card, CardContent, CardHeader } from "../ui/card";

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import NavBar from "../components/NavBar"
-import { getDartsUsers } from "../fetch";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import NavBar from "@/components/NavBar"
+import { getDartsUsers } from "@/fetch";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 

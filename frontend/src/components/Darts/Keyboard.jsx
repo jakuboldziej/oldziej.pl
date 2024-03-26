@@ -1,4 +1,4 @@
-import { deleteDartsGame } from "../../fetch";
+import { deleteDartsGame } from "@/fetch";
 import { Button } from "../ui/button";
 
 function Keyboard({ params }) {

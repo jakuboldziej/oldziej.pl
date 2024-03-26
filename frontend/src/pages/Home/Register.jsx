@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from "react";
-import "../style.scss"
+import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../firebase";
-import { AuthContext } from "../context/AuthContext";
-import { postUser, postDartsUser } from "../fetch";
+import { auth } from "@/firebase";
+import { AuthContext } from "@/context/AuthContext";
+import { postUser, postDartsUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 
 function Register() {

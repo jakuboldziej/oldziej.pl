@@ -1,14 +1,15 @@
 import { Route, Routes, BrowserRouter, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { useContext } from 'react';
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register';
-import NotFound from './pages/NotFound';
-import DartsPage from './pages/DartsPage';
+import Home from './pages/Home/Home'
+import HomeP from './pages/Portfolio/Home'
+import Login from './pages/Home/Login'
+import Register from './pages/Home/Register';
+import NotFound from './pages/Home/NotFound';
+import DartsPage from './pages/Home/DartsPage';
 import DartsGame from './components/Darts/DartsGame';
-import DartsUser from "./pages/DartsUser";
- 
+import DartsUser from "./pages/Home/DartsUser";
+
 function App() {
   const { currentUser } = useContext(AuthContext);
 
@@ -20,21 +21,32 @@ function App() {
     return children;
   };
 
+  const subdomain = window.location.host.split(".")[0];
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/">
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        </Route>
-        <Route path="/darts/*">
-          <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />          
-          <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
-          <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>}/>
-        </Route>
-        <Route path="*" element={<NotFound />}/>
-      </Routes>
+      {subdomain === "home" ? (
+        <Routes>
+          <Route path="/">
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          </Route>
+          <Route path="/darts/*">
+            <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />
+            <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
+            <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+
+      ) : (
+        <Routes>
+          <Route path="/">
+            <Route index element={<ProtectedRoute><HomeP /></ProtectedRoute>} />
+          </Route>
+        </Routes>
+      )}
     </BrowserRouter>
   )
 }

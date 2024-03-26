@@ -1,11 +1,9 @@
 import { useParams } from 'react-router';
-import NavBar from '../components/NavBar'
+import NavBar from '@/components/NavBar'
 import { useEffect, useState } from 'react';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '../firebase';
 import { Chart as ChartJS } from "chart.js/auto";
 import { Bar, Line } from 'react-chartjs-2';
-import { getDartsGames, getDartsUser } from '../fetch';
+import { getDartsGames, getDartsUser } from '@/fetch';
 import { Loader2 } from 'lucide-react';
 
 function DartsUser() {

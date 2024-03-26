@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { DartsGameContext } from '../../context/DartsGameContext';
+import { DartsGameContext } from '@/context/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';

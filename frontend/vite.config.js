@@ -11,3 +11,4 @@ export default defineConfig({
     },
   },
 })
+console.log(path.resolve(__dirname, "./src"));
