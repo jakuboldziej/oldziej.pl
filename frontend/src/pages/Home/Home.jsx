@@ -64,7 +64,7 @@ function Home() {
           </Card>
           <Card className="my-card">
             <CardHeader>
-              <CardTitle>FTP</CardTitle>
+              <CardTitle><Link to={"/ftp"} className="hover:cursor-pointer hover:opacity-80">FTP</Link></CardTitle>
             </CardHeader>
           </Card>
         </div>

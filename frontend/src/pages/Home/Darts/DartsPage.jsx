@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import CreateGame from "@/components/Darts/CreateGame";
 import NavBar from "@/components/NavBar"
-import RedDot from "@/images/red_dot.png";
-import GreenDot from "@/images/green_dot.png";
+import RedDot from "@/images/icons/red_dot.png";
+import GreenDot from "@/images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "@/fetch";

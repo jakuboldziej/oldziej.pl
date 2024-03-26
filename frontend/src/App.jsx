@@ -6,9 +6,10 @@ import HomeP from './pages/Portfolio/Home'
 import Login from './pages/Home/Login'
 import Register from './pages/Home/Register';
 import NotFound from './pages/Home/NotFound';
-import DartsPage from './pages/Home/DartsPage';
+import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './components/Darts/DartsGame';
-import DartsUser from "./pages/Home/DartsUser";
+import DartsUser from "./pages/Home/Darts/DartsUser";
+import FtpPage from './pages/Home/FTP/FtpPage';
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -37,13 +38,15 @@ function App() {
             <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
             <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
           </Route>
+          <Route path="/ftp/*">
+            <Route index element={<ProtectedRoute><FtpPage /></ProtectedRoute>} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
-
       ) : (
         <Routes>
           <Route path="/">
-            <Route index element={<ProtectedRoute><HomeP /></ProtectedRoute>} />
+            <Route index element={<HomeP />} />
           </Route>
         </Routes>
       )}
