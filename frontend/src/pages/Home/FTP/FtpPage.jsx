@@ -13,7 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Link } from 'react-router-dom'
 import { Progress } from '@/components/ui/progress'
-import { handleSameFilename } from '@/components/FTP/utils'
+import { formatElapsedTime, formatFileSize, handleSameFilename } from '@/components/FTP/utils'
+import { Loader2 } from 'lucide-react'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
@@ -21,6 +22,9 @@ function FtpPage() {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false);
   const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
+
+  const [startTime, setStartTime] = useState();
+  const [elapsedTime, setElapsedTime] = useState();
 
   const formSchema = z.object({
     file: z.instanceof(FileList).optional(),
@@ -35,6 +39,7 @@ function FtpPage() {
   const handleSubmit = async (event) => {
     setUploading(true);
     try {
+      setStartTime(Date.now());
       let file = event.target.files[0];
       file = await handleSameFilename(file, files);
 
@@ -56,12 +61,22 @@ function FtpPage() {
       const response = await getFiles();
       if (response) {
         setFiles(response.files)
+        console.log(response.files);
       } else {
         setFiles([])
       }
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setElapsedTime(Date.now() - startTime);
+
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [startTime]);
 
   useEffect(() => {
     const updateRecentFiles = async () => {
@@ -85,7 +100,7 @@ function FtpPage() {
     if (uploading === true) {
       ShowNewToast("Uploading...", "Uploading file.")
     } else if (uploading === false && recentlyUploadedFile) {
-      ShowNewToast("File Uploaded", `File ${recentlyUploadedFile.originalname} uploaded.`);
+      ShowNewToast("File Uploaded", `${recentlyUploadedFile.originalname} uploaded in ${formatElapsedTime(elapsedTime)}`);
     }
   }, [uploading]);
 
@@ -191,11 +206,20 @@ function FtpPage() {
               <span className='text-3xl'>Recent Files</span>
               <ScrollArea>
                 <div className='files w-100 flex flex-col gap-4 '>
-                  {recentFiles.length > 0 && recentFiles.map((file) => (
-                    <div key={file._id} className='recent-file bg-slate-700 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
-                      {file.filename}
+                  {recentFiles.length > 0 ? recentFiles.map((file) => (
+                    <div key={file._id} className='flex items-center justify-between recent-file bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
+                      <span>{file.filename}</span>
+                      <div className='attrs flex justify-between'>
+                        <span>{file.filename.split('.').pop().toUpperCase()} file</span>
+                        <span>{formatFileSize(file.length)}</span>
+                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" />
+                      </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="flex justify-center w-100 pt-3">
+                      <Loader2 className="h-10 w-10 animate-spin" />
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </div>

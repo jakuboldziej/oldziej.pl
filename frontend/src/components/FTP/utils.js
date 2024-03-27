@@ -21,3 +21,22 @@ export const handleSameFilename = async (file, files) => {
 
   return file;
 }
+
+export const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const formatted = parseFloat((bytes / Math.pow(k, i)).toFixed(2));
+
+  return `${formatted} ${sizes[i]}`;
+}
+
+export function formatElapsedTime(milliseconds) {
+  const seconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const formattedTime = `${minutes}m ${seconds % 60}s`;
+  return formattedTime;
+}

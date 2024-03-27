@@ -746,15 +746,15 @@ nav {
         min-width: 135px;
       }
 
-      .categories {}
-
-      .folders {}
-
       .recent-files {
         height: 37vh;
 
         .recent-file {
           width: 98%;
+
+          .attrs {
+            width: 50%;
+          }
         }
       }
     }

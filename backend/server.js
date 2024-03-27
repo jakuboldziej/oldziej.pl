@@ -9,8 +9,6 @@ const app = express()
 
 app.use(express.static(path.join(__dirname, '../frontend', 'dist')));
 
-
-
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
