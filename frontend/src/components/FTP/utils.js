@@ -15,7 +15,6 @@ export const handleSameFilename = async (file, files) => {
       fileNames = fileNames.filter(e => e !== newName)
       newName = `${name} - Copy(${duplicateNumber}).${ext}`;
     }
-    console.log(duplicateNumber);
     file.name.substring(file.name.lastIndexOf('.'));
     file = new File([file], newName, { type: file.type });
   }

@@ -3,7 +3,6 @@ export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 // Darts
 export const getDartsUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`);
-  console.log(usersResponse);
   const users = await usersResponse.json();
   return users;
 }
