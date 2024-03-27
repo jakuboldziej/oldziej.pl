@@ -10,6 +10,7 @@ import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './components/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/DartsUser";
 import FtpPage from './pages/Home/FTP/FtpPage';
+import MyFiles from './pages/Home/FTP/MyFiles';
 
 function App() {
   const { currentUser } = useContext(AuthContext);
@@ -40,6 +41,7 @@ function App() {
           </Route>
           <Route path="/ftp/*">
             <Route index element={<ProtectedRoute><FtpPage /></ProtectedRoute>} />
+            <Route path='files' element={<ProtectedRoute><MyFiles /></ProtectedRoute>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

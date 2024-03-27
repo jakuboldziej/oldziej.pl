@@ -1,8 +1,9 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`);
+  console.log(usersResponse);
   const users = await usersResponse.json();
   return users;
 }
@@ -99,6 +100,35 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   const games = await gamesResponse.json();
   return games;
 };
+
+// FTP
+export const getFiles = async () => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files`);
+  const data = await response.json();
+  if (data.err) return null;
+  else return data;
+}
+
+export const getFile = async (filename) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${filename}`);
+  const data = await response.json();
+  return data.file;
+}
+
+export const uploadFile = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/upload`, {
+    method: "POST",
+    body: data
+  });
+  return await response.json();
+}
+
+export const deleteFile = async (id) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
+    method: "DELETE"
+  })
+  return await response.json();
+}
 
 // Users
 export const getUser = async (uDisplayName) => {

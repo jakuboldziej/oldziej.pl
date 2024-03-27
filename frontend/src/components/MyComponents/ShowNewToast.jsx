@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-function ShowNewToast(title, description) {
+function ShowNewToast(title, description, type = "info") {
   const toMMSS = (timestamp) => {
     const date = new Date(timestamp);
     const hours = date.getHours().toString().padStart(2, '0');
@@ -16,7 +16,7 @@ function ShowNewToast(title, description) {
       label: "Close",
       onClick: () => {},
     },
-    type: "info"
+    type: type
   })
 }
 

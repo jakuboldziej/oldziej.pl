@@ -57,6 +57,7 @@ html {
 .glow-button-green {
   box-shadow: 0 0 30px $green;
 }
+
 .glow-button-white {
   box-shadow: 0 0 30px white;
 }
@@ -79,14 +80,14 @@ html {
   color: black;
 }
 
-.toast {
-  z-index: 10000 !important;
-}
-
 // Navbar
 nav {
+  position: fixed;
+  width: 100%;
   border-bottom: 1px solid $green;
   max-height: $navHeight;
+  background-color: black;
+  z-index: 50;
 }
 
 // Modal
@@ -354,6 +355,7 @@ nav {
 .home-page {
   height: $containerHeight;
   padding: 20px;
+  padding-top: $navHeight + 20px;
 
   @media screen and (max-width: 576px) {
     padding: 20px 0 0 0;
@@ -382,7 +384,7 @@ nav {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: 20px 20px 0 20px;
+  padding: $navHeight + 20px 20px 0 20px;
 
   @media screen and (max-width: 576px) {
     padding: 20px 0 0 0;
@@ -694,41 +696,100 @@ nav {
 }
 
 // FTP Page
-.left-navbar, .main {
-  height: $containerHeight;
-}
+.wrapper {
+  padding-top: $navHeight;
 
-.left-navbar {
-  background-color: $creamy;
-  color: black;
-  width: 15%;
-  font-family: Poppins-SemiBold;
-  .tiles {
-    .tile {
-      display: flex;
-      align-items: center;
-      padding-left: 20px;
-      height: 3rem;
-      transition: 0.2s;
+  .left-navbar,
+  .main {
+    height: $containerHeight;
+  }
 
-      &:hover {
-        background-color: rgb(184, 181, 158);
-        cursor: pointer;
+  .left-navbar {
+    position: fixed;
+    background-color: $creamy;
+    color: black;
+    width: 15%;
+    font-family: Poppins-SemiBold;
+
+    .tiles {
+      .tile {
+        display: flex;
+        align-items: center;
+        padding-left: 20px;
+        height: 3rem;
+        transition: 0.2s;
+
+        &:hover {
+          background-color: rgb(184, 181, 158);
+          cursor: pointer;
+        }
       }
     }
   }
-}
-.main {
-  display: flex;
-  width: 85%;
 
-  .left-side {
-    padding: 30px;
-    width: 70%;
-  }
-  .right-side {
-    padding: 30px;
-    width: 30%;
+  .main {
+    width: 85%;
+    margin-left: 15%;
+    height: calc(100vh - $navHeight);
+
+    .left-side {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 30px;
+      width: 70%;
+
+      .category,
+      .folder {
+        width: 10vw;
+        height: 120px;
+        min-width: 135px;
+      }
+
+      .categories {}
+
+      .folders {}
+
+      .recent-files {
+        height: 37vh;
+
+        .recent-file {
+          width: 98%;
+        }
+      }
+    }
+
+    .right-side {
+      position: fixed;
+      top: $navHeight;
+      right: 0;
+      padding: 30px;
+      width: 25%;
+      height: calc(100vh - $navHeight);
+
+      form {
+        position: relative;
+        height: 100%;
+        .mini-wrapper {
+          height: 100%;
+        }
+        .inputfile {
+          width: 0.1px;
+          height: 0.1px;
+          opacity: 0;
+          overflow: hidden;
+          position: absolute;
+          z-index: -1;
+        }
+        .label {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+        }
+      }
+    }
   }
 }
 
