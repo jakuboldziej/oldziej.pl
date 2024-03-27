@@ -47,7 +47,7 @@ function FtpPage() {
 
   useEffect(() => {
     {images && images.forEach((image) => {
-      console.log(image.filename);
+      console.log("/api/ftp/files" + image.filename);
     })}
   }, [images]);
 
@@ -89,7 +89,7 @@ function FtpPage() {
               </form>
             </Form>
             <div>
-              {images && images.forEach((image) => (
+              {images.length > 0 && images.forEach((image) => (
                 <img src={`/api/ftp/files/${image.filename}`} />
               ))}
             </div>
