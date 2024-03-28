@@ -6,20 +6,22 @@ import { Label } from '@/components/ui/label'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { deleteFile, getFile, getFiles, mongodbApiUrl, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Link } from 'react-router-dom'
 import { Progress } from '@/components/ui/progress'
 import { formatElapsedTime, formatFileSize, handleSameFilename } from '@/components/FTP/utils'
-import { Loader2 } from 'lucide-react'
+import { File, Images, Loader2, Mic, Video } from 'lucide-react'
+import LeftNavBar from '@/components/FTP/LeftNavBar'
+import { FilesContext } from '@/context/FilesContext'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
+  const { files } = useContext(FilesContext);
+
   const [recentFiles, setRecentFiles] = useState([]);
-  const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false);
   const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
 
@@ -55,19 +57,6 @@ function FtpPage() {
       setUploading(false)
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await getFiles();
-      if (response) {
-        setFiles(response.files)
-        console.log(response.files);
-      } else {
-        setFiles([])
-      }
-    }
-    fetchData();
-  }, []);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -114,18 +103,9 @@ function FtpPage() {
   return (
     <>
       <NavBar />
-      <div className='wrapper flex'>
-        <div className='left-navbar flex flex-col items-center gap-10 pt-10'>
-          <Link href='/ftp' className='text-xl hover:opacity-70'>File Storage</Link>
-          <div className='tiles w-full h-full relative'>
-            <Link href='/ftp/files' className='tile'>My Files</Link>
-            <div className='tile'>Shared Files</div>
-            <div className='tile'>Favorites</div>
-            <div className='tile'>Upload Files</div>
-            <div className='tile absolute bottom-0 w-full'>Settings</div>
-          </div>
-        </div>
-        <div className='main text-white w-fit relative'>
+      <div className='ftp-wrapper flex'>
+      <LeftNavBar />
+        <div className='main ftp-page text-white w-fit relative'>
           <div className='left-side h-full'>
             <Input disabled placeholder='Search' className='rounded-full' />
             <div className='categories flex flex-col gap-6'>
@@ -133,34 +113,38 @@ function FtpPage() {
               <div className='cards flex gap-5 flex-wrap'>
                 <Card className='category rounded-xl'>
                   <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
+                    <CardTitle><Images /></CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    Pictures
+                  <CardContent className='flex flex-col'>
+                    <span className='text-lg'>Images</span>
+                    <span className='text-sm'>0 Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
                   <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
+                    <CardTitle><File /></CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    Documents
+                  <CardContent className='flex flex-col'>
+                    <span>Documents</span>
+                    <span className='text-sm'>0 Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
                   <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
+                    <CardTitle><Video /></CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    Videos
+                  <CardContent className='flex flex-col'>
+                    <span>Videos</span>
+                    <span className='text-sm'>0 Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
                   <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
+                    <CardTitle><Mic /></CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    Audio
+                  <CardContent className='flex flex-col'>
+                    <span>Audio</span>
+                    <span className='text-sm'>0 Files</span>
                   </CardContent>
                 </Card>
               </div>

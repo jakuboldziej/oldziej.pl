@@ -1,16 +1,16 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "@/context/DartsGameContext"
-import Keyboard from "./Keyboard";
+import Keyboard from "@/components/Darts/Keyboard";
 import RedDot from "@/images/icons/red_dot.png";
 import GreenDot from "@/images/icons/green_dot.png";
-import GameSummary from "./GameSummary";
-import { handleRound, totalThrows } from "./utils";
+import GameSummary from "@/components/Darts/GameSummary";
+import { handleRound, totalThrows } from "@/components/Darts/utils";
 import { Link } from "react-router-dom";
-import MyAccordion from "../MyComponents/MyAccordion";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { buttonVariants } from "../ui/button";
-import UserDataTable from "./UserDataTable";
-import ShowNewToast from "../MyComponents/ShowNewToast";
+import MyAccordion from "@/components/MyComponents/MyAccordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { buttonVariants } from "@/components/ui/button";
+import UserDataTable from "@/components/Darts/UserDataTable";
+import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 
 function DartsGame() {
   const [show, setShow] = useState(false);

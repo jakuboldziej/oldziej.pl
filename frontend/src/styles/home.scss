@@ -696,13 +696,8 @@ nav {
 }
 
 // FTP Page
-.wrapper {
+.ftp-wrapper {
   padding-top: $navHeight;
-
-  .left-navbar,
-  .main {
-    height: $containerHeight;
-  }
 
   .left-navbar {
     position: fixed;
@@ -710,6 +705,8 @@ nav {
     color: black;
     width: 15%;
     font-family: Poppins-SemiBold;
+    height: $containerHeight;
+
 
     .tiles {
       .tile {
@@ -742,12 +739,12 @@ nav {
       .category,
       .folder {
         width: 10vw;
-        height: 120px;
+        height: 135px;
         min-width: 135px;
       }
 
       .recent-files {
-        height: 37vh;
+        height: 35vh;
 
         .recent-file {
           width: 98%;
@@ -770,9 +767,11 @@ nav {
       form {
         position: relative;
         height: 100%;
+
         .mini-wrapper {
           height: 100%;
         }
+
         .inputfile {
           width: 0.1px;
           height: 0.1px;
@@ -781,6 +780,7 @@ nav {
           position: absolute;
           z-index: -1;
         }
+
         .label {
           display: flex;
           flex-direction: column;

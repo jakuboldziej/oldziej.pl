@@ -15,7 +15,6 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
-
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);

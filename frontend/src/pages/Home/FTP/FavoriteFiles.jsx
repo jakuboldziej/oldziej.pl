@@ -1,18 +1,18 @@
 import LeftNavBar from "@/components/FTP/LeftNavBar"
 import NavBar from "@/components/NavBar"
 
-function MyFiles() {
+function FavoriteFiles() {
   return (
     <>
       <NavBar />
       <div className="ftp-wrapper text-white">
         <LeftNavBar />
-        <div className="main my-files">
-          MyFiles
+        <div className="main favorite-files">
+        FavoriteFiles
         </div>
       </div>
     </>
   )
 }
 
-export default MyFiles
+export default FavoriteFiles
