@@ -1,5 +1,4 @@
 import NavBar from '@/components/NavBar'
-import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -7,24 +6,25 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFiles, mongodbApiUrl, uploadFile } from '@/fetch'
+import { deleteFile, getFile, mongodbApiUrl, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { formatElapsedTime, formatFileSize, handleSameFilename } from '@/components/FTP/utils'
+import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename } from '@/components/FTP/utils'
 import { File, Images, Loader2, Mic, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { files } = useContext(FilesContext);
+  const { files, setFiles } = useContext(FilesContext);
 
   const [recentFiles, setRecentFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
   const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
+  const [countFileTypes, setCountFileTypes] = useState(() => handleCountFileTypes(files));
 
+  const [uploading, setUploading] = useState(false);
   const [startTime, setStartTime] = useState();
   const [elapsedTime, setElapsedTime] = useState();
 
@@ -71,7 +71,8 @@ function FtpPage() {
     const updateRecentFiles = async () => {
       const fileRes = (await getFile(recentlyUploadedFile.filename))[0];
       setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
-      setFiles((prevFiles) => [fileRes, ...prevFiles])
+      localStorage.setItem('files', JSON.stringify([fileRes, ...files]));
+      setFiles((prevFiles) => [fileRes, ...prevFiles]);
     }
     if (recentlyUploadedFile) updateRecentFiles();
 
@@ -79,7 +80,7 @@ function FtpPage() {
 
   useEffect(() => {
     if (files.length > 0) {
-      setRecentFiles(files.slice().sort((a, b) => {
+      setRecentFiles(files.slice(0, 10).sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       }))
     }
@@ -117,7 +118,7 @@ function FtpPage() {
                   </CardHeader>
                   <CardContent className='flex flex-col'>
                     <span className='text-lg'>Images</span>
-                    <span className='text-sm'>0 Files</span>
+                    <span className='text-sm'>{countFileTypes.fileImages} Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
@@ -126,7 +127,7 @@ function FtpPage() {
                   </CardHeader>
                   <CardContent className='flex flex-col'>
                     <span>Documents</span>
-                    <span className='text-sm'>0 Files</span>
+                    <span className='text-sm'>{countFileTypes.fileDocuments} Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
@@ -135,7 +136,7 @@ function FtpPage() {
                   </CardHeader>
                   <CardContent className='flex flex-col'>
                     <span>Videos</span>
-                    <span className='text-sm'>0 Files</span>
+                    <span className='text-sm'>{countFileTypes.fileVideos} Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
@@ -144,7 +145,7 @@ function FtpPage() {
                   </CardHeader>
                   <CardContent className='flex flex-col'>
                     <span>Audio</span>
-                    <span className='text-sm'>0 Files</span>
+                    <span className='text-sm'>{countFileTypes.fileAudios} Files</span>
                   </CardContent>
                 </Card>
               </div>
@@ -187,7 +188,7 @@ function FtpPage() {
               </div>
             </div>
             <div className='recent-files flex flex-col gap-6 relative'>
-              <span className='text-3xl'>Recent Files</span>
+              <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea>
                 <div className='files w-100 flex flex-col gap-4 '>
                   {recentFiles.length > 0 ? recentFiles.map((file) => (
