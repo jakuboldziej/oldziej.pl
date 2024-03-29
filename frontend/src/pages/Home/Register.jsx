@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "@/firebase";
 import { AuthContext } from "@/context/AuthContext";
-import { postUser, postDartsUser } from "@/fetch";
+import { postUser, postDartsUser, postFtpUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 
 function Register() {
@@ -61,6 +61,10 @@ function Register() {
             doors: 0
           }
         });
+        await postFtpUser({
+          displayName: user.displayName,
+          email: user.email
+        })
       } catch (err) {
         console.log("Error fetching", err);
       }

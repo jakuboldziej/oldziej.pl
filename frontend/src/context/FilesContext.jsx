@@ -12,9 +12,13 @@ export const FilesContextProvider = ({ children }) => {
   useEffect(() => {
     const fetchFiles = async () => {
       const response = await getFiles();
-      if (response) {
+      console.log(response);
+      if (response.length > 0) {
         setFiles(response.files);
         localStorage.setItem('files', JSON.stringify(response.files));
+      } else {
+        setFiles([]);
+        localStorage.setItem('files', JSON.stringify([]));
       }
     };
     fetchFiles();

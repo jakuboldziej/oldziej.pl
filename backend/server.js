@@ -20,13 +20,15 @@ app.use((req, res, next) => {
 });
 
 const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@188.122.23.154/darts`
+const dartsConn = mongoose.createConnection(mongoURIDarts);
+const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@188.122.23.154/ftp`
+const ftpConn = mongoose.createConnection(mongoURIFTP);
 
-mongoose.connect(mongoURIDarts)
-const db = mongoose.connection
-db.on('error', (err) => console.log(err))
-db.once('open', () => {
-  console.log('Connected Database')
-})
+dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
+dartsConn.once('open', () => console.log('Connected to Darts Database'));
+ftpConn.once('open', () => console.log('Connected to Darts Database'));
+
+module.exports = { dartsConn, ftpConn, mongoURIFTP };
 
 app.use(express.json())
 

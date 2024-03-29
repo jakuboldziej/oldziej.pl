@@ -1,23 +1,20 @@
-import { getFile } from "@/fetch";
+import { getFile, mongodbApiUrl } from "@/fetch";
 
 export const handleSameFilename = async (file, files) => {
-  const exists = await getFile(file.name);
-  if (exists) {
-    const splitted = file.name.split('.');
-    const name = splitted[0];
-    const ext = splitted[splitted.length - 1];
+  const splitted = file.name.split('.');
+  const name = splitted[0];
+  const ext = splitted[splitted.length - 1];
 
-    let fileNames = files.map(file => file.filename);
-    let duplicateNumber = 1;
-    let newName = `${name} - Copy(${duplicateNumber}).${ext}`;
-    while (fileNames.includes(newName)) {
-      duplicateNumber++;
-      fileNames = fileNames.filter(e => e !== newName)
-      newName = `${name} - Copy(${duplicateNumber}).${ext}`;
-    }
-    file.name.substring(file.name.lastIndexOf('.'));
-    file = new File([file], newName, { type: file.type });
+  let fileNames = files.map(file => file.filename);
+  let duplicateNumber = 1;
+  let newName = `${name} - Copy(${duplicateNumber}).${ext}`;
+  while (fileNames.includes(newName)) {
+    duplicateNumber++;
+    fileNames = fileNames.filter(e => e !== newName)
+    newName = `${name} - Copy(${duplicateNumber}).${ext}`;
   }
+  file.name.substring(file.name.lastIndexOf('.'));
+  file = new File([file], newName, { type: file.type });
 
   return file;
 }
@@ -34,19 +31,18 @@ export const formatFileSize = (bytes) => {
   return `${formatted} ${sizes[i]}`;
 }
 
-export const formatElapsedTime = (milliseconds) => {
-  const seconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const formattedTime = `${minutes}m ${seconds % 60}s`;
-  return formattedTime;
-}
+export const formatElapsedTime = (elapsedTime) => {
+  const minutes = Math.floor(elapsedTime / (1000 * 60));
+  const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+  return `${minutes}m ${seconds}s`;
+};
 
 export const handleCountFileTypes = (files) => {
   const images = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
   const documents = ['pdf', 'docx', 'doc', 'txt', 'odt', 'xls', 'xlsx', 'ppt', 'pptx'];
   const videos = ['mp4', 'mov', 'avi', 'wmv', 'mkv', 'flv', 'webm'];
   const audio = ['mp3', 'wav', 'ogg', 'flac', 'aac'];
-  
+
   const fileTypes = {
     fileImages: 0,
     fileDocuments: 0,
@@ -57,7 +53,7 @@ export const handleCountFileTypes = (files) => {
   files.map((file) => {
     const splitted = file.filename.split(".")
     const ext = splitted[splitted.length - 1]
-    if(images.includes(ext)) {
+    if (images.includes(ext)) {
       fileTypes.fileImages += 1;
     } else if (documents.includes(ext)) {
       fileTypes.fileDocuments += 1;
@@ -80,4 +76,12 @@ export const calcStorageUsage = (files) => {
   const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;
 
   return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
+}
+
+export const renderFile = (filename) => {
+  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}`);
+}
+
+export const downloadFile = async (filename) => {
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`
 }

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const { dartsConn } = require("../server")
 
 const dartsGameSchema = new mongoose.Schema ({
   created_by: {
@@ -56,4 +57,4 @@ const dartsGameSchema = new mongoose.Schema ({
   },
 })
 
-module.exports = mongoose.model('DartsGame', dartsGameSchema)
+module.exports = dartsConn.model('DartsGame', dartsGameSchema)

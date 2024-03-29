@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -101,16 +101,35 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
 };
 
 // FTP
+export const postFtpUser = async () => {
+  await fetch(`${mongodbApiUrl}/ftp/users`, {
+    method: "POST",
+    body: JSON.stringify({
+      displayName: userData.displayName,
+      email: userData.email
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export const getFtpUser = async (uDisplayName) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${uDisplayName}`);
+  const user = await userResponse.json();
+  return user;
+}
+
 export const getFiles = async () => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files`);
   const data = await response.json();
-  if (data.err) return null;
-  else return data;
+  return data;
 }
 
 export const getFile = async (filename) => {
+  // tu się buguje
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${filename}`);
-  const data = await response.json();
+  const data = await response.json()
   return data.file;
 }
 
@@ -127,10 +146,6 @@ export const deleteFile = async (id) => {
     method: "DELETE"
   })
   return await response.json();
-}
-
-export const renderFile = async (filename) => {
-  fetch(`${mongodbApiUrl}/ftp/files/render/${filename}`)
 }
 
 // Users

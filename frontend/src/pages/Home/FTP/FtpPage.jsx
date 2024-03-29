@@ -6,28 +6,35 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, mongodbApiUrl, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage } from '@/components/FTP/utils'
+import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
 import { File, FileDown, FileUp, Heart, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Trash2, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { AuthContext } from '@/context/AuthContext'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
   const { files, setFiles } = useContext(FilesContext);
+  const { currentUser } = useContext(AuthContext);
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
   const [countFileTypes, setCountFileTypes] = useState(() => handleCountFileTypes(files));
-
-  const [uploading, setUploading] = useState(false);
-  const [startTime, setStartTime] = useState();
-  const [elapsedTime, setElapsedTime] = useState();
+  const [fileStatus, setFileStatus] = useState({
+    uploading: false,
+    downloading: false,
+    uploaded: false,
+    downloaded: false
+  });
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const formSchema = z.object({
     file: z.instanceof(FileList).optional(),
@@ -40,14 +47,20 @@ function FtpPage() {
   const fileRef = form.register("file");
 
   const handleSubmit = async (event) => {
-    setUploading(true);
+    setFileStatus((prev) => ({ ...prev, uploading: true }));
+    setElapsedTime(0);
+
     try {
-      setStartTime(Date.now());
       let file = event.target.files[0];
       file = await handleSameFilename(file, files);
 
+      const ftpUser = await getFtpUser(currentUser.displayName);
+      console.log(ftpUser);
+
       const formData = new FormData();
       formData.append('file', file)
+      // formData.append('userId', ftpUser.displayName)
+      console.log(file);
 
       const response = await uploadFile(formData);
       setRecentlyUploadedFile(response.file);
@@ -55,45 +68,13 @@ function FtpPage() {
       ShowNewToast("Error uploading file", error, "warning")
     } finally {
       event.target.value = ""
-      setUploading(false)
+      setFileStatus((prev) => ({ ...prev, uploading: false, uploaded: true }));
     }
   };
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setElapsedTime(Date.now() - startTime);
-
-    }, 100);
-
-    return () => clearInterval(intervalId);
-  }, [startTime]);
-
-  useEffect(() => {
-    const updateRecentFiles = async () => {
-      const fileRes = (await getFile(recentlyUploadedFile.filename))[0];
-      setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
-      localStorage.setItem('files', JSON.stringify([fileRes, ...files]));
-      setFiles((prevFiles) => [fileRes, ...prevFiles]);
-    }
-    if (recentlyUploadedFile) updateRecentFiles();
-
-  }, [recentlyUploadedFile]);
-
-  useEffect(() => {
-    if (files.length > 0) {
-      setRecentFiles(files.slice(0, 10).sort((a, b) => {
-        return new Date(b.uploadDate) - new Date(a.uploadDate);
-      }))
-    }
-  }, [files]);
-
-  useEffect(() => {
-    if (uploading === true) {
-      ShowNewToast("Uploading...", "Uploading file.")
-    } else if (uploading === false && recentlyUploadedFile) {
-      ShowNewToast("File Uploaded", `${recentlyUploadedFile.originalname} uploaded in ${formatElapsedTime(elapsedTime)}`);
-    }
-  }, [uploading]);
+  const handleDownloadFile = (filename) => {
+    downloadFile(filename);
+  }
 
   const handleDeleteImage = async (id) => {
     const response = await deleteFile(id);
@@ -101,6 +82,56 @@ function FtpPage() {
       ShowNewToast("File Update", `File has been deleted.`)
     }
   }
+
+  useEffect(() => {
+    if (!fileStatus.uploading) return;
+
+    const intervalId = setInterval(() => {
+      setElapsedTime((prevTime) => prevTime + 1000);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [fileStatus.uploading]);
+
+  // useEffect(() => {
+  //   if (fileStatus.uploading) {
+  //     ShowNewToast("Uploading...", "Uploading file.");
+  //   } else if (fileStatus.uploaded) {
+  //     ShowNewToast("File Uploaded", `${recentlyUploadedFile.filename} uploaded in ${formatElapsedTime(elapsedTime)}`);
+  //     setFileStatus((prev) => ({ ...prev, uploaded: false }));
+  //   }
+
+  //   if (fileStatus.downloading) {
+  //     ShowNewToast("Downloading...", "Downloading file.");
+  //   } else if (fileStatus.downloaded) {
+  //     ShowNewToast("File Downloaded", `${recentlyUploadedFile.filename} downloaded in ${formatElapsedTime(elapsedTime)}`);
+  //     setFileStatus((prev) => ({ ...prev, downloaded: false }));
+  //   }
+
+  // }, [fileStatus]);
+
+  useEffect(() => {
+    const updateRecentFiles = async () => {
+      console.log(recentlyUploadedFile);
+      const fileRes = await getFile(recentlyUploadedFile.originalFilename);
+      console.log(fileRes);
+      setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
+      localStorage.setItem('files', JSON.stringify([fileRes, ...files]));
+      setFiles((prevFiles) => [fileRes, ...prevFiles]);
+      setRecentlyUploadedFile(null);
+    }
+    if (recentlyUploadedFile) updateRecentFiles();
+
+  }, [recentlyUploadedFile]);
+
+  useEffect(() => {
+    if (files.length > 0) {
+      files.sort((a, b) => {
+        return new Date(b.uploadDate) - new Date(a.uploadDate);
+      })
+      setRecentFiles(files.slice(0, 10))
+    }
+  }, [files]);
 
   return (
     <>
@@ -182,8 +213,8 @@ function FtpPage() {
                             <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" className='hover:cursor-pointer' />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
-                            <DropdownMenuItem className='gap-2'><Search /> Podgląd</DropdownMenuItem>
-                            <DropdownMenuItem className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
+                            <DropdownMenuItem onClick={()=>renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
+                            <DropdownMenuItem onClick={()=>handleDownloadFile(file.filename)} className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className='gap-2'><Info />Info</DropdownMenuItem>
                             <DropdownMenuItem className='gap-2'><Heart />Ulubione</DropdownMenuItem>
@@ -232,9 +263,7 @@ function FtpPage() {
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span>Your Storage</span>
                 <div className='text-sm'>
-                  {calcStorageUsage(files)[0]} used out of 100 GB
                 </div>
-                <Progress value={calcStorageUsage(files)[1]} />
               </div>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3 h-fit'>
                 <span>Your Shared Folders</span>

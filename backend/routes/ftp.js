@@ -5,17 +5,16 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const path = require('path');
 const crypto = require('crypto');
 const { mongoose, Types } = require("mongoose");
-
-const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@188.122.23.154/ftp`
-const connFTP = mongoose.createConnection(mongoURIFTP);
+const ftpUser = require("../models/ftpUser");
+const { mongoURIFTP, ftpConn } = require("../server");
 
 let bucket;
 
-connFTP.once('open', () => {
-  bucket = new mongoose.mongo.GridFSBucket(connFTP.db, {
+ftpConn.once('open', () => {
+  bucket = new mongoose.mongo.GridFSBucket(ftpConn.db, {
     bucketName: "uploads"
   })
-})
+});
 
 // Create storage engine
 const storage = new GridFsStorage({
@@ -26,10 +25,16 @@ const storage = new GridFsStorage({
         if (err) {
           return reject(err);
         }
+        const filename = buf.toString('hex') + path.extname(file.originalname);
+        const originalFilename = file.originalname;
+        console.log(file);
         const fileInfo = {
-          filename: file.originalname,
+          filename: filename,
           bucketName: 'uploads',
-          
+          metadata: {
+            owner: req.body.userId,
+            originalFilename: originalFilename
+          },
         };
         resolve(fileInfo);
       });
@@ -37,6 +42,8 @@ const storage = new GridFsStorage({
   }
 });
 const upload = multer({ storage });
+
+// Files
 
 // upload file
 router.post('/upload', upload.single('file'), (req, res) => {
@@ -48,7 +55,7 @@ router.get('/files', async (req, res) => {
   try {
     let files = await bucket.find().toArray();
     if (!files || files.length === 0) {
-      return res.status(404).json({ err: 'No files.' })
+      return res.json([])
     } else {
       files.map(file => {
         if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
@@ -82,9 +89,9 @@ router.delete('/files/:id', async (req, res) => {
 })
 
 // get one file
-router.get('/files/:filename', async (req, res) => {
+router.get('/files/:originalFilename', async (req, res) => {
   try {
-    let file = await bucket.find({ filename: req.params.filename }).toArray();
+    let file = await bucket.find({ 'metadata.originalFilename': req.params.originalFilename }).toArray();
     if (!file || file.length === 0) {
       return res.status(404).json({ err: 'No file.' })
     }
@@ -99,15 +106,60 @@ router.get('/files/:filename', async (req, res) => {
 router.get('/files/render/:filename', async (req, res) => {
   try {
     let file = await bucket.find({ filename: req.params.filename }).toArray();
-    if (!file || file.length === 0) {
-      return res.status(404).json({ err: 'No file.' })
-    }
+    if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
-      const stream = bucket.openDownloadStreamByName(req.params.filename);
-      console.log(stream);
-      stream.pipe(res);
+    const stream = bucket.openDownloadStreamByName(req.params.filename);
+    stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
+  }
+})
+
+// download file
+router.get('/files/download/:filename', async (req, res) => {
+  try {
+    let file = await bucket.find({ filename: req.params.filename }).toArray();
+    if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
+
+    res.set('Content-Type', file.contentType);
+    res.set('Content-Disposition', 'attachment; filename="' + req.params.filename + '"');
+
+    const stream = bucket.openDownloadStreamByName(req.params.filename);
+    stream.pipe(res);
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+})
+
+// Users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await ftpUser.find()
+    res.json(users)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+})
+
+router.get('/users/:displayname', async (req, res) => {
+  try {
+    const users = await ftpUser.find({displayName: req.params.displayname })
+    res.json(users)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+})
+
+router.post('/users', async (req, res) => {
+  const ftpUserQ = new ftpUser({
+    displayName: req.body.displayName,
+    email: req.body.email
+  })
+  try { 
+    const newFtpUser = await ftpUserQ.save()
+    res.json(newFtpUser)
+  } catch (err){
+    res.status(400).json({ message: err.message })
   }
 })
 
