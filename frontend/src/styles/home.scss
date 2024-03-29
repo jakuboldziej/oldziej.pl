@@ -740,8 +740,15 @@ nav {
       .category,
       .folder {
         width: 10vw;
-        height: 135px;
+        height: 125px;
         min-width: 135px;
+        
+        .p-6 {
+          padding: 15px;
+        }
+        .card-header {
+          padding-bottom: 0;
+        }
 
         &:hover {
           cursor: pointer;
@@ -750,13 +757,20 @@ nav {
       }
 
       .recent-files {
-        height: 35vh;
+        height: 36vh;
 
         .recent-file {
           width: 98%;
 
+          .filename {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
           .attrs {
-            width: 50%;
+            width: 60%;
           }
         }
       }

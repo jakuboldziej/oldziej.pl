@@ -1,24 +1,26 @@
 import { getFiles } from '@/fetch';
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { AuthContext } from './AuthContext';
 
 export const FilesContext = createContext();
 
 export const FilesContextProvider = ({ children }) => {
+  const { currentUser } = useContext(AuthContext);
+
   const [files, setFiles] = useState(() => {
   const storedFiles = localStorage.getItem('files');
-  return storedFiles ? JSON.parse(storedFiles) : []
+  return storedFiles ? JSON.parse(storedFiles) : null;
   });
 
   useEffect(() => {
     const fetchFiles = async () => {
-      const response = await getFiles();
-      console.log(response);
-      if (response.length > 0) {
-        setFiles(response.files);
-        localStorage.setItem('files', JSON.stringify(response.files));
+      const response = await getFiles(currentUser.displayName);
+      const filesR = response.files;
+      if (filesR) {
+        setFiles(filesR);
+        localStorage.setItem('files', JSON.stringify(filesR));
       } else {
-        setFiles([]);
-        localStorage.setItem('files', JSON.stringify([]));
+        localStorage.setItem('files', null);
       }
     };
     fetchFiles();

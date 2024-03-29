@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFtpUser, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
+import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
 import { File, FileDown, FileUp, Heart, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Trash2, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
@@ -25,7 +25,7 @@ function FtpPage() {
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
-  const [countFileTypes, setCountFileTypes] = useState(() => handleCountFileTypes(files));
+  const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
   const [fileStatus, setFileStatus] = useState({
     uploading: false,
     downloading: false,
@@ -55,12 +55,10 @@ function FtpPage() {
       file = await handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
-      console.log(ftpUser);
 
       const formData = new FormData();
       formData.append('file', file)
-      // formData.append('userId', ftpUser.displayName)
-      console.log(file);
+      formData.append('userDisplayName', ftpUser.displayName)
 
       const response = await uploadFile(formData);
       setRecentlyUploadedFile(response.file);
@@ -72,14 +70,20 @@ function FtpPage() {
     }
   };
 
-  const handleDownloadFile = (filename) => {
-    downloadFile(filename);
+  const handleDownloadFile = (originalFileName) => {
+    setFileStatus((prev) => ({ ...prev, downloading: true }));
+    setElapsedTime(0);
+    downloadFile(originalFileName);
+    setFileStatus((prev) => ({ ...prev, downloading: false, downloaded: true }));
   }
 
-  const handleDeleteImage = async (id) => {
-    const response = await deleteFile(id);
+  const handleDeleteImage = async (file) => {
+    const response = await deleteFile(file._id);
     if (response.ok) {
-      ShowNewToast("File Update", `File has been deleted.`)
+      const updatedFiles = files.filter((f) => f._id !== file._id);
+      setFiles(updatedFiles.length === 0 ? null : updatedFiles)
+      setRecentFiles(recentFiles.filter((f) => f._id !== file._id))
+      ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
   }
 
@@ -93,31 +97,29 @@ function FtpPage() {
     return () => clearInterval(intervalId);
   }, [fileStatus.uploading]);
 
-  // useEffect(() => {
-  //   if (fileStatus.uploading) {
-  //     ShowNewToast("Uploading...", "Uploading file.");
-  //   } else if (fileStatus.uploaded) {
-  //     ShowNewToast("File Uploaded", `${recentlyUploadedFile.filename} uploaded in ${formatElapsedTime(elapsedTime)}`);
-  //     setFileStatus((prev) => ({ ...prev, uploaded: false }));
-  //   }
+  useEffect(() => {
+    if (fileStatus.uploading) {
+      ShowNewToast("Uploading...", "Uploading file.");
+    } else if (fileStatus.uploaded) {
+      ShowNewToast("File Uploaded", `${recentlyUploadedFile.originalname} uploaded in <br /> ${formatElapsedTime(elapsedTime)}`);
+      setFileStatus((prev) => ({ ...prev, uploaded: false }));
+    }
 
-  //   if (fileStatus.downloading) {
-  //     ShowNewToast("Downloading...", "Downloading file.");
-  //   } else if (fileStatus.downloaded) {
-  //     ShowNewToast("File Downloaded", `${recentlyUploadedFile.filename} downloaded in ${formatElapsedTime(elapsedTime)}`);
-  //     setFileStatus((prev) => ({ ...prev, downloaded: false }));
-  //   }
+    if (fileStatus.downloading) {
+      ShowNewToast("Downloading...", "Downloading file.");
+    } else if (fileStatus.downloaded) {
+      ShowNewToast("File Downloaded", `${recentlyUploadedFile.originalname}} downloaded in <br /> ${formatElapsedTime(elapsedTime)}`);
+      setFileStatus((prev) => ({ ...prev, downloaded: false }));
+    }
 
-  // }, [fileStatus]);
+  }, [fileStatus]);
 
   useEffect(() => {
     const updateRecentFiles = async () => {
-      console.log(recentlyUploadedFile);
-      const fileRes = await getFile(recentlyUploadedFile.originalFilename);
-      console.log(fileRes);
+      const fileRes = await getFile(recentlyUploadedFile.originalname);
       setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
-      localStorage.setItem('files', JSON.stringify([fileRes, ...files]));
-      setFiles((prevFiles) => [fileRes, ...prevFiles]);
+      if (files) setFiles((prevFiles) => [fileRes, ...prevFiles]);
+      else setFiles([fileRes])
       setRecentlyUploadedFile(null);
     }
     if (recentlyUploadedFile) updateRecentFiles();
@@ -125,12 +127,13 @@ function FtpPage() {
   }, [recentlyUploadedFile]);
 
   useEffect(() => {
-    if (files.length > 0) {
+    if (files) {
       files.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
       setRecentFiles(files.slice(0, 10))
     }
+    setFileTypes(handleFileTypes(files));
   }, [files]);
 
   return (
@@ -145,39 +148,40 @@ function FtpPage() {
               <span className='text-3xl'>Categories</span>
               <div className='cards flex gap-5 flex-wrap'>
                 <Card className='category rounded-xl'>
-                  <CardHeader>
+                  <CardHeader className='card-header'>
                     <CardTitle><Images /></CardTitle>
                   </CardHeader>
-                  <CardContent className='flex flex-col'>
+                  <CardContent className='flex flex-col gap-1'>
                     <span className='text-lg'>Images</span>
-                    <span className='text-sm'>{countFileTypes.fileImages} Files</span>
+                    <span className='text-sm'>{fileTypes.fileImages.length} Files</span>
+                    {/* <span className='text-xs'>({calcStorageUsage(fileTypes.fileDocuments)[0]})</span> */}
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
-                  <CardHeader>
+                  <CardHeader className='card-header'>
                     <CardTitle><File /></CardTitle>
                   </CardHeader>
-                  <CardContent className='flex flex-col'>
+                  <CardContent className='flex flex-col gap-1'>
                     <span>Documents</span>
-                    <span className='text-sm'>{countFileTypes.fileDocuments} Files</span>
+                    <span className='text-sm'>{fileTypes.fileDocuments.length} Files </span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
-                  <CardHeader>
+                  <CardHeader className='card-header'>
                     <CardTitle><Video /></CardTitle>
                   </CardHeader>
-                  <CardContent className='flex flex-col'>
+                  <CardContent className='flex flex-col gap-1'>
                     <span>Videos</span>
-                    <span className='text-sm'>{countFileTypes.fileVideos} Files</span>
+                    <span className='text-sm'>{fileTypes.fileVideos.length} Files</span>
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
-                  <CardHeader>
+                  <CardHeader className='card-header'>
                     <CardTitle><Mic /></CardTitle>
                   </CardHeader>
-                  <CardContent className='flex flex-col'>
+                  <CardContent className='flex flex-col gap-1'>
                     <span>Audio</span>
-                    <span className='text-sm'>{countFileTypes.fileAudios} Files</span>
+                    <span className='text-sm'>{fileTypes.fileAudios.length} Files</span>
                   </CardContent>
                 </Card>
               </div>
@@ -202,34 +206,42 @@ function FtpPage() {
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea>
                 <div className='files w-100 flex flex-col gap-4 '>
-                  {recentFiles.length > 0 ? recentFiles.map((file) => (
-                    <div key={file._id} className='flex items-center justify-between recent-file bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
-                      <span>{file.filename}</span>
-                      <div className='attrs flex justify-between'>
-                        <span>{file.filename.split('.').pop().toUpperCase()} file</span>
-                        <span>{formatFileSize(file.length)}</span>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" className='hover:cursor-pointer' />
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={()=>renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
-                            <DropdownMenuItem onClick={()=>handleDownloadFile(file.filename)} className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className='gap-2'><Info />Info</DropdownMenuItem>
-                            <DropdownMenuItem className='gap-2'><Heart />Ulubione</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
-                            <DropdownMenuItem className='gap-2'><Move />Przenieś...</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                  {files ? (
+                    recentFiles.length > 0 ? (
+                      recentFiles.map((file) => (
+                        <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
+                          <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.metadata.originalFileName)}>{file.metadata.originalFileName}</span>
+                          <div className='attrs flex justify-between'>
+                            <span>{file.filename.split('.').pop().toUpperCase()} file</span>
+                            <span>{formatFileSize(file.length)}</span>
+                            <span></span>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" className='hover:cursor-pointer' />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => renderFile(file.metadata.originalFileName)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownloadFile(file.metadata.originalFileName)} className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className='gap-2'><Info />Info</DropdownMenuItem>
+                                <DropdownMenuItem className='gap-2'><Heart />Ulubione</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
+                                <DropdownMenuItem className='gap-2'><Move />Przenieś...</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>))
+                    ) : (
+                      <div className="flex justify-center w-100 pt-3">
+                        <Loader2 className="h-10 w-10 animate-spin" />
                       </div>
-                    </div>
-                  )) : (
-                    <div className="flex justify-center w-100 pt-3">
-                      <Loader2 className="h-10 w-10 animate-spin" />
+                    )
+                  ) : (
+                    <div className='flex justify-center w-100 pt-3'>
+                      No Files...
                     </div>
                   )}
                 </div>
@@ -261,9 +273,14 @@ function FtpPage() {
                 </form>
               </Form>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
-                <span>Your Storage</span>
+                <span className='flex justify-between'>
+                  <span>Your Storage</span>
+                  <span>{(calcStorageUsage(files)[1])}%</span>
+                </span>
                 <div className='text-sm'>
+                  {calcStorageUsage(files)[0]} used out of 100 GB
                 </div>
+                <Progress value={calcStorageUsage(files)[1]} />
               </div>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3 h-fit'>
                 <span>Your Shared Folders</span>

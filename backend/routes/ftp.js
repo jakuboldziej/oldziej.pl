@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const { mongoose, Types } = require("mongoose");
 const ftpUser = require("../models/ftpUser");
 const { mongoURIFTP, ftpConn } = require("../server");
+const ftpFile = require("../models/ftpFile");
 
 let bucket;
 
@@ -25,15 +26,13 @@ const storage = new GridFsStorage({
         if (err) {
           return reject(err);
         }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
-        const originalFilename = file.originalname;
-        console.log(file);
+        const userDisplayName = req.query.userDisplayName;
         const fileInfo = {
-          filename: filename,
+          filename: file.originalname,
           bucketName: 'uploads',
           metadata: {
-            owner: req.body.userId,
-            originalFilename: originalFilename
+            owner: userDisplayName,
+            originalFileName: file.originalname
           },
         };
         resolve(fileInfo);
@@ -41,21 +40,38 @@ const storage = new GridFsStorage({
     });
   }
 });
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 1000000000 } });
 
 // Files
 
 // upload file
 router.post('/upload', upload.single('file'), (req, res) => {
-  res.json({ file: req.file })
+  res.json({ file: req.file})
+})
+
+// create fileObject
+router.post('/files', async (req, res) => {
+  const file = new ftpFile({
+    fileId: req.body.fileId,
+    owner: req.body.owner,
+  });
+
+  try { 
+    const newFile = await file.save()
+    res.json(newFile)
+  } catch (err){
+    res.status(400).json({ message: err.message })
+  }
 })
 
 // get multiple files
 router.get('/files', async (req, res) => {
   try {
-    let files = await bucket.find().toArray();
+    let filter = {};
+    if (req.query.user) filter["metadata.owner"] = req.query.user;
+    let files = await bucket.find(filter).toArray();
     if (!files || files.length === 0) {
-      return res.json([])
+      return res.json({ files: null } )
     } else {
       files.map(file => {
         if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
@@ -76,22 +92,25 @@ router.delete('/files/:id', async (req, res) => {
   try {
     const objectId = new Types.ObjectId(req.params.id)
     const file = (await bucket.find({ _id: objectId }).toArray())[0];
+
     if (file) {
       bucket.delete(file._id);
+      await ftpFile.deleteOne({ fileId: req.params.id })
       res.json({ ok: true })
     }
     else {
       res.json({ ok: false })
     };
+
   } catch (err) {
     res.json({ err: err.message })
   }
 })
 
 // get one file
-router.get('/files/:originalFilename', async (req, res) => {
+router.get('/files/:originalFileName', async (req, res) => {
   try {
-    let file = await bucket.find({ 'metadata.originalFilename': req.params.originalFilename }).toArray();
+    let file = await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray();
     if (!file || file.length === 0) {
       return res.status(404).json({ err: 'No file.' })
     }
@@ -103,12 +122,12 @@ router.get('/files/:originalFilename', async (req, res) => {
 })
 
 // render file
-router.get('/files/render/:filename', async (req, res) => {
+router.get('/files/render/:originalFileName', async (req, res) => {
   try {
-    let file = await bucket.find({ filename: req.params.filename }).toArray();
+    let file = (await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray())[0];
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
-    const stream = bucket.openDownloadStreamByName(req.params.filename);
+    const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
@@ -116,15 +135,15 @@ router.get('/files/render/:filename', async (req, res) => {
 })
 
 // download file
-router.get('/files/download/:filename', async (req, res) => {
+router.get('/files/download/:originalFileName', async (req, res) => {
   try {
-    let file = await bucket.find({ filename: req.params.filename }).toArray();
+    let file = (await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray())[0];
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
     res.set('Content-Type', file.contentType);
-    res.set('Content-Disposition', 'attachment; filename="' + req.params.filename + '"');
+    res.set('Content-Disposition', 'attachment; filename="' + req.params.originalFileName + '"');
 
-    const stream = bucket.openDownloadStreamByName(req.params.filename);
+    const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
@@ -141,25 +160,25 @@ router.get('/users', async (req, res) => {
   }
 })
 
+router.post('/users', async (req, res) => {
+  const user = new ftpUser({
+    displayName: req.body.displayName,
+    email: req.body.email
+  })
+  try { 
+    const newUser = await user.save()
+    res.json(newUser)
+  } catch (err){
+    res.status(400).json({ message: err.message })
+  }
+})
+
 router.get('/users/:displayname', async (req, res) => {
   try {
     const users = await ftpUser.find({displayName: req.params.displayname })
     res.json(users)
   } catch (err) {
     res.json({ message: err.message })
-  }
-})
-
-router.post('/users', async (req, res) => {
-  const ftpUserQ = new ftpUser({
-    displayName: req.body.displayName,
-    email: req.body.email
-  })
-  try { 
-    const newFtpUser = await ftpUserQ.save()
-    res.json(newFtpUser)
-  } catch (err){
-    res.status(400).json({ message: err.message })
   }
 })
 

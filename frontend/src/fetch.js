@@ -101,7 +101,7 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
 };
 
 // FTP
-export const postFtpUser = async () => {
+export const postFtpUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/ftp/users`, {
     method: "POST",
     body: JSON.stringify({
@@ -117,28 +117,39 @@ export const postFtpUser = async () => {
 export const getFtpUser = async (uDisplayName) => {
   const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${uDisplayName}`);
   const user = await userResponse.json();
-  return user;
+  return user[0];
 }
 
-export const getFiles = async () => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/files`);
+export const getFiles = async (userDisplayName = null) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files?user=${userDisplayName}`);
   const data = await response.json();
   return data;
 }
 
 export const getFile = async (filename) => {
-  // tu się buguje
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${filename}`);
   const data = await response.json()
-  return data.file;
+  return data.file[0];
 }
 
 export const uploadFile = async (data) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/upload`, {
+  const uploadResponse = await fetch(`${mongodbApiUrl}/ftp/upload?userDisplayName=${data.get("userDisplayName")}`, {
     method: "POST",
-    body: data
+    body: data,
   });
-  return await response.json();
+  const uploadFile = await uploadResponse.json();
+  
+  await fetch(`${mongodbApiUrl}/ftp/files`, {
+    method: "POST",
+    body: JSON.stringify({
+      fileId: uploadFile.file.id,
+      owner: uploadFile.file.metadata.owner
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return uploadFile;
 }
 
 export const deleteFile = async (id) => {
