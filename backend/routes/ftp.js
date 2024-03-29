@@ -95,17 +95,17 @@ router.get('/files/:filename', async (req, res) => {
   }
 })
 
-// render image
-router.get('/images/:filename', async (req, res) => {
+// render file
+router.get('/files/render/:filename', async (req, res) => {
   try {
     let file = await bucket.find({ filename: req.params.filename }).toArray();
     if (!file || file.length === 0) {
       return res.status(404).json({ err: 'No file.' })
     }
 
-    if (file[0].contentType === 'image/jpeg' || file[0].contentType === 'image/png' || file[0].contentType === 'image/webp') {
-      bucket.openDownloadStreamByName(req.params.filename).pipe(res);
-    }
+      const stream = bucket.openDownloadStreamByName(req.params.filename);
+      console.log(stream);
+      stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
   }

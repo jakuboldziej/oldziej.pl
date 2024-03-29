@@ -129,6 +129,10 @@ export const deleteFile = async (id) => {
   return await response.json();
 }
 
+export const renderFile = async (filename) => {
+  fetch(`${mongodbApiUrl}/ftp/files/render/${filename}`)
+}
+
 // Users
 export const getUser = async (uDisplayName) => {
   const userResponse = await fetch(`${mongodbApiUrl}/users/${uDisplayName}`);
