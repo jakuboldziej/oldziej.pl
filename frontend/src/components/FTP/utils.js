@@ -71,5 +71,13 @@ export const handleCountFileTypes = (files) => {
 }
 
 export const calcStorageUsage = (files) => {
+  let storageBytesSum = 0;
+  files.map(file => {
+    storageBytesSum += file.length;
+  })
 
+  const totalStorageFromGBToBytes = 100 * 1024 * 1024 * 1024;
+  const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;
+
+  return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
 }

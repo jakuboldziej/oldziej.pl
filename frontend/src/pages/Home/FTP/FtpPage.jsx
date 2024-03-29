@@ -11,10 +11,11 @@ import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename } from '@/components/FTP/utils'
-import { File, Images, Loader2, Mic, Video } from 'lucide-react'
+import { handleCountFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage } from '@/components/FTP/utils'
+import { File, FileDown, FileUp, Heart, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Trash2, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
@@ -105,7 +106,7 @@ function FtpPage() {
     <>
       <NavBar />
       <div className='ftp-wrapper flex'>
-      <LeftNavBar />
+        <LeftNavBar />
         <div className='main ftp-page text-white w-fit relative'>
           <div className='left-side h-full'>
             <Input disabled placeholder='Search' className='rounded-full' />
@@ -153,38 +154,17 @@ function FtpPage() {
             <div className='folders flex flex-col gap-6'>
               <span className='text-3xl'>Folders</span>
               <div className='cards flex gap-5 flex-wrap'>
-                <Card className='folder rounded-xl'>
-                  <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Pictures
-                  </CardContent>
+                <Card className='folder rounded-xl flex items-center justify-center'>
+                  <Plus />
                 </Card>
-                <Card className='folder rounded-xl'>
+                {/* <Card className='folder rounded-xl'>
                   <CardHeader>
                     <CardTitle>Ikona</CardTitle>
                   </CardHeader>
                   <CardContent>
                     Documents
                   </CardContent>
-                </Card>
-                <Card className='folder rounded-xl'>
-                  <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Videos
-                  </CardContent>
-                </Card>
-                <Card className='folder rounded-xl'>
-                  <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Audio
-                  </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </div>
             <div className='recent-files flex flex-col gap-6 relative'>
@@ -197,7 +177,23 @@ function FtpPage() {
                       <div className='attrs flex justify-between'>
                         <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                         <span>{formatFileSize(file.length)}</span>
-                        <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" className='hover:cursor-pointer' />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem className='gap-2'><Search /> Podgląd</DropdownMenuItem>
+                            <DropdownMenuItem className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className='gap-2'><Info />Info</DropdownMenuItem>
+                            <DropdownMenuItem className='gap-2'><Heart />Ulubione</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
+                            <DropdownMenuItem className='gap-2'><Move />Przenieś...</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   )) : (
@@ -221,7 +217,7 @@ function FtpPage() {
                         <FormControl>
                           <div className='mini-wrapper bg-slate-600 hover:bg-slate-500 transition duration-75 rounded-2xl'>
                             <Label className='label hover:cursor-pointer rounded-2xl' htmlFor="picture">
-                              <img width="120" height="120" src="https://img.icons8.com/external-smashingstocks-glyph-smashing-stocks/100/external-file-download-network-and-communication-smashingstocks-glyph-smashing-stocks.png" alt="external-file-download-network-and-communication-smashingstocks-glyph-smashing-stocks" />
+                              <FileUp className='w-[120px] h-[120px]' />
                               <span className='text-2xl'>Add new files</span>
                             </Label>
                             <Input onChangeCapture={(e) => handleSubmit(e)} className='inputfile' id="picture" type="file" {...fileRef} />
@@ -236,9 +232,9 @@ function FtpPage() {
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span>Your Storage</span>
                 <div className='text-sm'>
-                  75 GB used out of 100 GB
+                  {calcStorageUsage(files)[0]} used out of 100 GB
                 </div>
-                <Progress value={75} />
+                <Progress value={calcStorageUsage(files)[1]} />
               </div>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3 h-fit'>
                 <span>Your Shared Folders</span>
