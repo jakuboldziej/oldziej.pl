@@ -707,7 +707,6 @@ nav {
     font-family: Poppins-SemiBold;
     height: $containerHeight;
 
-
     .tiles {
       .tile {
         display: flex;
@@ -716,6 +715,11 @@ nav {
         padding-left: 20px;
         height: 3rem;
         transition: 0.2s;
+
+        &.active {
+          background-color: rgb(145, 141, 116);
+          color: white;
+        }
 
         &:hover {
           background-color: rgb(184, 181, 158);
@@ -728,14 +732,17 @@ nav {
   .main {
     width: 85%;
     margin-left: 15%;
-    height: calc(100vh - $navHeight);
+    max-height: $containerHeight;
 
     .left-side {
+      position: relative;
       display: flex;
       flex-direction: column;
+      justify-content: space-between;
       gap: 1.5rem;
       padding: 30px;
       width: 70%;
+      height: $containerHeight;
 
       .category,
       .folder {
@@ -757,8 +764,7 @@ nav {
       }
 
       .recent-files {
-        height: 36vh;
-
+        max-height: 40%;
         .recent-file {
           width: 98%;
 
@@ -782,7 +788,7 @@ nav {
       right: 0;
       padding: 30px;
       width: 25%;
-      height: calc(100vh - $navHeight);
+      height: $containerHeight;
 
       form {
         position: relative;

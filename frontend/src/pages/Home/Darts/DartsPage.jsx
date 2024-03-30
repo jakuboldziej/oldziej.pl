@@ -139,7 +139,6 @@ function DartsPage() {
   }, [filterGamesType]);
 
   useEffect(() => {
-    // Infinite Scroll
     handleGamesShown("scroll")
   }, [currentPage]);
 
@@ -278,7 +277,7 @@ function DartsPage() {
               </Dropdown> */}
             </CardHeader>
             <ScrollArea onScroll={handleScroll}>
-              <CardContent className="info" onScroll={handleScroll}>
+              <CardContent className="info">
                 {isLoading ? <div className="flex justify-center w-100 pt-3">
                   <Loader2 className="h-10 w-10 animate-spin" />
                 </div>

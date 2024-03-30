@@ -26,6 +26,7 @@ function FtpPage() {
   const { files, setFiles } = useContext(FilesContext);
   const { currentUser } = useContext(AuthContext);
 
+  const [filesShown, setFilesShown] = useState();
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentFile, setRecentFile] = useState(null);
   const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
@@ -38,11 +39,13 @@ function FtpPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [changingFileName, setChangingFileName] = useState({ file: null, newFileName: '' });
 
   const [dialogOpen, setDialogOpen] = useState({
     changeFileName: false
   });
-  const [changingFileName, setChangingFileName] = useState({ file: null, newFileName: '' });
+  const [currentPage, setCurrentPage] = useState(1);
+
 
   const formSchema = z.object({
     file: z.instanceof(FileList).optional(),
@@ -53,6 +56,26 @@ function FtpPage() {
   });
 
   const fileRef = form.register("file");
+
+  const handleScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    if (scrollTop + clientHeight >= scrollHeight) {
+      if (recentFiles.length > 0) setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleRecentFilesShown = (type, amount) => {
+    let recentFilesAmount;
+    if (type === "scroll") recentFilesAmount = files.slice(0, 10 * currentPage);
+    else if (type === "filter") {
+      recentFilesAmount = files.slice(0, amount)
+    }
+    setRecentFiles(recentFilesAmount);
+  };
+
+  useEffect(() => {
+    if(files) handleRecentFilesShown("scroll")
+  }, [currentPage]);
 
   const handleSubmit = async (event) => {
     setFileStatus((prev) => ({ ...prev, uploading: true }));
@@ -81,6 +104,7 @@ function FtpPage() {
   const handleDownloadFile = async (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
     await downloadFile(filename);
+    setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
   const handleDeleteImage = async (file) => {
@@ -134,7 +158,7 @@ function FtpPage() {
   useEffect(() => {
     const updateRecentFiles = async () => {
       const fileRes = await getFile(recentFile.filename);
-      setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
+      setRecentFiles((prevFiles) => [fileRes, ...prevFiles].slice(0, 10 * currentPage))
       if (files) setFiles((prevFiles) => [fileRes, ...prevFiles]);
       else setFiles([fileRes])
       setRecentFile(null);
@@ -148,7 +172,6 @@ function FtpPage() {
       files.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
-      setRecentFiles(files.slice(0, 10))
     }
     setFileTypes(handleFileTypes(files));
   }, [files]);
@@ -156,10 +179,10 @@ function FtpPage() {
   return (
     <>
       <NavBar />
-      <div className='ftp-wrapper flex'>
+      <div className='ftp-wrapper'>
         <LeftNavBar />
-        <div className='main ftp-page text-white w-fit relative'>
-          <div className='left-side h-full'>
+        <div className='main ftp-page text-white'>
+          <div className='left-side'>
             <Input disabled placeholder='Search' className='rounded-full' />
             <div className='categories flex flex-col gap-6'>
               <span className='text-3xl'>Categories</span>
@@ -219,10 +242,10 @@ function FtpPage() {
                 </Card> */}
               </div>
             </div>
-            <div className='recent-files flex flex-col gap-6 relative'>
+            <div className='recent-files flex flex-col gap-6'>
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
-              <ScrollArea>
-                <div className='files w-100 flex flex-col gap-4 '>
+              <ScrollArea className='scroll-area' onScroll={handleScroll}>
+                <div className='files w-100 flex flex-col flex-wrap gap-4'>
                   {files ? (
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
@@ -316,7 +339,7 @@ function FtpPage() {
       </div>
 
       <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
-        <>
+        <> 
           <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
           <Button onClick={handleFileNameChange} variant='outline_green'>Save</Button>
         </>
