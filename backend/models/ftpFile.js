@@ -9,6 +9,11 @@ const FtpFileSchema = new mongoose.Schema ({
   owner: {
     type: String,
     required: true
+  },
+  favorite: {
+    type: Boolean,
+    required: true,
+    default: false
   }
 });
 

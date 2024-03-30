@@ -8,7 +8,7 @@ function MyDialog({ children, dialogOpen, setDialogOpen, title, footer }) {
         <DialogHeader className="text-white">
           <DialogTitle className='flex justify-center text-2xl'>{title}</DialogTitle>
           <DialogClose>
-            <X onClick={() => setDialogOpen((prev) => ({ ...prev, changeFilename: false }))} className="absolute right-1 top-1"/>
+            <X onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} className="absolute right-2 top-2"/>
           </DialogClose>
         </DialogHeader>
         <DialogDescription className="text-white">

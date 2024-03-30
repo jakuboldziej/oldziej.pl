@@ -1,4 +1,4 @@
-import { getFile, mongodbApiUrl } from "@/fetch";
+import { mongodbApiUrl } from "@/fetch";
 
 export const handleSameFilename = async (file, files) => {
   const lastDotIndex = file.name.lastIndexOf('.');

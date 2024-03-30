@@ -128,8 +128,8 @@ export const getFiles = async (userDisplayName = null) => {
 
 export const getFile = async (filename) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${filename}`);
-  const data = await response.json()
-  return data.file[0];
+  const data = await response.json();
+  return data.file;
 }
 
 export const uploadFile = async (data) => {
@@ -139,17 +139,18 @@ export const uploadFile = async (data) => {
   });
   const uploadFile = await uploadResponse.json();
 
-  await fetch(`${mongodbApiUrl}/ftp/files`, {
+  const ftpFile = await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
       fileId: uploadFile.file.id,
-      owner: uploadFile.file.metadata.owner
+      owner: uploadFile.file.metadata.owner,
+      favorite: false
     }),
     headers: {
       "Content-Type": "application/json",
     },
   });
-  return uploadFile;
+  return await ftpFile.json();
 }
 
 export const deleteFile = async (id) => {
@@ -159,18 +160,19 @@ export const deleteFile = async (id) => {
   return await response.json();
 }
 
-export const changeFileName = async (oldFile, newFileName) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/files/${oldFile._id}`, {
+export const updateFile = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${data.file._id}`, {
     method: "PUT",
     body: JSON.stringify({
-      oldFile: oldFile,
-      newFileName: newFileName
+      data: data,
+      newFileName: data?.newFileName || null
     }),
     headers: {
       "Content-Type": "application/json",
     },
   })
-  return await response.json();
+  const file = await response.json();
+  return file.file;
 }
 
 // Users
