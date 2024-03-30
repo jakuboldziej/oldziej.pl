@@ -1,6 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 
-function MyDialog({ children }) {
+function MyAccordion({ children }) {
   return (
     <Accordion type="single" className="accordion" defaultValue="item-1" collapsible>
       <AccordionItem value="item-1">
@@ -13,4 +13,4 @@ function MyDialog({ children }) {
   )
 }
 
-export default MyDialog
+export default MyAccordion

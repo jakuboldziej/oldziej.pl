@@ -5,18 +5,21 @@ import { Label } from '@/components/ui/label'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFtpUser, uploadFile } from '@/fetch'
+import { useContext, useEffect, useRef, useState } from 'react'
+import { changeFileName, deleteFile, getFile, getFtpUser, mongodbApiUrl, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
-import { File, FileDown, FileUp, Heart, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Trash2, Video } from 'lucide-react'
+import { File, FileDown, FileUp, Heart, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { AuthContext } from '@/context/AuthContext'
+import CopyTextButton from '@/components/CopyTextButton'
+import MyDialog from '@/components/MyComponents/MyDialog'
+import { Button } from '@/components/ui/button'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
@@ -24,7 +27,7 @@ function FtpPage() {
   const { currentUser } = useContext(AuthContext);
 
   const [recentFiles, setRecentFiles] = useState([]);
-  const [recentlyUploadedFile, setRecentlyUploadedFile] = useState(null);
+  const [recentFile, setRecentFile] = useState(null);
   const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
   const [fileStatus, setFileStatus] = useState({
     uploading: false,
@@ -35,6 +38,11 @@ function FtpPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  const [dialogOpen, setDialogOpen] = useState({
+    changeFileName: false
+  });
+  const [changingFileName, setChangingFileName] = useState({ file: null, newFileName: '' });
 
   const formSchema = z.object({
     file: z.instanceof(FileList).optional(),
@@ -61,7 +69,7 @@ function FtpPage() {
       formData.append('userDisplayName', ftpUser.displayName)
 
       const response = await uploadFile(formData);
-      setRecentlyUploadedFile(response.file);
+      setRecentFile(response.file);
     } catch (error) {
       ShowNewToast("Error uploading file", error, "warning")
     } finally {
@@ -70,11 +78,9 @@ function FtpPage() {
     }
   };
 
-  const handleDownloadFile = (originalFileName) => {
-    setFileStatus((prev) => ({ ...prev, downloading: true }));
-    setElapsedTime(0);
-    downloadFile(originalFileName);
-    setFileStatus((prev) => ({ ...prev, downloading: false, downloaded: true }));
+  const handleDownloadFile = async (filename) => {
+    setFileStatus((prev) => ({ ...prev, downloading: filename }));
+    await downloadFile(filename);
   }
 
   const handleDeleteImage = async (file) => {
@@ -85,6 +91,21 @@ function FtpPage() {
       setRecentFiles(recentFiles.filter((f) => f._id !== file._id))
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
+  }
+
+  const handleOpeningDialog = (file) => {
+    setDialogOpen((prev) => ({ ...prev, changeFileName: true }));
+    setChangingFileName({ file: file, newFileName: file.filename });
+  }
+
+  const handleFileNameChange = async () => {
+    const oldFile = changingFileName.file;
+    const newFileName = changingFileName.newFileName;
+    const response = await changeFileName(oldFile, newFileName);
+    files.map((f) => {
+      if (f.filename === changingFileName.file.filename) f.filename = response.updatedFileName;
+    });
+    setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
   useEffect(() => {
@@ -101,30 +122,26 @@ function FtpPage() {
     if (fileStatus.uploading) {
       ShowNewToast("Uploading...", "Uploading file.");
     } else if (fileStatus.uploaded) {
-      ShowNewToast("File Uploaded", `${recentlyUploadedFile.originalname} uploaded in <br /> ${formatElapsedTime(elapsedTime)}`);
+      ShowNewToast("File Uploaded", `${recentFile.filename} uploaded in <br /> ${formatElapsedTime(elapsedTime)}`);
       setFileStatus((prev) => ({ ...prev, uploaded: false }));
     }
 
     if (fileStatus.downloading) {
-      ShowNewToast("Downloading...", "Downloading file.");
-    } else if (fileStatus.downloaded) {
-      ShowNewToast("File Downloaded", `${recentlyUploadedFile.originalname}} downloaded in <br /> ${formatElapsedTime(elapsedTime)}`);
-      setFileStatus((prev) => ({ ...prev, downloaded: false }));
+      ShowNewToast("Downloading Started", `${fileStatus.downloading} downloading...`);
     }
-
   }, [fileStatus]);
 
   useEffect(() => {
     const updateRecentFiles = async () => {
-      const fileRes = await getFile(recentlyUploadedFile.originalname);
+      const fileRes = await getFile(recentFile.filename);
       setRecentFiles((prevFiles) => [fileRes, ...prevFiles])
       if (files) setFiles((prevFiles) => [fileRes, ...prevFiles]);
       else setFiles([fileRes])
-      setRecentlyUploadedFile(null);
+      setRecentFile(null);
     }
-    if (recentlyUploadedFile) updateRecentFiles();
+    if (recentFile) updateRecentFiles();
 
-  }, [recentlyUploadedFile]);
+  }, [recentFile]);
 
   useEffect(() => {
     if (files) {
@@ -210,23 +227,23 @@ function FtpPage() {
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
-                          <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.metadata.originalFileName)}>{file.metadata.originalFileName}</span>
+                          <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)}>{file.filename}</span>
                           <div className='attrs flex justify-between'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatFileSize(file.length)}</span>
-                            <span></span>
+                            <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <img width="30" height="30" src="https://img.icons8.com/ios-filled/50/ellipsis.png" alt="ellipsis" className='hover:cursor-pointer' />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => renderFile(file.metadata.originalFileName)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDownloadFile(file.metadata.originalFileName)} className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileDown /> Pobierz...</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className='gap-2'><Info />Info</DropdownMenuItem>
                                 <DropdownMenuItem className='gap-2'><Heart />Ulubione</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOpeningDialog(file)} className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
                                 <DropdownMenuItem className='gap-2'><Move />Przenieś...</DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
@@ -297,6 +314,15 @@ function FtpPage() {
           </div>
         </div>
       </div>
+
+      <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
+        <>
+          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
+          <Button onClick={handleFileNameChange} variant='outline_green'>Save</Button>
+        </>
+      }>
+        <Input value={changingFileName.newFileName} onChange={(e) => setChangingFileName((prev) => ({ ...prev, newFileName: e.target.value }))} />
+      </MyDialog>
     </>
   )
 }

@@ -87,6 +87,23 @@ router.get('/files', async (req, res) => {
   }
 })
 
+// update file
+router.put('/files/:id', async (req, res) => {
+  try {
+    const objectId = new Types.ObjectId(req.params.id);
+    const newName = req.body.newFileName;
+
+    const lastDotIndex = newName.lastIndexOf('.');
+    const name = newName.substring(0, lastDotIndex);
+    const ext = newName.substring(lastDotIndex + 1);
+    await bucket.rename(objectId, `${name}.${ext}`);
+
+    res.json({ updatedFileName: `${name}.${ext}` });
+  } catch (err) {
+    res.json({ err: err.message });
+  }
+});
+
 // delete file
 router.delete('/files/:id', async (req, res) => {
   try {
@@ -108,9 +125,9 @@ router.delete('/files/:id', async (req, res) => {
 })
 
 // get one file
-router.get('/files/:originalFileName', async (req, res) => {
+router.get('/files/:filename', async (req, res) => {
   try {
-    let file = await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray();
+    let file = await bucket.find({ filename: req.params.filename }).toArray();
     if (!file || file.length === 0) {
       return res.status(404).json({ err: 'No file.' })
     }
@@ -122,9 +139,9 @@ router.get('/files/:originalFileName', async (req, res) => {
 })
 
 // render file
-router.get('/files/render/:originalFileName', async (req, res) => {
+router.get('/files/render/:filename', async (req, res) => {
   try {
-    let file = (await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray())[0];
+    let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
     const stream = bucket.openDownloadStreamByName(file.filename);
@@ -135,13 +152,13 @@ router.get('/files/render/:originalFileName', async (req, res) => {
 })
 
 // download file
-router.get('/files/download/:originalFileName', async (req, res) => {
+router.get('/files/download/:filename', async (req, res) => {
   try {
-    let file = (await bucket.find({ 'metadata.originalFileName': req.params.originalFileName }).toArray())[0];
+    let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
     res.set('Content-Type', file.contentType);
-    res.set('Content-Disposition', 'attachment; filename="' + req.params.originalFileName + '"');
+    res.set('Content-Disposition', 'attachment; filename="' + req.params.filename + '"');
 
     const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);

@@ -138,7 +138,7 @@ export const uploadFile = async (data) => {
     body: data,
   });
   const uploadFile = await uploadResponse.json();
-  
+
   await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
@@ -155,6 +155,20 @@ export const uploadFile = async (data) => {
 export const deleteFile = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
     method: "DELETE"
+  })
+  return await response.json();
+}
+
+export const changeFileName = async (oldFile, newFileName) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${oldFile._id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      oldFile: oldFile,
+      newFileName: newFileName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
   })
   return await response.json();
 }

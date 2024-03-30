@@ -86,10 +86,10 @@ export const calcStorageUsage = (files) => {
   return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
 }
 
-export const renderFile = (originalFileName) => {
-  window.open(`${mongodbApiUrl}/ftp/files/render/${originalFileName}`);
+export const renderFile = (filename) => {
+  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}`);
 }
 
-export const downloadFile = async (originalFileName) => {
-  window.location.href = `${mongodbApiUrl}/ftp/files/download/${originalFileName}`
+export const downloadFile = async (filename) => {
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`;
 }
