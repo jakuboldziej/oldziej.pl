@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useContext, useEffect, useState } from 'react'
 import { deleteFile, getFile, getFtpUser, mongodbApiUrl, updateFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
@@ -90,10 +90,12 @@ function FtpPage() {
       file = await handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
+      console.log(file);
 
       const formData = new FormData();
       formData.append('file', file)
       formData.append('userDisplayName', ftpUser.displayName)
+      formData.append('lastModified', file.lastModified)
 
       const response = await uploadFile(formData);
       setRecentFile(response.file);
@@ -114,7 +116,7 @@ function FtpPage() {
   const handleDeleteImage = async (file) => {
     const response = await deleteFile(file._id);
     if (response.ok) {
-      const updatedFiles = files.filter((f) => f._id !== file._id);
+      let updatedFiles = files.filter((f) => f._id !== file._id);
       updateAllFiles(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
@@ -129,7 +131,7 @@ function FtpPage() {
     }
   }
 
-  const handleFileNameChange = async () => {
+  const handleUpdateFile = async () => {
     const file = dialogOpen.file;
     const newFileName = changingFileName;
     const data = {
@@ -137,12 +139,11 @@ function FtpPage() {
       newFileName: newFileName
     }
     const updatedFile = await updateFile(data);
-    console.log(updatedFile);
     const updatedFiles = files.map((f) => {
       if (f.filename === file.filename) {
         f = updatedFile;
       }
-      return f
+      return f;
     });
     updateAllFiles(updatedFiles);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
@@ -151,10 +152,15 @@ function FtpPage() {
   const handleFavoriteFile = async (file) => {
     setIsHovered((prev) => ({ ...prev, heart: false }))
     file.favorite = !file.favorite;
+
     const updatedFile = await updateFile({ file });
-    console.log(updatedFile);
-    // nie dodawać do listy tylko zmienić jak w handlefilenamechange
-    setFiles((prev) => [...prev, updatedFile]);
+    const updatedFiles = files.map((f) => {
+      if (f.filename === file.filename) {
+        f = updatedFile;
+      }
+      return f;
+    });
+    updateAllFiles(updatedFiles);
   }
 
   useEffect(() => {
@@ -209,7 +215,7 @@ function FtpPage() {
 
   const updateAllFiles = (updatedFiles) => {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
-    setFiles(updatedFiles || null);
+    setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
@@ -287,7 +293,7 @@ function FtpPage() {
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
-                          <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)}>{file.filename}</span>
+                          <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
                           <div className='attrs flex justify-between'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatFileSize(file.length)}</span>
@@ -357,7 +363,7 @@ function FtpPage() {
               </Form>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span className='flex justify-between'>
-                  <span>Your Storage ({files.length} Files)</span>
+                  <span>Your Storage ({files?.length} Files)</span>
                   <span>{(calcStorageUsage(files)[1])}%</span>
                 </span>
                 <div className='text-sm'>
@@ -385,7 +391,7 @@ function FtpPage() {
       <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
         <>
           <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
-          <Button onClick={handleFileNameChange} variant='outline_green'>Save</Button>
+          <Button onClick={handleUpdateFile} variant='outline_green'>Save</Button>
         </>
       }>
         <span className='flex flex-col gap-2'>
@@ -396,7 +402,26 @@ function FtpPage() {
       </MyDialog>
 
       <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.file?.filename}`}>
-        <Input placeholder={dialogOpen.file?.filename} value={changingFileName} onChange={(e) => setChangingFileName(e.target.value)} />
+        <Card>
+          <CardHeader>
+            Ścieżka:
+            <CardDescription>Folder {'>'} {dialogOpen.file?.filename}</CardDescription>
+          </CardHeader>
+        </Card>
+        <div className='p-4 flex gap-40'>
+          <div>
+            <span className='text-slate-400'>Rozmiar:</span> <br /> 
+            3KB
+          </div>
+          <div>
+            <span className='text-slate-400'>Ostatnia zmiana:</span> <br />
+            {new Date(dialogOpen.file?.lastModified).toLocaleString()}
+          </div>
+        </div>
+        <div className='p-4 py-0'>
+            <span className='text-slate-400'>Data Dodania:</span> <br />
+            {new Date(dialogOpen.file?.uploadDate).toLocaleString()}
+          </div>
       </MyDialog>
     </>
   )

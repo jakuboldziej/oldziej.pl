@@ -7,22 +7,22 @@ import createStore from 'react-auth-kit/createStore';
 
 const store = createStore({
   authName: "_auth",
-  authType: "cookie", 
+  authType: "cookie",
   cookieDomain: window.location.hostname,
   cookieSecure: false,
 })
 
 export const CombinedContextProvider = ({ children }) => {
   return (
-    <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-      <AuthProvider store={store}>
+    <AuthProvider store={store}>
+      <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
         <DartsGameContextProvider>
           <FilesContextProvider>
             {children}
             <Toaster />
           </FilesContextProvider>
         </DartsGameContextProvider>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 };

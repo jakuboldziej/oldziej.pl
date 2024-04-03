@@ -36,8 +36,8 @@ app.use(express.json())
 const dartsRouter = require('./routes/darts')
 app.use('/api/darts', dartsRouter)
 
-const usersRouter = require('./routes/users');
-app.use('/api/users', usersRouter)
+const usersRouter = require('./routes/auth');
+app.use('/api/auth', usersRouter)
 
 const ftpRouter = require('./routes/ftp')
 app.use('/api/ftp', ftpRouter)

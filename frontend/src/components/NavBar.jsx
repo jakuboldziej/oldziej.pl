@@ -39,7 +39,8 @@ function NavBar() {
                       <SheetTitle>{currentUser.displayName}</SheetTitle>
                     </SheetHeader>
                     <div className="py-5 text-white">
-                      <Button variant="outline_white">Settings</Button>
+                      <Button onClick={() => navigate("/user/settings")} variant="outline_white">Settings</Button>
+                      {currentUser && currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive" className="mx-3">Admin</Button>) : null}
                     </div>
                     <div className="absolute right-2 bottom-2 text-white">
                       <Button variant="outline_red" onClick={logout}>Log Out</Button>

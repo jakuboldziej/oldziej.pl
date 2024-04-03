@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -144,7 +144,8 @@ export const uploadFile = async (data) => {
     body: JSON.stringify({
       fileId: uploadFile.file.id,
       owner: uploadFile.file.metadata.owner,
-      favorite: false
+      favorite: false,
+      lastModified: data.get("lastModified")
     }),
     headers: {
       "Content-Type": "application/json",
@@ -176,14 +177,8 @@ export const updateFile = async (data) => {
 }
 
 // Users
-export const getUser = async (uDisplayName) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/users/${uDisplayName}`);
-  const user = await userResponse.json();
-  return user;
-}
-
 export const loginUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/users/login`, {
+  const response = await fetch(`${mongodbApiUrl}/auth/login`, {
     method: "POST",
     body: JSON.stringify({
       displayName: userData.displayName,
@@ -198,7 +193,7 @@ export const loginUser = async (userData) => {
 }
 
 export const registerUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/users/register`, {
+  const response = await fetch(`${mongodbApiUrl}/auth/register`, {
     method: "POST",
     body: JSON.stringify({
       email: userData.email,

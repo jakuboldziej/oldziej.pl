@@ -14,6 +14,10 @@ const FtpFileSchema = new mongoose.Schema ({
     type: Boolean,
     required: true,
     default: false
+  },
+  lastModified: {
+    type: Number,
+    required: true
   }
 });
 

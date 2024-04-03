@@ -46,6 +46,7 @@ const upload = multer({ storage, limits: { fileSize: 1000000000 } });
 const mergeFtpFile = async (file) => {
   const ftpFileQ = await ftpFile.findOne({ fileId: file._id });
   file.favorite = ftpFileQ.favorite;
+  file.lastModified = ftpFileQ.lastModified;
   return file;
 }
 // merging Files
@@ -56,6 +57,7 @@ const mergeFtpFiles = async (files) => {
     const ftpFileQ = ftpFiles.find(f => f.fileId === file._id.toString())
     if (ftpFileQ) {
       file.favorite = ftpFileQ.favorite;
+      file.lastModified = ftpFileQ.lastModified;
     }
   })
   return files;
@@ -73,7 +75,8 @@ router.post('/files', async (req, res) => {
   const newFtpFile = new ftpFile({
     fileId: req.body.fileId,
     owner: req.body.owner,
-    favorite: req.body.favorite
+    favorite: req.body.favorite,
+    lastModified: req.body.lastModified
   });
 
   try {

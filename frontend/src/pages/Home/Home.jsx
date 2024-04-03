@@ -4,19 +4,20 @@ import { getDartsUsers } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { FilesContext } from "@/context/FilesContext";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { FilesContext } from "@/context/FilesContext";
 
 function Home() {
   document.title = "Oldziej | Home";
-
-  const currentUser = useAuthUser();
-  const { fetchFiles } = useContext(FilesContext);
   
+  const currentUser = useAuthUser()
+  const { files, fetchFiles } = useContext(FilesContext);
+
   const [dartUsers, setDartUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // first data fetch
     const getDartUsers = async () => {
       try {
         setDartUsers(await getDartsUsers());
@@ -28,8 +29,7 @@ function Home() {
     }
     getDartUsers();
 
-    console.log(currentUser);
-    fetchFiles();
+    if (currentUser && !files) fetchFiles(currentUser);
   }, []);
 
   return (
