@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import NavBar from "@/components/NavBar"
 import { getDartsUsers } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { FilesContext } from "@/context/FilesContext";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 function Home() {
   document.title = "Oldziej | Home";
 
+  const currentUser = useAuthUser();
+  const { fetchFiles } = useContext(FilesContext);
+  
   const [dartUsers, setDartUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,6 +27,9 @@ function Home() {
       }
     }
     getDartUsers();
+
+    console.log(currentUser);
+    fetchFiles();
   }, []);
 
   return (

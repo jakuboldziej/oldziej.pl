@@ -75,9 +75,11 @@ function Login() {
       
       setIsLoading(false);
     } catch (err) {
+      console.log(err);
       handleError("Wrong password.", "rgb(248, 126, 126)")
       setIsLoading(false);
     }
+
   }
 
   return (

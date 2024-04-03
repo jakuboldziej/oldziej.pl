@@ -4,19 +4,6 @@ const User = require('../models/user')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const getUser = async (req, res, next) => {
-  let user;
-  try {
-    const { displayName } = req.params;
-    user = await User.findOne({ displayName });
-    if (user == null) return res.status(404);
-  } catch (err) {
-    return res.status(500)
-  }
-  res.user = user;
-  next();
-}
-
 router.post("/register", (req, res) => {
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({

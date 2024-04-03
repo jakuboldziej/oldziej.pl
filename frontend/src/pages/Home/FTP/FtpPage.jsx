@@ -26,10 +26,7 @@ function FtpPage() {
   const { files, setFiles } = useContext(FilesContext);
   const currentUser = useAuthUser();
 
-  const [recentFiles, setRecentFiles] = useState(() => {
-    console.log(files);
-    return [];
-  });
+  const [recentFiles, setRecentFiles] = useState([]);
   const [recentFile, setRecentFile] = useState(null);
   const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
   const [fileStatus, setFileStatus] = useState({
@@ -375,7 +372,8 @@ function FtpPage() {
                   </div>
                   <div className='h-10 rounded-full bg-blue-400'>
                   </div>
-                  <div className='h-10 rounded-full bg-green-400'>
+                  <div className='h-10 rounded-full bg-green-400 flex justify-center items-center'>
+                    + Add More
                   </div>
                 </div>
               </div>
