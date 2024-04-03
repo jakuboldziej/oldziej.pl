@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -182,15 +182,33 @@ export const getUser = async (uDisplayName) => {
   return user;
 }
 
-export const postUser = async (userData) => {
-  await fetch(`${mongodbApiUrl}/users`, {
+export const loginUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/users/login`, {
     method: "POST",
     body: JSON.stringify({
       displayName: userData.displayName,
-      email: userData.email
+      password: userData.password
     }),
     headers: {
       "Content-Type": "application/json",
     },
-  });
+  })
+
+  return await response.json();
+}
+
+export const registerUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/users/register`, {
+    method: "POST",
+    body: JSON.stringify({
+      email: userData.email,
+      displayName: userData.displayName,
+      password: userData.password
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
 }

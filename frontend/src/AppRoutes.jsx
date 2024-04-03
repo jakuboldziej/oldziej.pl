@@ -8,23 +8,18 @@ import DartsGame from './pages/Home/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/DartsUser";
 import FtpPage from './pages/Home/FTP/FtpPage';
 import MyFiles from './pages/Home/FTP/MyFiles';
-import { Navigate, Route, Routes } from 'react-router-dom';
-import { useContext } from 'react';
-import { AuthContext } from './context/AuthContext';
+import { Route, Routes } from 'react-router-dom';
 import SharedFiles from './pages/Home/FTP/SharedFiles';
 import FavoriteFiles from './pages/Home/FTP/FavoriteFiles';
 import UploadFiles from './pages/Home/FTP/UploadFiles';
 import SettingsFiles from './pages/Home/FTP/SettingsFiles';
+import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
+import RequireAuth from '@auth-kit/react-router/RequireAuth'
 
 function AppRoutes({ subdomain }) {
-  const { currentUser } = useContext(AuthContext);
 
   const ProtectedRoute = ({ children }) => {
-    if (!currentUser) {
-      return <Navigate to="/login" />;
-    }
-
-    return children;
+    return <RequireAuth fallbackPath='/login'>{children}</RequireAuth>;
   };
 
   return (
@@ -36,12 +31,12 @@ function AppRoutes({ subdomain }) {
             <Route path="register" element={<Register />} />
             <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           </Route>
-          <Route path="/darts/*">
+          <Route path="/darts/*" element={<AuthOutlet fallbackPath='/login' />}>
             <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />
             <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
             <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
           </Route>
-          <Route path="/ftp/*">
+          <Route path="/ftp/*" element={<AuthOutlet fallbackPath='/login' />}>
             <Route index element={<ProtectedRoute><FtpPage /></ProtectedRoute>} />
             <Route path='files/*'>
               <Route index element={<ProtectedRoute><MyFiles /></ProtectedRoute>}/>

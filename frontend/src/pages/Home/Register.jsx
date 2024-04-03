@@ -1,20 +1,22 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "@/firebase";
-import { AuthContext } from "@/context/AuthContext";
-import { postUser, postDartsUser, postFtpUser } from "@/fetch";
+import { registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 
 function Register() {
   document.title = "Oldziej | Register";
-  
-  const { currentUser } = useContext(AuthContext);
+
+  const currentUser = useAuthUser();
+
   const [err, setErr] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const signIn = useSignIn();
 
   // Redirect when already logged in
   useEffect(() => {
@@ -25,55 +27,58 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const displayName = e.target[0].value
     const email = e.target[1].value;
     const password = e.target[2].value;
 
     try {
       setIsLoading(true);
-      await createUserWithEmailAndPassword(auth, email, password);
-      const user = auth.currentUser;
-      user ? await updateProfile(user, {displayName: displayName}) : null
-      
-      try {
-        await postUser({
-          displayName: user.displayName,
-          email: user.email
-        });
-        await postDartsUser({
-          displayName: user.displayName,
-          gamesPlayed: 0,
-          podiums: {
-            firstPlace: 0,
-            secondPlace: 0,
-            thirdPlace: 0
-          },
-          overAllPoints: 0,
-          highestEndingAvg: 0,
-          highestOuts: 0,
-          highestRoundPoints: 0,
-          throws: {
-            normal: 0,
-            doubles: 0,
-            tripes: 0,
-            overthrows: 0,
-            doors: 0
-          }
-        });
-        await postFtpUser({
-          displayName: user.displayName,
-          email: user.email
-        })
-      } catch (err) {
-        console.log("Error fetching", err);
-      }
 
+      const response = await registerUser({
+        email,
+        displayName,
+        password
+      });
+      await postDartsUser({
+        displayName: user.displayName,
+        gamesPlayed: 0,
+        podiums: {
+          firstPlace: 0,
+          secondPlace: 0,
+          thirdPlace: 0
+        },
+        overAllPoints: 0,
+        highestEndingAvg: 0,
+        highestOuts: 0,
+        highestRoundPoints: 0,
+        throws: {
+          normal: 0,
+          doubles: 0,
+          tripes: 0,
+          overthrows: 0,
+          doors: 0
+        }
+      });
+      await postFtpUser({
+        displayName: user.displayName,
+        email: user.email
+      })
+
+      signIn({
+        auth: {
+          token: response.token,
+          type: "Bearer"
+        },
+        userState: { displayName: displayName }
+      });
+  
       navigate("/login");
     } catch (err) {
-      console.log(err)
+      console.log("Error fetching", err);
       setErr(true);
     }
+
     setIsLoading(false);
   }
 
@@ -104,7 +109,7 @@ function Register() {
                 </button>
               </div>
               <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
-                <Loader2 className="h-10 w-10 animate-spin"/>
+                <Loader2 className="h-10 w-10 animate-spin" />
               </div>
               {err && <span id="error_message">Something went wrong.</span>}
             </form>

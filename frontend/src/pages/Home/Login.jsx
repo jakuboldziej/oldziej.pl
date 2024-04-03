@@ -1,18 +1,19 @@
-import { useContext, useEffect, useState } from "react";
-import { auth } from "@/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
-import { AuthContext } from "@/context/AuthContext";
-import { getUser } from "@/fetch";
 import { Loader2  } from "lucide-react";
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { loginUser } from "@/fetch";
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 
 function Login() {
   document.title = "Oldziej | Login";
 
-  const { currentUser } = useContext(AuthContext);
+  const currentUser = useAuthUser();
+
   const [err, setErr] = useState("");
+  const signIn = useSignIn();
   const [passErr, setPassErr] = useState("");
   const [passValidate, setPassValidate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -56,14 +57,22 @@ function Login() {
 
     try {
       setIsLoading(true);
-      const userQ = await getUser(displayName);
 
-      if (!userQ.empty) {
-        await signInWithEmailAndPassword(auth, userQ.email, password);
-        navigate("/");
-      } else {
-        handleError("User doesn't exist.", "rgb(248, 126, 126)")
-      }
+      const response = await loginUser({
+        displayName,
+        password
+      })
+
+      signIn({
+        auth: {
+          token: response.token,
+          type: "Bearer"
+        },
+        userState: { displayName: displayName }
+      })
+
+      navigate("/");
+      
       setIsLoading(false);
     } catch (err) {
       handleError("Wrong password.", "rgb(248, 126, 126)")

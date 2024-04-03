@@ -16,15 +16,15 @@ import { File, FileDown, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Mo
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { AuthContext } from '@/context/AuthContext'
 import CopyTextButton from '@/components/CopyTextButton'
 import MyDialog from '@/components/MyComponents/MyDialog'
 import { Button } from '@/components/ui/button'
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
   const { files, setFiles } = useContext(FilesContext);
-  const { currentUser } = useContext(AuthContext);
+  const currentUser = useAuthUser();
 
   const [recentFiles, setRecentFiles] = useState(() => {
     console.log(files);
@@ -156,6 +156,7 @@ function FtpPage() {
     file.favorite = !file.favorite;
     const updatedFile = await updateFile({ file });
     console.log(updatedFile);
+    // nie dodawać do listy tylko zmienić jak w handlefilenamechange
     setFiles((prev) => [...prev, updatedFile]);
   }
 

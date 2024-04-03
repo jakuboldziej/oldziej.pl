@@ -1,11 +1,11 @@
 import { getFiles } from '@/fetch';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { AuthContext } from './AuthContext';
+import { createContext, useEffect, useState } from 'react';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
 export const FilesContext = createContext();
 
 export const FilesContextProvider = ({ children }) => {
-  const { currentUser } = useContext(AuthContext);
+  const currentUser = useAuthUser();
 
   const [files, setFiles] = useState(() => {
   const storedFiles = localStorage.getItem('files');
@@ -23,7 +23,7 @@ export const FilesContextProvider = ({ children }) => {
         localStorage.setItem('files', null);
       }
     };
-    fetchFiles();
+    currentUser && fetchFiles();
   }, []);
 
   return (

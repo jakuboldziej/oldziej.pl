@@ -1,32 +1,21 @@
-import { signOut } from "firebase/auth"
-import { auth } from "@/firebase"
-import { Link } from "react-router-dom"
-import { useContext, useState } from "react"
-import { AuthContext } from "@/context/AuthContext"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
+import useSignOut from 'react-auth-kit/hooks/useSignOut';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 
 function NavBar() {
-  const { currentUser } = useContext(AuthContext);
-  const [showOffcanvas, setShowOffcanvas] = useState(false);
+  const currentUser = useAuthUser();
+  const navigate = useNavigate();
 
-  const toggleOffcanvas = () => setShowOffcanvas((prev) => !prev);
+  const signOut = useSignOut();
+
+  const logout = () => {
+    signOut();
+    navigate('/login');
+  }
   return (
     <>
-      {/* <Navbar collapseOnSelect className="px-2" variant="dark" >
-        <Container>
-          <Link to="/" className="link link-light navbar-brand"><b>Home</b></Link>
-          <Nav className="me-auto">
-            <Link to="/darts" className="nav-link"><b>Darts</b></Link>
-            <Link to="/ftp" className="nav-link"><b>FTP</b></Link>
-          </Nav>
-        </Container>
-        <Navbar.Collapse className="justify-content-end">
-        <Button variant="outline-light" onClick={toggleOffcanvas}>
-            {currentUser.displayName}
-          </Button>
-        </Navbar.Collapse>
-      </Navbar> */}
       <nav>
         <div className="p-2">
           <div className="w-full" id="navbar-default">
@@ -53,7 +42,7 @@ function NavBar() {
                       <Button variant="outline_white">Settings</Button>
                     </div>
                     <div className="absolute right-2 bottom-2 text-white">
-                      <Button variant="outline_red" onClick={() => signOut(auth)}>Log Out</Button>
+                      <Button variant="outline_red" onClick={logout}>Log Out</Button>
                     </div>
                   </SheetContent>
                 </Sheet>
@@ -62,20 +51,6 @@ function NavBar() {
           </div>
         </div>
       </nav>
-
-
-
-      {/* <Offcanvas className="bg-dark text-white" show={showOffcanvas} onHide={toggleOffcanvas} placement="end">
-        <Offcanvas.Header closeButton closeVariant="white">
-          <Offcanvas.Title>{currentUser.displayName}</Offcanvas.Title>
-        </Offcanvas.Header>
-        <Offcanvas.Body>
-          <Button variant="outline-light">Settings</Button>
-          <div className="position-absolute bottom-0 end-0 m-2">
-            <Button variant="outline-danger" onClick={()=>signOut(auth)}>Log Out</Button>
-          </div>
-        </Offcanvas.Body>
-      </Offcanvas> */}
     </>
   )
 }
