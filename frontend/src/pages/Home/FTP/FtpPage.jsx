@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
-import { File, FileDown, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video } from 'lucide-react'
+import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -111,6 +111,15 @@ function FtpPage() {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
     await downloadFile(filename);
     setFileStatus((prev) => ({ ...prev, downloading: false }));
+  }
+
+  const handleDeleteImage = async (file) => {
+    const response = await deleteFile(file._id);
+    if (response.ok) {
+      let updatedFiles = files.filter((f) => f._id !== file._id);
+      updateAllFiles(updatedFiles);
+      ShowNewToast("File Update", `${file.filename} has been deleted.`);
+    }
   }
 
   const handleOpeningDialog = (file, action) => {
@@ -217,7 +226,6 @@ function FtpPage() {
         <LeftNavBar />
         <div className='main ftp-page text-white'>
           <div className='left-side'>
-            <Input disabled placeholder='Search' className='rounded-full' />
             <div className='categories flex flex-col gap-6'>
               <span className='text-3xl'>Categories</span>
               <div className='cards flex gap-5 flex-wrap'>
@@ -233,7 +241,7 @@ function FtpPage() {
                 </Card>
                 <Card className='category rounded-xl'>
                   <CardHeader className='card-header'>
-                    <CardTitle><File /></CardTitle>
+                    <CardTitle><FileText /></CardTitle>
                   </CardHeader>
                   <CardContent className='flex flex-col gap-1'>
                     <span>Documents</span>
