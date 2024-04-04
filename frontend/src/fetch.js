@@ -121,7 +121,18 @@ export const getFtpUser = async (uDisplayName) => {
 }
 
 export const getFiles = async (userDisplayName = null) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/files?user=${userDisplayName}`);
+  let url = `${mongodbApiUrl}/ftp/files`;
+  
+  const queryParams = [];
+  if (userDisplayName) {
+    queryParams.push(`user=${userDisplayName}`)
+  }
+  
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join('&')}`;
+  }
+  
+  const response = await fetch(url);
   const data = await response.json();
   return data;
 }

@@ -113,15 +113,6 @@ function FtpPage() {
     setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
-  const handleDeleteImage = async (file) => {
-    const response = await deleteFile(file._id);
-    if (response.ok) {
-      let updatedFiles = files.filter((f) => f._id !== file._id);
-      updateAllFiles(updatedFiles);
-      ShowNewToast("File Update", `${file.filename} has been deleted.`);
-    }
-  }
-
   const handleOpeningDialog = (file, action) => {
     if (action === "changeFileName") {
       setDialogOpen((prev) => ({ ...prev, changeFileName: true, file: file }));

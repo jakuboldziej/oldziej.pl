@@ -733,7 +733,9 @@ nav {
     width: 85%;
     margin-left: 15%;
     max-height: $containerHeight;
+  }
 
+  .main.ftp-page {
     .left-side {
       position: relative;
       display: flex;
@@ -749,10 +751,11 @@ nav {
         width: 10vw;
         height: 125px;
         min-width: 135px;
-        
+
         .p-6 {
           padding: 15px;
         }
+
         .card-header {
           padding-bottom: 0;
         }
@@ -765,18 +768,19 @@ nav {
 
       .recent-files {
         height: 40%;
+
         .recent-file {
           width: 98%;
 
           .filename {
-            max-width: 300px;
+            width: 60%;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
           }
 
           .attrs {
-            width: 60%;
+            width: 40%;
           }
         }
       }
@@ -815,6 +819,26 @@ nav {
           gap: 5px;
           height: 100%;
         }
+      }
+    }
+  }
+
+  .main.my-files {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 30px;
+
+    .card {
+      width: 192px;
+      height: 192px;
+
+      &:hover {
+        cursor: pointer;
+        -webkit-box-shadow: 0px 0px 24px -3px rgba(66, 68, 90, 1);
+        -moz-box-shadow: 0px 0px 24px -3px rgba(66, 68, 90, 1);
+        box-shadow: 0px 0px 24px -3px rgba(66, 68, 90, 1);
       }
     }
   }
