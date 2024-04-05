@@ -4,7 +4,8 @@ const { dartsConn } = require("../server")
 const dartsUserSchema = new mongoose.Schema ({
   displayName: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   gamesPlayed: {
     type: Number,

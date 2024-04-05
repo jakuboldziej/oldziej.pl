@@ -4,9 +4,10 @@ const multer = require("multer")
 const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require('crypto');
 const { mongoose, Types } = require("mongoose");
-const ftpUser = require("../models/ftpUser");
 const { mongoURIFTP, ftpConn } = require("../server");
-const ftpFile = require("../models/ftpFile");
+const FtpUser = require("../models/ftpUser");
+const FtpFile = require("../models/ftpFile");
+const FtpFolder = require("../models/ftpFolder");
 
 let bucket;
 
@@ -43,14 +44,14 @@ const upload = multer({ storage, limits: { fileSize: 1000000000 } });
 
 // get ftpFiles
 const mergeFtpFile = async (file) => {
-  const ftpFileQ = await ftpFile.findOne({ fileId: file._id });
+  const ftpFileQ = await FtpFile.findOne({ fileId: file._id });
   file.favorite = ftpFileQ.favorite;
   file.lastModified = ftpFileQ.lastModified;
   return file;
 }
 // merging Files
 const mergeFtpFiles = async (files) => {
-  const ftpFiles = await ftpFile.find();
+  const ftpFiles = await FtpFile.find();
 
   files.map(file => {
     const ftpFileQ = ftpFiles.find(f => f.fileId === file._id.toString())
@@ -71,11 +72,12 @@ router.post('/upload', upload.single('file'), (req, res) => {
 
 // create fileObject
 router.post('/files', async (req, res) => {
-  const newFtpFile = new ftpFile({
+  const newFtpFile = new FtpFile({
     fileId: req.body.fileId,
     owner: req.body.owner,
     favorite: req.body.favorite,
-    lastModified: req.body.lastModified
+    lastModified: req.body.lastModified,
+    folders: req.body.folders
   });
 
   try {
@@ -113,7 +115,7 @@ router.put('/files/:id', async (req, res) => {
     const newName = req.body.newFileName;
 
     const updateFile = req.body.data.file;
-    await ftpFile.updateOne({ fileId: req.params.id }, {
+    await FtpFile.updateOne({ fileId: req.params.id }, {
       favorite: updateFile.favorite
     })
 
@@ -139,7 +141,7 @@ router.delete('/files/:id', async (req, res) => {
 
     if (file) {
       bucket.delete(file._id);
-      await ftpFile.deleteOne({ fileId: req.params.id })
+      await FtpFile.deleteOne({ fileId: req.params.id })
       res.json({ ok: true })
     }
     else {
@@ -196,10 +198,45 @@ router.get('/files/download/:filename', async (req, res) => {
   }
 })
 
+// Folders
+
+// get folders
+router.get('/folders', async (req, res) => {
+  try {
+    let filter = {};
+    if (req.query.user) filter["owner"] = req.query.user;
+    if (req.query.folderName) filter["name"] = req.query.folderName;
+    let folders = await FtpFolder.find(filter);
+
+    if (!folders || folders.length === 0) {
+      return res.json({ folders: null })
+    } else {
+      res.json({ folders })
+    }
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+})
+
+// create folder
+router.post('/folders', async (req, res) => {
+  const ftpFolder = new FtpFolder({
+    name: req.body.name,
+    owner: req.body.owner,
+  });
+  try {
+    const newFtpFolder = await ftpFolder.save(); 
+
+    res.json({ folder: newFtpFolder })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+})
+
 // Users
 router.get('/users', async (req, res) => {
   try {
-    const users = await ftpUser.find()
+    const users = await FtpUser.find()
     res.json(users)
   } catch (err) {
     res.json({ message: err.message })
@@ -207,7 +244,7 @@ router.get('/users', async (req, res) => {
 })
 
 router.post('/users', async (req, res) => {
-  const user = new ftpUser({
+  const user = new FtpUser({
     displayName: req.body.displayName,
     email: req.body.email
   })
@@ -221,7 +258,7 @@ router.post('/users', async (req, res) => {
 
 router.get('/users/:displayname', async (req, res) => {
   try {
-    const users = await ftpUser.find({ displayName: req.params.displayname })
+    const users = await FtpUser.find({ displayName: req.params.displayname })
     res.json(users)
   } catch (err) {
     res.json({ message: err.message })

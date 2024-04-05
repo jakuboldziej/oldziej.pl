@@ -12,10 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
-import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video } from 'lucide-react'
+import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CopyTextButton from '@/components/CopyTextButton'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import { useNavigate } from 'react-router'
@@ -312,7 +312,18 @@ function FtpPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
                                 <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileDown /> Pobierz</DropdownMenuItem>
+                                <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="gap-2">
+                                <FileDown />
+                                <span>Pobierz...</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                  <DropdownMenuSubContent> 
+                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><SquareArrowDown /> Standardowe</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileArchive /> Jako ZIP</DropdownMenuItem>
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                              </DropdownMenuSub>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => handleOpeningDialog(file, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
                                 <DropdownMenuItem onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))} onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))} onClick={() => handleFavoriteFile(file)} className='gap-2'>

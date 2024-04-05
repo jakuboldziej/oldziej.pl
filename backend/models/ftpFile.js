@@ -18,6 +18,11 @@ const FtpFileSchema = new mongoose.Schema ({
   lastModified: {
     type: Number,
     required: true
+  },
+  folders: {
+    type: Array,
+    required: true,
+    default: []
   }
 });
 

@@ -17,7 +17,7 @@ function NavBar() {
   return (
     <>
       <nav>
-        <div className="p-2">
+        <div className="navbar p-2">
           <div className="w-full" id="navbar-default">
             <ul className="text-base font-medium flex p-0 flex-row mt-0">
               <li>

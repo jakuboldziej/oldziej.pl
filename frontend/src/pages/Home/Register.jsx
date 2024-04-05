@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
-import { registerUser } from "@/fetch";
+import { postFolder, registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
@@ -63,7 +63,11 @@ function Register() {
       await postFtpUser({
         displayName: user.displayName,
         email: user.email
-      })
+      });
+      await postFolder({
+        name: "Dysk w chmurze",
+        owner: user.displayName
+      });
 
       signIn({
         auth: {

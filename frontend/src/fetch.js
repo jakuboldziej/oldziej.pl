@@ -101,6 +101,8 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
 };
 
 // FTP
+
+// Users
 export const postFtpUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/ftp/users`, {
     method: "POST",
@@ -120,6 +122,7 @@ export const getFtpUser = async (uDisplayName) => {
   return user[0];
 }
 
+// Files
 export const getFiles = async (userDisplayName = null) => {
   let url = `${mongodbApiUrl}/ftp/files`;
   
@@ -150,13 +153,16 @@ export const uploadFile = async (data) => {
   });
   const uploadFile = await uploadResponse.json();
 
+  const mainFolder = await getFolders(data.get("userDisplayName"), "Dysk w chmurze");
+
   const ftpFile = await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
       fileId: uploadFile.file.id,
       owner: uploadFile.file.metadata.owner,
       favorite: false,
-      lastModified: data.get("lastModified")
+      lastModified: data.get("lastModified"),
+      folders: [mainFolder.folders[0]._id]
     }),
     headers: {
       "Content-Type": "application/json",
@@ -185,6 +191,42 @@ export const updateFile = async (data) => {
   })
   const file = await response.json();
   return file.file;
+}
+
+// Folders
+export const postFolder = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/folders`, {
+    method: "POST",
+    body: JSON.stringify({
+      name: data.name,
+      owner: data.owner
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
+}
+
+export const getFolders = async (userDisplayName = null, folderName = null) => {
+  let url = `${mongodbApiUrl}/ftp/folders`;
+  
+  const queryParams = [];
+  if (userDisplayName) {
+    queryParams.push(`user=${userDisplayName}`)
+  }
+  if (folderName) {
+    queryParams.push(`folderName=${folderName}`)
+  }
+  
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join('&')}`;
+  }
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  return data;
 }
 
 // Users

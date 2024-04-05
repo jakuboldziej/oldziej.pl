@@ -5,16 +5,19 @@ import { FilesContext } from "@/context/FilesContext";
 import { useContext, useEffect, useState } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ArrowDownNarrowWide, FileArchive, FileDown, FilePlus, FileText, FileUp, FolderPlus, FolderUp, Heart, HeartOff, Info, Loader2, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video } from 'lucide-react';
-import { deleteFile, mongodbApiUrl, updateFile } from "@/fetch";
+import { deleteFile, mongodbApiUrl, postFolder, updateFile } from "@/fetch";
 import { downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
 import FileOptionsDialogs from "@/components/FTP/FileOptionsDialogs";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 
 function MyFiles() {
   const { files, setFiles } = useContext(FilesContext);
+  const currentUser = useAuthUser();
 
   const navigate = useNavigate();
 
@@ -40,7 +43,7 @@ function MyFiles() {
     const isImage = file.contentType.startsWith('image/');
     const imageUrl = `url(${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())})`;
 
-    if (isImage) console.log(imageUrl);
+    // if (isImage) console.log(imageUrl);
 
     return {
       backgroundImage: isImage ? imageUrl : "url('elo')",
@@ -93,6 +96,10 @@ function MyFiles() {
   }
 
   const handleFavoriteFile = async (file) => {
+    await postFolder({
+      name: "Dysk w chmurze",
+      owner: "filip"
+    });
     setIsHovered((prev) => ({ ...prev, heart: false }))
     file.favorite = !file.favorite;
 
@@ -148,13 +155,30 @@ function MyFiles() {
       <div className="ftp-wrapper text-white">
         <LeftNavBar />
         <div className="main my-files">
+          <div className="folders-path">
+            <Breadcrumb className="pt-[24px] pl-[24px]">
+              <BreadcrumbList>
+                <BreadcrumbItem onClick={() => navigate("/ftp/files")} className="hover:cursor-pointer">
+                  <BreadcrumbLink>Dysk w chmurze</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <div className="files">
                 {files ? (
                   filesShown.length > 0 ? (
                     filesShown.map((file) => (
-                      <Card key={file._id} className="card relative flex justify-center items-center" style={fileDynamicStyle(file)} title={file.filename}>
+                      <Card onDoubleClick={() => renderFile(file.filename)} key={file._id} className="card select-none relative flex justify-center items-center" style={fileDynamicStyle(file)} title={file.filename}>
                         <CardContent>
                           {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText width={100} height={100} /> : (
                             handleFileTypes([file]).fileVideos.length > 0 ? <Video width={100} height={100} /> : (
@@ -172,11 +196,11 @@ function MyFiles() {
                               <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
                               <DropdownMenuSub>
                                 <DropdownMenuSubTrigger className="gap-2">
-                                <FileDown />
-                                <span>Pobierz...</span>
+                                  <FileDown />
+                                  <span>Pobierz...</span>
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuPortal>
-                                  <DropdownMenuSubContent> 
+                                  <DropdownMenuSubContent>
                                     <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><SquareArrowDown /> Standardowe</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileArchive /> Jako ZIP</DropdownMenuItem>
                                   </DropdownMenuSubContent>
@@ -184,7 +208,12 @@ function MyFiles() {
                               </DropdownMenuSub>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleOpeningDialog(file, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
-                              <DropdownMenuItem onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))} onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))} onClick={() => handleFavoriteFile(file)} className='gap-2'>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))}
+                                onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))}
+                                onClick={() => handleFavoriteFile(file)}
+                                className='gap-2'>
                                 {file.favorite ?
                                   isHovered.heart ? <HeartOff /> : <Heart color='#ff0000' />
                                   : isHovered.heart ? <Heart color='#ff0000' /> : <Heart color='#ffffff' />
@@ -207,7 +236,7 @@ function MyFiles() {
                     </div>
                   )
                 ) : (
-                  <div className='flex flex-col items-center gap-2 justify-center w-100 pt-12'>
+                  <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center w-100 pt-12'>
                     No Files...
                     <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
                   </div>
