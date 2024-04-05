@@ -6,7 +6,7 @@ export const handleSameFilename = async (file, files) => {
   const ext = file.name.substring(lastDotIndex + 1);
 
   if (files) {
-    let fileNames = files.map(file => file.metadata.originalFileName);
+    let fileNames = files.map(file => file.filename);
 
     if (fileNames.includes(file.name)) {
       let duplicateNumber = 1;

@@ -24,7 +24,7 @@ export const FilesContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchFiles();
+    if(currentUser) fetchFiles();
   }, []);
 
   return (

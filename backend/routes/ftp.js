@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router()
 const multer = require("multer")
 const { GridFsStorage } = require("multer-gridfs-storage");
-const path = require('path');
 const crypto = require('crypto');
 const { mongoose, Types } = require("mongoose");
 const ftpUser = require("../models/ftpUser");

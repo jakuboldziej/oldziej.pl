@@ -4,11 +4,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
 import { deleteFile, getFile, getFtpUser, mongodbApiUrl, updateFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
@@ -17,14 +17,16 @@ import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FilesContext } from '@/context/FilesContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import CopyTextButton from '@/components/CopyTextButton'
-import MyDialog from '@/components/MyComponents/MyDialog'
-import { Button } from '@/components/ui/button'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import { useNavigate } from 'react-router'
+import FileOptionsDialogs from '@/components/FTP/FileOptionsDialogs'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
   const { files, setFiles } = useContext(FilesContext);
   const currentUser = useAuthUser();
+
+  const navigate = useNavigate();
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentFile, setRecentFile] = useState(null);
@@ -90,7 +92,6 @@ function FtpPage() {
       file = await handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
-      console.log(file);
 
       const formData = new FormData();
       formData.append('file', file)
@@ -189,7 +190,7 @@ function FtpPage() {
   useEffect(() => {
     const updateRecentFiles = async () => {
       const fileRes = await getFile(recentFile.filename);
-      
+
       if (files) {
         const updatedFiles = [fileRes, ...files]
         updateAllFiles(updatedFiles);
@@ -217,6 +218,14 @@ function FtpPage() {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
+  }
+
+  const fileOptionsDialogsProps = {
+    dialogOpen,
+    setDialogOpen,
+    handleUpdateFile,
+    changingFileName,
+    setChangingFileName
   }
 
   return (
@@ -328,7 +337,7 @@ function FtpPage() {
                       </div>
                     )
                   ) : (
-                    <div className='flex justify-center w-100 pt-3'>
+                    <div className='flex flex-col items-center gap-2 justify-center w-100 pt-3'>
                       No Files...
                     </div>
                   )}
@@ -360,9 +369,9 @@ function FtpPage() {
                   />
                 </form>
               </Form>
-              <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
+              <div onClick={() => navigate("/ftp/storage")} className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span className='flex justify-between'>
-                  <span>Your Storage ({files?.length} Files)</span>
+                  <span>Your Storage ({files?.length || 0} Files)</span>
                   <span>{(calcStorageUsage(files)[1])}%</span>
                 </span>
                 <div className='text-sm'>
@@ -387,41 +396,7 @@ function FtpPage() {
         </div>
       </div>
 
-      <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
-        <>
-          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
-          <Button onClick={handleUpdateFile} variant='outline_green'>Save</Button>
-        </>
-      }>
-        <span className='flex flex-col gap-2'>
-          <Label>Original name: {dialogOpen.file?.metadata.originalFileName}</Label>
-          <Input placeholder={dialogOpen.file?.filename} value={changingFileName} onChange={(e) => setChangingFileName(e.target.value)} />
-
-        </span>
-      </MyDialog>
-
-      <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.file?.filename}`}>
-        <Card>
-          <CardHeader>
-            Ścieżka:
-            <CardDescription>Folder {'>'} {dialogOpen.file?.filename}</CardDescription>
-          </CardHeader>
-        </Card>
-        <div className='p-4 flex gap-40'>
-          <div>
-            <span className='text-slate-400'>Rozmiar:</span> <br /> 
-            3KB
-          </div>
-          <div>
-            <span className='text-slate-400'>Ostatnia zmiana:</span> <br />
-            {new Date(dialogOpen.file?.lastModified).toLocaleString()}
-          </div>
-        </div>
-        <div className='p-4 py-0'>
-            <span className='text-slate-400'>Data Dodania:</span> <br />
-            {new Date(dialogOpen.file?.uploadDate).toLocaleString()}
-          </div>
-      </MyDialog>
+      <FileOptionsDialogs {...fileOptionsDialogsProps} />
     </>
   )
 }

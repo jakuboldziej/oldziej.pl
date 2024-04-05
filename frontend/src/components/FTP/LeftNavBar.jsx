@@ -1,4 +1,4 @@
-import { Files, Settings, Share2, FileUp, FileHeart, PackageOpen, Package } from 'lucide-react'
+import { Files, Settings, Share2, FileUp, FileHeart, PackageOpen, Package, Database } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
@@ -16,7 +16,6 @@ function LeftNavBar() {
             <PackageOpen /> : 
             <Package />
         )}
-
         File Storage
       </Link>
       <div className='tiles w-full h-full relative'>
@@ -24,7 +23,10 @@ function LeftNavBar() {
         <Link to='/ftp/files/shared' className={`tile ${locationPathname === '/ftp/files/shared' ? 'active' : ''}`}><Share2 /> Shared Files</Link>
         <Link to='/ftp/files/favorites' className={`tile ${locationPathname === '/ftp/files/favorites' ? 'active' : ''}`}><FileHeart /> Favorites</Link>
         <Link to='/ftp/files/upload' className={`tile ${locationPathname === '/ftp/files/upload' ? 'active' : ''}`}><FileUp /> Upload Files</Link>
-        <Link to='/ftp/files/settings' className={`tile ${locationPathname === '/ftp/files/settings' ? 'active' : ''} absolute bottom-0 w-full`}><Settings />Settings</Link>
+        <div className=' absolute bottom-0 w-full'>
+          <Link to='/ftp/storage' className={`tile ${locationPathname === '/ftp/storage' ? 'active' : ''}`}><Database />Storage</Link>
+          <Link to='/ftp/settings' className={`tile ${locationPathname === '/ftp/settings' ? 'active' : ''}`}><Settings />Settings</Link>
+        </div>
       </div>
     </div>
   )

@@ -1,18 +1,18 @@
 import LeftNavBar from "@/components/FTP/LeftNavBar"
 import NavBar from "@/components/NavBar"
 
-function SettingsFiles() {
+function Settings() {
   return (
     <>
       <NavBar />
       <div className="ftp-wrapper text-white">
         <LeftNavBar />
         <div className="main settings-files">
-        SettingsFiles
+        Settings
         </div>
       </div>
     </>
   )
 }
 
-export default SettingsFiles
+export default Settings
