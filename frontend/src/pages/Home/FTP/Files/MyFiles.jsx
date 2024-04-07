@@ -1,39 +1,39 @@
 import LeftNavBar from "@/components/FTP/LeftNavBar";
 import NavBar from "@/components/NavBar";
-import { Card, CardContent } from "@/components/ui/card";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ArrowDownNarrowWide, FileArchive, FileDown, FilePlus, FileText, FileUp, FolderPlus, FolderUp, Heart, HeartOff, Info, Loader2, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video } from 'lucide-react';
-import { deleteFile, getFile, getFolder, getFtpUser, mongodbApiUrl, postFolder, putFile, uploadFile } from "@/fetch";
-import { deleteFileFromFolder, downloadFile, formatElapsedTime, handleFileTypes, handleSameFilename, renderFile } from "@/components/FTP/utils";
+import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
+import { getFile, getFolders, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
+import { formatElapsedTime, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
 import MyDialogs from "@/components/FTP/MyDialogs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import MyFileCard from "@/components/FTP/MyFileCard";
+import MyFolderCard from "@/components/FTP/MyFolderCard";
 
 function MyFiles() {
-  const { files, setFiles, folders } = useContext(FtpContext);
+  const { files, setFiles, currentFolder, currentFolders } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
 
   const [recentFile, setRecentFile] = useState(null);
-  const [currentFolder, setCurrentFolder] = useState({ files: [] });
-  const [currentFolders, setCurrentFolders] = useState([]);
-  const [filesShown, setFilesShown] = useState([])
+  const [filesShown, setFilesShown] = useState([]);
+  const [dataShown, setDataShown] = useState([])
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [isHovered, setIsHovered] = useState({
-    heart: false
-  })
+
   const [dialogOpen, setDialogOpen] = useState({
     file: null,
     changeFileName: false,
     showInfo: false,
     createFolder: false
+  });
+  const [isHovered, setIsHovered] = useState({
+    heart: false
   });
   const [fileStatus, setFileStatus] = useState({
     uploading: false,
@@ -43,15 +43,6 @@ function MyFiles() {
   });
   const [creatingFolder, setCreatingFolder] = useState('')
   const [changingFileName, setChangingFileName] = useState('');
-
-
-  const fileDynamicStyle = (file) => {
-    return {
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    }
-  }
 
   const fileRef = useRef();
 
@@ -82,23 +73,6 @@ function MyFiles() {
 
   }
 
-  const handleDownloadFile = (filename) => {
-    setFileStatus((prev) => ({ ...prev, downloading: filename }));
-    downloadFile(filename);
-    setFileStatus((prev) => ({ ...prev, downloading: false }));
-  }
-
-  const handleDeleteImage = async (file) => {
-    const deleteRes = await deleteFile(file._id);
-    const deleteUtilRes = await deleteFileFromFolder(currentFolder, file);
-
-    if (deleteRes.ok) {
-      let updatedFiles = files.filter((f) => f._id !== file._id);
-      updateAllFiles(updatedFiles);
-      ShowNewToast("File Update", `${file.filename} has been deleted.`);
-    }
-  }
-
   const handleOpeningDialog = (file, action) => {
     if (action === "changeFileName") {
       setDialogOpen((prev) => ({ ...prev, changeFileName: true, file: file }));
@@ -124,6 +98,7 @@ function MyFiles() {
       }
       return f;
     });
+    console.log(updatedFiles);
     updateAllFiles(updatedFiles);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
@@ -139,29 +114,15 @@ function MyFiles() {
       }
       const folder = await postFolder(data);
       console.log(folder);
+
+      setDialogOpen((prev) => ({ ...prev, createFolder: false }));
     }
-  }
-
-  const handleFavoriteFile = async (file) => {
-    setIsHovered((prev) => ({ ...prev, heart: false }))
-    file.favorite = !file.favorite;
-
-    if (file.favorite) ShowNewToast(`File ${file.filename}`, "Added to favorites.");
-    else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
-
-    const updatedFile = await putFile({ file });
-    const updatedFiles = files.map((f) => {
-      if (f.filename === file.filename) {
-        f = updatedFile;
-      }
-      return f;
-    });
-    updateAllFiles(updatedFiles);
   }
 
   const updateAllFiles = (updatedFiles) => {
     setFilesShown(updatedFiles);
-    setFiles(updatedFiles.length === 0 ? null : updatedFiles)
+    setDataShown(updatedFiles)
+    setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
@@ -208,20 +169,21 @@ function MyFiles() {
 
   useEffect(() => {
     const getData = async () => {
-      const ftpUser = await getFtpUser(currentUser.displayName);
-      const ftpFolder = await getFolder(ftpUser.main_folder);
-      setCurrentFolders([ftpFolder]);
-      setCurrentFolder(ftpFolder);
-      const filePromises = ftpFolder.files.map(async (fileId) => {
+      const filePromises = currentFolders[0].files.map(async (fileId) => {
         const fileRes = await getFile(fileId);
         return fileRes;
       })
-      let filesToShow = await Promise.all(filePromises);
-      // filesToShow.push(ftpFolder)
-      filesToShow.sort((a, b) => {
+      const ftpFiles = await Promise.all(filePromises);
+      console.log(ftpFiles);
+      ftpFiles.map((file) => file.type = "file");
+
+      const ftpFolders = await getFolders(currentUser.displayName);
+      ftpFolders && ftpFolders.map((folder) => folder.type = "folder");
+      
+      ftpFiles.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
-      setFilesShown(filesToShow);
+      setDataShown([...ftpFolders, ...ftpFiles]);
     }
     getData();
   }, []);
@@ -237,6 +199,14 @@ function MyFiles() {
     setCreatingFolder
   }
 
+  const cardProps = {
+    setFileStatus,
+    handleOpeningDialog,
+    updateAllFiles,
+    isHovered,
+    setIsHovered
+  }
+
   return (
     <>
       <NavBar />
@@ -248,7 +218,7 @@ function MyFiles() {
               <BreadcrumbList>
                 {currentFolders.length > 0 && currentFolders.map((currentFolder) => (
                   <BreadcrumbItem key={currentFolder._id} className="hover:cursor-pointer">
-                    <BreadcrumbLink>{currentFolder?.name}</BreadcrumbLink>
+                    <BreadcrumbLink>{currentFolder.name}</BreadcrumbLink>
                     {currentFolders.length > 1 && <BreadcrumbSeparator />}
                   </BreadcrumbItem>
                 ))}
@@ -259,61 +229,13 @@ function MyFiles() {
             <ContextMenuTrigger asChild>
               <div className="files">
                 {files ? (
-                  filesShown.length > 0 ? (
-                    filesShown.map((file) => (
-                      <Card onDoubleClick={() => renderFile(file.filename)} key={file._id} className="card select-none relative flex justify-center items-center" style={fileDynamicStyle(file)} title={file.filename}>
-                        <CardContent>
-                          {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText width={100} height={100} /> : (
-                            handleFileTypes([file]).fileVideos.length > 0 ? <Video width={100} height={100} /> : (
-                              handleFileTypes([file]).fileAudios.length > 0 ? <Mic width={100} height={100} /> : (
-                                handleFileTypes([file]).fileImages.length > 0 ? <img className="card-background" src={`${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
-                              )
-                            )
-                          )}
-                          <div className="nameplate truncate ...">
-                            {file.filename}
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger className="dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
-                              <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="gap-2">
-                                  <FileDown />
-                                  <span>Pobierz...</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                  <DropdownMenuSubContent>
-                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><SquareArrowDown /> Standardowe</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileArchive /> Jako ZIP</DropdownMenuItem>
-                                  </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                              </DropdownMenuSub>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleOpeningDialog(file, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                                onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))}
-                                onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))}
-                                onClick={() => handleFavoriteFile(file)}
-                                className='gap-2'>
-                                {file.favorite ?
-                                  isHovered.heart ? <HeartOff /> : <Heart color='#ff0000' />
-                                  : isHovered.heart ? <Heart color='#ff0000' /> : <Heart color='#ffffff' />
-                                }
-                                Ulubione
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleOpeningDialog(file, "changeFileName")} className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
-                              <DropdownMenuItem disabled className='gap-2'><Move />Przenieś...</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </CardContent>
-                      </Card>
+                  dataShown.length > 0 ? (
+                    dataShown.map((file) => (
+                      file.type == "file" ? (
+                        <MyFileCard key={file._id} {...cardProps} file={file} />
+                      ) : (
+                        <MyFolderCard key={file._id} {...cardProps} folder={file} />
+                      )
                     ))
                   ) : (
                     <div className="flex justify-center w-full pt-3">

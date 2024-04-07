@@ -6,13 +6,13 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFolder, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
-import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive } from 'lucide-react'
+import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder } from '@/components/FTP/utils'
+import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -23,7 +23,7 @@ import FileOptionsDialogs from '@/components/FTP/MyDialogs'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { files, setFiles } = useContext(FtpContext);
+  const { files, setFiles, currentFolder, setCurrentFolder, setCurrentFolders } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -117,6 +117,8 @@ function FtpPage() {
 
   const handleDeleteImage = async (file) => {
     const response = await deleteFile(file._id);
+    await deleteFileFromFolder(currentFolder, file);
+
     if (response.ok) {
       let updatedFiles = files.filter((f) => f._id !== file._id);
       updateAllFiles(updatedFiles);
@@ -218,6 +220,16 @@ function FtpPage() {
     setFileTypes(handleFileTypes(files));
   }, [files]);
 
+  useEffect(() => {
+    const getData = async () => {
+      const ftpUser = await getFtpUser(currentUser.displayName);
+      const ftpFolder = await getFolder(ftpUser.main_folder);
+      setCurrentFolders([ftpFolder]);
+      setCurrentFolder(ftpFolder);
+    }
+    getData();
+  }, []);
+
   const updateAllFiles = (updatedFiles) => {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
@@ -311,37 +323,43 @@ function FtpPage() {
                             <span>{formatFileSize(file.length)}</span>
                             <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
                             <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
+                              <DropdownMenuTrigger>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Podgląd</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => renderFile(file.filename)} className='gap-2'><Search /> Preview</DropdownMenuItem>
                                 <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="gap-2">
-                                <FileDown />
-                                <span>Pobierz...</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                  <DropdownMenuSubContent> 
-                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><SquareArrowDown /> Standardowe</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileArchive /> Jako ZIP</DropdownMenuItem>
-                                  </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                              </DropdownMenuSub>
+                                  <DropdownMenuSubTrigger className="gap-2">
+                                    <FileDown />
+                                    <span>Download...</span>
+                                  </DropdownMenuSubTrigger>
+                                  <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                      <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><SquareArrowDown /> Standard</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleDownloadFile(file.filename)} className='gap-2'><FileArchive /> As a ZIP file</DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                  </DropdownMenuPortal>
+                                </DropdownMenuSub>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => handleOpeningDialog(file, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
-                                <DropdownMenuItem onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))} onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))} onClick={() => handleFavoriteFile(file)} className='gap-2'>
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))}
+                                  onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))}
+                                  onClick={() => handleFavoriteFile(file)}
+                                  className='gap-2'>
                                   {file.favorite ?
                                     isHovered.heart ? <HeartOff /> : <Heart color='#ff0000' />
                                     : isHovered.heart ? <Heart color='#ff0000' /> : <Heart color='#ffffff' />
                                   }
-                                  Ulubione
+                                  Favorite
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleOpeningDialog(file, "changeFileName")} className='gap-2'><PencilLine />Zmień nazwę</DropdownMenuItem>
-                                <DropdownMenuItem disabled className='gap-2'><Move />Przenieś...</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOpeningDialog(file, "changeFileName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
+                                <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
+                                <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Usuń</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>

@@ -22,6 +22,11 @@ const FtpFolderSchema = new mongoose.Schema ({
     required: false,
     default: []
   },
+  folders: {
+    type: [String],
+    required: false,
+    default: []
+  },
   uploadDate: {
     type: Date,
     required: true,

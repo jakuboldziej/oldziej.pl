@@ -271,7 +271,8 @@ router.put('/folders/:id', async (req, res) => {
     await FtpFolder.updateOne({ _id: req.params.id }, {
       name: updateFolder.name,
       shared: updateFolder.shared,
-      files: updateFolder.files
+      files: updateFolder.files,
+      folders: updateFolder.folders
     })
 
     res.json({ folder: updateFolder });

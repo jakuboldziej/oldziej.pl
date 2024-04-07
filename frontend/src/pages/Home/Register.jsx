@@ -56,7 +56,7 @@ function Register() {
         }
       });
       const folderRes = await postFolder({
-        name: "Dysk w chmurze",
+        name: "Cloud drive",
         owner: displayName
       });
       await postFtpUser({

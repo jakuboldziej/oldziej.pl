@@ -17,6 +17,9 @@ export const FtpContextProvider = ({ children }) => {
     return storedFolders ? JSON.parse(storedFolders) : null
   })
 
+  const [currentFolder, setCurrentFolder] = useState({ files: [] });
+  const [currentFolders, setCurrentFolders] = useState([]);
+
   const fetchFiles = async (user = currentUser) => {
     const response = await getFiles(user.displayName);
     const filesR = response.files;
@@ -46,7 +49,18 @@ export const FtpContextProvider = ({ children }) => {
     }
   }, []);
 
-  const props = { files, setFiles, fetchFiles, folders, setFolders, fetchFolders }
+  const props = { 
+    files, 
+    setFiles, 
+    fetchFiles,
+    folders, 
+    setFolders, 
+    fetchFolders,
+    currentFolder,
+    setCurrentFolder,
+    currentFolders,
+    setCurrentFolders
+   }
 
   return (
     <FtpContext.Provider value={props}>

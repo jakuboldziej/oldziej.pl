@@ -100,6 +100,10 @@ export const downloadFile = (filename) => {
 
 // Folders
 
+export const openFolder = (foldername) => {
+
+}
+
 export const addFileToFolder = async (folder, file) => {
   folder.files.push(file._id);
   file.folders.push(folder._id);
@@ -110,6 +114,16 @@ export const addFileToFolder = async (folder, file) => {
 export const deleteFileFromFolder = async (folder, file) => {
   folder.files = folder.files.filter((fileId) => fileId !== file._id);
   file.folders = file.folders.filter((folderId) => folderId !== folder._id);
-  const folderRes = await putFolder({ folder: folder });
-  const fileRes = await putFile({ file: file });
+  await putFolder({ folder: folder });
+  await putFile({ file: file });
+}
+
+export const addFolderToFolder = async (folder1, folder2) => {
+  folder1.folders.push(folder2._id);
+  await putFolder({ folder: folder1 });
+}
+
+export const deleteFolderFromFolder = async (folder1, folder2) => {
+  folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
+  await putFolder({ folder: folder1 });
 }

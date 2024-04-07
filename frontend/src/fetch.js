@@ -173,6 +173,7 @@ export const uploadFile = async (data) => {
     body: data,
   });
   const uploadFile = await uploadResponse.json();
+  console.log(uploadFile);
 
   const folderRes = await getFolder(data.get('folder'));
 
@@ -225,7 +226,7 @@ export const postFolder = async (data) => {
     method: "POST",
     body: JSON.stringify({
       name: data.name,
-      owner: data.owner
+      owner: data.owner,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -252,7 +253,7 @@ export const getFolders = async (userDisplayName = null, folderName = null) => {
   
   const response = await fetch(url);
   const data = await response.json();
-  return data;
+  return data.folders;
 }
 
 export const getFolder = async (id) => {
@@ -272,6 +273,7 @@ export const putFolder = async (data) => {
     },
   })
   const folderRes = await response.json();
+  console.log(folderRes);
   return folderRes.folder;
 }
 
