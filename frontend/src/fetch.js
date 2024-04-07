@@ -173,7 +173,6 @@ export const uploadFile = async (data) => {
     body: data,
   });
   const uploadFile = await uploadResponse.json();
-  console.log(uploadFile);
 
   const folderRes = await getFolder(data.get('folder'));
 
@@ -192,8 +191,6 @@ export const uploadFile = async (data) => {
   const ftpFile = await ftpFileRes.json();
 
   addFileToFolder(folderRes, ftpFile.file)
-
-  // add fileid to folder.files
 
   return ftpFile;
 }
@@ -273,7 +270,6 @@ export const putFolder = async (data) => {
     },
   })
   const folderRes = await response.json();
-  console.log(folderRes);
   return folderRes.folder;
 }
 

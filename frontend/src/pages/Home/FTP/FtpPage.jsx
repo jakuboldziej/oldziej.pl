@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFolder, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, putFolder, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -15,7 +15,7 @@ import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename,
 import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import CopyTextButton from '@/components/CopyTextButton'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import { useNavigate } from 'react-router'
@@ -23,7 +23,7 @@ import FileOptionsDialogs from '@/components/FTP/MyDialogs'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { files, setFiles, currentFolder, setCurrentFolder, setCurrentFolders } = useContext(FtpContext);
+  const { files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -220,19 +220,13 @@ function FtpPage() {
     setFileTypes(handleFileTypes(files));
   }, [files]);
 
-  useEffect(() => {
-    const getData = async () => {
-      const ftpUser = await getFtpUser(currentUser.displayName);
-      const ftpFolder = await getFolder(ftpUser.main_folder);
-      setCurrentFolders([ftpFolder]);
-      setCurrentFolder(ftpFolder);
-    }
-    getData();
-  }, []);
-
-  const updateAllFiles = (updatedFiles) => {
+  const updateAllFiles = async (updatedFiles) => {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
+    let updatedFolder = currentFolder;
+    updatedFolder.files = updatedFiles.map((file) => file._id);
+    setCurrentFolder(updatedFolder);
+    await putFolder({ folder: updatedFolder });
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 

@@ -8,7 +8,7 @@ import ShowNewToast from "../MyComponents/ShowNewToast";
 import { FtpContext } from "@/context/FtpContext";
 
 function MyFileCard(props) {
-  const { file, setFileStatus, handleOpeningDialog, updateAllFiles, isHovered, setIsHovered } = props;
+  const { file, setFileStatus, handleOpeningDialog, updateAllFiles, isHovered, setIsHovered, currentFolder } = props;
   const { files } = useContext(FtpContext);
   
   const handleDownloadFile = (filename) => {
@@ -19,6 +19,7 @@ function MyFileCard(props) {
 
   const handleDeleteImage = async (file) => {
     const deleteRes = await deleteFile(file._id);
+    console.log(currentFolder);
     await deleteFileFromFolder(currentFolder, file);
 
     if (deleteRes.ok) {

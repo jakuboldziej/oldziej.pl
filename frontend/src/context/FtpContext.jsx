@@ -1,4 +1,4 @@
-import { getFiles, getFolders, getFtpUsers, putFtpUser } from '@/fetch';
+import { getFiles, getFolder, getFolders, getFtpUser, getFtpUsers, putFtpUser } from '@/fetch';
 import { createContext, useEffect, useState } from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
@@ -8,17 +8,19 @@ export const FtpContextProvider = ({ children }) => {
   const currentUser = useAuthUser();
 
   const [files, setFiles] = useState(() => {
-  const storedFiles = localStorage.getItem('files');
-  return storedFiles ? JSON.parse(storedFiles) : null;
+    const storedFiles = localStorage.getItem('files');
+    return storedFiles ? JSON.parse(storedFiles) : null;
   });
 
   const [folders, setFolders] = useState(() => {
     const storedFolders = localStorage.getItem('folders');
-    return storedFolders ? JSON.parse(storedFolders) : null
+    return storedFolders ? JSON.parse(storedFolders) : null;
   })
 
-  const [currentFolder, setCurrentFolder] = useState({ files: [] });
-  const [currentFolders, setCurrentFolders] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState(() => {
+    const storedFolders = localStorage.getItem('folders');
+    return storedFolders ? JSON.parse(storedFolders)[0] : null;
+  });
 
   const fetchFiles = async (user = currentUser) => {
     const response = await getFiles(user.displayName);
@@ -32,9 +34,13 @@ export const FtpContextProvider = ({ children }) => {
   };
 
   const fetchFolders = async (user = currentUser) => {
-    const response = await getFolders(user.displayName);
-    const foldersR = response.folders;
+    const foldersR = await getFolders(user.displayName);
+
     if (foldersR) {
+      foldersR.map((folder, i) => {
+        if(i === 0) folder.active = true
+        else folder.active = false
+      })
       setFolders(foldersR);
       localStorage.setItem('folders', JSON.stringify(foldersR));
     } else {
@@ -43,24 +49,22 @@ export const FtpContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    if(currentUser) {
+    if (currentUser) {
       fetchFiles();
       fetchFolders();
     }
   }, []);
 
-  const props = { 
-    files, 
-    setFiles, 
+  const props = {
+    files,
+    setFiles,
     fetchFiles,
-    folders, 
-    setFolders, 
+    folders,
+    setFolders,
     fetchFolders,
     currentFolder,
-    setCurrentFolder,
-    currentFolders,
-    setCurrentFolders
-   }
+    setCurrentFolder
+  }
 
   return (
     <FtpContext.Provider value={props}>

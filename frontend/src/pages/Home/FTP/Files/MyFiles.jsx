@@ -3,8 +3,8 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFolders, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
-import { formatElapsedTime, handleSameFilename } from "@/components/FTP/utils";
+import { getFile, getFolder, getFolders, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { addFolderToFolder, formatElapsedTime, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -16,7 +16,7 @@ import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
 
 function MyFiles() {
-  const { files, setFiles, currentFolder, currentFolders } = useContext(FtpContext);
+  const { folders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -98,7 +98,6 @@ function MyFiles() {
       }
       return f;
     });
-    console.log(updatedFiles);
     updateAllFiles(updatedFiles);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
@@ -112,17 +111,21 @@ function MyFiles() {
         name: folderName,
         owner: currentUser.displayName
       }
-      const folder = await postFolder(data);
-      console.log(folder);
+      const folderRes = await postFolder(data);
+      addFolderToFolder(currentFolder, folderRes.folder);
 
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
     }
   }
 
-  const updateAllFiles = (updatedFiles) => {
+  const updateAllFiles = async (updatedFiles) => {
     setFilesShown(updatedFiles);
     setDataShown(updatedFiles)
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
+    let updatedFolder = currentFolder;
+    updatedFolder.files = updatedFiles.map((file) => file._id);
+    setCurrentFolder(updatedFolder);
+    await putFolder({ folder: updatedFolder });
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
@@ -169,17 +172,16 @@ function MyFiles() {
 
   useEffect(() => {
     const getData = async () => {
-      const filePromises = currentFolders[0].files.map(async (fileId) => {
+      const filePromises = currentFolder.files.map(async (fileId) => {
         const fileRes = await getFile(fileId);
         return fileRes;
       })
       const ftpFiles = await Promise.all(filePromises);
-      console.log(ftpFiles);
       ftpFiles.map((file) => file.type = "file");
 
       const ftpFolders = await getFolders(currentUser.displayName);
       ftpFolders && ftpFolders.map((folder) => folder.type = "folder");
-      
+
       ftpFiles.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
@@ -204,7 +206,8 @@ function MyFiles() {
     handleOpeningDialog,
     updateAllFiles,
     isHovered,
-    setIsHovered
+    setIsHovered,
+    currentFolder
   }
 
   return (
@@ -216,10 +219,10 @@ function MyFiles() {
           <div className="folders-path">
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
-                {currentFolders.length > 0 && currentFolders.map((currentFolder) => (
-                  <BreadcrumbItem key={currentFolder._id} className="hover:cursor-pointer">
-                    <BreadcrumbLink>{currentFolder.name}</BreadcrumbLink>
-                    {currentFolders.length > 1 && <BreadcrumbSeparator />}
+                {folders.length > 0 && folders.map((folder) => (
+                  <BreadcrumbItem key={folder._id} className="hover:cursor-pointer">
+                    <BreadcrumbLink>{folder.name}</BreadcrumbLink>
+                    {folders.length > 1 && <BreadcrumbSeparator />}
                   </BreadcrumbItem>
                 ))}
               </BreadcrumbList>
