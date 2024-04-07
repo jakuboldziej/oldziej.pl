@@ -7,9 +7,10 @@ import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 
 function FileOptionsDialogs(props) {
-  const { dialogOpen, setDialogOpen, handleUpdateFile, changingFileName, setChangingFileName } = props;
+  const { dialogOpen, setDialogOpen, handleUpdateFile, handleCreateNewFolder, changingFileName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
   return (
     <>
+      {/* Changing File Name */}
       <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
         <>
           <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
@@ -22,6 +23,7 @@ function FileOptionsDialogs(props) {
         </span>
       </MyDialog>
 
+      {/* Showing File Info */}
       <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.file?.filename}`}>
         <Card>
           <CardHeader>
@@ -43,6 +45,16 @@ function FileOptionsDialogs(props) {
           <span className='text-slate-400'>Data Dodania:</span> <br />
           {new Date(dialogOpen.file?.uploadDate).toLocaleString()}
         </div>
+      </MyDialog>
+
+      {/* Creating folder */}
+      <MyDialog dialogOpen={dialogOpen.createFolder} setDialogOpen={setDialogOpen} title="Create New Folder" footer={
+        <>
+          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, createFolder: false }))} variant='secondary'>Cancel</Button>
+          <Button onClick={handleCreateNewFolder} variant='outline_green'>Create</Button>
+        </>
+      }>
+        <Input required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
       </MyDialog>
     </>
   )

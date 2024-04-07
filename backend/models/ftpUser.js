@@ -12,6 +12,10 @@ const FtpUserSchema = new mongoose.Schema ({
     required: true,
     unique: true
   },
+  main_folder: {
+    type: String,
+    required: true,
+  }
 });
 
 module.exports = ftpConn.model('FtpUser', FtpUserSchema)

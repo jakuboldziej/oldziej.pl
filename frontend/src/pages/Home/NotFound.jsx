@@ -1,16 +1,20 @@
 import NavBar from "@/components/NavBar";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
   document.title = "Oldziej | 404 - Not Found";
   const navigate = useNavigate();
+  
+  const currentUser = useAuthUser();
 
   return (
     <>
-      <NavBar />
-      <div className="notfound-page">
+      {currentUser && <NavBar />}
+      <div className="notfound-page text-white">
         <h1>404 - Not Found</h1>
-        <Link onClick={() => navigate(-1)} className="login100-form-btn">Back</Link>
+        {currentUser ? <Button onClick={() => navigate(-1)} variant="outline_green" className="glow-button-green">Back</Button> : <Button onClick={() => navigate('login')} variant="outline_green" className="glow-button-green">Login</Button>}
       </div>
     </>
   );

@@ -47,6 +47,7 @@ const mergeFtpFile = async (file) => {
   const ftpFileQ = await FtpFile.findOne({ fileId: file._id });
   file.favorite = ftpFileQ.favorite;
   file.lastModified = ftpFileQ.lastModified;
+  file.folders = ftpFileQ.folders;
   return file;
 }
 // merging Files
@@ -58,9 +59,23 @@ const mergeFtpFiles = async (files) => {
     if (ftpFileQ) {
       file.favorite = ftpFileQ.favorite;
       file.lastModified = ftpFileQ.lastModified;
+      file.folders = ftpFileQ.folders;
     }
   })
   return files;
+}
+
+const getFtpUser = async (req, res, next) => {
+  let user;
+  try {
+    const { displayName } = req.params;
+    user = await FtpUser.findOne({ displayName });
+    if (user == null) return res.status(404);
+  } catch (err) {
+    return res.json({message: err.message })
+  }
+  res.user = user;
+  next();
 }
 
 // Files
@@ -116,7 +131,8 @@ router.put('/files/:id', async (req, res) => {
 
     const updateFile = req.body.data.file;
     await FtpFile.updateOne({ fileId: req.params.id }, {
-      favorite: updateFile.favorite
+      favorite: updateFile.favorite,
+      folders: updateFile.folders
     })
 
     if (newName) {
@@ -154,9 +170,9 @@ router.delete('/files/:id', async (req, res) => {
 })
 
 // get one file
-router.get('/files/:filename', async (req, res) => {
+router.get('/files/:id', async (req, res) => {
   try {
-    let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
+    let file = (await bucket.find({ _id: new Types.ObjectId(req.params.id) }).toArray())[0];
     file = await mergeFtpFile(file);
 
     if (!file || file.length === 0) {
@@ -218,6 +234,21 @@ router.get('/folders', async (req, res) => {
   }
 })
 
+// get one folder
+router.get('/folders/:id', async (req, res) => {
+  try {
+    let folder = await FtpFolder.findOne({ _id: req.params.id });
+
+    if (!folder || folder.length === 0) {
+      return res.json({ folder: null })
+    } else {
+      res.json({ folder })
+    }
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+})
+
 // create folder
 router.post('/folders', async (req, res) => {
   const ftpFolder = new FtpFolder({
@@ -225,13 +256,29 @@ router.post('/folders', async (req, res) => {
     owner: req.body.owner,
   });
   try {
-    const newFtpFolder = await ftpFolder.save(); 
+    const newFtpFolder = await ftpFolder.save();
 
     res.json({ folder: newFtpFolder })
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
 })
+
+// update folder
+router.put('/folders/:id', async (req, res) => {
+  try {
+    const updateFolder = req.body.data.folder;
+    await FtpFolder.updateOne({ _id: req.params.id }, {
+      name: updateFolder.name,
+      shared: updateFolder.shared,
+      files: updateFolder.files
+    })
+
+    res.json({ folder: updateFolder });
+  } catch (err) {
+    res.json({ err: err.message });
+  }
+});
 
 // Users
 router.get('/users', async (req, res) => {
@@ -246,23 +293,45 @@ router.get('/users', async (req, res) => {
 router.post('/users', async (req, res) => {
   const user = new FtpUser({
     displayName: req.body.displayName,
-    email: req.body.email
+    email: req.body.email,
+    main_folder: req.body.main_folder
   })
+  console.log(req.body);
   try {
     const newUser = await user.save()
     res.json(newUser)
   } catch (err) {
+    console.log(err);
     res.status(400).json({ message: err.message })
   }
 })
 
-router.get('/users/:displayname', async (req, res) => {
+router.get('/users/:displayName', async (req, res) => {
   try {
-    const users = await FtpUser.find({ displayName: req.params.displayname })
+    const users = await FtpUser.find({ displayName: req.params.displayName })
     res.json(users)
   } catch (err) {
     res.json({ message: err.message })
   }
 })
+
+router.put("/users/:displayName", getFtpUser, async (req, res) => {
+  const { displayName, ...updateData } = req.body;
+  try {
+    const updatedUser = await FtpUser.findByIdAndUpdate(
+      res.user._id,
+      updateData,
+      { new: true }
+    );
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
+
 
 module.exports = router

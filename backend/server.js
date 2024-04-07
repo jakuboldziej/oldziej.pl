@@ -1,6 +1,6 @@
 const dotenv = require('dotenv');
 const path = require('path');
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const express = require("express")
 const mongoose = require("mongoose");
@@ -27,7 +27,7 @@ const ftpConn = mongoose.createConnection(mongoURIFTP);
 
 dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
 dartsConn.once('open', () => console.log('Connected to Darts Database'));
-ftpConn.once('open', () => console.log('Connected to Darts Database'));
+ftpConn.once('open', () => console.log('Connected to Ftp Database'));
 
 module.exports = { dartsConn, ftpConn, mongoURIFTP };
 

@@ -1,6 +1,29 @@
-import { mongodbApiUrl } from "@/fetch";
+import { mongodbApiUrl, putFile, putFolder } from "@/fetch";
 
-export const handleSameFilename = async (file, files) => {
+// Global
+
+export const calcStorageUsage = (files) => {
+  if (!files) return ['0 Bytes', 0];
+  let storageBytesSum = 0;
+  files.map(file => {
+    storageBytesSum += file.length;
+  })
+
+  const totalStorageFromGBToBytes = 100 * 1024 * 1024 * 1024;
+  const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;
+
+  return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
+}
+
+export const formatElapsedTime = (elapsedTime) => {
+  const minutes = Math.floor(elapsedTime / (1000 * 60));
+  const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+  return `${minutes}m ${seconds}s`;
+}
+
+// Files
+
+export const handleSameFilename = (file, files) => {
   const lastDotIndex = file.name.lastIndexOf('.');
   const name = file.name.substring(0, lastDotIndex);
   const ext = file.name.substring(lastDotIndex + 1);
@@ -21,7 +44,7 @@ export const handleSameFilename = async (file, files) => {
   }
 
   return file;
-};
+}
 
 export const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
@@ -34,12 +57,6 @@ export const formatFileSize = (bytes) => {
 
   return `${formatted} ${sizes[i]}`;
 }
-
-export const formatElapsedTime = (elapsedTime) => {
-  const minutes = Math.floor(elapsedTime / (1000 * 60));
-  const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
-  return `${minutes}m ${seconds}s`;
-};
 
 export const handleFileTypes = (files) => {
   const images = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'];
@@ -73,23 +90,26 @@ export const handleFileTypes = (files) => {
   return fileTypes;
 }
 
-export const calcStorageUsage = (files) => {
-  if (!files) return ['0 Bytes', 0];
-  let storageBytesSum = 0;
-  files.map(file => {
-    storageBytesSum += file.length;
-  })
-
-  const totalStorageFromGBToBytes = 100 * 1024 * 1024 * 1024;
-  const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;
-
-  return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
-}
-
 export const renderFile = (filename) => {
   window.open(`${mongodbApiUrl}/ftp/files/render/${filename}`);
 }
 
-export const downloadFile = async (filename) => {
+export const downloadFile = (filename) => {
   window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`;
+}
+
+// Folders
+
+export const addFileToFolder = async (folder, file) => {
+  folder.files.push(file._id);
+  file.folders.push(folder._id);
+  await putFolder({ folder: folder });
+  await putFile({ file: file });
+}
+
+export const deleteFileFromFolder = async (folder, file) => {
+  folder.files = folder.files.filter((fileId) => fileId !== file._id);
+  file.folders = file.folders.filter((folderId) => folderId !== folder._id);
+  const folderRes = await putFolder({ folder: folder });
+  const fileRes = await putFile({ file: file });
 }

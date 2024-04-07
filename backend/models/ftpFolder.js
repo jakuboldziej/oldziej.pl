@@ -10,17 +10,22 @@ const FtpFolderSchema = new mongoose.Schema ({
   owner: {
     type: String,
     required: true,
-    unique: true
+    unique: false
   },
   shared: {
     type: [Number],
     required: false,
     default: [],
   },
-  fileIds: {
+  files: {
     type: [String],
     required: false,
     default: []
+  },
+  uploadDate: {
+    type: Date,
+    required: true,
+    default: Date.now()
   }
 });
 

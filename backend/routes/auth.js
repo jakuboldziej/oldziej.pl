@@ -8,8 +8,8 @@ router.post("/register", (req, res) => {
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({
       email: req.body.email,
+      displayName: req.body.displayName,
       password: hashedPassword,
-      displayName: req.body.displayName
     });
 
     user.save().then((result) => {

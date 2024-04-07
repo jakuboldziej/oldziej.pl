@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
-import { postFolder, registerUser } from "@/fetch";
+import { postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
@@ -35,13 +35,8 @@ function Register() {
     try {
       setIsLoading(true);
 
-      const response = await registerUser({
-        email,
-        displayName,
-        password
-      });
       await postDartsUser({
-        displayName: user.displayName,
+        displayName: displayName,
         gamesPlayed: 0,
         podiums: {
           firstPlace: 0,
@@ -60,23 +55,30 @@ function Register() {
           doors: 0
         }
       });
-      await postFtpUser({
-        displayName: user.displayName,
-        email: user.email
-      });
-      await postFolder({
+      const folderRes = await postFolder({
         name: "Dysk w chmurze",
-        owner: user.displayName
+        owner: displayName
+      });
+      await postFtpUser({
+        displayName: displayName,
+        email: email,
+        main_folder: folderRes.folder._id
+      });
+
+      const userRes = await registerUser({
+        email,
+        displayName,
+        password,
       });
 
       signIn({
         auth: {
-          token: response.token,
+          token: userRes.token,
           type: "Bearer"
         },
         userState: { displayName: displayName }
       });
-  
+
       navigate("/login");
     } catch (err) {
       console.log("Error fetching", err);

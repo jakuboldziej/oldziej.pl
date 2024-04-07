@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, updateFile, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -14,16 +14,16 @@ import { Progress } from '@/components/ui/progress'
 import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile } from '@/components/FTP/utils'
 import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
-import { FilesContext } from '@/context/FilesContext'
+import { FtpContext } from '@/context/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import CopyTextButton from '@/components/CopyTextButton'
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import { useNavigate } from 'react-router'
-import FileOptionsDialogs from '@/components/FTP/FileOptionsDialogs'
+import FileOptionsDialogs from '@/components/FTP/MyDialogs'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { files, setFiles } = useContext(FilesContext);
+  const { files, setFiles } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -89,7 +89,7 @@ function FtpPage() {
 
     try {
       let file = event.target.files[0];
-      file = await handleSameFilename(file, files);
+      file = handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
 
@@ -97,6 +97,7 @@ function FtpPage() {
       formData.append('file', file)
       formData.append('userDisplayName', ftpUser.displayName)
       formData.append('lastModified', file.lastModified)
+      formData.append('folder', ftpUser.main_folder);
 
       const response = await uploadFile(formData);
       setRecentFile(response.file);
@@ -108,9 +109,9 @@ function FtpPage() {
     }
   };
 
-  const handleDownloadFile = async (filename) => {
+  const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
-    await downloadFile(filename);
+    downloadFile(filename);
     setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
@@ -139,7 +140,7 @@ function FtpPage() {
       file: file,
       newFileName: newFileName
     }
-    const updatedFile = await updateFile(data);
+    const updatedFile = await putFile(data);
     const updatedFiles = files.map((f) => {
       if (f.filename === file.filename) {
         f = updatedFile;
@@ -154,7 +155,10 @@ function FtpPage() {
     setIsHovered((prev) => ({ ...prev, heart: false }))
     file.favorite = !file.favorite;
 
-    const updatedFile = await updateFile({ file });
+    if (file.favorite) ShowNewToast(`File ${file.filename}`, "Added to favorites.");
+    else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
+
+    const updatedFile = await putFile({ file });
     const updatedFiles = files.map((f) => {
       if (f.filename === file.filename) {
         f = updatedFile;
@@ -189,7 +193,7 @@ function FtpPage() {
 
   useEffect(() => {
     const updateRecentFiles = async () => {
-      const fileRes = await getFile(recentFile.filename);
+      const fileRes = await getFile(recentFile._id);
 
       if (files) {
         const updatedFiles = [fileRes, ...files]
@@ -343,7 +347,7 @@ function FtpPage() {
                           </div>
                         </div>))
                     ) : (
-                      <div className="flex justify-center w-100 pt-3">
+                      <div className="flex justify-center w-full pt-3">
                         <Loader2 className="h-10 w-10 animate-spin" />
                       </div>
                     )

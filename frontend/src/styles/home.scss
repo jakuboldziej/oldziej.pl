@@ -837,6 +837,15 @@ html {
         width: 192px;
         height: 192px;
 
+        .card-background {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
         .nameplate {
           position: absolute;
           text-align: center;
@@ -879,8 +888,7 @@ html {
 
 // Login/Register/NotFound Page
 .login-page,
-.register-page,
-.notfound-page {
+.register-page {
   a {
     font-family: Poppins-Regular;
     font-size: 14px;

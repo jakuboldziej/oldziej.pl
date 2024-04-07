@@ -1,4 +1,6 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+import { addFileToFolder } from "./components/FTP/utils";
+
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 export const getDartsUsers = async () => {
@@ -108,7 +110,8 @@ export const postFtpUser = async (userData) => {
     method: "POST",
     body: JSON.stringify({
       displayName: userData.displayName,
-      email: userData.email
+      email: userData.email,
+      main_folder: userData.main_folder
     }),
     headers: {
       "Content-Type": "application/json",
@@ -120,6 +123,24 @@ export const getFtpUser = async (uDisplayName) => {
   const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${uDisplayName}`);
   const user = await userResponse.json();
   return user[0];
+}
+
+export const getFtpUsers = async () => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`);
+  const users = await usersResponse.json();
+  return users;
+}
+
+export const putFtpUser = async (userData) => {
+  await fetch(`${mongodbApiUrl}/ftp/users/${userData.displayName}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...userData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 }
 
 // Files
@@ -140,8 +161,8 @@ export const getFiles = async (userDisplayName = null) => {
   return data;
 }
 
-export const getFile = async (filename) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/files/${filename}`);
+export const getFile = async (id) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`);
   const data = await response.json();
   return data.file;
 }
@@ -153,22 +174,27 @@ export const uploadFile = async (data) => {
   });
   const uploadFile = await uploadResponse.json();
 
-  const mainFolder = await getFolders(data.get("userDisplayName"), "Dysk w chmurze");
+  const folderRes = await getFolder(data.get('folder'));
 
-  const ftpFile = await fetch(`${mongodbApiUrl}/ftp/files`, {
+  const ftpFileRes = await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
       fileId: uploadFile.file.id,
       owner: uploadFile.file.metadata.owner,
       favorite: false,
       lastModified: data.get("lastModified"),
-      folders: [mainFolder.folders[0]._id]
     }),
     headers: {
       "Content-Type": "application/json",
     },
   });
-  return await ftpFile.json();
+  const ftpFile = await ftpFileRes.json();
+
+  addFileToFolder(folderRes, ftpFile.file)
+
+  // add fileid to folder.files
+
+  return ftpFile;
 }
 
 export const deleteFile = async (id) => {
@@ -178,7 +204,7 @@ export const deleteFile = async (id) => {
   return await response.json();
 }
 
-export const updateFile = async (data) => {
+export const putFile = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${data.file._id}`, {
     method: "PUT",
     body: JSON.stringify({
@@ -189,8 +215,8 @@ export const updateFile = async (data) => {
       "Content-Type": "application/json",
     },
   })
-  const file = await response.json();
-  return file.file;
+  const fileRes = await response.json();
+  return fileRes.file;
 }
 
 // Folders
@@ -229,6 +255,26 @@ export const getFolders = async (userDisplayName = null, folderName = null) => {
   return data;
 }
 
+export const getFolder = async (id) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`);
+  const data = await response.json();
+  return data.folder;
+}
+
+export const putFolder = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${data.folder._id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      data: data,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+  const folderRes = await response.json();
+  return folderRes.folder;
+}
+
 // Users
 export const loginUser = async (userData) => {
   const response = await fetch(`${mongodbApiUrl}/auth/login`, {
@@ -251,7 +297,7 @@ export const registerUser = async (userData) => {
     body: JSON.stringify({
       email: userData.email,
       displayName: userData.displayName,
-      password: userData.password
+      password: userData.password,
     }),
     headers: {
       "Content-Type": "application/json",

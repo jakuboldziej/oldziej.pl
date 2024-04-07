@@ -1,7 +1,7 @@
 import { ThemeProvider } from '@/components/theme-provider';
 import { DartsGameContextProvider } from './DartsGameContext';
 import { Toaster } from '@/components/ui/sonner';
-import { FilesContextProvider } from './FilesContext';
+import { FtpContextProvider } from './FtpContext';
 import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
 
@@ -17,10 +17,10 @@ export const CombinedContextProvider = ({ children }) => {
     <AuthProvider store={store}>
       <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
         <DartsGameContextProvider>
-          <FilesContextProvider>
+          <FtpContextProvider>
             {children}
             <Toaster />
-          </FilesContextProvider>
+          </FtpContextProvider>
         </DartsGameContextProvider>
       </ThemeProvider>
     </AuthProvider>
