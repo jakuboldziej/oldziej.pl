@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFolder, getFolders, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
 import { addFolderToFolder, formatElapsedTime, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
@@ -22,7 +22,6 @@ function MyFiles() {
   const navigate = useNavigate();
 
   const [recentFile, setRecentFile] = useState(null);
-  const [filesShown, setFilesShown] = useState([]);
   const [dataShown, setDataShown] = useState([])
   const [elapsedTime, setElapsedTime] = useState(0);
 
@@ -112,15 +111,25 @@ function MyFiles() {
         owner: currentUser.displayName
       }
       const folderRes = await postFolder(data);
-      addFolderToFolder(currentFolder, folderRes.folder);
-
+      const updatedCurrentFolder = addFolderToFolder(currentFolder, folderRes.folder);
+      const updatedData = dataShown.map((data) => {
+        if (data._id === updatedCurrentFolder) {
+          data = updatedCurrentFolder;
+        }
+      });
+      // updateAllFiles(updatedData);
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
     }
   }
 
+  const handleBreadcrumbClick = (folder, index) => {
+    if (index !== 0) {
+      // View folder
+    }
+  }
+
   const updateAllFiles = async (updatedFiles) => {
-    setFilesShown(updatedFiles);
-    setDataShown(updatedFiles)
+    setDataShown(updatedFiles);
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     let updatedFolder = currentFolder;
     updatedFolder.files = updatedFiles.map((file) => file._id);
@@ -179,13 +188,17 @@ function MyFiles() {
       const ftpFiles = await Promise.all(filePromises);
       ftpFiles.map((file) => file.type = "file");
 
-      const ftpFolders = await getFolders(currentUser.displayName);
-      ftpFolders && ftpFolders.map((folder) => folder.type = "folder");
+      const folderPromises = currentFolder.folders.map(async (folderId) => {
+        return await getFolder(folderId);
+
+      })
+      const currentFolderFolders = await Promise.all(folderPromises);
+      currentFolderFolders && currentFolderFolders.map((folder) => folder.type = "folder");
 
       ftpFiles.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
-      setDataShown([...ftpFolders, ...ftpFiles]);
+      setDataShown([...currentFolderFolders, ...ftpFiles]);
     }
     getData();
   }, []);
@@ -207,7 +220,8 @@ function MyFiles() {
     updateAllFiles,
     isHovered,
     setIsHovered,
-    currentFolder
+    currentFolder,
+    setCurrentFolder
   }
 
   return (
@@ -219,11 +233,14 @@ function MyFiles() {
           <div className="folders-path">
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
-                {folders.length > 0 && folders.map((folder) => (
-                  <BreadcrumbItem key={folder._id} className="hover:cursor-pointer">
-                    <BreadcrumbLink>{folder.name}</BreadcrumbLink>
-                    {folders.length > 1 && <BreadcrumbSeparator />}
-                  </BreadcrumbItem>
+                {folders.length > 0 && folders.map((folder, i) => (
+                  folder.active ? (
+                    <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder, i)} className="hover:cursor-pointer">
+                      <BreadcrumbLink>{folder.name}</BreadcrumbLink>
+                      {folders.length > 1 && <BreadcrumbSeparator />}
+                    </BreadcrumbItem>
+                  ) : null
+
                 ))}
               </BreadcrumbList>
             </Breadcrumb>

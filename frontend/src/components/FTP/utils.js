@@ -98,10 +98,14 @@ export const downloadFile = (filename) => {
   window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`;
 }
 
+export const downloadFolder = (filename) => {
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`;
+}
+
 // Folders
 
 export const openFolder = (foldername) => {
-
+  console.log("openFolder");
 }
 
 export const addFileToFolder = async (folder, file) => {
@@ -120,7 +124,8 @@ export const deleteFileFromFolder = async (folder, file) => {
 
 export const addFolderToFolder = async (folder1, folder2) => {
   folder1.folders.push(folder2._id);
-  await putFolder({ folder: folder1 });
+  const response = await putFolder({ folder: folder1 });
+  return response;
 }
 
 export const deleteFolderFromFolder = async (folder1, folder2) => {

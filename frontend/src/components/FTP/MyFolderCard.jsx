@@ -2,13 +2,33 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
 
-import { openFolder } from "./utils";
+import { downloadFolder } from "./utils";
 
 function MyFolderCard(props) {
-  const { folder, handleOpeningDialog, isHovered, setIsHovered } = props;
+  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder } = props;
+
+  const handleDownloadFile = (foldername) => {
+    // setFileStatus((prev) => ({ ...prev, downloading: filename }));
+    downloadFolder(foldername);
+    // setFileStatus((prev) => ({ ...prev, downloading: false }));
+  }
+
+  const handleShareLink = () => {
+
+  }
+
+  const handleShareFolder = () => {
+
+  }
+
+  const openFolder = (folder) => {
+    setCurrentFolder(folder);
+    // updateAllFiles
+  }
+
 
   return (
-    <Card onDoubleClick={() => openFolder(folder.filename)} key={folder._id} className="card select-none relative flex justify-center items-center" title={folder.filename}>
+    <Card onDoubleClick={() => openFolder(folder)} key={folder._id} className="card select-none relative flex justify-center items-center" title={folder.filename}>
       <CardContent>
         <Folder width={100} height={100} />
         <div className="nameplate truncate ...">
@@ -33,8 +53,8 @@ function MyFolderCard(props) {
               </DropdownMenuPortal>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className='gap-2'><Link />Share link</DropdownMenuItem>
-            <DropdownMenuItem className='gap-2'><FolderSymlink />Share folder</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleShareLink(folder.filename)} className='gap-2'><Link />Share link</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleShareFolder(folder.filename)} className='gap-2'><FolderSymlink />Share folder</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleOpeningDialog(folder, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
             <DropdownMenuItem

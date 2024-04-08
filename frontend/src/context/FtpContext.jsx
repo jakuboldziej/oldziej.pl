@@ -1,4 +1,4 @@
-import { getFiles, getFolder, getFolders, getFtpUser, getFtpUsers, putFtpUser } from '@/fetch';
+import { getFiles, getFolders } from '@/fetch';
 import { createContext, useEffect, useState } from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
