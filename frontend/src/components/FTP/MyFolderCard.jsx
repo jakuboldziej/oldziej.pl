@@ -5,7 +5,7 @@ import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareA
 import { downloadFolder } from "./utils";
 
 function MyFolderCard(props) {
-  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder } = props;
+  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder, updateAllFiles } = props;
 
   const handleDownloadFile = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -22,8 +22,9 @@ function MyFolderCard(props) {
   }
 
   const openFolder = (folder) => {
-    setCurrentFolder(folder);
-    // updateAllFiles
+    // setCurrentFolder(folder);
+    console.log(folder);
+    // updateAllFiles()
   }
 
 

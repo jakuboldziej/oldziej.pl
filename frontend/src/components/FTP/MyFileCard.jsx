@@ -3,13 +3,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal
 import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video, Files } from 'lucide-react';
 import { deleteFileFromFolder, downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
 import { deleteFile, mongodbApiUrl, putFile } from "@/fetch";
-import { useContext } from "react";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { FtpContext } from "@/context/FtpContext";
 
 function MyFileCard(props) {
-  const { file, setFileStatus, handleOpeningDialog, updateAllFiles, isHovered, setIsHovered, currentFolder } = props;
-  const { files } = useContext(FtpContext);
+  const { file, dataShown, setFileStatus, handleOpeningDialog, updateAllFiles, isHovered, setIsHovered, currentFolder } = props;
   
   const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -19,11 +16,11 @@ function MyFileCard(props) {
 
   const handleDeleteImage = async (file) => {
     const deleteRes = await deleteFile(file._id);
-    console.log(currentFolder);
     await deleteFileFromFolder(currentFolder, file);
 
     if (deleteRes.ok) {
-      let updatedFiles = files.filter((f) => f._id !== file._id);
+      let updatedFiles = dataShown.filter((f) => f._id !== file._id);
+      if (updatedFiles.length === 0) updatedFiles = null;
       updateAllFiles(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
@@ -37,11 +34,11 @@ function MyFileCard(props) {
     else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
 
     const updatedFile = await putFile({ file });
-    const updatedFiles = files.map((f) => {
-      if (f.filename === file.filename) {
-        f = updatedFile;
+    const updatedFiles = dataShown.map((data) => {
+      if (data._id === file._id) {
+        data = updatedFile;
       }
-      return f;
+      return data;
     });
     updateAllFiles(updatedFiles);
   }

@@ -16,13 +16,13 @@ import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
 
 function MyFiles() {
-  const { folders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
 
   const [recentFile, setRecentFile] = useState(null);
-  const [dataShown, setDataShown] = useState([])
+  const [dataShown, setDataShown] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const [dialogOpen, setDialogOpen] = useState({
@@ -51,7 +51,7 @@ function MyFiles() {
 
     try {
       let file = event.target.files[0];
-      file = handleSameFilename(file, files);
+      file = handleSameFilename(file, currentFolder.files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
 
@@ -69,7 +69,6 @@ function MyFiles() {
       event.target.value = "";
       setFileStatus((prev) => ({ ...prev, uploading: false, uploaded: true }));
     }
-
   }
 
   const handleOpeningDialog = (file, action) => {
@@ -91,13 +90,13 @@ function MyFiles() {
       newFileName: newFileName
     }
     const updatedFile = await putFile(data);
-    const updatedFiles = files.map((f) => {
-      if (f.filename === file.filename) {
-        f = updatedFile;
+    const updatedData = dataShown.map((data) => {
+      if (data._id === file._id) {
+        data = updatedFile;
       }
-      return f;
+      return data;
     });
-    updateAllFiles(updatedFiles);
+    updateAllFiles(updatedData);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
@@ -112,12 +111,16 @@ function MyFiles() {
       }
       const folderRes = await postFolder(data);
       const updatedCurrentFolder = addFolderToFolder(currentFolder, folderRes.folder);
-      const updatedData = dataShown.map((data) => {
-        if (data._id === updatedCurrentFolder) {
-          data = updatedCurrentFolder;
-        }
-      });
-      // updateAllFiles(updatedData);
+      if (dataShown) {
+        const updatedData = dataShown.map((data) => {
+          if (data._id === updatedCurrentFolder) {
+            data = updatedCurrentFolder;
+          }
+        });
+        updateAllFiles(updatedData);
+      } else {
+        updateAllFiles([folderRes]);
+      }
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
     }
   }
@@ -128,22 +131,40 @@ function MyFiles() {
     }
   }
 
-  const updateAllFiles = async (updatedFiles) => {
-    setDataShown(updatedFiles);
-    setFiles(updatedFiles.length === 0 ? null : updatedFiles);
+  const updateAllFiles = async (updatedData) => {
+    setDataShown(updatedData);
     let updatedFolder = currentFolder;
-    updatedFolder.files = updatedFiles.map((file) => file._id);
+    if (updatedData) {
+      const dataFiles = updatedData.filter((data) => data.type === "file");
+      const dataFolders = updatedData.filter((data) => data.type === "folder");
+      updatedFolder.files = dataFiles.map((data) => data._id);
+      updatedFolder.folders = dataFolders.map((data) => data._id);
+    }
     setCurrentFolder(updatedFolder);
     await putFolder({ folder: updatedFolder });
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
+
+    setFolders(() => {
+      return folders.map((folder) => {
+        if (folder._id === updatedFolder._id) {
+          folder = updatedFolder;
+        }
+        return folder;
+      })
+    })
+    localStorage.setItem('folders', JSON.stringify(folders));
+    // setFiles(() => {
+      // return files.map((file) => {
+      // })
+    // })
+    // localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   useEffect(() => {
     const updateRecentFiles = async () => {
       const fileRes = await getFile(recentFile._id);
 
-      if (files) {
-        const updatedFiles = [fileRes, ...files]
+      if (dataShown) {
+        const updatedFiles = [...dataShown, fileRes];
         updateAllFiles(updatedFiles);
       }
       else {
@@ -182,25 +203,23 @@ function MyFiles() {
   useEffect(() => {
     const getData = async () => {
       const filePromises = currentFolder.files.map(async (fileId) => {
-        const fileRes = await getFile(fileId);
-        return fileRes;
+        return await getFile(fileId);
       })
       const ftpFiles = await Promise.all(filePromises);
-      ftpFiles.map((file) => file.type = "file");
 
       const folderPromises = currentFolder.folders.map(async (folderId) => {
         return await getFolder(folderId);
-
       })
+
       const currentFolderFolders = await Promise.all(folderPromises);
       currentFolderFolders && currentFolderFolders.map((folder) => folder.type = "folder");
 
       ftpFiles.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
-      setDataShown([...currentFolderFolders, ...ftpFiles]);
+      if ([...currentFolderFolders, ...ftpFiles].length !== 0) setDataShown([...currentFolderFolders, ...ftpFiles]);
     }
-    getData();
+    if (currentFolder) getData();
   }, []);
 
   const myDialogsProps = {
@@ -221,7 +240,8 @@ function MyFiles() {
     isHovered,
     setIsHovered,
     currentFolder,
-    setCurrentFolder
+    setCurrentFolder,
+    dataShown
   }
 
   return (
@@ -240,7 +260,6 @@ function MyFiles() {
                       {folders.length > 1 && <BreadcrumbSeparator />}
                     </BreadcrumbItem>
                   ) : null
-
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
@@ -248,13 +267,13 @@ function MyFiles() {
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <div className="files">
-                {files ? (
+                {dataShown !== null ? (
                   dataShown.length > 0 ? (
-                    dataShown.map((file) => (
-                      file.type == "file" ? (
-                        <MyFileCard key={file._id} {...cardProps} file={file} />
+                    dataShown.map((data) => (
+                      data.type == "file" ? (
+                        <MyFileCard key={data._id} {...cardProps} file={data} />
                       ) : (
-                        <MyFolderCard key={file._id} {...cardProps} folder={file} />
+                        <MyFolderCard key={data._id} {...cardProps} folder={data} />
                       )
                     ))
                   ) : (
@@ -266,6 +285,7 @@ function MyFiles() {
                   <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center w-100 pt-12'>
                     No Files...
                     <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
+                    Or Right click 
                   </div>
                 )}
               </div>

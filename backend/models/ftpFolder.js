@@ -31,6 +31,11 @@ const FtpFolderSchema = new mongoose.Schema ({
     type: Date,
     required: true,
     default: Date.now()
+  },
+  type: {
+    type: String,
+    required: false,
+    default: "folder"
   }
 });
 

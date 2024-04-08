@@ -23,6 +23,11 @@ const FtpFileSchema = new mongoose.Schema ({
     type: Array,
     required: true,
     default: []
+  },
+  type: {
+    type: String,
+    required: false,
+    default: "file"
   }
 });
 

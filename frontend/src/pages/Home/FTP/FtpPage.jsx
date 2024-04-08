@@ -23,7 +23,7 @@ import FileOptionsDialogs from '@/components/FTP/MyDialogs'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -198,7 +198,8 @@ function FtpPage() {
       const fileRes = await getFile(recentFile._id);
 
       if (files) {
-        const updatedFiles = [fileRes, ...files]
+        const updatedFiles = [fileRes, ...files];
+
         updateAllFiles(updatedFiles);
       }
       else {
@@ -216,6 +217,7 @@ function FtpPage() {
       files.sort((a, b) => {
         return new Date(b.uploadDate) - new Date(a.uploadDate);
       })
+      setFiles(files);
     }
     setFileTypes(handleFileTypes(files));
   }, [files]);
@@ -224,10 +226,21 @@ function FtpPage() {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     let updatedFolder = currentFolder;
-    updatedFolder.files = updatedFiles.map((file) => file._id);
+    const dataFiles = updatedFiles.filter((data) => data.type == "file");
+    updatedFolder.files = dataFiles.map((data) => data._id);
     setCurrentFolder(updatedFolder);
     await putFolder({ folder: updatedFolder });
     localStorage.setItem('files', JSON.stringify(updatedFiles));
+    
+    setFolders(() => {
+      return folders.map((folder) => {
+        if (folder._id === updatedFolder._id) {
+          folder = updatedFolder;
+        }
+        return folder;
+      })
+    })
+    localStorage.setItem('folders', JSON.stringify(folders));
   }
 
   const fileOptionsDialogsProps = {

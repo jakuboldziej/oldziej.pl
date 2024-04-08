@@ -48,6 +48,7 @@ const mergeFtpFile = async (file) => {
   file.favorite = ftpFileQ.favorite;
   file.lastModified = ftpFileQ.lastModified;
   file.folders = ftpFileQ.folders;
+  file.type = ftpFileQ.type;
   return file;
 }
 // merging Files
@@ -60,6 +61,7 @@ const mergeFtpFiles = async (files) => {
       file.favorite = ftpFileQ.favorite;
       file.lastModified = ftpFileQ.lastModified;
       file.folders = ftpFileQ.folders;
+      file.type = ftpFileQ.type;
     }
   })
   return files;
@@ -297,12 +299,10 @@ router.post('/users', async (req, res) => {
     email: req.body.email,
     main_folder: req.body.main_folder
   })
-  console.log(req.body);
   try {
     const newUser = await user.save()
     res.json(newUser)
   } catch (err) {
-    console.log(err);
     res.status(400).json({ message: err.message })
   }
 })
