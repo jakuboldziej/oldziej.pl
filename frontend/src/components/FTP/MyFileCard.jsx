@@ -24,7 +24,6 @@ function MyFileCard(props) {
     if (deleteRes.ok) {
       let updatedFiles = dataShown.filter((f) => f._id !== file._id);
       if (updatedFiles.length === 0) updatedFiles = null;
-      console.log(updatedFiles);
       updateAllFiles(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
@@ -48,7 +47,7 @@ function MyFileCard(props) {
   }
 
   return (
-    <Card onDoubleClick={() => renderFile(file.filename)} key={file._id} className="card select-none relative flex justify-center items-center" title={file.filename}>
+    <Card onDoubleClick={() => renderFile(file.filename)} className="card select-none relative flex justify-center items-center" title={file.filename}>
       <CardContent>
         {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText width={100} height={100} /> : (
           handleFileTypes([file]).fileVideos.length > 0 ? <Video width={100} height={100} /> : (

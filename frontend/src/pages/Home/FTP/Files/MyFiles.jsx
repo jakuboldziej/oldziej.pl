@@ -123,7 +123,7 @@ function MyFiles() {
     }
   }
 
-  const handleBreadcrumbClick = (folder, index) => {
+  const handleBreadcrumbClick = (folder) => {
     if (folder.name !== currentFolder.name) {
       handleActiveFolders(folder, "backward");
     }
@@ -137,9 +137,12 @@ function MyFiles() {
       if (currentFolder._id !== folder._id) {
         for (let i = updatedActiveFolders.length - 1; i >= 0; i--) {
           const currentActiveFolder = updatedActiveFolders[i];
+          if (currentActiveFolder._id === folder._id) {
+            break;
+          }
+            
           if (currentActiveFolder._id !== folder._id) {
             updatedActiveFolders.splice(i, 1);
-            // usuwa wszystkie poprzednie też
           }
         }
         console.log(updatedActiveFolders);
@@ -174,17 +177,25 @@ function MyFiles() {
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
+    console.log(updatedData, dataFiles, files);
     let updatedFiles;
     if (files) {
       // updating files
-      updatedFiles = files.map((file) => {
-        if (dataFiles.length > 0) {
-          const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
-          return correspondingFile;
-        } else {
-          return null;
-        }
-      });
+      if (dataFiles) {
+        updatedFiles = files.map((file) => {
+          if (dataFiles.length > 0 || dataFiles) {
+            const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
+            console.log(correspondingFile);
+            return correspondingFile;
+          } else {
+            return null;
+          }
+        });
+      } else {
+        updatedFiles = [];
+      }
+
+      console.log(updatedFiles);
 
       updatedFiles = updatedFiles.filter((file) => file !== null);
       updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
@@ -197,7 +208,7 @@ function MyFiles() {
   }
 
   useEffect(() => {
-    const updateRecentFiles = async () => {
+    const updateDataShown = async () => {
       const fileRes = await getFile(recentFile._id);
 
       if (dataShown) {
@@ -210,7 +221,7 @@ function MyFiles() {
 
       setRecentFile(null);
     }
-    if (recentFile) updateRecentFiles();
+    if (recentFile) updateDataShown();
 
   }, [recentFile]);
 
@@ -279,9 +290,9 @@ function MyFiles() {
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
                 {activeFolders && activeFolders.map((folder, i) => (
-                  <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder, i)} className="hover:cursor-pointer">
-                    <BreadcrumbLink>{folder.name}</BreadcrumbLink>
-                    {folders.length > 1 && <BreadcrumbSeparator />}
+                  <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
+                    <BreadcrumbLink className="text-base">{folder.name}</BreadcrumbLink>
+                    {folders.length > 1 && i !== activeFolders.length - 1 && <BreadcrumbSeparator />}
                   </BreadcrumbItem>
                 ))}
               </BreadcrumbList>

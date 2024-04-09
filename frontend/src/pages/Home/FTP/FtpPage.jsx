@@ -202,7 +202,6 @@ function FtpPage() {
 
       if (files) {
         const updatedFiles = [fileRes, ...files];
-
         updateAllFiles(updatedFiles);
       }
       else {
