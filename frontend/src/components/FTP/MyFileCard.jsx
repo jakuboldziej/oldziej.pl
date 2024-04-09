@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video, Files } from 'lucide-react';
 import { deleteFileFromFolder, downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
-import { deleteFile, mongodbApiUrl, putFile } from "@/fetch";
+import { deleteFile, getFolder, mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function MyFileCard(props) {
@@ -14,13 +14,17 @@ function MyFileCard(props) {
     setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
-  const handleDeleteImage = async (file) => {
+  const handleDeleteFile = async (file) => {
     const deleteRes = await deleteFile(file._id);
-    await deleteFileFromFolder(currentFolder, file);
+    file.folders.map(async (folderId) => {
+      const folder = await getFolder(folderId);
+      await deleteFileFromFolder(folder, file);
+    })
 
     if (deleteRes.ok) {
       let updatedFiles = dataShown.filter((f) => f._id !== file._id);
       if (updatedFiles.length === 0) updatedFiles = null;
+      console.log(updatedFiles);
       updateAllFiles(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
@@ -93,7 +97,7 @@ function MyFileCard(props) {
             <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDeleteFile(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardContent>

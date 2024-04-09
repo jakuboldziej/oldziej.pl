@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, putFolder, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFolder, getFtpUser, mongodbApiUrl, putFile, putFolder, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -115,11 +115,14 @@ function FtpPage() {
     setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
-  const handleDeleteImage = async (file) => {
-    const response = await deleteFile(file._id);
-    await deleteFileFromFolder(currentFolder, file);
+  const handleDeleteFile = async (file) => {
+    const deleteRes = await deleteFile(file._id);
+    file.folders.map(async (folderId) => {
+      const folder = await getFolder(folderId);
+      await deleteFileFromFolder(folder, file);
+    })
 
-    if (response.ok) {
+    if (deleteRes.ok) {
       let updatedFiles = files.filter((f) => f._id !== file._id);
       updateAllFiles(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
@@ -366,7 +369,7 @@ function FtpPage() {
                                 <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
                                 <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleDeleteImage(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDeleteFile(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>

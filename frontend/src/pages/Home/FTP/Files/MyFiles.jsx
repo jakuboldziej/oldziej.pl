@@ -51,7 +51,7 @@ function MyFiles() {
 
     try {
       let file = event.target.files[0];
-      file = handleSameFilename(file, currentFolder.files);
+      if(files) file = handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
 
@@ -129,11 +129,11 @@ function MyFiles() {
   }
 
   const updateAllFiles = async (updatedData) => {
-    console.log(updatedData);
     setDataShown(updatedData);
     let updatedFolder = currentFolder;
+    let dataFiles;
     if (updatedData) {
-      const dataFiles = updatedData.filter((data) => data.type === "file");
+      dataFiles = updatedData.filter((data) => data.type === "file");
       const dataFolders = updatedData.filter((data) => data.type === "folder");
       updatedFolder.files = dataFiles.map((data) => data._id);
       updatedFolder.folders = dataFolders.map((data) => data._id);
@@ -149,14 +149,23 @@ function MyFiles() {
     })
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
-    // files.map((file) => {
-    //   console.log(file);
-    // })
-    // setFiles(() => {
-      // return files.map((file) => {
-      // })
-    // })
-    // localStorage.setItem('files', JSON.stringify(updatedFiles));
+    console.log(dataFiles, files, updatedData);
+    if (dataFiles.length > 0 && files) {
+      const updatedFiles = files.map((file) => {
+        const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
+        return correspondingFile;
+      });
+
+      console.log(updatedFiles);
+      setFiles(updatedFiles);
+      localStorage.setItem('files', JSON.stringify(updatedFiles));
+    } else if (dataFiles.length > 0 && !files) {
+      // adding first file
+      setFiles(dataFiles);
+      localStorage.setItem('files', JSON.stringify(dataFiles));
+    } else if (dataFiles.length === 0 && files) {
+      // deleting last file
+    }
   }
 
   useEffect(() => {
@@ -285,7 +294,7 @@ function MyFiles() {
                   <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center w-100 pt-12'>
                     No Files...
                     <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
-                    Or Right click 
+                    Or Right click
                   </div>
                 )}
               </div>
