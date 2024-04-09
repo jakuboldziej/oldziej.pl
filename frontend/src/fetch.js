@@ -122,7 +122,7 @@ export const postFtpUser = async (userData) => {
 export const getFtpUser = async (uDisplayName) => {
   const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${uDisplayName}`);
   const user = await userResponse.json();
-  return user[0];
+  return user;
 }
 
 export const getFtpUsers = async () => {

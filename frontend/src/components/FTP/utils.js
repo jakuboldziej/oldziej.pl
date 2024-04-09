@@ -1,4 +1,4 @@
-import { mongodbApiUrl, putFile, putFolder } from "@/fetch";
+import { getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/fetch";
 
 // Global
 
@@ -104,10 +104,6 @@ export const downloadFolder = (filename) => {
 
 // Folders
 
-export const openFolder = (foldername) => {
-  console.log("openFolder");
-}
-
 export const addFileToFolder = async (folder, file) => {
   folder.files.push(file._id);
   file.folders.push(folder._id);
@@ -131,4 +127,25 @@ export const addFolderToFolder = async (folder1, folder2) => {
 export const deleteFolderFromFolder = async (folder1, folder2) => {
   folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
   await putFolder({ folder: folder1 });
+}
+
+export const handleDataShown = async (folder) => {
+  const filePromises = folder.files.map(async (fileId) => {
+    return await getFile(fileId);
+  })
+  const ftpFiles = await Promise.all(filePromises);
+  ftpFiles.sort((a, b) => {
+    return new Date(b.uploadDate) - new Date(a.uploadDate);
+  })
+  
+  const folderPromises = folder.folders.map(async (folderId) => {
+    return await getFolder(folderId);
+  })
+  const currentFolderFolders = await Promise.all(folderPromises);
+  currentFolderFolders && currentFolderFolders.map((folder) => {
+    folder.type = "folder"
+  });
+  
+  const updatedData = [...currentFolderFolders, ...ftpFiles];
+  return updatedData.length > 0 ? updatedData : null;
 }

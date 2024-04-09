@@ -309,8 +309,8 @@ router.post('/users', async (req, res) => {
 
 router.get('/users/:displayName', async (req, res) => {
   try {
-    const users = await FtpUser.find({ displayName: req.params.displayName })
-    res.json(users)
+    const user = await FtpUser.findOne({ displayName: req.params.displayName })
+    res.json(user)
   } catch (err) {
     res.json({ message: err.message })
   }

@@ -1,11 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
-
-import { downloadFolder } from "./utils";
+import { downloadFolder, handleDataShown } from "./utils";
 
 function MyFolderCard(props) {
-  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder, updateAllFiles } = props;
+  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder, setDataShown, handleActiveFolders } = props;
 
   const handleDownloadFile = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -21,10 +20,12 @@ function MyFolderCard(props) {
 
   }
 
-  const openFolder = (folder) => {
-    // setCurrentFolder(folder);
-    console.log(folder);
-    // updateAllFiles()
+  const openFolder = async (folder) => {
+    handleActiveFolders(folder, "forward");
+    
+    const updatedDataShown = await handleDataShown(folder);
+    setDataShown(updatedDataShown);
+    setCurrentFolder(folder);
   }
 
 

@@ -4,7 +4,7 @@ import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFolderToFolder, formatElapsedTime, handleSameFilename } from "@/components/FTP/utils";
+import { addFolderToFolder, calcStorageUsage, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -24,6 +24,7 @@ function MyFiles() {
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [activeFolders, setActiveFolders] = useState([currentFolder]);
 
   const [dialogOpen, setDialogOpen] = useState({
     file: null,
@@ -51,7 +52,7 @@ function MyFiles() {
 
     try {
       let file = event.target.files[0];
-      if(files) file = handleSameFilename(file, files);
+      if (files) file = handleSameFilename(file, files);
 
       const ftpUser = await getFtpUser(currentUser.displayName);
 
@@ -123,8 +124,31 @@ function MyFiles() {
   }
 
   const handleBreadcrumbClick = (folder, index) => {
-    if (index !== 0) {
-      // View folder
+    if (folder.name !== currentFolder.name) {
+      handleActiveFolders(folder, "backward");
+    }
+  }
+
+  const handleActiveFolders = async (folder, action) => {
+    if (action === "forward") {
+      setActiveFolders((prev) => [...prev, folder]);
+    } else if (action === "backward") {
+      let updatedActiveFolders = [...activeFolders];
+      if (currentFolder._id !== folder._id) {
+        for (let i = updatedActiveFolders.length - 1; i >= 0; i--) {
+          const currentActiveFolder = updatedActiveFolders[i];
+          if (currentActiveFolder._id !== folder._id) {
+            updatedActiveFolders.splice(i, 1);
+            // usuwa wszystkie poprzednie też
+          }
+        }
+        console.log(updatedActiveFolders);
+        setActiveFolders(updatedActiveFolders);
+      }
+
+      setCurrentFolder(folder);
+      const updatedDataShown = await handleDataShown(folder);
+      setDataShown(updatedDataShown);
     }
   }
 
@@ -149,22 +173,26 @@ function MyFiles() {
     })
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
-    console.log(dataFiles, files, updatedData);
-    if (dataFiles.length > 0 && files) {
-      const updatedFiles = files.map((file) => {
-        const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
-        return correspondingFile;
+
+    let updatedFiles;
+    if (files) {
+      // updating files
+      updatedFiles = files.map((file) => {
+        if (dataFiles.length > 0) {
+          const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
+          return correspondingFile;
+        } else {
+          return null;
+        }
       });
 
-      console.log(updatedFiles);
+      updatedFiles = updatedFiles.filter((file) => file !== null);
+      updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
       setFiles(updatedFiles);
       localStorage.setItem('files', JSON.stringify(updatedFiles));
-    } else if (dataFiles.length > 0 && !files) {
-      // adding first file
+    } else if (!files) {
       setFiles(dataFiles);
       localStorage.setItem('files', JSON.stringify(dataFiles));
-    } else if (dataFiles.length === 0 && files) {
-      // deleting last file
     }
   }
 
@@ -211,22 +239,8 @@ function MyFiles() {
 
   useEffect(() => {
     const getData = async () => {
-      const filePromises = currentFolder.files.map(async (fileId) => {
-        return await getFile(fileId);
-      })
-      const ftpFiles = await Promise.all(filePromises);
-
-      const folderPromises = currentFolder.folders.map(async (folderId) => {
-        return await getFolder(folderId);
-      })
-
-      const currentFolderFolders = await Promise.all(folderPromises);
-      currentFolderFolders && currentFolderFolders.map((folder) => folder.type = "folder");
-
-      ftpFiles.sort((a, b) => {
-        return new Date(b.uploadDate) - new Date(a.uploadDate);
-      })
-      if ([...currentFolderFolders, ...ftpFiles].length !== 0) setDataShown([...currentFolderFolders, ...ftpFiles]);
+      const updatedDataShown = await handleDataShown(currentFolder);
+      setDataShown(updatedDataShown);
     }
     if (currentFolder) getData();
   }, []);
@@ -250,7 +264,9 @@ function MyFiles() {
     setIsHovered,
     currentFolder,
     setCurrentFolder,
-    dataShown
+    dataShown,
+    setDataShown,
+    handleActiveFolders
   }
 
   return (
@@ -262,13 +278,11 @@ function MyFiles() {
           <div className="folders-path">
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
-                {folders.length > 0 && folders.map((folder, i) => (
-                  folder.active ? (
-                    <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder, i)} className="hover:cursor-pointer">
-                      <BreadcrumbLink>{folder.name}</BreadcrumbLink>
-                      {folders.length > 1 && <BreadcrumbSeparator />}
-                    </BreadcrumbItem>
-                  ) : null
+                {activeFolders && activeFolders.map((folder, i) => (
+                  <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder, i)} className="hover:cursor-pointer">
+                    <BreadcrumbLink>{folder.name}</BreadcrumbLink>
+                    {folders.length > 1 && <BreadcrumbSeparator />}
+                  </BreadcrumbItem>
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
@@ -294,7 +308,7 @@ function MyFiles() {
                   <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center w-100 pt-12'>
                     No Files...
                     <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
-                    Or Right click
+                    Or Right click here
                   </div>
                 )}
               </div>

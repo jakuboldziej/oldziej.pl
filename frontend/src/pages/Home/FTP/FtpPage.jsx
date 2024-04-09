@@ -226,14 +226,13 @@ function FtpPage() {
   }, [files]);
 
   const updateAllFiles = async (updatedFiles) => {
+    console.log(updatedFiles);
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
-    setFiles(updatedFiles.length === 0 ? null : updatedFiles);
     let updatedFolder = currentFolder;
     const dataFiles = updatedFiles.filter((data) => data.type == "file");
     updatedFolder.files = dataFiles.map((data) => data._id);
     setCurrentFolder(updatedFolder);
     await putFolder({ folder: updatedFolder });
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
     
     setFolders(() => {
       return folders.map((folder) => {
@@ -244,6 +243,10 @@ function FtpPage() {
       })
     })
     localStorage.setItem('folders', JSON.stringify(folders));
+
+    updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
+    setFiles(updatedFiles);
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   const fileOptionsDialogsProps = {

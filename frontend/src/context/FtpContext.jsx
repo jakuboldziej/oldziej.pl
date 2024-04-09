@@ -37,10 +37,6 @@ export const FtpContextProvider = ({ children }) => {
     const foldersR = await getFolders(user.displayName);
 
     if (foldersR) {
-      foldersR.map((folder, i) => {
-        if (i === 0) folder.active = true
-        else folder.active = false
-      })
       if (currentUser && !currentFolder) {
         const ftpUser = await getFtpUser(currentUser.displayName);
         const main_folder = await getFolder(ftpUser.main_folder);
