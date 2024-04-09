@@ -62,7 +62,7 @@ function Register() {
       await postFtpUser({
         displayName: displayName,
         email: email,
-        main_folder: folderRes.folder._id
+        main_folder: folderRes._id
       });
 
       const userRes = await registerUser({

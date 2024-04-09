@@ -110,16 +110,13 @@ function MyFiles() {
         owner: currentUser.displayName
       }
       const folderRes = await postFolder(data);
-      const updatedCurrentFolder = addFolderToFolder(currentFolder, folderRes.folder);
+      addFolderToFolder(currentFolder, folderRes);
       if (dataShown) {
-        const updatedData = dataShown.map((data) => {
-          if (data._id === updatedCurrentFolder) {
-            data = updatedCurrentFolder;
-          }
-        });
-        updateAllFiles(updatedData);
-      } else {
-        updateAllFiles([folderRes]);
+        const updatedFiles = [folderRes, ...dataShown];
+        updateAllFiles(updatedFiles);
+      }
+      else {
+        updateAllFiles([folderRes])
       }
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
     }
@@ -132,6 +129,7 @@ function MyFiles() {
   }
 
   const updateAllFiles = async (updatedData) => {
+    console.log(updatedData);
     setDataShown(updatedData);
     let updatedFolder = currentFolder;
     if (updatedData) {
@@ -143,15 +141,17 @@ function MyFiles() {
     setCurrentFolder(updatedFolder);
     await putFolder({ folder: updatedFolder });
 
-    setFolders(() => {
-      return folders.map((folder) => {
-        if (folder._id === updatedFolder._id) {
-          folder = updatedFolder;
-        }
-        return folder;
-      })
+    const updatedFolders = folders.map((folder) => {
+      if (folder._id === updatedFolder._id) {
+        folder = updatedFolder;
+      }
+      return folder;
     })
-    localStorage.setItem('folders', JSON.stringify(folders));
+    setFolders(updatedFolders)
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+    // files.map((file) => {
+    //   console.log(file);
+    // })
     // setFiles(() => {
       // return files.map((file) => {
       // })

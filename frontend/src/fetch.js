@@ -230,7 +230,8 @@ export const postFolder = async (data) => {
     },
   })
 
-  return await response.json();
+  const folderRes = await response.json();
+  return folderRes.folder;
 }
 
 export const getFolders = async (userDisplayName = null, folderName = null) => {
