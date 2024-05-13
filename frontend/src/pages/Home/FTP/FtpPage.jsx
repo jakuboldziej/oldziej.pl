@@ -225,7 +225,6 @@ function FtpPage() {
   }, [files]);
 
   const updateAllFiles = async (updatedFiles) => {
-    console.log(updatedFiles);
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     let updatedFolder = currentFolder;
     const dataFiles = updatedFiles.filter((data) => data.type == "file");

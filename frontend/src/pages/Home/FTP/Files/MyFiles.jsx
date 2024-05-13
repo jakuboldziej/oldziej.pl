@@ -3,8 +3,8 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFolderToFolder, calcStorageUsage, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { getFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { addFolderToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -16,7 +16,7 @@ import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const currentUser = useAuthUser();
 
   const navigate = useNavigate();
@@ -24,7 +24,6 @@ function MyFiles() {
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [activeFolders, setActiveFolders] = useState([currentFolder]);
 
   const [dialogOpen, setDialogOpen] = useState({
     file: null,
@@ -145,7 +144,6 @@ function MyFiles() {
             updatedActiveFolders.splice(i, 1);
           }
         }
-        console.log(updatedActiveFolders);
         setActiveFolders(updatedActiveFolders);
       }
 
@@ -254,7 +252,7 @@ function MyFiles() {
       setDataShown(updatedDataShown);
     }
     if (currentFolder) getData();
-  }, []);
+  }, [currentFolder]);
 
   const myDialogsProps = {
     dialogOpen,
@@ -273,10 +271,10 @@ function MyFiles() {
     updateAllFiles,
     isHovered,
     setIsHovered,
-    currentFolder,
-    setCurrentFolder,
     dataShown,
     setDataShown,
+    currentFolder, 
+    setCurrentFolder,
     handleActiveFolders
   }
 
