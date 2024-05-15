@@ -2,13 +2,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
 import { deleteFolderFromFolder, downloadFolder, handleDataShown } from "./utils";
-import { deleteFolder, getFolder } from "@/fetch";
+import { deleteFolder, getFolder, putFolder } from "@/fetch";
 import { useContext } from "react";
 import { FtpContext } from "@/context/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function MyFolderCard(props) {
-  const { folder, handleOpeningDialog, isHovered, setIsHovered, setDataShown, handleActiveFolders } = props;
+  const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, setDataShown, handleActiveFolders } = props;
   const { files, setFiles, currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
 
   const handleDownloadFolder = (foldername) => {
@@ -21,31 +21,22 @@ function MyFolderCard(props) {
     const deleteRes = await deleteFolder(folder._id);
     await deleteFolderFromFolder(currentFolder, folder);
 
-    // if (deleteRes.ok) {
-    //   let updatedFiles = files.filter((f) => f._id !== file._id);
-    //   let updatedFolder = currentFolder;
-    //   updatedFolder.files = updatedFiles.map((data) => data._id);
-    //   setCurrentFolder(updatedFolder);
-    //   await putFolder({ folder: updatedFolder });
-    //   const updatedFolders = folders.map((folder) => {
-    //     if (folder._id === updatedFolder._id) {
-    //       folder = updatedFolder;
-    //     }
-    //     return folder;
-    //   })
-
-    //   updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
-    //   setFiles(updatedFiles)
-    //   localStorage.setItem('files', JSON.stringify(updatedFiles));
-    //   setFolders(updatedFolders)
-    //   localStorage.setItem('folders', JSON.stringify(updatedFolders));
+    if (deleteRes.ok) {
+      let updatedFolders = folders.filter((f) => f._id !== folder._id);
+      let updatedFolder = currentFolder;
+      updatedFolder.folders = updatedFolders.map((data) => data._id);
+      setCurrentFolder(updatedFolder);
+      await putFolder({ folder: updatedFolder });
       
-    //   console.log(dataShown);
-    //   if (updatedFiles) updateAllFiles(dataShown.filter((f) => f._id !== file._id));
-    //   else updateAllFiles(null);
+      setFolders(updatedFolders)
+      localStorage.setItem('folders', JSON.stringify(updatedFolders));
+      
+      console.log(dataShown);
+      if (updatedFolders) updateAllFiles(dataShown.filter((f) => f._id !== folder._id));
+      else updateAllFiles(null);
 
     ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
-    // }
+    }
   }
 
   const handleShareLink = () => {

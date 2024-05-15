@@ -43,7 +43,6 @@ function MyFileCard(props) {
       setFolders(updatedFolders)
       localStorage.setItem('folders', JSON.stringify(updatedFolders));
       
-      console.log(dataShown);
       if (updatedFiles) updateAllFiles(dataShown.filter((f) => f._id !== file._id));
       else updateAllFiles(null);
 

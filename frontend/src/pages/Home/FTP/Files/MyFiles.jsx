@@ -112,12 +112,13 @@ function MyFiles() {
       const folderRes = await postFolder(data);
       addFolderToFolder(currentFolder, folderRes);
       if (dataShown) {
-        const updatedFiles = [folderRes, ...dataShown];
-        updateAllFiles(updatedFiles);
+        const updatedDataShown = [folderRes, ...dataShown];
+        updateAllFiles(updatedDataShown);
       }
       else {
         updateAllFiles([folderRes])
       }
+      
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
       setCreatingFolder('');
     }
@@ -175,7 +176,7 @@ function MyFiles() {
       setFolders(updatedFolders)
       localStorage.setItem('folders', JSON.stringify(updatedFolders));
   
-      if (!files) {
+      if (!files && dataFiles.length !== 0) {
         setFiles([dataFiles[0]]);
         localStorage.setItem('files', JSON.stringify([dataFiles[0]]));
         return;
