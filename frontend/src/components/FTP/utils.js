@@ -86,7 +86,7 @@ export const handleFileTypes = (files) => {
       }
     })
   }
-  
+
   return fileTypes;
 }
 
@@ -137,7 +137,7 @@ export const handleDataShown = async (folder) => {
   ftpFiles.sort((a, b) => {
     return new Date(b.uploadDate) - new Date(a.uploadDate);
   })
-  
+
   const folderPromises = folder.folders.map(async (folderId) => {
     return await getFolder(folderId);
   })
@@ -145,7 +145,7 @@ export const handleDataShown = async (folder) => {
   currentFolderFolders && currentFolderFolders.map((folder) => {
     folder.type = "folder"
   });
-  
+
   const updatedData = [...currentFolderFolders, ...ftpFiles];
   return updatedData.length > 0 ? updatedData : null;
 }

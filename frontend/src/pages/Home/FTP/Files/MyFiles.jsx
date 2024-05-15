@@ -3,14 +3,14 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
 import { addFolderToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
 import MyDialogs from "@/components/FTP/MyDialogs";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbList } from "@/components/ui/breadcrumb";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
@@ -119,89 +119,67 @@ function MyFiles() {
         updateAllFiles([folderRes])
       }
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
+      setCreatingFolder('');
     }
   }
 
   const handleBreadcrumbClick = (folder) => {
     if (folder.name !== currentFolder.name) {
-      handleActiveFolders(folder, "backward");
+      // handleActiveFolders(folder, "backward");
     }
   }
 
-  const handleActiveFolders = async (folder, action) => {
-    if (action === "forward") {
-      setActiveFolders((prev) => [...prev, folder]);
-    } else if (action === "backward") {
-      let updatedActiveFolders = [...activeFolders];
-      if (currentFolder._id !== folder._id) {
-        for (let i = updatedActiveFolders.length - 1; i >= 0; i--) {
-          const currentActiveFolder = updatedActiveFolders[i];
-          if (currentActiveFolder._id === folder._id) {
-            break;
-          }
+  // const handleActiveFolders = async (folder, action) => {
+  //   if (action === "forward") {
+  //     setActiveFolders((prev) => [...prev, folder]);
+  //   } else if (action === "backward") {
+  //     let updatedActiveFolders = [...activeFolders];
+  //     if (currentFolder._id !== folder._id) {
+  //       for (let i = updatedActiveFolders.length - 1; i >= 0; i--) {
+  //         const currentActiveFolder = updatedActiveFolders[i];
+  //         if (currentActiveFolder._id === folder._id) {
+  //           break;
+  //         }
             
-          if (currentActiveFolder._id !== folder._id) {
-            updatedActiveFolders.splice(i, 1);
-          }
-        }
-        setActiveFolders(updatedActiveFolders);
-      }
+  //         if (currentActiveFolder._id !== folder._id) {
+  //           updatedActiveFolders.splice(i, 1);
+  //         }
+  //       }
+  //       setActiveFolders(updatedActiveFolders);
+  //     }
 
-      setCurrentFolder(folder);
-      const updatedDataShown = await handleDataShown(folder);
-      setDataShown(updatedDataShown);
-    }
-  }
+  //     setCurrentFolder(folder);
+  //     const updatedDataShown = await handleDataShown(folder);
+  //     setDataShown(updatedDataShown);
+  //   }
+  // }
 
   const updateAllFiles = async (updatedData) => {
     setDataShown(updatedData);
-    let updatedFolder = currentFolder;
-    let dataFiles;
+
     if (updatedData) {
-      dataFiles = updatedData.filter((data) => data.type === "file");
-      const dataFolders = updatedData.filter((data) => data.type === "folder");
+      let updatedFolder = currentFolder;
+      const dataFiles = updatedData.filter((data) => data.type == "file");
+      const dataFolders = updatedData.filter((data) => data.type == "folder");
       updatedFolder.files = dataFiles.map((data) => data._id);
       updatedFolder.folders = dataFolders.map((data) => data._id);
-    }
-    setCurrentFolder(updatedFolder);
-    await putFolder({ folder: updatedFolder });
-
-    const updatedFolders = folders.map((folder) => {
-      if (folder._id === updatedFolder._id) {
-        folder = updatedFolder;
+      setCurrentFolder(updatedFolder);
+      await putFolder({ folder: updatedFolder });
+  
+      const updatedFolders = folders.map((folder) => {
+        if (folder._id === updatedFolder._id) {
+          folder = updatedFolder;
+        }
+        return folder;
+      })
+      setFolders(updatedFolders)
+      localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  
+      if (!files) {
+        setFiles([dataFiles[0]]);
+        localStorage.setItem('files', JSON.stringify([dataFiles[0]]));
+        return;
       }
-      return folder;
-    })
-    setFolders(updatedFolders)
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
-
-    console.log(updatedData, dataFiles, files);
-    let updatedFiles;
-    if (files) {
-      // updating files
-      if (dataFiles) {
-        updatedFiles = files.map((file) => {
-          if (dataFiles.length > 0 || dataFiles) {
-            const correspondingFile = dataFiles.find((dataFile) => dataFile._id === file._id);
-            console.log(correspondingFile);
-            return correspondingFile;
-          } else {
-            return null;
-          }
-        });
-      } else {
-        updatedFiles = [];
-      }
-
-      console.log(updatedFiles);
-
-      updatedFiles = updatedFiles.filter((file) => file !== null);
-      updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
-      setFiles(updatedFiles);
-      localStorage.setItem('files', JSON.stringify(updatedFiles));
-    } else if (!files) {
-      setFiles(dataFiles);
-      localStorage.setItem('files', JSON.stringify(dataFiles));
     }
   }
 
@@ -210,17 +188,22 @@ function MyFiles() {
       const fileRes = await getFile(recentFile._id);
 
       if (dataShown) {
-        const updatedFiles = [...dataShown, fileRes];
-        updateAllFiles(updatedFiles);
+        const dataFolders = dataShown.filter((data) => data.type == "folder");
+        const dataFiles = dataShown.filter((data) => data.type == "file");
+
+        const updatedDataShown = [...dataFolders, fileRes, ...dataFiles];
+        updateAllFiles(updatedDataShown);
       }
       else {
         updateAllFiles([fileRes])
       }
+      const updatedFiles = files ? [...files, fileRes] : [fileRes];
+      setFiles(updatedFiles);
+      localStorage.setItem('files', JSON.stringify(updatedFiles));
 
       setRecentFile(null);
     }
     if (recentFile) updateDataShown();
-
   }, [recentFile]);
 
   useEffect(() => {
@@ -273,9 +256,7 @@ function MyFiles() {
     setIsHovered,
     dataShown,
     setDataShown,
-    currentFolder, 
-    setCurrentFolder,
-    handleActiveFolders
+    // handleActiveFolders
   }
 
   return (
@@ -287,12 +268,12 @@ function MyFiles() {
           <div className="folders-path">
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
-                {activeFolders && activeFolders.map((folder, i) => (
+                {/* {activeFolders && activeFolders.map((folder, i) => (
                   <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
                     <BreadcrumbLink className="text-base">{folder.name}</BreadcrumbLink>
                     {folders.length > 1 && i !== activeFolders.length - 1 && <BreadcrumbSeparator />}
                   </BreadcrumbItem>
-                ))}
+                ))} */}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

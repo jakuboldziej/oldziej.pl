@@ -283,6 +283,16 @@ router.put('/folders/:id', async (req, res) => {
   }
 });
 
+// delete folder
+router.delete('/folders/:id', async (req, res) => {
+  try {
+    await FtpFolder.deleteOne({ _id: req.params.id });
+    res.json({ message: 'Folder deleted successfully' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+})
+
 // Users
 router.get('/users', async (req, res) => {
   try {

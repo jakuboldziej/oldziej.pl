@@ -1,15 +1,51 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
-import { downloadFolder, handleDataShown } from "./utils";
+import { deleteFolderFromFolder, downloadFolder, handleDataShown } from "./utils";
+import { deleteFolder, getFolder } from "@/fetch";
+import { useContext } from "react";
+import { FtpContext } from "@/context/FtpContext";
+import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function MyFolderCard(props) {
-  const { folder, handleOpeningDialog, isHovered, setIsHovered, setCurrentFolder, setDataShown, handleActiveFolders } = props;
+  const { folder, handleOpeningDialog, isHovered, setIsHovered, setDataShown, handleActiveFolders } = props;
+  const { files, setFiles, currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
 
-  const handleDownloadFile = (foldername) => {
+  const handleDownloadFolder = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));
     downloadFolder(foldername);
     // setFileStatus((prev) => ({ ...prev, downloading: false }));
+  }
+
+  const handleDeleteFolder = async (folder) => {
+    const deleteRes = await deleteFolder(folder._id);
+    await deleteFolderFromFolder(currentFolder, folder);
+
+    // if (deleteRes.ok) {
+    //   let updatedFiles = files.filter((f) => f._id !== file._id);
+    //   let updatedFolder = currentFolder;
+    //   updatedFolder.files = updatedFiles.map((data) => data._id);
+    //   setCurrentFolder(updatedFolder);
+    //   await putFolder({ folder: updatedFolder });
+    //   const updatedFolders = folders.map((folder) => {
+    //     if (folder._id === updatedFolder._id) {
+    //       folder = updatedFolder;
+    //     }
+    //     return folder;
+    //   })
+
+    //   updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
+    //   setFiles(updatedFiles)
+    //   localStorage.setItem('files', JSON.stringify(updatedFiles));
+    //   setFolders(updatedFolders)
+    //   localStorage.setItem('folders', JSON.stringify(updatedFolders));
+      
+    //   console.log(dataShown);
+    //   if (updatedFiles) updateAllFiles(dataShown.filter((f) => f._id !== file._id));
+    //   else updateAllFiles(null);
+
+    ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
+    // }
   }
 
   const handleShareLink = () => {
@@ -49,8 +85,8 @@ function MyFolderCard(props) {
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  <DropdownMenuItem onClick={() => handleDownloadFile(folder.filename)} className='gap-2'><SquareArrowDown /> Standard</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleDownloadFile(folder.filename)} className='gap-2'><FileArchive /> As a ZIP file</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDownloadFolder(folder.filename)} className='gap-2'><SquareArrowDown /> Standard</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleDownloadFolder(folder.filename)} className='gap-2'><FileArchive /> As a ZIP file</DropdownMenuItem>
                 </DropdownMenuSubContent>
               </DropdownMenuPortal>
             </DropdownMenuSub>
@@ -76,7 +112,7 @@ function MyFolderCard(props) {
             <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => handleDeleteImage(folder)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleDeleteFolder(folder)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardContent>

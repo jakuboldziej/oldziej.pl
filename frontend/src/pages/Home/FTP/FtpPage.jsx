@@ -232,15 +232,14 @@ function FtpPage() {
     setCurrentFolder(updatedFolder);
     await putFolder({ folder: updatedFolder });
     
-    setFolders(() => {
-      return folders.map((folder) => {
-        if (folder._id === updatedFolder._id) {
-          folder = updatedFolder;
-        }
-        return folder;
-      })
+    const updatedFolders = folders.map((folder) => {
+      if (folder._id === updatedFolder._id) {
+        folder = updatedFolder;
+      }
+      return folder;
     })
-    localStorage.setItem('folders', JSON.stringify(folders));
+    setFolders(updatedFolders)
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
     updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
     setFiles(updatedFiles);
