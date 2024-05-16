@@ -124,7 +124,7 @@ function FtpPage() {
 
     if (deleteRes.ok) {
       let updatedFiles = files.filter((f) => f._id !== file._id);
-      updateAllFiles(updatedFiles);
+      updateDataShown(updatedFiles);
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
   }
@@ -152,7 +152,7 @@ function FtpPage() {
       }
       return f;
     });
-    updateAllFiles(updatedFiles);
+    updateDataShown(updatedFiles);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
@@ -170,7 +170,7 @@ function FtpPage() {
       }
       return f;
     });
-    updateAllFiles(updatedFiles);
+    updateDataShown(updatedFiles);
   }
 
   useEffect(() => {
@@ -202,10 +202,10 @@ function FtpPage() {
 
       if (files) {
         const updatedFiles = [fileRes, ...files];
-        updateAllFiles(updatedFiles);
+        updateDataShown(updatedFiles);
       }
       else {
-        updateAllFiles([fileRes])
+        updateDataShown([fileRes])
       }
 
       setRecentFile(null);
@@ -224,7 +224,7 @@ function FtpPage() {
     setFileTypes(handleFileTypes(files));
   }, [files]);
 
-  const updateAllFiles = async (updatedFiles) => {
+  const updateDataShown = async (updatedFiles) => {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
     let updatedFolder = currentFolder;
     const dataFiles = updatedFiles.filter((data) => data.type == "file");
@@ -245,6 +245,10 @@ function FtpPage() {
     setFiles(updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
+
+  useEffect(() => {
+    console.log(currentFolder);
+  }, [currentFolder]);
 
   const fileOptionsDialogsProps = {
     dialogOpen,
@@ -414,7 +418,7 @@ function FtpPage() {
               </Form>
               <div onClick={() => navigate("/ftp/storage")} className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span className='flex justify-between'>
-                  <span>Your Storage ({files?.length || 0} Files)</span>
+                  <span>Your Storage <p>({files?.length || 0} Files)</p></span>
                   <span>{(calcStorageUsage(files)[1])}%</span>
                 </span>
                 <div className='text-sm'>

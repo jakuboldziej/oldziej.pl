@@ -2,14 +2,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video, Files } from 'lucide-react';
 import { deleteFileFromFolder, downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
-import { deleteFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/fetch";
+import { deleteFile, getFolder, mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { FtpContext } from "@/context/FtpContext";
-import { useContext } from "react";
 
 function MyFileCard(props) {
-  const { file, dataShown, setFileStatus, handleOpeningDialog, updateAllFiles, isHovered, setIsHovered } = props;
-  const { files, setFiles, currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
+  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, isHovered, setIsHovered } = props;
 
   const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -19,32 +16,14 @@ function MyFileCard(props) {
 
   const handleDeleteFile = async (file) => {
     const deleteRes = await deleteFile(file._id);
-    file.folders.map(async (folderId) => {
-      const folder = await getFolder(folderId);
-      await deleteFileFromFolder(folder, file);
-    })
 
     if (deleteRes.ok) {
-      let updatedFiles = files.filter((f) => f._id !== file._id);
-      let updatedFolder = currentFolder;
-      updatedFolder.files = updatedFiles.map((data) => data._id);
-      setCurrentFolder(updatedFolder);
-      await putFolder({ folder: updatedFolder });
-      const updatedFolders = folders.map((folder) => {
-        if (folder._id === updatedFolder._id) {
-          folder = updatedFolder;
-        }
-        return folder;
+      file.folders.map(async (folderId) => {
+        const folder = await getFolder(folderId);
+        await deleteFileFromFolder(folder, file);
       })
 
-      updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
-      setFiles(updatedFiles)
-      localStorage.setItem('files', JSON.stringify(updatedFiles));
-      setFolders(updatedFolders)
-      localStorage.setItem('folders', JSON.stringify(updatedFolders));
-      
-      if (updatedFiles) updateAllFiles(dataShown.filter((f) => f._id !== file._id));
-      else updateAllFiles(null);
+      updateDataShown(dataShown.filter((f) => f._id !== file._id));
 
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
@@ -64,7 +43,7 @@ function MyFileCard(props) {
       }
       return data;
     });
-    updateAllFiles(updatedFiles);
+    updateDataShown(updatedFiles);
   }
 
   return (

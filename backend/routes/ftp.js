@@ -287,7 +287,7 @@ router.put('/folders/:id', async (req, res) => {
 router.delete('/folders/:id', async (req, res) => {
   try {
     await FtpFolder.deleteOne({ _id: req.params.id });
-    res.json({ message: 'Folder deleted successfully' });
+    res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

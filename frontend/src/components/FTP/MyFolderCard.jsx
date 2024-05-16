@@ -8,8 +8,8 @@ import { FtpContext } from "@/context/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function MyFolderCard(props) {
-  const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, setDataShown, handleActiveFolders } = props;
-  const { files, setFiles, currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
+  const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders } = props;
+  const { currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
 
   const handleDownloadFolder = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -19,23 +19,14 @@ function MyFolderCard(props) {
 
   const handleDeleteFolder = async (folder) => {
     const deleteRes = await deleteFolder(folder._id);
-    await deleteFolderFromFolder(currentFolder, folder);
 
     if (deleteRes.ok) {
-      let updatedFolders = folders.filter((f) => f._id !== folder._id);
-      let updatedFolder = currentFolder;
-      updatedFolder.folders = updatedFolders.map((data) => data._id);
-      setCurrentFolder(updatedFolder);
-      await putFolder({ folder: updatedFolder });
+      await deleteFolderFromFolder(currentFolder, folder);
       
-      setFolders(updatedFolders)
-      localStorage.setItem('folders', JSON.stringify(updatedFolders));
-      
-      console.log(dataShown);
-      if (updatedFolders) updateAllFiles(dataShown.filter((f) => f._id !== folder._id));
-      else updateAllFiles(null);
+      updateDataShown(dataShown.filter((f) => f._id !== folder._id));
+      updateFoldersStorage(folder, "del");
 
-    ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
+      ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
     }
   }
 
@@ -48,7 +39,7 @@ function MyFolderCard(props) {
   }
 
   const openFolder = async (folder) => {
-    handleActiveFolders(folder, "forward");
+    // handleActiveFolders(folder, "forward");
     
     const updatedDataShown = await handleDataShown(folder);
     setDataShown(updatedDataShown);

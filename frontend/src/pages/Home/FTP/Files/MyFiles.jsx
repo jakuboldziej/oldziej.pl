@@ -4,7 +4,7 @@ import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFolderToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { addFileToFolder, addFolderToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -96,7 +96,7 @@ function MyFiles() {
       }
       return data;
     });
-    updateAllFiles(updatedData);
+    updateDataShown(updatedData);
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
@@ -110,14 +110,16 @@ function MyFiles() {
         owner: currentUser.displayName
       }
       const folderRes = await postFolder(data);
-      addFolderToFolder(currentFolder, folderRes);
+      addFolderToFolder(currentFolder, folderRes); // naprawić
       if (dataShown) {
         const updatedDataShown = [folderRes, ...dataShown];
-        updateAllFiles(updatedDataShown);
+        updateDataShown(updatedDataShown);
       }
       else {
-        updateAllFiles([folderRes])
+        updateDataShown([folderRes])
       }
+      
+      updateFoldersStorage(folderRes, "add")
       
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
       setCreatingFolder('');
@@ -155,33 +157,32 @@ function MyFiles() {
   //   }
   // }
 
-  const updateAllFiles = async (updatedData) => {
+  const updateDataShown = async (updatedData) => {
     setDataShown(updatedData);
+  }
 
-    if (updatedData) {
-      let updatedFolder = currentFolder;
-      const dataFiles = updatedData.filter((data) => data.type == "file");
-      const dataFolders = updatedData.filter((data) => data.type == "folder");
-      updatedFolder.files = dataFiles.map((data) => data._id);
-      updatedFolder.folders = dataFolders.map((data) => data._id);
-      setCurrentFolder(updatedFolder);
-      await putFolder({ folder: updatedFolder });
-  
-      const updatedFolders = folders.map((folder) => {
-        if (folder._id === updatedFolder._id) {
-          folder = updatedFolder;
-        }
-        return folder;
-      })
-      setFolders(updatedFolders)
-      localStorage.setItem('folders', JSON.stringify(updatedFolders));
-  
-      if (!files && dataFiles.length !== 0) {
-        setFiles([dataFiles[0]]);
-        localStorage.setItem('files', JSON.stringify([dataFiles[0]]));
-        return;
-      }
+  const updateFilesStorage = async (updatedFiles) => {
+    setFiles(updatedFiles)
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
+    
+  }
+
+  const updateFoldersStorage = async (folder, action) => {
+    let updatedFolders = folders;
+    let updatedFolder = currentFolder;
+    if (action === "add") {
+      updatedFolder.folders.unshift(folder._id);
+      updatedFolders.unshift(folder);
+    } else if (action === "del") {
+      updatedFolder.folders.pop(folder._id);
+      updatedFolders.pop(folder);
     }
+    console.log(updatedFolder);
+
+    setCurrentFolder(updatedFolder);
+    setFolders(updatedFolders)
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+    
   }
 
   useEffect(() => {
@@ -193,14 +194,11 @@ function MyFiles() {
         const dataFiles = dataShown.filter((data) => data.type == "file");
 
         const updatedDataShown = [...dataFolders, fileRes, ...dataFiles];
-        updateAllFiles(updatedDataShown);
+        updateDataShown(updatedDataShown);
       }
       else {
-        updateAllFiles([fileRes])
+        updateDataShown([fileRes])
       }
-      const updatedFiles = files ? [...files, fileRes] : [fileRes];
-      setFiles(updatedFiles);
-      localStorage.setItem('files', JSON.stringify(updatedFiles));
 
       setRecentFile(null);
     }
@@ -252,7 +250,8 @@ function MyFiles() {
   const cardProps = {
     setFileStatus,
     handleOpeningDialog,
-    updateAllFiles,
+    updateDataShown,
+    updateFoldersStorage,
     isHovered,
     setIsHovered,
     dataShown,
