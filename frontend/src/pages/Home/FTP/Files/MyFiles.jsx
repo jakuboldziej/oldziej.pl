@@ -4,7 +4,7 @@ import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFileToFolder, addFolderToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { addFileToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -110,7 +110,6 @@ function MyFiles() {
         owner: currentUser.displayName
       }
       const folderRes = await postFolder(data);
-      addFolderToFolder(currentFolder, folderRes); // naprawić
       if (dataShown) {
         const updatedDataShown = [folderRes, ...dataShown];
         updateDataShown(updatedDataShown);
@@ -161,10 +160,22 @@ function MyFiles() {
     setDataShown(updatedData);
   }
 
-  const updateFilesStorage = async (updatedFiles) => {
+  const updateFilesStorage = async (file, action) => {
+    let updatedFiles = files;
+    let updatedFolder = currentFolder;
+    if (action === "add") {
+      updatedFolder.files.unshift(file._id);
+      updatedFiles.unshift(file);
+      addFileToFolder(updatedFolder, file);
+    } else if (action === "del") {
+      updatedFolder.files.filter((f) => f._id !== file._id)
+      updatedFiles = updatedFiles.filter((f) => f._id !== file._id)
+    }
+
+    console.log(updatedFiles);
+
     setFiles(updatedFiles)
     localStorage.setItem('files', JSON.stringify(updatedFiles));
-    
   }
 
   const updateFoldersStorage = async (folder, action) => {
@@ -173,16 +184,21 @@ function MyFiles() {
     if (action === "add") {
       updatedFolder.folders.unshift(folder._id);
       updatedFolders.unshift(folder);
+      await putFolder({ folder: updatedFolder });
     } else if (action === "del") {
-      updatedFolder.folders.pop(folder._id);
-      updatedFolders.pop(folder);
+      updatedFolder.folders.filter((f) => f._id !== folder._id)
+      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id)
     }
-    console.log(updatedFolder);
+    updatedFolders = updatedFolders.map((f) => {
+      if (f._id === updatedFolder._id) {
+        f = updatedFolder
+      }
+      return f;
+    });
 
     setCurrentFolder(updatedFolder);
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
-    
   }
 
   useEffect(() => {

@@ -118,12 +118,6 @@ export const deleteFileFromFolder = async (folder, file) => {
   await putFile({ file: file });
 }
 
-export const addFolderToFolder = async (folder1, folder2) => {
-  folder1.folders.push(folder2._id);
-  const response = await putFolder({ folder: folder1 });
-  return response;
-}
-
 export const deleteFolderFromFolder = async (folder1, folder2) => {
   folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
   await putFolder({ folder: folder1 });
