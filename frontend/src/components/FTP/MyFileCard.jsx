@@ -2,11 +2,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video, Files } from 'lucide-react';
 import { deleteFileFromFolder, downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
-import { deleteFile, getFolder, mongodbApiUrl, putFile } from "@/fetch";
+import { deleteFile, mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
+import { useContext } from "react";
+import { FtpContext } from "@/context/FtpContext";
 
 function MyFileCard(props) {
-  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, isHovered, setIsHovered } = props;
+  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered } = props;
+  const { currentFolder } = useContext(FtpContext);
 
   const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -18,12 +21,10 @@ function MyFileCard(props) {
     const deleteRes = await deleteFile(file._id);
 
     if (deleteRes.ok) {
-      file.folders.map(async (folderId) => {
-        const folder = await getFolder(folderId);
-        await deleteFileFromFolder(folder, file);
-      })
+      await deleteFileFromFolder(currentFolder, file);
 
       updateDataShown(dataShown.filter((f) => f._id !== file._id));
+      updateFilesStorage(file, "del");
 
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }

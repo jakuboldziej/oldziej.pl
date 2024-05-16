@@ -3,8 +3,8 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFileToFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { addFileToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -157,23 +157,33 @@ function MyFiles() {
   // }
 
   const updateDataShown = async (updatedData) => {
-    setDataShown(updatedData);
+    setDataShown(updatedData.length > 0 ? updatedData : null);
   }
 
   const updateFilesStorage = async (file, action) => {
     let updatedFiles = files;
     let updatedFolder = currentFolder;
+
     if (action === "add") {
-      updatedFolder.files.unshift(file._id);
-      updatedFiles.unshift(file);
+      if (!updatedFiles) updatedFiles = [file];
+      else updatedFiles.unshift(file);
       addFileToFolder(updatedFolder, file);
     } else if (action === "del") {
-      updatedFolder.files.filter((f) => f._id !== file._id)
-      updatedFiles = updatedFiles.filter((f) => f._id !== file._id)
+      updatedFolder.files = updatedFolder.files.filter((f) => f._id != file._id);
+      updatedFiles = updatedFiles.filter((f) => f._id != file._id);
     }
+    const updatedFolders = folders.map((f) => {
+      if (f._id === updatedFolder._id) {
+        f = updatedFolder
+      }
+      return f;
+    });
 
-    console.log(updatedFiles);
+    setCurrentFolder(updatedFolder);
+    setFolders(updatedFolders)
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
+    updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
     setFiles(updatedFiles)
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
@@ -186,9 +196,18 @@ function MyFiles() {
       updatedFolders.unshift(folder);
       await putFolder({ folder: updatedFolder });
     } else if (action === "del") {
-      updatedFolder.folders.filter((f) => f._id !== folder._id)
-      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id)
+      updatedFolder.folders = updatedFolder.folders.filter((f) => f._id !== folder._id);
+      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
+      folder.files.map(async (file) => {
+        file = await getFile(file);
+        await deleteFileFromFolder(folder, file);
+      })
+      folder.folders.map(async (f) => {
+        f = await getFolder(f);
+        await deleteFolderFromFolder(folder, f);
+      })
     }
+
     updatedFolders = updatedFolders.map((f) => {
       if (f._id === updatedFolder._id) {
         f = updatedFolder
@@ -202,7 +221,7 @@ function MyFiles() {
   }
 
   useEffect(() => {
-    const updateDataShown = async () => {
+    const handleNewFile = async () => {
       const fileRes = await getFile(recentFile._id);
 
       if (dataShown) {
@@ -213,12 +232,13 @@ function MyFiles() {
         updateDataShown(updatedDataShown);
       }
       else {
-        updateDataShown([fileRes])
+        updateDataShown([fileRes]);
       }
 
+      updateFilesStorage(fileRes, "add");
       setRecentFile(null);
     }
-    if (recentFile) updateDataShown();
+    if (recentFile) handleNewFile();
   }, [recentFile]);
 
   useEffect(() => {
@@ -268,6 +288,7 @@ function MyFiles() {
     handleOpeningDialog,
     updateDataShown,
     updateFoldersStorage,
+    updateFilesStorage,
     isHovered,
     setIsHovered,
     dataShown,

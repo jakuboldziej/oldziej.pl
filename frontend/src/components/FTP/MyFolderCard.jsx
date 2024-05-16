@@ -2,14 +2,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
 import { deleteFolderFromFolder, downloadFolder, handleDataShown } from "./utils";
-import { deleteFolder, getFolder, putFolder } from "@/fetch";
+import { deleteFolder } from "@/fetch";
 import { useContext } from "react";
 import { FtpContext } from "@/context/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 
 function MyFolderCard(props) {
   const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders } = props;
-  const { currentFolder, setCurrentFolder, setFolders, folders } = useContext(FtpContext);
+  const { currentFolder, setCurrentFolder } = useContext(FtpContext);
 
   const handleDownloadFolder = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));

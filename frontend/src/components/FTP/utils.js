@@ -1,4 +1,4 @@
-import { getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/fetch";
+import { deleteFile, deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/fetch";
 
 // Global
 
@@ -114,12 +114,14 @@ export const addFileToFolder = async (folder, file) => {
 export const deleteFileFromFolder = async (folder, file) => {
   folder.files = folder.files.filter((fileId) => fileId !== file._id);
   file.folders = file.folders.filter((folderId) => folderId !== folder._id);
+  if (file.folders.length === 0) await deleteFile(file._id);
   await putFolder({ folder: folder });
   await putFile({ file: file });
 }
 
 export const deleteFolderFromFolder = async (folder1, folder2) => {
   folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
+  await deleteFolder(folder2._id);
   await putFolder({ folder: folder1 });
 }
 
