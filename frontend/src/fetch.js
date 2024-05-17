@@ -174,8 +174,6 @@ export const uploadFile = async (data) => {
   });
   const uploadFile = await uploadResponse.json();
 
-  const folderRes = await getFolder(data.get('folder'));
-
   const ftpFileRes = await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
@@ -188,10 +186,8 @@ export const uploadFile = async (data) => {
       "Content-Type": "application/json",
     },
   });
+
   const ftpFile = await ftpFileRes.json();
-
-  addFileToFolder(folderRes, ftpFile.file)
-
   return ftpFile;
 }
 

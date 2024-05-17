@@ -39,7 +39,7 @@ function MyFolderCard(props) {
   }
 
   const openFolder = async (folder) => {
-    // handleActiveFolders(folder, "forward");
+    handleActiveFolders(folder, "forward");
     
     const updatedDataShown = await handleDataShown(folder);
     setDataShown(updatedDataShown);

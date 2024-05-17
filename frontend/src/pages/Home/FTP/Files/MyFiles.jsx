@@ -3,14 +3,14 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
 import { addFileToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
 import MyDialogs from "@/components/FTP/MyDialogs";
-import { Breadcrumb, BreadcrumbList } from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
@@ -126,35 +126,30 @@ function MyFiles() {
   }
 
   const handleBreadcrumbClick = (folder) => {
-    if (folder.name !== currentFolder.name) {
-      // handleActiveFolders(folder, "backward");
+    if (folder._id !== currentFolder._id) {
+      handleActiveFolders(folder, "backward");
     }
   }
 
-  // const handleActiveFolders = async (folder, action) => {
-  //   if (action === "forward") {
-  //     setActiveFolders((prev) => [...prev, folder]);
-  //   } else if (action === "backward") {
-  //     let updatedActiveFolders = [...activeFolders];
-  //     if (currentFolder._id !== folder._id) {
-  //       for (let i = updatedActiveFolders.length - 1; i >= 0; i--) {
-  //         const currentActiveFolder = updatedActiveFolders[i];
-  //         if (currentActiveFolder._id === folder._id) {
-  //           break;
-  //         }
-            
-  //         if (currentActiveFolder._id !== folder._id) {
-  //           updatedActiveFolders.splice(i, 1);
-  //         }
-  //       }
-  //       setActiveFolders(updatedActiveFolders);
-  //     }
+  const handleActiveFolders = async (folder, action) => {
+    if (action === "forward") {
+      const parseFolder = {
+        _id: folder._id,
+        name: folder.name
+      }
+      const updatedActiveFolders = [...activeFolders, parseFolder];
+      setActiveFolders(updatedActiveFolders);
+      localStorage.setItem('activeFolders', JSON.stringify(updatedActiveFolders))
+    } else if (action === "backward" && currentFolder._id !== folder._id) {
+      const indexToStop = activeFolders.indexOf(folder);
+      const updatedActiveFolders = activeFolders.slice(0, indexToStop + 1);
 
-  //     setCurrentFolder(folder);
-  //     const updatedDataShown = await handleDataShown(folder);
-  //     setDataShown(updatedDataShown);
-  //   }
-  // }
+      const newCurrentFolder = folders.find((f) => f._id === folder._id);
+      setCurrentFolder(newCurrentFolder);
+      setActiveFolders(updatedActiveFolders);
+      localStorage.setItem('activeFolders', JSON.stringify(updatedActiveFolders))
+    }
+  }
 
   const updateDataShown = async (updatedData) => {
     setDataShown(updatedData.length > 0 ? updatedData : null);
@@ -169,7 +164,7 @@ function MyFiles() {
       else updatedFiles.unshift(file);
       addFileToFolder(updatedFolder, file);
     } else if (action === "del") {
-      updatedFolder.files = updatedFolder.files.filter((f) => f._id != file._id);
+      updatedFolder.files = updatedFolder.files.filter((fId) => fId != file._id);
       updatedFiles = updatedFiles.filter((f) => f._id != file._id);
     }
     const updatedFolders = folders.map((f) => {
@@ -196,14 +191,14 @@ function MyFiles() {
       updatedFolders.unshift(folder);
       await putFolder({ folder: updatedFolder });
     } else if (action === "del") {
-      updatedFolder.folders = updatedFolder.folders.filter((f) => f._id !== folder._id);
+      updatedFolder.folders = updatedFolder.folders.filter((fId) => fId !== folder._id);
       updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
-      folder.files.map(async (file) => {
-        file = await getFile(file);
+      folder.files.map(async (fileId) => {
+        const file = files.find((f) => f._id === fileId);
         await deleteFileFromFolder(folder, file);
       })
-      folder.folders.map(async (f) => {
-        f = await getFolder(f);
+      folder.folders.map(async (folderId) => {
+        f = folders.find((f) => f._id === folderId);
         await deleteFolderFromFolder(folder, f);
       })
     }
@@ -264,12 +259,16 @@ function MyFiles() {
     }
   }, [fileStatus]);
 
+  const getDataShown = async (folder) => {
+    const updatedDataShown = await handleDataShown(folder);
+    setDataShown(updatedDataShown);
+  }
+
   useEffect(() => {
-    const getData = async () => {
-      const updatedDataShown = await handleDataShown(currentFolder);
-      setDataShown(updatedDataShown);
+    if (currentFolder) {
+      const corFolder = folders.find((folder) => folder._id === currentFolder._id);
+      getDataShown(corFolder);
     }
-    if (currentFolder) getData();
   }, [currentFolder]);
 
   const myDialogsProps = {
@@ -293,7 +292,7 @@ function MyFiles() {
     setIsHovered,
     dataShown,
     setDataShown,
-    // handleActiveFolders
+    handleActiveFolders
   }
 
   return (
@@ -305,12 +304,12 @@ function MyFiles() {
           <div className="folders-path">
             <Breadcrumb className="pt-[24px] pl-[24px]">
               <BreadcrumbList>
-                {/* {activeFolders && activeFolders.map((folder, i) => (
+                {activeFolders && activeFolders.map((folder, i) => (
                   <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
                     <BreadcrumbLink className="text-base">{folder.name}</BreadcrumbLink>
                     {folders.length > 1 && i !== activeFolders.length - 1 && <BreadcrumbSeparator />}
                   </BreadcrumbItem>
-                ))} */}
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

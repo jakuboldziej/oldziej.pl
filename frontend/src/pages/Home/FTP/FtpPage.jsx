@@ -6,12 +6,12 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFolder, getFtpUser, mongodbApiUrl, putFile, putFolder, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder } from '@/components/FTP/utils'
+import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder } from '@/components/FTP/utils'
 import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
@@ -118,13 +118,14 @@ function FtpPage() {
   const handleDeleteFile = async (file) => {
     const deleteRes = await deleteFile(file._id);
     file.folders.map(async (folderId) => {
-      const folder = await getFolder(folderId);
+      const folder = folders.find((f) => f._id === folderId);
       await deleteFileFromFolder(folder, file);
     })
 
     if (deleteRes.ok) {
       let updatedFiles = files.filter((f) => f._id !== file._id);
       updateDataShown(updatedFiles);
+      updateFilesStorage(file, "del");
       ShowNewToast("File Update", `${file.filename} has been deleted.`);
     }
   }
@@ -173,6 +174,39 @@ function FtpPage() {
     updateDataShown(updatedFiles);
   }
 
+  const updateDataShown = async (updatedFiles) => {
+    setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
+  }
+
+  const updateFilesStorage = async (file, action) => {
+    let updatedFiles = files;
+    const ftpUser = await getFtpUser(currentUser.displayName);
+    const mainUserFolder = folders.find((f) => f._id === ftpUser.main_folder);
+    let updatedFolder = mainUserFolder;
+
+    if (action === "add") {
+      if (!updatedFiles) updatedFiles = [file];
+      else updatedFiles.unshift(file);
+      addFileToFolder(updatedFolder, file);
+    } else if (action === "del") {
+      updatedFolder.files = updatedFolder.files.filter((fId) => fId != file._id);
+      updatedFiles = updatedFiles.filter((f) => f._id != file._id);
+    }
+    const updatedFolders = folders.map((f) => {
+      if (f._id === updatedFolder._id) {
+        f = updatedFolder
+      }
+      return f;
+    });
+
+    setFolders(updatedFolders)
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+
+    updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
+    setFiles(updatedFiles)
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
+  }
+
   useEffect(() => {
     if (!fileStatus.uploading) return;
 
@@ -208,6 +242,7 @@ function FtpPage() {
         updateDataShown([fileRes])
       }
 
+      updateFilesStorage(fileRes, "add");
       setRecentFile(null);
     }
     if (recentFile) updateRecentFiles();
@@ -223,32 +258,6 @@ function FtpPage() {
     }
     setFileTypes(handleFileTypes(files));
   }, [files]);
-
-  const updateDataShown = async (updatedFiles) => {
-    setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
-    let updatedFolder = currentFolder;
-    const dataFiles = updatedFiles.filter((data) => data.type == "file");
-    updatedFolder.files = dataFiles.map((data) => data._id);
-    setCurrentFolder(updatedFolder);
-    await putFolder({ folder: updatedFolder });
-    
-    const updatedFolders = folders.map((folder) => {
-      if (folder._id === updatedFolder._id) {
-        folder = updatedFolder;
-      }
-      return folder;
-    })
-    setFolders(updatedFolders)
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
-
-    updatedFiles = updatedFiles.length === 0 ? null : updatedFiles;
-    setFiles(updatedFiles);
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
-  }
-
-  useEffect(() => {
-    console.log(currentFolder);
-  }, [currentFolder]);
 
   const fileOptionsDialogsProps = {
     dialogOpen,

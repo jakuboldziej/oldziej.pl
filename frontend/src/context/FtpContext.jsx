@@ -16,10 +16,12 @@ export const FtpContextProvider = ({ children }) => {
   const [folders, setFolders] = useState(() => {
     const storedFolders = localStorage.getItem('folders');
     return storedFolders ? JSON.parse(storedFolders) : null;
-  })
+  });
 
-  const fetchFiles = async (user = currentUser) => {
-    const response = await getFiles(user.displayName);
+  const [activeFolders, setActiveFolders] = useState([]);
+
+  const fetchFiles = async () => {
+    const response = await getFiles(currentUser.displayName);
     const filesR = response.files;
     if (filesR) {
       setFiles(filesR);
@@ -29,15 +31,10 @@ export const FtpContextProvider = ({ children }) => {
     }
   };
 
-  const fetchFolders = async (user = currentUser) => {
-    const foldersR = await getFolders(user.displayName);
+  const fetchFolders = async () => {
+    const foldersR = await getFolders(currentUser.displayName);
 
     if (foldersR) {
-      if (currentUser) {
-        const ftpUser = await getFtpUser(currentUser.displayName);
-        const main_folder = await getFolder(ftpUser.main_folder);
-        setCurrentFolder(main_folder);
-      }
       setFolders(foldersR);
       localStorage.setItem('folders', JSON.stringify(foldersR));
     } else {
@@ -45,11 +42,32 @@ export const FtpContextProvider = ({ children }) => {
     }
   }
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchFiles();
-      fetchFolders();
+  const handleActiveFolders = async () => {
+    const storedActiveFolders = localStorage.getItem('activeFolders');
+
+    if (storedActiveFolders) {
+      const parsedActiveFolders = JSON.parse(storedActiveFolders);
+      const getCurrentFolder = await getFolder(parsedActiveFolders[parsedActiveFolders.length - 1]._id);
+
+      setCurrentFolder(getCurrentFolder);
+      setActiveFolders(parsedActiveFolders);
+    } else {
+      const ftpUser = await getFtpUser(currentUser.displayName);
+      const mainUserFolder = await getFolder(ftpUser.main_folder);
+
+      const parseFolder = {
+        _id: mainUserFolder._id,
+        name: mainUserFolder.name
+      }
+      setActiveFolders([parseFolder]);
+      localStorage.setItem('activeFolders', JSON.stringify([parseFolder]));
     }
+  }
+
+  useEffect(() => {
+    handleActiveFolders(),
+    fetchFiles(),
+    fetchFolders()
   }, []);
 
   const props = {
@@ -59,10 +77,10 @@ export const FtpContextProvider = ({ children }) => {
     folders,
     setFolders,
     fetchFolders,
-    // activeFolders,
-    // setActiveFolders,
+    activeFolders,
+    setActiveFolders,
     currentFolder,
-    setCurrentFolder
+    setCurrentFolder,
   }
 
   return (
