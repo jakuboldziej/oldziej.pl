@@ -5,12 +5,12 @@ import { useNavigate } from "react-router";
 import { postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import { AuthContext } from "@/context/AuthContext";
 
 function Register() {
   document.title = "Oldziej | Register";
 
-  const currentUser = useAuthUser();
+  const { currentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

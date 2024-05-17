@@ -4,13 +4,13 @@ import { getDartsUsers } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { FtpContext } from "@/context/FtpContext";
+import { AuthContext } from "@/context/AuthContext";
 
 function Home() {
   document.title = "Oldziej | Home";
   
-  const currentUser = useAuthUser()
+  const { currentUser } = useContext(AuthContext);
   const { files, fetchFiles, folders, fetchFolders } = useContext(FtpContext);
 
   const [dartUsers, setDartUsers] = useState([]);

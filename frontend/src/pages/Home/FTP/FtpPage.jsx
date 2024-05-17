@@ -17,14 +17,14 @@ import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import CopyTextButton from '@/components/CopyTextButton'
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import { useNavigate } from 'react-router'
 import FileOptionsDialogs from '@/components/FTP/MyDialogs'
+import { AuthContext } from '@/context/AuthContext'
 
 function FtpPage() {
   document.title = "Oldziej | Cloud";
-  const { folders, setFolders, files, setFiles, currentFolder, setCurrentFolder } = useContext(FtpContext);
-  const currentUser = useAuthUser();
+  const { folders, setFolders, files, setFiles } = useContext(FtpContext);
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 

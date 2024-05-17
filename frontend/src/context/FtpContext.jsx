@@ -1,11 +1,12 @@
 import {  getFiles, getFolder, getFolders, getFtpUser } from '@/fetch';
-import { createContext, useEffect, useState } from 'react';
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { AuthContext } from './AuthContext';
 
 export const FtpContext = createContext();
 
 export const FtpContextProvider = ({ children }) => {
-  const currentUser = useAuthUser();
+  const { currentUser } = useContext(AuthContext);
+
   const [currentFolder, setCurrentFolder] = useState();
 
   const [files, setFiles] = useState(() => {
@@ -59,16 +60,19 @@ export const FtpContextProvider = ({ children }) => {
         _id: mainUserFolder._id,
         name: mainUserFolder.name
       }
+      setCurrentFolder(mainUserFolder);
       setActiveFolders([parseFolder]);
       localStorage.setItem('activeFolders', JSON.stringify([parseFolder]));
     }
   }
 
   useEffect(() => {
-    handleActiveFolders(),
-    fetchFiles(),
-    fetchFolders()
-  }, []);
+    if (currentUser) {
+        handleActiveFolders(),
+        fetchFiles(),
+        fetchFolders()
+    }
+  }, [currentUser]);
 
   const props = {
     files,

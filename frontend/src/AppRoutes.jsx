@@ -18,7 +18,6 @@ import RequireAuth from '@auth-kit/react-router/RequireAuth'
 import Storage from './pages/Home/FTP/Storage';
 
 function AppRoutes({ subdomain }) {
-
   const ProtectedRoute = ({ children }) => {
     return <RequireAuth fallbackPath='/login'>{children}</RequireAuth>;
   };

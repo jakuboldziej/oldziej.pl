@@ -2,10 +2,12 @@ import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet"
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
 function NavBar() {
-  const currentUser = useAuthUser();
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
+
   const navigate = useNavigate();
 
   const signOut = useSignOut();
@@ -13,7 +15,9 @@ function NavBar() {
   const logout = () => {
     signOut();
     navigate('/login');
+    setCurrentUser(null);
   }
+
   return (
     <>
       <nav>
@@ -40,7 +44,7 @@ function NavBar() {
                     </SheetHeader>
                     <div className="py-5 text-white">
                       <Button onClick={() => navigate("/user/settings")} variant="outline_white">Settings</Button>
-                      {currentUser && currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive" className="mx-3">Admin</Button>) : null}
+                      {currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive" className="mx-3">Admin</Button>) : null}
                     </div>
                     <div className="absolute right-2 bottom-2 text-white">
                       <Button variant="outline_red" onClick={logout}>Log Out</Button>

@@ -12,7 +12,7 @@ import ShowNewToast from "../MyComponents/ShowNewToast";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { AuthContext } from "@/context/AuthContext";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -30,7 +30,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [egt, setEgt] = useState(0);
 
   const { setGame } = useContext(DartsGameContext);
-  const currentUser = useAuthUser();
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 

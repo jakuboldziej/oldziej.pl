@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { Loader2  } from "lucide-react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { loginUser } from "@/fetch";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
+import { AuthContext } from "@/context/AuthContext";
 
 function Login() {
   document.title = "Oldziej | Login";
 
-  const currentUser = useAuthUser();
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const signIn = useSignIn();
@@ -69,17 +69,17 @@ function Login() {
           type: "Bearer"
         },
         userState: { displayName: displayName }
-      })
+      });
+
+      setCurrentUser({ displayName: displayName });
 
       navigate("/");
-      
       setIsLoading(false);
     } catch (err) {
       console.log(err);
       handleError("Wrong password.", "rgb(248, 126, 126)")
       setIsLoading(false);
     }
-
   }
 
   return (

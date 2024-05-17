@@ -11,13 +11,13 @@ import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
 import MyDialogs from "@/components/FTP/MyDialogs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import MyFileCard from "@/components/FTP/MyFileCard";
 import MyFolderCard from "@/components/FTP/MyFolderCard";
+import { AuthContext } from "@/context/AuthContext";
 
 function MyFiles() {
   const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
-  const currentUser = useAuthUser();
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -269,6 +269,7 @@ function MyFiles() {
       const corFolder = folders.find((folder) => folder._id === currentFolder._id);
       getDataShown(corFolder);
     }
+
   }, [currentFolder]);
 
   const myDialogsProps = {

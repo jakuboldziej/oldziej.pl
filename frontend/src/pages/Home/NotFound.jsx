@@ -1,13 +1,13 @@
 import NavBar from "@/components/NavBar";
 import { useNavigate } from "react-router-dom";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser'
 import { Button } from "@/components/ui/button";
+import { AuthContext } from "@/context/AuthContext";
 
 const NotFound = () => {
   document.title = "Oldziej | 404 - Not Found";
   const navigate = useNavigate();
   
-  const currentUser = useAuthUser();
+  const { currentUser } = useContext(AuthContext);
 
   return (
     <>
