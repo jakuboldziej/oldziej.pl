@@ -3,8 +3,8 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFileToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { deleteFile, getFile, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
+import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
@@ -117,9 +117,9 @@ function MyFiles() {
       else {
         updateDataShown([folderRes])
       }
-      
+
       updateFoldersStorage(folderRes, "add")
-      
+
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
       setCreatingFolder('');
     }
@@ -156,25 +156,29 @@ function MyFiles() {
   }
 
   const updateFilesStorage = async (file, action) => {
-    let updatedFiles = files;
-    let updatedFolder = currentFolder;
+    let updatedFiles;
+    let updatedFolders;
 
     if (action === "add") {
-      if (!updatedFiles) updatedFiles = [file];
-      else updatedFiles.unshift(file);
-      addFileToFolder(updatedFolder, file);
-    } else if (action === "del") {
-      updatedFolder.files = updatedFolder.files.filter((fId) => fId != file._id);
-      updatedFiles = updatedFiles.filter((f) => f._id != file._id);
-    }
-    const updatedFolders = folders.map((f) => {
-      if (f._id === updatedFolder._id) {
-        f = updatedFolder
-      }
-      return f;
-    });
+      const { updatedFolder } = await addFileToFolder(currentFolder, file);
 
-    setCurrentFolder(updatedFolder);
+      if (!files) updatedFiles = [file];
+      else updatedFiles = [file, ...files];
+
+      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+    } else if (action === "del") {
+      const { updatedFolder, updatedFile } = await deleteFileFromFolder(currentFolder, file);
+
+      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+
+      if (updatedFile.folders.length === 0) {
+        updatedFiles = files.filter((f) => f._id !== updatedFile._id);
+        await deleteFile(file._id);
+      } else {
+        updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+      }
+    }
+
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
@@ -184,34 +188,23 @@ function MyFiles() {
   }
 
   const updateFoldersStorage = async (folder, action) => {
-    let updatedFolders = folders;
-    let updatedFolder = currentFolder;
+    let updatedFolders = [...folders];
+
     if (action === "add") {
-      updatedFolder.folders.unshift(folder._id);
-      updatedFolders.unshift(folder);
-      await putFolder({ folder: updatedFolder });
+      const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(currentFolder, folder);
+
+      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+      updatedFolders = [updatedFolder, ...updatedFolders];
+      setCurrentFolder(updatedCurrentFolder);
     } else if (action === "del") {
-      updatedFolder.folders = updatedFolder.folders.filter((fId) => fId !== folder._id);
-      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
-      folder.files.map(async (fileId) => {
-        const file = files.find((f) => f._id === fileId);
-        await deleteFileFromFolder(folder, file);
-      })
-      folder.folders.map(async (folderId) => {
-        f = folders.find((f) => f._id === folderId);
-        await deleteFolderFromFolder(folder, f);
-      })
+      const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
+
+      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+      updatedFolders = folders.filter((f) => f._id !== updatedFolder._id);
+      setCurrentFolder(updatedCurrentFolder);
     }
 
-    updatedFolders = updatedFolders.map((f) => {
-      if (f._id === updatedFolder._id) {
-        f = updatedFolder
-      }
-      return f;
-    });
-
-    setCurrentFolder(updatedFolder);
-    setFolders(updatedFolders)
+    setFolders(updatedFolders);
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
   }
 
@@ -220,8 +213,8 @@ function MyFiles() {
       const fileRes = await getFile(recentFile._id);
 
       if (dataShown) {
-        const dataFolders = dataShown.filter((data) => data.type == "folder");
-        const dataFiles = dataShown.filter((data) => data.type == "file");
+        const dataFolders = dataShown.filter((data) => data.type === "folder");
+        const dataFiles = dataShown.filter((data) => data.type === "file");
 
         const updatedDataShown = [...dataFolders, fileRes, ...dataFiles];
         updateDataShown(updatedDataShown);
@@ -265,12 +258,12 @@ function MyFiles() {
   }
 
   useEffect(() => {
-    if (currentFolder) {
-      const corFolder = folders.find((folder) => folder._id === currentFolder._id);
-      getDataShown(corFolder);
+    if (activeFolders.length > 0) {
+      const getCurrentFolder = folders.find((f) => f._id == activeFolders[activeFolders.length - 1]._id);
+      setCurrentFolder(getCurrentFolder);
+      getDataShown(getCurrentFolder);
     }
-
-  }, [currentFolder]);
+  }, [activeFolders]);
 
   const myDialogsProps = {
     dialogOpen,

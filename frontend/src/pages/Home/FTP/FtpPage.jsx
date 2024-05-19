@@ -116,18 +116,9 @@ function FtpPage() {
   }
 
   const handleDeleteFile = async (file) => {
-    const deleteRes = await deleteFile(file._id);
-    file.folders.map(async (folderId) => {
-      const folder = folders.find((f) => f._id === folderId);
-      await deleteFileFromFolder(folder, file);
-    })
-
-    if (deleteRes.ok) {
-      let updatedFiles = files.filter((f) => f._id !== file._id);
-      updateDataShown(updatedFiles);
-      updateFilesStorage(file, "del");
-      ShowNewToast("File Update", `${file.filename} has been deleted.`);
-    }
+    updateDataShown(files.filter((f) => f._id !== file._id));
+    updateFilesStorage(file, "del");
+    ShowNewToast("File Update", `${file.filename} has been deleted.`);
   }
 
   const handleOpeningDialog = (file, action) => {
@@ -179,26 +170,35 @@ function FtpPage() {
   }
 
   const updateFilesStorage = async (file, action) => {
-    let updatedFiles = files;
-    const ftpUser = await getFtpUser(currentUser.displayName);
-    const mainUserFolder = folders.find((f) => f._id === ftpUser.main_folder);
-    let updatedFolder = mainUserFolder;
+    let updatedFiles;
+    let updatedFolders;
 
     if (action === "add") {
       if (!updatedFiles) updatedFiles = [file];
       else updatedFiles.unshift(file);
-      addFileToFolder(updatedFolder, file);
-    } else if (action === "del") {
-      updatedFolder.files = updatedFolder.files.filter((fId) => fId != file._id);
-      updatedFiles = updatedFiles.filter((f) => f._id != file._id);
-    }
-    const updatedFolders = folders.map((f) => {
-      if (f._id === updatedFolder._id) {
-        f = updatedFolder
-      }
-      return f;
-    });
 
+      const ftpUser = await getFtpUser(currentUser.displayName);
+      const mainUserFolder = folders.find((f) => f._id === ftpUser.main_folder);
+      const { updatedFolder } = await addFileToFolder(mainUserFolder, file);
+
+      if (!files) updatedFiles = [file];
+      else updatedFiles = [file, ...files];
+
+      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+    } else if (action === "del") {
+
+      const promises = file.folders.map(async (folderId) => {
+        const fileObj = folders.find((f) => f._id === folderId);
+        const { updatedFolder } = await deleteFileFromFolder(fileObj, file);
+        return updatedFolder;
+      });
+
+      updatedFolders = await Promise.all(promises);
+
+      updatedFiles = files.filter((f) => f._id !== file._id);
+      await deleteFile(file._id);
+    }
+    
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
 

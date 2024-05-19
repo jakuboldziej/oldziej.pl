@@ -1,4 +1,3 @@
-import { addFileToFolder } from "./components/FTP/utils";
 
 export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 

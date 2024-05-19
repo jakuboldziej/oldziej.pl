@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareArrowDown, Trash2, Folder, FolderOpen, Files, Link, FolderSymlink } from 'lucide-react';
-import { deleteFolderFromFolder, downloadFolder, handleDataShown } from "./utils";
+import { downloadFolder, handleDataShown } from "./utils";
 import { deleteFolder } from "@/fetch";
 import { useContext } from "react";
 import { FtpContext } from "@/context/FtpContext";
@@ -20,9 +20,7 @@ function MyFolderCard(props) {
   const handleDeleteFolder = async (folder) => {
     const deleteRes = await deleteFolder(folder._id);
 
-    if (deleteRes.ok) {
-      await deleteFolderFromFolder(currentFolder, folder);
-      
+    if (deleteRes.ok) {      
       updateDataShown(dataShown.filter((f) => f._id !== folder._id));
       updateFoldersStorage(folder, "del");
 
