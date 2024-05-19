@@ -189,6 +189,7 @@ function MyFiles() {
 
   const updateFoldersStorage = async (folder, action) => {
     let updatedFolders = [...folders];
+    let updatedFiles;
 
     if (action === "add") {
       const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(currentFolder, folder);
@@ -197,11 +198,31 @@ function MyFiles() {
       updatedFolders = [updatedFolder, ...updatedFolders];
       setCurrentFolder(updatedCurrentFolder);
     } else if (action === "del") {
-      const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
+      // const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
 
-      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
-      updatedFolders = folders.filter((f) => f._id !== updatedFolder._id);
-      setCurrentFolder(updatedCurrentFolder);
+      // const deleteRes = await deleteFolder(folder._id);
+      if (folder.files.length > 0 || folder.folders.length > 0) {
+        alert("Are you sure you want to delete?");
+        const filePromises = folder.files.map(async (fileId) => {
+          const fileObj = files.find((f) => f._id === fileId);
+          // const { updatedFile } = await deleteFileFromFolder(folder, fileObj);
+          // return updatedFile;
+        });
+        const fils = await Promise.all(filePromises);
+
+        const folderPromises = folder.folders.map(async (folderId) => {
+          const folderObj = folders.find((f) => f._id === folderId);
+          // const { updatedFolder } = await deleteFolderFromFolder(folder, folderObj);
+          // return updatedFolder;
+        });
+        const fols = await Promise.all(folderPromises);
+  
+      }
+      console.log(updatedFiles);
+
+      // updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+      // updatedFolders = folders.filter((f) => f._id !== updatedFolder._id);
+      // setCurrentFolder(updatedCurrentFolder);
     }
 
     setFolders(updatedFolders);

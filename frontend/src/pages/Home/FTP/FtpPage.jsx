@@ -186,10 +186,9 @@ function FtpPage() {
 
       updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     } else if (action === "del") {
-
       const promises = file.folders.map(async (folderId) => {
-        const fileObj = folders.find((f) => f._id === folderId);
-        const { updatedFolder } = await deleteFileFromFolder(fileObj, file);
+        const folderObj = folders.find((f) => f._id === folderId);
+        const { updatedFolder } = await deleteFileFromFolder(folderObj, file);
         return updatedFolder;
       });
 

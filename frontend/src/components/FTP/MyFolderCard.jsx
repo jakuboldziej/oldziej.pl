@@ -18,14 +18,10 @@ function MyFolderCard(props) {
   }
 
   const handleDeleteFolder = async (folder) => {
-    const deleteRes = await deleteFolder(folder._id);
+    updateDataShown(dataShown.filter((f) => f._id !== folder._id));
+    updateFoldersStorage(folder, "del");
 
-    if (deleteRes.ok) {      
-      updateDataShown(dataShown.filter((f) => f._id !== folder._id));
-      updateFoldersStorage(folder, "del");
-
-      ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
-    }
+    ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
   }
 
   const handleShareLink = () => {
@@ -38,7 +34,7 @@ function MyFolderCard(props) {
 
   const openFolder = async (folder) => {
     handleActiveFolders(folder, "forward");
-    
+
     const updatedDataShown = await handleDataShown(folder);
     setDataShown(updatedDataShown);
     setCurrentFolder(folder);
