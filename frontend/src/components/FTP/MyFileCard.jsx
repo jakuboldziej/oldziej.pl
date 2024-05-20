@@ -4,9 +4,12 @@ import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, Penc
 import { downloadFile, handleFileTypes, renderFile } from "@/components/FTP/utils";
 import { mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
+import { useContext } from "react";
+import { FtpContext } from "@/context/FtpContext";
 
 function MyFileCard(props) {
   const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered } = props;
+  const { files, setFiles } = useContext(FtpContext);
 
   const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -29,13 +32,11 @@ function MyFileCard(props) {
     else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
 
     const updatedFile = await putFile({ file });
-    const updatedFiles = dataShown.map((data) => {
-      if (data._id === file._id) {
-        data = updatedFile;
-      }
-      return data;
-    });
-    updateDataShown(updatedFiles);
+    const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
+    updateDataShown(updatedData);
+    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+    setFiles(updatedFiles);
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   return (

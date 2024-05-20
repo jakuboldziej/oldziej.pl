@@ -138,13 +138,11 @@ function FtpPage() {
       newFileName: newFileName
     }
     const updatedFile = await putFile(data);
-    const updatedFiles = files.map((f) => {
-      if (f.filename === file.filename) {
-        f = updatedFile;
-      }
-      return f;
-    });
+    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+
     updateDataShown(updatedFiles);
+    setFiles(updatedFiles);
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
@@ -171,7 +169,7 @@ function FtpPage() {
 
   const updateFilesStorage = async (file, action) => {
     let updatedFiles;
-    let updatedFolders;
+    let updatedFolders = [...folders];
 
     if (action === "add") {
       if (!updatedFiles) updatedFiles = [file];
@@ -184,15 +182,13 @@ function FtpPage() {
       if (!files) updatedFiles = [file];
       else updatedFiles = [file, ...files];
 
-      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+      updatedFolders = updatedFolders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     } else if (action === "del") {
-      const promises = file.folders.map(async (folderId) => {
-        const folderObj = folders.find((f) => f._id === folderId);
+      file.folders.map(async (folderId) => {
+        let  folderObj = updatedFolders.find((f) => f._id === folderId);
         const { updatedFolder } = await deleteFileFromFolder(folderObj, file);
-        return updatedFolder;
+        folderObj = updatedFolder
       });
-
-      updatedFolders = await Promise.all(promises);
 
       updatedFiles = files.filter((f) => f._id !== file._id);
       await deleteFile(file._id);

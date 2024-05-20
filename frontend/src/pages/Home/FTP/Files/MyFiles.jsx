@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { deleteFile, getFile, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
+import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
@@ -90,13 +90,12 @@ function MyFiles() {
       newFileName: newFileName
     }
     const updatedFile = await putFile(data);
-    const updatedData = dataShown.map((data) => {
-      if (data._id === file._id) {
-        data = updatedFile;
-      }
-      return data;
-    });
+    
+    const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
     updateDataShown(updatedData);
+    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+    setFiles(updatedFiles);
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
     setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
   }
 
@@ -157,7 +156,7 @@ function MyFiles() {
 
   const updateFilesStorage = async (file, action) => {
     let updatedFiles;
-    let updatedFolders;
+    let updatedFolders = [...folders];
 
     if (action === "add") {
       const { updatedFolder } = await addFileToFolder(currentFolder, file);
@@ -165,11 +164,11 @@ function MyFiles() {
       if (!files) updatedFiles = [file];
       else updatedFiles = [file, ...files];
 
-      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+      updatedFolders = updatedFolders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     } else if (action === "del") {
       const { updatedFolder, updatedFile } = await deleteFileFromFolder(currentFolder, file);
 
-      updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+      updatedFolders = updatedFolders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
 
       if (updatedFile.folders.length === 0) {
         updatedFiles = files.filter((f) => f._id !== updatedFile._id);
@@ -190,6 +189,7 @@ function MyFiles() {
   const updateFoldersStorage = async (folder, action) => {
     let updatedFolders = [...folders];
     let updatedFiles;
+    updatedFiles = files ? [...files] : null;
 
     if (action === "add") {
       const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(currentFolder, folder);
@@ -198,31 +198,28 @@ function MyFiles() {
       updatedFolders = [updatedFolder, ...updatedFolders];
       setCurrentFolder(updatedCurrentFolder);
     } else if (action === "del") {
-      // const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
+      const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
 
-      // const deleteRes = await deleteFolder(folder._id);
+      await deleteFolder(folder._id);
       if (folder.files.length > 0 || folder.folders.length > 0) {
         alert("Are you sure you want to delete?");
-        const filePromises = folder.files.map(async (fileId) => {
-          const fileObj = files.find((f) => f._id === fileId);
-          // const { updatedFile } = await deleteFileFromFolder(folder, fileObj);
-          // return updatedFile;
+        folder.files.length > 0 && folder.files.map(async (fileId) => {
+          let fileObj = files.find((f) => f._id === fileId);
+          const { updatedFile } = await deleteFileFromFolder(folder, fileObj);
+          fileObj = updatedFile
         });
-        const fils = await Promise.all(filePromises);
 
-        const folderPromises = folder.folders.map(async (folderId) => {
-          const folderObj = folders.find((f) => f._id === folderId);
-          // const { updatedFolder } = await deleteFolderFromFolder(folder, folderObj);
-          // return updatedFolder;
+        folder.folders.length > 0 && folder.folders.map(async (folderId) => {
+          let folderObj = updatedFolders.find((f) => f._id === folderId);
+          const { updatedFolder } = await deleteFolderFromFolder(folder, folderObj);
         });
-        const fols = await Promise.all(folderPromises);
-  
       }
-      console.log(updatedFiles);
 
-      // updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
-      // updatedFolders = folders.filter((f) => f._id !== updatedFolder._id);
-      // setCurrentFolder(updatedCurrentFolder);
+      console.log(updatedFiles, updatedFolders);
+
+      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
+      setCurrentFolder(updatedCurrentFolder);
     }
 
     setFolders(updatedFolders);
