@@ -54,7 +54,7 @@ function FileOptionsDialogs(props) {
           <Button onClick={handleCreateNewFolder} variant='outline_green'>Create</Button>
         </>
       }>
-        <Input required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
+        <Input tabIndex={0} autoFocus required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
       </MyDialog>
     </>
   )

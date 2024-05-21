@@ -4,7 +4,7 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 function MyDialog({ children, dialogOpen, setDialogOpen, title, footer }) {
   return (
     <Dialog open={dialogOpen}>
-      <DialogContent>
+      <DialogContent >
         <DialogHeader className="text-white">
           <DialogTitle className='flex justify-center text-2xl'>{title}</DialogTitle>
           <DialogClose>
