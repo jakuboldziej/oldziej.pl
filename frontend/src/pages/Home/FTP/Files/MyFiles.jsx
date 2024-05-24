@@ -90,7 +90,7 @@ function MyFiles() {
       newFileName: newFileName
     }
     const updatedFile = await putFile(data);
-    
+
     const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
     updateDataShown(updatedData);
     const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
@@ -198,28 +198,20 @@ function MyFiles() {
       updatedFolders = [updatedFolder, ...updatedFolders];
       setCurrentFolder(updatedCurrentFolder);
     } else if (action === "del") {
-      const { updatedCurrentFolder, updatedFolder } = await deleteFolderFromFolder(currentFolder, folder);
-
-      await deleteFolder(folder._id);
+      console.log(folder);
       if (folder.files.length > 0 || folder.folders.length > 0) {
-        alert("Are you sure you want to delete?");
-        folder.files.length > 0 && folder.files.map(async (fileId) => {
-          let fileObj = files.find((f) => f._id === fileId);
-          const { updatedFile } = await deleteFileFromFolder(folder, fileObj);
-          fileObj = updatedFile
-        });
+        ShowNewToast("Cant't delete folder", `${folder.name} has data inside`);
+      } else {
+        const { updatedCurrentFolder } = await deleteFolderFromFolder(currentFolder, folder);
 
-        folder.folders.length > 0 && folder.folders.map(async (folderId) => {
-          let folderObj = updatedFolders.find((f) => f._id === folderId);
-          const { updatedFolder } = await deleteFolderFromFolder(folder, folderObj);
-        });
+        await deleteFolder(folder._id);
+        updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+        updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+        updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
+        setCurrentFolder(updatedCurrentFolder);
+        ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
+        updateDataShown(dataShown.filter((f) => f._id !== folder._id));
       }
-
-      console.log(updatedFiles, updatedFolders);
-
-      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
-      updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
-      setCurrentFolder(updatedCurrentFolder);
     }
 
     setFolders(updatedFolders);
@@ -327,40 +319,42 @@ function MyFiles() {
           </div>
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <div className="files">
-                {dataShown !== null ? (
-                  dataShown.length > 0 ? (
-                    dataShown.map((data) => (
-                      data.type == "file" ? (
-                        <MyFileCard key={data._id} {...cardProps} file={data} />
-                      ) : (
-                        <MyFolderCard key={data._id} {...cardProps} folder={data} />
-                      )
-                    ))
+              <div className="files-wrapper">
+                <div className="files">
+                  {dataShown !== null ? (
+                    dataShown.length > 0 ? (
+                      dataShown.map((data) => (
+                        data.type == "file" ? (
+                          <MyFileCard key={data._id} {...cardProps} file={data} />
+                        ) : (
+                          <MyFolderCard key={data._id} {...cardProps} folder={data} />
+                        )
+                      ))
+                    ) : (
+                      <div className="flex justify-center w-full pt-3">
+                        <Loader2 className="h-10 w-10 animate-spin" />
+                      </div>
+                    )
                   ) : (
-                    <div className="flex justify-center w-full pt-3">
-                      <Loader2 className="h-10 w-10 animate-spin" />
+                    <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                      No Files...
+                      <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
+                      Or Right click here
                     </div>
-                  )
-                ) : (
-                  <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center w-100 pt-12'>
-                    No Files...
-                    <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
-                    Or Right click here
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </ContextMenuTrigger>
             <ContextMenuContent>
               <ContextMenuItem className="gap-2" onClick={() => handleOpeningDialog(null, "createFolder")}><FolderPlus />Utwórz katalog</ContextMenuItem>
-              <ContextMenuItem className="gap-2"><FilePlus />Nowy plik tekstowy</ContextMenuItem>
+              <ContextMenuItem disabled className="gap-2"><FilePlus />Nowy plik tekstowy</ContextMenuItem>
               <ContextMenuSeparator />
               <ContextMenuSub>
                 <ContextMenuSubTrigger className="gap-2"><ArrowDownNarrowWide />SORTUJ</ContextMenuSubTrigger>
                 <ContextMenuSubContent className="w-48">
-                  <ContextMenuItem>Nazwa</ContextMenuItem>
-                  <ContextMenuItem>Rodzaj</ContextMenuItem>
-                  <ContextMenuItem>Data Dodania</ContextMenuItem>
+                  <ContextMenuItem disabled>Nazwa</ContextMenuItem>
+                  <ContextMenuItem disabled>Rodzaj</ContextMenuItem>
+                  <ContextMenuItem disabled>Data Dodania</ContextMenuItem>
                 </ContextMenuSubContent>
               </ContextMenuSub>
               <ContextMenuSeparator />

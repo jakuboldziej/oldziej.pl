@@ -2,13 +2,20 @@ import { X } from "lucide-react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 
 function MyDialog({ children, dialogOpen, setDialogOpen, title, footer }) {
+
+  const handleDialogClose = (event) => {
+    if (event === false) {
+      setDialogOpen((prev) => ({ ...prev, changeFileName: false, showInfo: false, createFolder: false }))
+    }
+  }
+
   return (
-    <Dialog open={dialogOpen}>
-      <DialogContent >
+    <Dialog open={dialogOpen} onOpenChange={(e) => handleDialogClose(e)}>
+      <DialogContent>
         <DialogHeader className="text-white">
           <DialogTitle className='flex justify-center text-2xl'>{title}</DialogTitle>
           <DialogClose>
-            <X onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false, showInfo: false, createFolder: false }))} className="absolute right-2 top-2" />
+            <X className="absolute right-2 top-2" />
           </DialogClose>
         </DialogHeader>
         <div className="text-white">

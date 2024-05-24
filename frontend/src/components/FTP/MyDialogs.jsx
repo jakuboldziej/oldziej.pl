@@ -1,13 +1,27 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import MyDialog from '../MyComponents/MyDialog'
 import { Button } from '../ui/button'
 import { Card, CardDescription, CardHeader } from '../ui/card'
 import { formatFileSize } from './utils'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
+import { FtpContext } from '@/context/FtpContext'
 
 function FileOptionsDialogs(props) {
   const { dialogOpen, setDialogOpen, handleUpdateFile, handleCreateNewFolder, changingFileName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
+  const { activeFolders } = useContext(FtpContext);
+
+  const handleFilePath = (file) => {
+    if (file && dialogOpen.showInfo) {
+      let path = "";
+      activeFolders.map((folder) => {
+        path = path + folder.name + " > "
+      })
+  
+      return path + file.filename;
+    }
+  }
+
   return (
     <>
       {/* Changing File Name */}
@@ -28,7 +42,7 @@ function FileOptionsDialogs(props) {
         <Card>
           <CardHeader>
             Ścieżka:
-            <CardDescription>Folder {'>'} {dialogOpen.file?.filename}</CardDescription>
+            <CardDescription>{handleFilePath(dialogOpen.file)}</CardDescription>
           </CardHeader>
         </Card>
         <div className='p-4 flex gap-40'>

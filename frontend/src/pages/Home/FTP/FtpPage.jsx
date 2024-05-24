@@ -154,13 +154,10 @@ function FtpPage() {
     else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
 
     const updatedFile = await putFile({ file });
-    const updatedFiles = files.map((f) => {
-      if (f.filename === file.filename) {
-        f = updatedFile;
-      }
-      return f;
-    });
+    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
     updateDataShown(updatedFiles);
+    setFiles(updatedFiles);
+    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   const updateDataShown = async (updatedFiles) => {
@@ -397,7 +394,7 @@ function FtpPage() {
             </div>
           </div>
           <div className='right-side'>
-            <div className='bg-slate-700 p-4 rounded-2xl h-full flex flex-col gap-4'>
+            <div className='bg-slate-700 p-4 rounded-2xl sm:h-full flex flex-col gap-4'>
               <Form {...form}>
                 <form className="space-y-8">
                   <FormField
