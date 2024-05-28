@@ -2,6 +2,7 @@ import NavBar from "@/components/NavBar";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AuthContext } from "@/context/AuthContext";
+import { useContext } from "react";
 
 const NotFound = () => {
   document.title = "Oldziej | 404 - Not Found";

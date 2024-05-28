@@ -6,19 +6,19 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, putFile, uploadFile } from '@/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFolder, putFile, uploadFile } from '@/fetch'
 import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder } from '@/components/FTP/utils'
-import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files } from 'lucide-react'
+import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/FTP/utils'
+import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files, Folder } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import CopyTextButton from '@/components/CopyTextButton'
 import { useNavigate } from 'react-router'
-import FileOptionsDialogs from '@/components/FTP/MyDialogs'
+import MyDialogs from '@/components/FTP/MyDialogs'
 import { AuthContext } from '@/context/AuthContext'
 
 function FtpPage() {
@@ -30,6 +30,7 @@ function FtpPage() {
 
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentFile, setRecentFile] = useState(null);
+  const [recentFolders, setRecentFolders] = useState([]);
   const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
   const [fileStatus, setFileStatus] = useState({
     uploading: false,
@@ -42,16 +43,18 @@ function FtpPage() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [changingFileName, setChangingFileName] = useState('');
 
+  const [creatingFolder, setCreatingFolder] = useState('');
+
   const [dialogOpen, setDialogOpen] = useState({
     file: null,
     changeFileName: false,
-    showInfo: false
+    showInfo: false,
+    createFolder: false
   });
   const [isHovered, setIsHovered] = useState({
     heart: false
   })
   const [currentPage, setCurrentPage] = useState(1);
-
 
   const formSchema = z.object({
     file: z.instanceof(FileList).optional(),
@@ -77,11 +80,8 @@ function FtpPage() {
       recentFilesAmount = files.slice(0, amount)
     }
     setRecentFiles(recentFilesAmount);
-  };
 
-  useEffect(() => {
-    if (files) handleRecentFilesShown("scroll")
-  }, [currentPage]);
+  };
 
   const handleSubmit = async (event) => {
     setFileStatus((prev) => ({ ...prev, uploading: true }));
@@ -109,6 +109,50 @@ function FtpPage() {
     }
   };
 
+  const handleCreateNewFolder = async () => {
+    if (creatingFolder.trim() === '') {
+      ShowNewToast("Error creating folder", "Please specify a folder name", "Warning");
+    } else {
+      const folderName = creatingFolder;
+      const data = {
+        name: folderName,
+        owner: currentUser.displayName
+      }
+      const folderRes = await postFolder(data);
+      if (recentFolders) {
+        const updatedrecentFolders = [folderRes, ...recentFolders];
+        setRecentFolders(updatedrecentFolders);
+      }
+      else {
+        setRecentFolders([folderRes])
+      }
+
+      const ftpUser = await getFtpUser(currentUser.displayName);
+      const mainUserFolder = folders.find((f) => f._id === ftpUser.main_folder);
+      let updatedFolders = [...folders];
+      const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(mainUserFolder, folderRes);
+
+      updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
+      updatedFolders = [...updatedFolders, updatedFolder];
+
+      setFolders(updatedFolders);
+      localStorage.setItem('folders', JSON.stringify(updatedFolders));
+
+      setDialogOpen((prev) => ({ ...prev, createFolder: false }));
+      setCreatingFolder('');
+      ShowNewToast("Folder added", `${folderRes.name} created.`);
+    }
+  }
+
+  const openFolder = async (folder) => {
+    navigate("files")
+    // handleActiveFolders(folder, "forward");
+
+    // const updatedDataShown = await handleDataShown(folder);
+    // setDataShown(updatedDataShown);
+    // setCurrentFolder(folder);
+  }
+
   const handleDownloadFile = (filename) => {
     setFileStatus((prev) => ({ ...prev, downloading: filename }));
     downloadFile(filename);
@@ -127,6 +171,8 @@ function FtpPage() {
       setChangingFileName(file.filename);
     } else if (action === "showInfo") {
       setDialogOpen((prev) => ({ ...prev, showInfo: true, file: file }));
+    } else if (action === "createFolder") {
+      setDialogOpen((prev) => ({ ...prev, createFolder: true }));
     }
   }
 
@@ -182,7 +228,7 @@ function FtpPage() {
       updatedFolders = updatedFolders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     } else if (action === "del") {
       file.folders.map(async (folderId) => {
-        let  folderObj = updatedFolders.find((f) => f._id === folderId);
+        let folderObj = updatedFolders.find((f) => f._id === folderId);
         const { updatedFolder } = await deleteFileFromFolder(folderObj, file);
         folderObj = updatedFolder
       });
@@ -190,7 +236,7 @@ function FtpPage() {
       updatedFiles = files.filter((f) => f._id !== file._id);
       await deleteFile(file._id);
     }
-    
+
     setFolders(updatedFolders)
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
@@ -198,6 +244,10 @@ function FtpPage() {
     setFiles(updatedFiles)
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
+
+  useEffect(() => {
+    if (files) handleRecentFilesShown("scroll")
+  }, [currentPage]);
 
   useEffect(() => {
     if (!fileStatus.uploading) return;
@@ -251,12 +301,21 @@ function FtpPage() {
     setFileTypes(handleFileTypes(files));
   }, [files]);
 
-  const fileOptionsDialogsProps = {
+  useEffect(() => {
+    if (folders) {
+      let filteredFolders = folders.filter((f) => f.name !== "Cloud drive").reverse().slice(0, 3);
+      setRecentFolders(filteredFolders)
+    }
+  }, [folders]);
+
+  const myDialogsProps = {
     dialogOpen,
     setDialogOpen,
     handleUpdateFile,
     changingFileName,
-    setChangingFileName
+    setChangingFileName,
+    handleCreateNewFolder,
+    setCreatingFolder
   }
 
   return (
@@ -311,17 +370,19 @@ function FtpPage() {
             <div className='folders flex flex-col gap-6'>
               <span className='text-3xl'>Folders</span>
               <div className='cards flex gap-5 flex-wrap'>
-                <Card className='folder rounded-xl flex items-center justify-center'>
+                {recentFolders && recentFolders.map((folder) => (
+                  <Card key={folder._id} className='folder rounded-xl' onClick={() => openFolder(folder)}>
+                    <CardHeader>
+                      <CardTitle><Folder /></CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {folder.name}
+                    </CardContent>
+                  </Card>
+                ))}
+                <Card onClick={() => handleOpeningDialog(null, "createFolder")} className='folder rounded-xl flex items-center justify-center'>
                   <Plus />
                 </Card>
-                {/* <Card className='folder rounded-xl'>
-                  <CardHeader>
-                    <CardTitle>Ikona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Documents
-                  </CardContent>
-                </Card> */}
               </div>
             </div>
             <div className='recent-files flex flex-col gap-6'>
@@ -333,7 +394,7 @@ function FtpPage() {
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
                           <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
-                          <div className='attrs flex justify-between'>
+                          <div className='attrs flex justify-between items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatFileSize(file.length)}</span>
                             <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
@@ -444,7 +505,7 @@ function FtpPage() {
         </div>
       </div>
 
-      <FileOptionsDialogs {...fileOptionsDialogsProps} />
+      <MyDialogs {...myDialogsProps} />
     </>
   )
 }

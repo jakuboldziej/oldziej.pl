@@ -7,7 +7,7 @@ import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { FtpContext } from '@/context/FtpContext'
 
-function FileOptionsDialogs(props) {
+function MyDialogs(props) {
   const { dialogOpen, setDialogOpen, handleUpdateFile, handleCreateNewFolder, changingFileName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
   const { activeFolders } = useContext(FtpContext);
 
@@ -74,4 +74,4 @@ function FileOptionsDialogs(props) {
   )
 }
 
-export default FileOptionsDialogs
+export default MyDialogs

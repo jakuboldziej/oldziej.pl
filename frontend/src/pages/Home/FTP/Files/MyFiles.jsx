@@ -40,7 +40,7 @@ function MyFiles() {
     uploaded: false,
     downloaded: false
   });
-  const [creatingFolder, setCreatingFolder] = useState('')
+  const [creatingFolder, setCreatingFolder] = useState('');
   const [changingFileName, setChangingFileName] = useState('');
 
   const fileRef = useRef();
@@ -121,6 +121,7 @@ function MyFiles() {
 
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
       setCreatingFolder('');
+      ShowNewToast("Folder Update", `${folderRes.name} created.`);
     }
   }
 
@@ -188,8 +189,6 @@ function MyFiles() {
 
   const updateFoldersStorage = async (folder, action) => {
     let updatedFolders = [...folders];
-    let updatedFiles;
-    updatedFiles = files ? [...files] : null;
 
     if (action === "add") {
       const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(currentFolder, folder);
@@ -198,7 +197,6 @@ function MyFiles() {
       updatedFolders = [updatedFolder, ...updatedFolders];
       setCurrentFolder(updatedCurrentFolder);
     } else if (action === "del") {
-      console.log(folder);
       if (folder.files.length > 0 || folder.folders.length > 0) {
         ShowNewToast("Cant't delete folder", `${folder.name} has data inside`);
       } else {
@@ -216,6 +214,11 @@ function MyFiles() {
 
     setFolders(updatedFolders);
     localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  }
+
+  const getDataShown = async (folder) => {
+    const updatedDataShown = await handleDataShown(folder);
+    setDataShown(updatedDataShown);
   }
 
   useEffect(() => {
@@ -261,11 +264,6 @@ function MyFiles() {
       ShowNewToast("Downloading Started", `${fileStatus.downloading} downloading...`);
     }
   }, [fileStatus]);
-
-  const getDataShown = async (folder) => {
-    const updatedDataShown = await handleDataShown(folder);
-    setDataShown(updatedDataShown);
-  }
 
   useEffect(() => {
     if (activeFolders.length > 0) {
