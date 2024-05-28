@@ -1,5 +1,5 @@
 
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
 
 // Darts
 export const getDartsUsers = async () => {
