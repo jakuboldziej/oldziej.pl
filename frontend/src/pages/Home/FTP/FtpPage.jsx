@@ -385,16 +385,16 @@ function FtpPage() {
                 </Card>
               </div>
             </div>
-            <div className='recent-files flex flex-col gap-6'>
+            <div className='recent-files relative flex flex-col gap-6'>
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea className='scroll-area' onScroll={handleScroll}>
-                <div className='files w-100 flex flex-col flex-wrap gap-4'>
+                <div className='files max-w-fit flex flex-col gap-4'>
                   {files ? (
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
                           <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
-                          <div className='attrs flex justify-between items-center'>
+                          <div className='attrs flex sm:justify-evenly items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatFileSize(file.length)}</span>
                             <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
