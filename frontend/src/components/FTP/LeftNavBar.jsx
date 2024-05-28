@@ -36,7 +36,7 @@ function LeftNavBar() {
           <Menu />
         </SheetTrigger>
         <SheetContent side='left'>
-          <SheetHeader>
+          <SheetHeader className='h-full'>
             <SheetTitle className='flex justify-center'>
               <Link to='/ftp' className='flex gap-1 text-xl hover:opacity-70' onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
                 {locationPathname === '/ftp' ? <PackageOpen /> : (
