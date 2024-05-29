@@ -5,7 +5,7 @@ function MyDialog({ children, dialogOpen, setDialogOpen, title, footer }) {
 
   const handleDialogClose = (event) => {
     if (event === false) {
-      setDialogOpen((prev) => ({ ...prev, changeFileName: false, showInfo: false, createFolder: false }))
+      setDialogOpen((prev) => ({ ...prev, changeDataName: false, showInfo: false, createFolder: false }))
     }
   }
 

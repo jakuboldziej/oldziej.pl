@@ -11,7 +11,7 @@ import ShowNewToast from '@/components/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
-import { handleFileTypes, formatElapsedTime, formatFileSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/FTP/utils'
+import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/FTP/utils'
 import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files, Folder } from 'lucide-react'
 import LeftNavBar from '@/components/FTP/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
@@ -46,8 +46,8 @@ function FtpPage() {
   const [creatingFolder, setCreatingFolder] = useState('');
 
   const [dialogOpen, setDialogOpen] = useState({
-    file: null,
-    changeFileName: false,
+    data: null,
+    changeDataName: false,
     showInfo: false,
     createFolder: false
   });
@@ -166,18 +166,18 @@ function FtpPage() {
   }
 
   const handleOpeningDialog = (file, action) => {
-    if (action === "changeFileName") {
-      setDialogOpen((prev) => ({ ...prev, changeFileName: true, file: file }));
+    if (action === "changeDataName") {
+      setDialogOpen((prev) => ({ ...prev, changeDataName: true, data: file }));
       setChangingFileName(file.filename);
     } else if (action === "showInfo") {
-      setDialogOpen((prev) => ({ ...prev, showInfo: true, file: file }));
+      setDialogOpen((prev) => ({ ...prev, showInfo: true, data: file }));
     } else if (action === "createFolder") {
       setDialogOpen((prev) => ({ ...prev, createFolder: true }));
     }
   }
 
   const handleUpdateFile = async () => {
-    const file = dialogOpen.file;
+    const file = dialogOpen.data;
     const newFileName = changingFileName;
     const data = {
       file: file,
@@ -189,7 +189,7 @@ function FtpPage() {
     updateDataShown(updatedFiles);
     setFiles(updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
-    setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
+    setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
   }
 
   const handleFavoriteFile = async (file) => {
@@ -388,7 +388,7 @@ function FtpPage() {
             <div className='recent-files relative flex flex-col gap-6'>
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea className='scroll-area' onScroll={handleScroll}>
-                <div className='files max-w-fit flex flex-col gap-4'>
+                <div className='files flex flex-col gap-4'>
                   {files ? (
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
@@ -396,7 +396,7 @@ function FtpPage() {
                           <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
                           <div className='attrs flex sm:justify-evenly items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
-                            <span>{formatFileSize(file.length)}</span>
+                            <span>{formatDataSize(file.length)}</span>
                             <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
                             <DropdownMenu>
                               <DropdownMenuTrigger>
@@ -431,7 +431,7 @@ function FtpPage() {
                                   Favorite
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleOpeningDialog(file, "changeFileName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleOpeningDialog(file, "changeDataName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
                                 <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
                                 <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
                                 <DropdownMenuSeparator />

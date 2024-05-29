@@ -26,8 +26,8 @@ function MyFiles() {
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const [dialogOpen, setDialogOpen] = useState({
-    file: null,
-    changeFileName: false,
+    data: null,
+    changeDataName: false,
     showInfo: false,
     createFolder: false
   });
@@ -71,19 +71,20 @@ function MyFiles() {
     }
   }
 
-  const handleOpeningDialog = (file, action) => {
-    if (action === "changeFileName") {
-      setDialogOpen((prev) => ({ ...prev, changeFileName: true, file: file }));
-      setChangingFileName(file.filename);
+  const handleOpeningDialog = (data, action) => {
+    if (action === "changeDataName") {
+      setDialogOpen((prev) => ({ ...prev, changeDataName: true, data: data }));
+      setChangingFileName(data.filename);
     } else if (action === "showInfo") {
-      setDialogOpen((prev) => ({ ...prev, showInfo: true, file: file }));
+      if (data?.type !== "file") data.filename = data.name;
+      setDialogOpen((prev) => ({ ...prev, showInfo: true, data: data }));
     } else if (action === "createFolder") {
       setDialogOpen((prev) => ({ ...prev, createFolder: true }));
     }
   }
 
   const handleUpdateFile = async () => {
-    const file = dialogOpen.file;
+    const file = dialogOpen.data;
     const newFileName = changingFileName;
     const data = {
       file: file,
@@ -96,7 +97,7 @@ function MyFiles() {
     const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
     setFiles(updatedFiles);
     localStorage.setItem('files', JSON.stringify(updatedFiles));
-    setDialogOpen((prev) => ({ ...prev, changeFileName: false }));
+    setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
   }
 
   const handleCreateNewFolder = async () => {
@@ -267,7 +268,7 @@ function MyFiles() {
 
   useEffect(() => {
     if (activeFolders.length > 0) {
-      const getCurrentFolder = folders.find((f) => f._id == activeFolders[activeFolders.length - 1]._id);
+      const getCurrentFolder = folders.find((f) => f._id === activeFolders[activeFolders.length - 1]._id);
       setCurrentFolder(getCurrentFolder);
       getDataShown(getCurrentFolder);
     }

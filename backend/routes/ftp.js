@@ -274,7 +274,8 @@ router.put('/folders/:id', async (req, res) => {
       name: updateFolder.name,
       shared: updateFolder.shared,
       files: updateFolder.files,
-      folders: updateFolder.folders
+      folders: updateFolder.folders,
+      favorite: updateFolder.favorite
     })
 
     res.json({ folder: updateFolder });

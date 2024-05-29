@@ -1,8 +1,8 @@
-import React, { useContext, useEffect } from 'react'
+import React, { useContext } from 'react'
 import MyDialog from '../MyComponents/MyDialog'
 import { Button } from '../ui/button'
 import { Card, CardDescription, CardHeader } from '../ui/card'
-import { formatFileSize } from './utils'
+import { formatDataSize } from './utils'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { FtpContext } from '@/context/FtpContext'
@@ -11,13 +11,13 @@ function MyDialogs(props) {
   const { dialogOpen, setDialogOpen, handleUpdateFile, handleCreateNewFolder, changingFileName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
   const { activeFolders } = useContext(FtpContext);
 
-  const handleFilePath = (file) => {
+  const handleDataPath = (file) => {
     if (file && dialogOpen.showInfo) {
       let path = "";
       activeFolders.map((folder) => {
         path = path + folder.name + " > "
       })
-  
+
       return path + file.filename;
     }
   }
@@ -25,39 +25,40 @@ function MyDialogs(props) {
   return (
     <>
       {/* Changing File Name */}
-      <MyDialog dialogOpen={dialogOpen.changeFileName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
+      <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
         <>
-          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeFileName: false }))} variant='secondary'>Cancel</Button>
+          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
           <Button onClick={handleUpdateFile} variant='outline_green'>Save</Button>
         </>
       }>
         <span className='flex flex-col gap-2'>
-          <Label>Original name: {dialogOpen.file?.metadata.originalFileName}</Label>
-          <Input placeholder={dialogOpen.file?.filename} value={changingFileName} onChange={(e) => setChangingFileName(e.target.value)} />
+          {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
+          <Input placeholder={dialogOpen.data?.filename} value={changingFileName} onChange={(e) => setChangingFileName(e.target.value)} />
         </span>
       </MyDialog>
 
-      {/* Showing File Info */}
-      <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.file?.filename}`}>
+      {/* Showing Data Info */}
+      <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.data?.filename}`}>
         <Card>
           <CardHeader>
-            Ścieżka:
-            <CardDescription>{handleFilePath(dialogOpen.file)}</CardDescription>
+            Path:
+            <CardDescription>{handleDataPath(dialogOpen.data)}</CardDescription>
           </CardHeader>
         </Card>
         <div className='p-4 flex gap-40'>
-          <div>
-            <span className='text-slate-400'>Rozmiar:</span> <br />
-            {formatFileSize(dialogOpen.file?.length)}
-          </div>
-          <div>
-            <span className='text-slate-400'>Ostatnia zmiana:</span> <br />
-            {new Date(dialogOpen.file?.lastModified).toLocaleString()}
-          </div>
+        {dialogOpen.data?.type === "file" && <div>
+            <span className='text-slate-400'>Size:</span> <br />
+            {formatDataSize(dialogOpen.data?.length)}
+          </div>}
+          {dialogOpen.data?.type === "file" && <div>
+            <span className='text-slate-400'>
+              Last modified:</span> <br />
+            {new Date(dialogOpen.data?.lastModified).toLocaleString()}
+          </div>}
         </div>
         <div className='p-4 py-0'>
-          <span className='text-slate-400'>Data Dodania:</span> <br />
-          {new Date(dialogOpen.file?.uploadDate).toLocaleString()}
+          <span className='text-slate-400'>Date added:</span> <br />
+          {new Date(dialogOpen.data?.uploadDate).toLocaleString()}
         </div>
       </MyDialog>
 

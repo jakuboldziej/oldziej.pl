@@ -12,6 +12,11 @@ const FtpFolderSchema = new mongoose.Schema ({
     required: true,
     unique: false
   },
+  favorite: {
+    type: Boolean,
+    required: true,
+    default: false
+  },
   shared: {
     type: [Number],
     required: false,

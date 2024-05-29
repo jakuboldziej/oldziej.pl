@@ -772,6 +772,7 @@ html {
       }
 
       .recent-files {
+        position: relative;
         height: 50%;
 
         @media screen and (max-width: 640px) {
@@ -779,7 +780,11 @@ html {
         }
 
         .recent-file {
-          width: 94%;
+          width: 52.5vw;
+
+          @media screen and (max-width: 640px) {
+            width: 90vw;
+          }
 
           .filename {
             width: 60%;
@@ -788,7 +793,7 @@ html {
             text-overflow: ellipsis;
 
             @media screen and (max-width: 640px) {
-              width: 10%;
+              width: 35%;
             }
           }
 
@@ -796,7 +801,8 @@ html {
             width: 40%;
 
             @media screen and (max-width: 640px) {
-              width: 90%;
+              width: 65%;
+              justify-content: flex-end;
             }
           }
         }

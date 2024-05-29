@@ -12,7 +12,7 @@ export const calcStorageUsage = (files) => {
   const totalStorageFromGBToBytes = 100 * 1024 * 1024 * 1024;
   const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;
 
-  return [formatFileSize(storageBytesSum), percentage.toFixed(2)];
+  return [formatDataSize(storageBytesSum), percentage.toFixed(2)];
 }
 
 export const formatElapsedTime = (elapsedTime) => {
@@ -46,7 +46,7 @@ export const handleSameFilename = (file, files) => {
   return file;
 }
 
-export const formatFileSize = (bytes) => {
+export const formatDataSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
 
   const k = 1024;

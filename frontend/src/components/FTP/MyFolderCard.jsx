@@ -5,10 +5,11 @@ import { downloadFolder, handleDataShown } from "./utils";
 import { useContext } from "react";
 import { FtpContext } from "@/context/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
+import { putFolder } from "@/fetch";
 
 function MyFolderCard(props) {
   const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders } = props;
-  const { setCurrentFolder } = useContext(FtpContext);
+  const { setCurrentFolder, folders, setFolders } = useContext(FtpContext);
 
   const handleDownloadFolder = (foldername) => {
     // setFileStatus((prev) => ({ ...prev, downloading: filename }));
@@ -36,6 +37,20 @@ function MyFolderCard(props) {
     setCurrentFolder(folder);
   }
 
+  const handleFavoriteFolder = async (folder) => {
+    setIsHovered((prev) => ({ ...prev, heart: false }))
+    folder.favorite = !folder.favorite;
+
+    if (folder.favorite) ShowNewToast(`Folder ${folder.name}`, "Added to favorites.");
+    else ShowNewToast(`Folder ${folder.name}`, "Removed from favorites.");
+
+    const updatedFolder = await putFolder({ folder });
+    const updatedData = dataShown.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+    const updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+    updateDataShown(updatedData);
+    setFolders(updatedFolders);
+    localStorage.setItem('folders', JSON.stringify(updatedFolders));
+  }
 
   return (
     <Card onDoubleClick={() => openFolder(folder)} key={folder._id} className="card select-none relative flex justify-center items-center" title={folder.filename}>
@@ -66,12 +81,12 @@ function MyFolderCard(props) {
             <DropdownMenuItem disabled onClick={() => handleShareLink(folder.filename)} className='gap-2'><Link />Share link</DropdownMenuItem>
             <DropdownMenuItem disabled onClick={() => handleShareFolder(folder.filename)} className='gap-2'><FolderSymlink />Share folder</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled onClick={() => handleOpeningDialog(folder, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
-            <DropdownMenuItem disabled
+            <DropdownMenuItem onClick={() => handleOpeningDialog(folder, "showInfo")} className='gap-2'><Info />Info</DropdownMenuItem>
+            <DropdownMenuItem
               onSelect={(e) => e.preventDefault()}
               onMouseLeave={() => setIsHovered((prev) => ({ ...prev, heart: false }))}
               onMouseEnter={() => setIsHovered((prev) => ({ ...prev, heart: true }))}
-              onClick={() => handleFavoriteFile(folder)}
+              onClick={() => handleFavoriteFolder(folder)}
               className='gap-2'>
               {folder.favorite ?
                 isHovered.heart ? <HeartOff /> : <Heart color='#ff0000' />
@@ -80,7 +95,7 @@ function MyFolderCard(props) {
               Favorite
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled onClick={() => handleOpeningDialog(folder, "changeFileName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
+            <DropdownMenuItem disabled onClick={() => handleOpeningDialog(folder, "changeDataName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
             <DropdownMenuSeparator />
