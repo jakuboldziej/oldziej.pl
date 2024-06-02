@@ -3,7 +3,7 @@ import NavBar from "@/components/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, uploadFile } from "@/fetch";
+import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
 import { Button } from "@/components/ui/button";
 import ShowNewToast from "@/components/MyComponents/ShowNewToast";
@@ -41,7 +41,7 @@ function MyFiles() {
     downloaded: false
   });
   const [creatingFolder, setCreatingFolder] = useState('');
-  const [changingFileName, setChangingFileName] = useState('');
+  const [changingDataName, setChangingFileName] = useState('');
 
   const fileRef = useRef();
 
@@ -72,32 +72,49 @@ function MyFiles() {
   }
 
   const handleOpeningDialog = (data, action) => {
+    if (data?.type !== "file") data.filename = data.name;
     if (action === "changeDataName") {
       setDialogOpen((prev) => ({ ...prev, changeDataName: true, data: data }));
       setChangingFileName(data.filename);
     } else if (action === "showInfo") {
-      if (data?.type !== "file") data.filename = data.name;
       setDialogOpen((prev) => ({ ...prev, showInfo: true, data: data }));
     } else if (action === "createFolder") {
       setDialogOpen((prev) => ({ ...prev, createFolder: true }));
     }
   }
 
-  const handleUpdateFile = async () => {
-    const file = dialogOpen.data;
-    const newFileName = changingFileName;
-    const data = {
-      file: file,
-      newFileName: newFileName
-    }
-    const updatedFile = await putFile(data);
+  const handleUpdateData = async (type) => {
+    if (type === "file") {
+      const file = dialogOpen.data;
+      const newFileName = changingDataName;
+      const data = {
+        file: file,
+        newFileName: newFileName
+      }
+      const updatedFile = await putFile(data);
+  
+      const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
+      updateDataShown(updatedData);
+      const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+      setFiles(updatedFiles);
+      localStorage.setItem('files', JSON.stringify(updatedFiles));
+      setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
+    } else {
+      let folder = dialogOpen.data;
+      if (changingDataName) folder.name = changingDataName;
 
-    const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
-    updateDataShown(updatedData);
-    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
-    setFiles(updatedFiles);
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
-    setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
+      const data = {
+        folder: folder
+      }
+      const updatedFolder = await putFolder(data);
+
+      const updatedData = dataShown.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+      updateDataShown(updatedData);
+      const updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
+      setFolders(updatedFolders);
+      localStorage.setItem('folders', JSON.stringify(updatedFolders));
+      setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
+    }
   }
 
   const handleCreateNewFolder = async () => {
@@ -277,9 +294,9 @@ function MyFiles() {
   const myDialogsProps = {
     dialogOpen,
     setDialogOpen,
-    handleUpdateFile,
+    handleUpdateData,
     handleCreateNewFolder,
-    changingFileName,
+    changingDataName,
     setChangingFileName,
     creatingFolder,
     setCreatingFolder

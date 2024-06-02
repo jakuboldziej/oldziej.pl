@@ -8,7 +8,7 @@ import { Input } from '../ui/input'
 import { FtpContext } from '@/context/FtpContext'
 
 function MyDialogs(props) {
-  const { dialogOpen, setDialogOpen, handleUpdateFile, handleCreateNewFolder, changingFileName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
+  const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
   const { activeFolders } = useContext(FtpContext);
 
   const handleDataPath = (file) => {
@@ -25,15 +25,15 @@ function MyDialogs(props) {
   return (
     <>
       {/* Changing File Name */}
-      <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title="Change File Name" footer={
+      <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title={`Change ${dialogOpen.data?.type === "folder" ? "Folder" : "File"} Name`} footer={
         <>
           <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
-          <Button onClick={handleUpdateFile} variant='outline_green'>Save</Button>
+          <Button onClick={() => handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file")} variant='outline_green'>Save</Button>
         </>
       }>
         <span className='flex flex-col gap-2'>
           {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
-          <Input placeholder={dialogOpen.data?.filename} value={changingFileName} onChange={(e) => setChangingFileName(e.target.value)} />
+          <Input placeholder={dialogOpen.data?.filename} value={changingDataName} onChange={(e) => setChangingFileName(e.target.value)} />
         </span>
       </MyDialog>
 

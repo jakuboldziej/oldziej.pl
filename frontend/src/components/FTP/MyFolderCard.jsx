@@ -95,7 +95,7 @@ function MyFolderCard(props) {
               Favorite
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled onClick={() => handleOpeningDialog(folder, "changeDataName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOpeningDialog(folder, "changeDataName")} className='gap-2'><PencilLine />Rename</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
             <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
             <DropdownMenuSeparator />

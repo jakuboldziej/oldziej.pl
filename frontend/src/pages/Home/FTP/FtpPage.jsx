@@ -41,7 +41,7 @@ function FtpPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [changingFileName, setChangingFileName] = useState('');
+  const [changingDataName, setChangingFileName] = useState('');
 
   const [creatingFolder, setCreatingFolder] = useState('');
 
@@ -176,9 +176,9 @@ function FtpPage() {
     }
   }
 
-  const handleUpdateFile = async () => {
+  const handleUpdateData = async () => {
     const file = dialogOpen.data;
-    const newFileName = changingFileName;
+    const newFileName = changingDataName;
     const data = {
       file: file,
       newFileName: newFileName
@@ -311,8 +311,8 @@ function FtpPage() {
   const myDialogsProps = {
     dialogOpen,
     setDialogOpen,
-    handleUpdateFile,
-    changingFileName,
+    handleUpdateData,
+    changingDataName,
     setChangingFileName,
     handleCreateNewFolder,
     setCreatingFolder
