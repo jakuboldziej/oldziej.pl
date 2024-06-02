@@ -305,7 +305,7 @@ function MyFiles() {
         <LeftNavBar />
         <div className="main my-files">
           <div className="folders-path">
-            <Breadcrumb className="pt-[24px] pl-[24px]">
+            <Breadcrumb className="pt-[15px] pl-[15px] md:pt-[24px] md:pl-[24px]">
               <BreadcrumbList>
                 {activeFolders && activeFolders.map((folder, i) => (
                   <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
