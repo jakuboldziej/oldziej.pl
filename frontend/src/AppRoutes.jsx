@@ -10,7 +10,7 @@ import FtpPage from './pages/Home/FTP/FtpPage';
 import MyFiles from './pages/Home/FTP/Files/MyFiles';
 import { Route, Routes } from 'react-router-dom';
 import Shared from './pages/Home/FTP/Files/Shared';
-import FavoriteFiles from './pages/Home/FTP/Files/FavoriteFiles';
+import Favorites from './pages/Home/FTP/Files/Favorites';
 import UploadFiles from './pages/Home/FTP/Files/UploadFiles';
 import Settings from './pages/Home/FTP/Settings';
 import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
@@ -43,7 +43,7 @@ function AppRoutes({ subdomain }) {
             <Route path='files'>
               <Route index element={<ProtectedRoute><MyFiles /></ProtectedRoute>}/>
               <Route path='shared' element={<ProtectedRoute><Shared /></ProtectedRoute>}/>
-              <Route path='favorites' element={<ProtectedRoute><FavoriteFiles/></ProtectedRoute>}/>
+              <Route path='favorites' element={<ProtectedRoute><Favorites/></ProtectedRoute>}/>
               <Route path='upload' element={<ProtectedRoute><UploadFiles /></ProtectedRoute>}/>
             </Route>
           </Route>
