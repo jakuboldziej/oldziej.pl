@@ -28,7 +28,12 @@ const FtpFileSchema = new mongoose.Schema ({
     type: String,
     required: false,
     default: "file"
-  }
+  },
+  shared: {
+    type: Array,
+    required: true,
+    default: []
+  },
 });
 
 module.exports = ftpConn.model('FtpFile', FtpFileSchema)

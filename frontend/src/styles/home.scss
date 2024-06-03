@@ -930,6 +930,20 @@ html {
       }
     }
   }
+
+  .main.favorites {
+    height: $containerHeight;
+
+    .folders {
+      height: 50%;
+      padding: 30px;
+    }
+
+    .files {
+      height: 50%;
+      padding: 30px;
+    }
+  }
 }
 
 // Login/Register/NotFound Page
