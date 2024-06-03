@@ -113,7 +113,6 @@ function DartsPage() {
   const handleScroll = (event) => {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
     if (scrollTop + clientHeight >= scrollHeight) {
-      // Reached near the end, load more data
       if (games.length > 0) setCurrentPage(currentPage + 1);
     }
   };
