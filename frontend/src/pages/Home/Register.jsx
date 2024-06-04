@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
@@ -37,23 +37,6 @@ function Register() {
 
       await postDartsUser({
         displayName: displayName,
-        gamesPlayed: 0,
-        podiums: {
-          firstPlace: 0,
-          secondPlace: 0,
-          thirdPlace: 0
-        },
-        overAllPoints: 0,
-        highestEndingAvg: 0,
-        highestOuts: 0,
-        highestRoundPoints: 0,
-        throws: {
-          normal: 0,
-          doubles: 0,
-          tripes: 0,
-          overthrows: 0,
-          doors: 0
-        }
       });
       const folderRes = await postFolder({
         name: "Cloud drive",

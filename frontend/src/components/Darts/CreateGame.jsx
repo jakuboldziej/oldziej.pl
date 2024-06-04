@@ -53,26 +53,22 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     if (previousSettings) {
       setUsersPlaying(previousSettings.users)
       setSelectGameMode(previousSettings.gamemode)
-      console.log(['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number=> number === previousSettings.startPoints)[0]);
-      if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number=> number === previousSettings.startPoints)[0]) {
-        console.log(previousSettings.startPoints);
-        setSelectStartPoints(previousSettings.startPoints)
+      if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number => number === previousSettings.startPoints)[0]) {
+        setSelectStartPoints(previousSettings.startPoints);
       } else {
-        setCustomStartPoints(previousSettings.startPoints)
-        setSelectStartPoints(previousSettings.startPoints)
+        setCustomStartPoints(previousSettings.startPoints);
+        setSelectStartPoints(previousSettings.startPoints);
       }
-      setSelectCheckOut(previousSettings.checkout)
-      setSelectLegs(previousSettings.legs)
-      setSelectSets(previousSettings.sets)
+      setSelectCheckOut(previousSettings.checkout);
+      setSelectLegs(previousSettings.legs);
+      setSelectSets(previousSettings.sets);
     }
 
     const getUsers = async () => {
       try {
         const usersFetch = await getDartsUsers();
         if (previousSettings) {
-          const usersNotInPreviousSettings = usersFetch.filter(
-            (userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id)
-          );
+          const usersNotInPreviousSettings = usersFetch.filter((userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id));
           setUsersNotPlaying(usersNotInPreviousSettings);
           setUsersPodium(1);
         } else {
@@ -399,9 +395,9 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             />
           </div>
           <DialogFooter>
-              <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
-                Close
-              </Button>
+            <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
+              Close
+            </Button>
             <Button onClick={handleCustomStartPoints} type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>

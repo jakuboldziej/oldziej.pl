@@ -250,7 +250,7 @@ function DartsPage() {
                       </MyTooltip>
                       <MyTooltip title="Highest Turn Points">
                         <span className="elementInfo">
-                          <img width="25" height="25" src="https://img.icons8.com/color/20/mountain.png" alt="graph" />
+                          <img width="25" height="25" src="https://img.icons8.com/color/20/mountain.png" alt="mountain" />
                           <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
                         </span>
                       </MyTooltip>

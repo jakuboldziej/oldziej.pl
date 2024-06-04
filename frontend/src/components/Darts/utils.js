@@ -96,6 +96,8 @@ const handlePodium = () => {
 
 const handleGameEnd = () => {
   if (game.legs == 1 && game.sets == 1){
+    console.log(currentUser, calculatePoints("T20"));
+    // dokończyć highestcheckout
     const end = handlePodium();
     if (end) return true;
   } else {
@@ -108,6 +110,7 @@ const handleGameEnd = () => {
       });
       currentUser.sets += 1;
       if (currentUser.sets == game.sets) {
+        console.log(currentUser);
         const end = handlePodium();
         if (end) return true;
       }
