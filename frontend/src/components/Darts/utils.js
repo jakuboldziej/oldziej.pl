@@ -282,7 +282,7 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   handleRecord("save");
 }
 
-const handleRecord = (action) => {
+export const handleRecord = (action) => {
   if (!game.active) return;
   if (action === "save") {
     const currentUserCopy = lodash.cloneDeep(currentUser);
@@ -294,7 +294,6 @@ const handleRecord = (action) => {
       },
       user: currentUserCopy,
     });
-    console.log(game.record);
   } else if (action === "back") {
     if (game.record.length > 1) {
       game.record.splice(-1);

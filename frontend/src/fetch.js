@@ -76,8 +76,8 @@ export const putDartsGame = async (gameData) => {
   });
 }
 
-export const deleteDartsGame = async (gameData) => {
-  await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameData._id}`, {
+export const deleteDartsGame = async (gameId) => {
+  await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameId}`, {
     method: "DELETE",
   });
 }

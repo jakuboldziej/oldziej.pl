@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button, buttonVariants } from '../ui/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
+import { handleRecord } from './utils';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -84,6 +85,22 @@ function GameSummary({ show, setShow }) {
     }
   }
 
+  const handleSummaryBackButton = () => {
+    console.log(game);
+    handleRecord("back");
+    setShow(false);
+  }
+
+  const handleDisabledBack = () => {
+    // dokończyć back button w gamesummary
+    const lsGame = JSON.parse(localStorage.getItem("dartsGame"));
+      if (game.record.length > 1 && lsGame) {
+        return true;
+      } else {
+        return false;
+      }
+  }
+
   useEffect(() => {
     if (show) {
       handleTimePlayed();
@@ -128,48 +145,13 @@ function GameSummary({ show, setShow }) {
                 <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New Game</Link>
                 <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts">Back to Darts</Link>
                 <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
+                <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
               </span>
             </div>
           </DialogHeader>
         </DialogContent>
       </Dialog>
     </>
-
-    // <Modal data-bs-theme="dark" className='game-summary-modal' backdrop="static" show={show} fullscreen={fullscreen} onShow={handleTimePlayed} onHide={() => setShow(false)}>
-    //   <Modal.Header>
-    //     <Modal.Title>Game Summary</Modal.Title>
-    //   </Modal.Header>
-    //   <Modal.Body>
-    //     {!game.training ?
-    //       <div className='summary d-flex flex-column align-items-center gap-2'>
-    //         <div className="podium">
-    //           <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-    //           <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-    //           <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-    //         </div>
-    //         <div>
-    //           Time played: {timePlayed}
-    //         </div>
-    //       </div>
-    //       :
-    //       <div className="training-stats d-flex flex-column align-items-center gap-2">
-    //         <h5>Training Stats</h5>
-    //         <div className="podium">
-    //           <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-    //           <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-    //           <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-    //         </div>
-    //         <div className="d-flex gap-2">
-    //           <span>Time played: {timePlayed}</span>
-    //           <span>StartPoints: {game.startPoints}</span>
-    //         </div>
-    //         <UserDataTable users={game.users} game={game}/>
-    //       </div>
-    //     }
-    //     <Link className="btn btn-outline-danger glow-button" to='/darts' state={{ createNewGame: true }} >Create New Game</Link>
-    //     <Link className="btn btn-outline-success glow-button" to='/darts'>Back to Darts</Link>
-    //   </Modal.Body>
-    // </Modal>
   )
 }
 

@@ -157,8 +157,8 @@ function DartsPage() {
     fetchFirstData();
 
     // Managing live game
-    const liveGame = localStorage.getItem('dartsGame');
-    if (liveGame != null) {
+    const liveGame = JSON.parse(localStorage.getItem('dartsGame'));
+    if (liveGame !== null) {
       setPlayerInGame(true);
       ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
     }
