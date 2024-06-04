@@ -128,6 +128,16 @@ function DartsPage() {
   };
 
   useEffect(() => {
+    if (games.length > 0) console.log(games);
+    games.map((game) => {
+      const ussr = game.users.find((u) => u.displayName === "paula");
+      if (ussr) {
+        console.log(ussr);
+      }
+    })
+  }, [games]);
+
+  useEffect(() => {
     const sortedUsers = handleFilterUsers(filterUsersType, dartUsers);
     setDartUsers(sortedUsers);
   }, [filterUsersType]);
@@ -307,7 +317,7 @@ function DartsPage() {
                               {game.users.length}
                             </span>
                           </MyTooltip>
-                          <span className="timedate">{new Date(game.created_at).toLocaleString()}</span>
+                          <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
                         </div>
                         :
                         <div key={game._id} className="element">

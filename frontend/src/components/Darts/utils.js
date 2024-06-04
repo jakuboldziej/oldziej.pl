@@ -1,7 +1,8 @@
-import _ from 'lodash';
+import lodash from 'lodash';
 import { getDartsUser, putDartsGame, putDartsUser } from "../../fetch";
 
 let game;
+let setGame;
 let handleShow;
 let currentUser;
 let users;
@@ -9,9 +10,10 @@ let setUsers;
 let ShowNewToast;
 let setOverthrow;
 
-export const handleRound = (value, usersP, gameP, handleShowP, setUsersP, specialState, setSpecialState, ShowNewToastP, setOverthrowP) => {
+export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUsersP, specialState, setSpecialState, ShowNewToastP, setOverthrowP) => {
   handleShow = handleShowP;
   game = gameP;
+  setGame = setGameP;
   users = usersP;
   setUsers = setUsersP;
   ShowNewToast = ShowNewToastP;
@@ -92,12 +94,12 @@ const handlePodium = () => {
     handleShow();
     return true;
   }
+  setGameState();
 }
 
 const handleGameEnd = () => {
   if (game.legs == 1 && game.sets == 1){
-    console.log(currentUser, calculatePoints("T20"));
-    // dokończyć highestcheckout
+    currentUser.highestCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3])
     const end = handlePodium();
     if (end) return true;
   } else {
@@ -110,7 +112,7 @@ const handleGameEnd = () => {
       });
       currentUser.sets += 1;
       if (currentUser.sets == game.sets) {
-        console.log(currentUser);
+        currentUser.highestCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3])
         const end = handlePodium();
         if (end) return true;
       }
@@ -145,7 +147,6 @@ const handlePoints = (action, value) => {
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
     currentUser.throws["overthrows"] += 1;
-    console.log(currentUser.throws, currentUser.displayName);
     setUserState();
     setOverthrow(currentUser.displayName);
   } else if (currentUser.points === 0) {
@@ -187,6 +188,7 @@ const handleDartsData = async () => {
 
     if (parseFloat(user.highestRoundPoints) > parseFloat(dartUser.highestRoundPoints)) dartUser.highestRoundPoints = parseFloat(user.highestRoundPoints);
     if (parseFloat(user.avgPointsPerThrow) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerThrow);
+    if (user.highestCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.highestCheckout;
 
     if(!game.training) await putDartsUser(dartUser)
   })
@@ -206,8 +208,6 @@ const handleSpecialValue = async (value, specialState, setSpecialState) => {
     currentUser.throws["doors"] += 1;
     handleUsersState(0, specialState, "DOORS");
   } else if (value === "BACK") {
-    if (game.record.length > 1) currentUser.turn = false;
-    setUserState();
     handleRecord("back");
     setUserState();
   } else if (value === "DOUBLE" || value === "TRIPLE") {
@@ -285,18 +285,18 @@ const handleUsersState = (value, specialState, setSpecialState) => {
 const handleRecord = (action) => {
   if (!game.active) return;
   if (action === "save") {
-    const currentUserCopy = _.cloneDeep(currentUser);
+    const currentUserCopy = lodash.cloneDeep(currentUser);
     currentUserCopy.turn = true;
-    const gameCopy = _.pick(game, ['round', 'turn', 'record']);
     game.record.push({
       game: {
-        round: gameCopy.round,
-        turn: gameCopy.turn
+        round: game.round,
+        turn: game.turn
       },
       user: currentUserCopy,
     });
+    console.log(game.record);
   } else if (action === "back") {
-    if (game.record.length >= 2) {
+    if (game.record.length > 1) {
       game.record.splice(-1);
       const restoredState = game.record[game.record.length - 1];
 
@@ -307,6 +307,9 @@ const handleRecord = (action) => {
           game.podium[currentUser.previousUserPlace] = null;
         }
 
+        if (restoredState.game["turn"] !== currentUser.displayName) {
+          currentUser.turn = false;
+        } 
         currentUser = {
           ...currentUserCopy,
           turns: { ...currentUserCopy.turns },
@@ -314,6 +317,7 @@ const handleRecord = (action) => {
         };
         game.round = restoredState.game.round;
         game.turn = restoredState.game.turn;
+        setGameState();
       }
     } else {
       ShowNewToast("Back button", "This is the start of the game")
@@ -328,6 +332,10 @@ const setUserState = () => {
     );
     return updatedUsers;
   });
+}
+
+const setGameState = () => {
+  setGame(game);
 }
 
 export const totalThrows = (user) => {

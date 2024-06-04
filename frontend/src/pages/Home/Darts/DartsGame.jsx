@@ -19,7 +19,7 @@ function DartsGame() {
     setShow(true);
   }
 
-  const { game } = useContext(DartsGameContext);
+  const { game, setGame } = useContext(DartsGameContext);
 
   if (!game) {
     return (
@@ -71,7 +71,7 @@ function DartsGame() {
     }
   }, [game?.active]);
 
-  const keyboardParams = { handleRound, users, game, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow }
+  const keyboardParams = { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {

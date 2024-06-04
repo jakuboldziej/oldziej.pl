@@ -5,6 +5,7 @@ import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button, buttonVariants } from '../ui/button';
 import { postDartsGame } from '@/fetch';
+import lodash from 'lodash';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -25,6 +26,8 @@ function GameSummary({ show, setShow }) {
 
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
+    
+    game.turn = game.users[0].displayName
     game.users.map((user) => {
       user.points = game.startPoints
       user.allGainedPoints = 0
@@ -48,32 +51,36 @@ function GameSummary({ show, setShow }) {
       user.sets = 0
       user.avgPointsPerThrow = 0
       user.highestRoundPoints = 0
-    })
-    game.active = true;
-    game.podium = {
-      1: null,
-      2: null,
-      3: null
-    }
-    game.userWon = "";
-    game.round = 1;
-    game.record = [{
-      game: {
-        round: game.round,
-        turn: game.turn
+    });
+    const firstUser = lodash.cloneDeep(game.users[0])
+    const gameData = {
+      ...game,
+      active: true,
+      podium: {
+        1: null,
+        2: null,
+        3: null
       },
-      user: game.users[0]
-    }];
+      userWon: "",
+      round: 1,
+      record: [{
+        game: {
+          round: 1,
+          turn: firstUser.displayName
+        },
+        user: firstUser
+      }],
+    }
     setShow(false);
 
     if (!previousSettings.training) {
       game.training = false;
       const gameData = await postDartsGame(game);
-      game._id = gameData._id;
-      setGame(game);
+      gameCopy._id = gameData._id;
+      setGame(gameCopy);
     } else {
       game.training = true;
-      setGame(game)
+      setGame(gameData);
     }
   }
 

@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/DartsGameContext";
-import _ from 'lodash';
+import lodash from 'lodash';
 import { getDartsUsers, postDartsGame } from "@/fetch";
 import { Button } from "../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
@@ -175,8 +175,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       round: 1,
     }
     updatedUsers[0].turn = true;
-    const currentUserCopy = _.cloneDeep(updatedUsers[0]);
-    const gameCopy = _.pick(gameData, ['round', 'turn']);
+    const currentUserCopy = lodash.cloneDeep(updatedUsers[0]);
+    const gameCopy = lodash.pick(gameData, ['round', 'turn']);
     gameData.record = [{
       game: {
         round: gameCopy.round,
