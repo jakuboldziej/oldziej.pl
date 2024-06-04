@@ -118,8 +118,8 @@ function DartsUser() {
         }]
     })
 
-    const userHRP = user.games.map((game) => game.users.find((user) => user.displayName === username)?.highestRoundPoints ?? 0);
-    const userAVG = user.games.map((game) => game.users.find((user) => user.displayName === username).avgPointsPerThrow);
+    const userHRP = user.games.map((game) => game.users.find((user) => user.displayName === username)?.highestTurnPoints ?? 0);
+    const userAVG = user.games.map((game) => game.users.find((user) => user.displayName === username).avgPointsPerTurn);
 
     setChartSpecialData({
       labels: user.games.map((game) => {

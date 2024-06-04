@@ -29,7 +29,7 @@ export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUser
 const handleTurnsSum = () => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
-  if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestRoundPoints) currentUser.highestRoundPoints = currentUser.turnsSum;
+  if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestTurnPoints) currentUser.highestTurnPoints = currentUser.turnsSum;
 }
 
 const isNumericRegex = /^\d+$/;
@@ -43,7 +43,7 @@ const calculatePoints = (turnValue) => {
     }
   }
   return turnValue ? parseInt(turnValue) : turnValue;
-};
+}
 
 const handlePodium = () => {
   if (game.podiums > 1) {
@@ -94,7 +94,6 @@ const handlePodium = () => {
     handleShow();
     return true;
   }
-  setGameState();
 }
 
 const handleGameEnd = () => {
@@ -104,7 +103,7 @@ const handleGameEnd = () => {
     if (end) return true;
   } else {
     currentUser.legs += 1;
-    currentUser.avgPointsPerThrow = 0.00;
+    currentUser.avgPointsPerTurn = 0.00;
     currentUser.turn = false;
     if (currentUser.legs == game.legs) {
       game.users.map((user) => {
@@ -124,7 +123,7 @@ const handleGameEnd = () => {
         user.turns = {1: null, 2: null, 3: null};
         user.throws = {doors: 0, doubles: 0, triples: 0, normal: 0};
         user.turnsSum = 0;
-        user.avgPointsPerThrow = 0.00;
+        user.avgPointsPerTurn = 0.00;
         user.currentTurn = 1;
       }
     });
@@ -160,14 +159,14 @@ const handlePoints = (action, value) => {
       turns[currentUser.currentTurn] = `T${value}`;
     }
   }
-};
+}
 
-const handleAvgPointsPerThrow = () => {
+const handleavgPointsPerTurn = () => {
   const pointsThrown = game.startPoints - currentUser.points;
   const dartsThrown = totalThrows(currentUser);
   const avg = pointsThrown / dartsThrown * 3;
-  currentUser.avgPointsPerThrow = (avg).toFixed(2);
-  if (isNaN(avg)) currentUser.avgPointsPerThrow = 0;
+  currentUser.avgPointsPerTurn = (avg).toFixed(2);
+  if (isNaN(avg)) currentUser.avgPointsPerTurn = 0;
 }
 
 const handleDartsData = async () => {
@@ -186,8 +185,8 @@ const handleDartsData = async () => {
     dartUser.highestEndingAvg = user.highestEndingAvg;
     !game.active ? dartUser.gamesPlayed += 1 : null;
 
-    if (parseFloat(user.highestRoundPoints) > parseFloat(dartUser.highestRoundPoints)) dartUser.highestRoundPoints = parseFloat(user.highestRoundPoints);
-    if (parseFloat(user.avgPointsPerThrow) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerThrow);
+    if (parseFloat(user.highestTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestTurnPoints);
+    if (parseFloat(user.avgPointsPerTurn) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerTurn);
     if (user.highestCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.highestCheckout;
 
     if(!game.training) await putDartsUser(dartUser)
@@ -199,8 +198,9 @@ const handleDartsData = async () => {
     3: game.podium[3],
   }
 
-  const { record, ...gameWithoutRecord } = game;
-  if(!game.trainnig) await putDartsGame(gameWithoutRecord);
+  const { record, userWon, ...gameWithoutRecordAndUserWon } = game;
+  if(!game.trainnig) await putDartsGame(gameWithoutRecordAndUserWon);
+  setGameState();
 }
 
 const handleSpecialValue = async (value, specialState, setSpecialState) => {
@@ -209,7 +209,6 @@ const handleSpecialValue = async (value, specialState, setSpecialState) => {
     handleUsersState(0, specialState, "DOORS");
   } else if (value === "BACK") {
     handleRecord("back");
-    setUserState();
   } else if (value === "DOUBLE" || value === "TRIPLE") {
     specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
   }
@@ -245,7 +244,7 @@ const handleNextUser = () => {
     game.round += 1;
   }
   return nextUser;
-};
+}
 
 const handleUsersState = (value, specialState, setSpecialState) => {
   if (specialState[0]) {
@@ -254,14 +253,14 @@ const handleUsersState = (value, specialState, setSpecialState) => {
     specialState[1] === "DOUBLE" ? currentUser.throws["doubles"] += 1 : currentUser.throws["triples"] += 1;
     handleTurnsSum();
     handlePoints(specialState[1], value);
-    handleAvgPointsPerThrow();
+    handleavgPointsPerTurn();
     setSpecialState([false, ""]);
   } else {
     if (setSpecialState !== "DOORS") currentUser.throws["normal"] += 1;
     currentUser.turns[currentUser.currentTurn] = value;
     handleTurnsSum();
     handlePoints();
-    handleAvgPointsPerThrow();
+    handleavgPointsPerTurn();
   }
 
   if (game.userWon || !currentUser.turn || !game.active) return;
@@ -316,13 +315,14 @@ export const handleRecord = (action) => {
         };
         game.round = restoredState.game.round;
         game.turn = restoredState.game.turn;
-        setGameState();
       }
     } else {
       ShowNewToast("Back button", "This is the start of the game")
     }
   }
-};
+  setUserState();
+  setGameState();
+}
 
 const setUserState = () => {
   setUsers(prevUsers => {
@@ -335,6 +335,7 @@ const setUserState = () => {
 
 const setGameState = () => {
   setGame(game);
+  localStorage.setItem("dartsGame", JSON.stringify(game));
 }
 
 export const totalThrows = (user) => {

@@ -11,14 +11,11 @@ function Keyboard({ params }) {
 
   const handleEndTraining = () => {
     game.podium[1] = game.turn;
-    if (game.podium[1]) {
-      localStorage.setItem('dartsGame', null);
-    }
     handleShow();
   }
 
   const handleQuit = async () => {
-    if (!game.training) { await deleteDartsGame(game._id) }
+    if (!game.training) await deleteDartsGame(game._id);
     localStorage.setItem('dartsGame', null);
     handleShow();
   }

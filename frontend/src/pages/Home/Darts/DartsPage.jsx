@@ -71,8 +71,8 @@ function DartsPage() {
         break;
       case "highestRPT":
         sortedUsers = users.slice().sort((a, b) => {
-          const firstData = a.highestRoundPoints;
-          const secondData = b.highestRoundPoints;
+          const firstData = a.highestTurnPoints;
+          const secondData = b.highestTurnPoints;
           return secondData - firstData;
         });
         break;
@@ -250,7 +250,7 @@ function DartsPage() {
                       <MyTooltip title="Highest Turn Points">
                         <span className="elementInfo">
                           <img width="25" height="25" src="https://img.icons8.com/color/20/mountain.png" alt="mountain" />
-                          <h6 style={{ fontSize: 13 }}>{dartUser.highestRoundPoints}</h6>
+                          <h6 style={{ fontSize: 13 }}>{dartUser.highestTurnPoints}</h6>
                         </span>
                       </MyTooltip>
                     </a>

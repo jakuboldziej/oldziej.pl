@@ -146,8 +146,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       },
       legs: 0,
       sets: 0,
-      avgPointsPerThrow: 0,
-      highestRoundPoints: 0,
+      avgPointsPerTurn: 0,
+      highestTurnPoints: 0,
     }));
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);

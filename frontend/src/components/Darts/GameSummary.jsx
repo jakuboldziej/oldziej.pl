@@ -27,7 +27,7 @@ function GameSummary({ show, setShow }) {
 
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
-    
+
     game.turn = game.users[0].displayName
     game.users.map((user) => {
       user.points = game.startPoints
@@ -50,12 +50,12 @@ function GameSummary({ show, setShow }) {
       }
       user.legs = 0
       user.sets = 0
-      user.avgPointsPerThrow = 0
-      user.highestRoundPoints = 0
+      user.avgPointsPerTurn = 0
+      user.highestTurnPoints = 0
     });
     const firstUser = lodash.cloneDeep(game.users[0])
+    const gameCopy = lodash.cloneDeep(game);
     const gameData = {
-      ...game,
       active: true,
       podium: {
         1: null,
@@ -73,32 +73,38 @@ function GameSummary({ show, setShow }) {
       }],
     }
     setShow(false);
+    const gameDataMerged = {...gameCopy, ...gameData}
 
     if (!previousSettings.training) {
       game.training = false;
-      const gameData = await postDartsGame(game);
-      gameCopy._id = gameData._id;
-      setGame(gameCopy);
+      const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
+      const gameData = await postDartsGame(gameWithoutRecordAndUserWon);
+      gameDataMerged._id = gameData._id;
+      setGame(gameDataMerged);
     } else {
       game.training = true;
-      setGame(gameData);
+      console.log(gameDataMerged);
+      setGame(gameDataMerged);
     }
+    localStorage.setItem("dartsGame", JSON.stringify(gameDataMerged))
   }
 
   const handleSummaryBackButton = () => {
-    console.log(game);
     handleRecord("back");
     setShow(false);
   }
 
   const handleDisabledBack = () => {
-    // dokończyć back button w gamesummary
     const lsGame = JSON.parse(localStorage.getItem("dartsGame"));
-      if (game.record.length > 1 && lsGame) {
-        return true;
-      } else {
-        return false;
-      }
+    if (game.record.length > 1 && lsGame) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  const deleteLSGame = () => {
+    localStorage.setItem("dartsGame", null);
   }
 
   useEffect(() => {
@@ -142,8 +148,8 @@ function GameSummary({ show, setShow }) {
                 </div>
               }
               <span className='flex flex-col items-center gap-5 mt-5'>
-                <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New Game</Link>
-                <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts">Back to Darts</Link>
+                <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
+                <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
                 <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
                 <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
               </span>

@@ -25,7 +25,7 @@ function DartsGame() {
     return (
       <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
         <span className="text-4xl">You are not currently in a game.</span>
-        <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} to="/darts">Create New One</Link>
+        <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New One</Link>
       </div>
     )
   }
@@ -64,12 +64,6 @@ function DartsGame() {
       localStorage.setItem('dartsGame', JSON.stringify(game));
     }
   }, [users, game.turn]);
-
-  useEffect(() => {
-    if (!game?.active) {
-      localStorage.setItem('dartsGame', null);
-    }
-  }, [game?.active]);
 
   const keyboardParams = { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow }
 
@@ -125,7 +119,7 @@ function DartsGame() {
                 <TableRow>
                   <TableCell>{user.displayName}</TableCell>
                   <TableCell colSpan={3}>{user.turnsSum}</TableCell>
-                  <TableCell colSpan={2}>Ø {user.avgPointsPerThrow}</TableCell>
+                  <TableCell colSpan={2}>Ø {user.avgPointsPerTurn}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

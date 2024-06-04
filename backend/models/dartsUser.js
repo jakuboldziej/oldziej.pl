@@ -31,7 +31,7 @@ const dartsUserSchema = new mongoose.Schema ({
     required: true,
     default: 0
   },
-  highestRoundPoints: {
+  highestTurnPoints : {
     type: Number,
     required: true,
     default: 0
