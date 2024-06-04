@@ -5,7 +5,7 @@ import RedDot from "@/images/icons/red_dot.png";
 import GreenDot from "@/images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/MyComponents/MyTooltip";
-import { getDartsGames, getDartsUsers } from "@/fetch";
+import { getDartsGames, getDartsUser, getDartsUsers, putDartsUser } from "@/fetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -128,16 +128,6 @@ function DartsPage() {
   };
 
   useEffect(() => {
-    if (games.length > 0) console.log(games);
-    games.map((game) => {
-      const ussr = game.users.find((u) => u.displayName === "paula");
-      if (ussr) {
-        console.log(ussr);
-      }
-    })
-  }, [games]);
-
-  useEffect(() => {
     const sortedUsers = handleFilterUsers(filterUsersType, dartUsers);
     setDartUsers(sortedUsers);
   }, [filterUsersType]);
@@ -150,7 +140,6 @@ function DartsPage() {
   useEffect(() => {
     handleGamesShown("scroll")
   }, [currentPage]);
-
 
   useEffect(() => {
     const fetchFirstData = async () => {
@@ -169,7 +158,7 @@ function DartsPage() {
 
     // Managing live game
     const liveGame = localStorage.getItem('dartsGame');
-    if (liveGame !== "null" && liveGame !== null) {
+    if (liveGame != null) {
       setPlayerInGame(true);
       ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
     }
