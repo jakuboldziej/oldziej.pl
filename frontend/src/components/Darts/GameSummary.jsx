@@ -73,7 +73,7 @@ function GameSummary({ show, setShow }) {
       }],
     }
     setShow(false);
-    const gameDataMerged = {...gameCopy, ...gameData}
+    const gameDataMerged = { ...gameCopy, ...gameData }
 
     if (!previousSettings.training) {
       game.training = false;
@@ -90,8 +90,18 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleSummaryBackButton = () => {
-    handleRecord("back");
-    setShow(false);
+    console.log(game);
+    if (game.userWon) {
+      // resetowanie gry w osobnej funkcji utils
+      setGame({
+        ...game,
+        userWon: "",
+        podium: { 1: null, 2: null, 3: null },
+        active: true
+      })
+    }
+    // handleRecord("back");
+    // setShow(false);
   }
 
   const handleDisabledBack = () => {
@@ -150,7 +160,7 @@ function GameSummary({ show, setShow }) {
               <span className='flex flex-col items-center gap-5 mt-5'>
                 <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
                 <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
-                <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
+                <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled>Play Again</Button>
                 <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
               </span>
             </div>

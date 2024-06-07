@@ -1,6 +1,8 @@
 import lodash from 'lodash';
 import { getDartsUser, putDartsGame, putDartsUser } from "../../fetch";
 
+// Game Logic
+
 let game;
 let setGame;
 let handleShow;
@@ -337,6 +339,8 @@ const setGameState = () => {
   setGame(game);
   localStorage.setItem("dartsGame", JSON.stringify(game));
 }
+
+// Global
 
 export const totalThrows = (user) => {
   return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"]
