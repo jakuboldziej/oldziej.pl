@@ -2,9 +2,10 @@ import { deleteDartsGame } from "@/fetch";
 import { Button } from "../ui/button";
 
 function Keyboard({ params }) {
-  const { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow } = params;
+  const { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = params;
+
   const onclick = (param) => {
-    handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow)
+    handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow)
   }
   const numbers = [];
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => onclick(i)}>{i}</button>);
@@ -28,7 +29,7 @@ function Keyboard({ params }) {
     } else if (type === 'TRIPLE') {
       return specialState[1] === 'DOUBLE';
     } else if (type === 'BACK') {
-      return specialState[1] === 'DOUBLE' || specialState[1] === 'TRIPLE';
+      return specialState[1] === 'DOUBLE' || specialState[1] === 'TRIPLE' || game.record.length <= 1;
     }
     return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
   };

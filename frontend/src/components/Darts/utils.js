@@ -9,16 +9,14 @@ let handleShow;
 let currentUser;
 let users;
 let setUsers;
-let ShowNewToast;
 let setOverthrow;
 
-export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUsersP, specialState, setSpecialState, ShowNewToastP, setOverthrowP) => {
+export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUsersP, specialState, setSpecialState, setOverthrowP) => {
   handleShow = handleShowP;
   game = gameP;
   setGame = setGameP;
   users = usersP;
   setUsers = setUsersP;
-  ShowNewToast = ShowNewToastP;
   setOverthrow = setOverthrowP;
   currentUser = users.find(user => user.turn);
   if (Number.isInteger(value)) {
@@ -71,8 +69,8 @@ const handlePodium = () => {
     const usersWithoutPodium = game.users.filter(({ place }) => !place);
     if (usersWithoutPodium.length > 0) {
       const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
-      if(sortedUsers[0]) {game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2}
-      if(sortedUsers[1]) {game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3}
+      if (sortedUsers[0]) { game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2 }
+      if (sortedUsers[1]) { game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3 }
     }
     handleDartsData();
     handleShow();
@@ -86,7 +84,7 @@ const handlePodium = () => {
     handleShow();
     return true;
   }
-  if (usersWithoutPodium.length === 1 ) {
+  if (usersWithoutPodium.length === 1) {
     const user = game.users.find(user => user === usersWithoutPodium[0]);
     user.place = game.podiums;
     game.podium[game.podiums] = user.displayName;
@@ -99,7 +97,7 @@ const handlePodium = () => {
 }
 
 const handleGameEnd = () => {
-  if (game.legs == 1 && game.sets == 1){
+  if (game.legs == 1 && game.sets == 1) {
     currentUser.highestCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3])
     const end = handlePodium();
     if (end) return true;
@@ -122,8 +120,8 @@ const handleGameEnd = () => {
     game.users.map((user) => {
       if (user.place === 0) {
         user.points = game.startPoints;
-        user.turns = {1: null, 2: null, 3: null};
-        user.throws = {doors: 0, doubles: 0, triples: 0, normal: 0};
+        user.turns = { 1: null, 2: null, 3: null };
+        user.throws = { doors: 0, doubles: 0, triples: 0, normal: 0 };
         user.turnsSum = 0;
         user.avgPointsPerTurn = 0.00;
         user.currentTurn = 1;
@@ -163,7 +161,7 @@ const handlePoints = (action, value) => {
   }
 }
 
-const handleavgPointsPerTurn = () => {
+const handleAvgPointsPerTurn = () => {
   const pointsThrown = game.startPoints - currentUser.points;
   const dartsThrown = totalThrows(currentUser);
   const avg = pointsThrown / dartsThrown * 3;
@@ -174,7 +172,7 @@ const handleavgPointsPerTurn = () => {
 const handleDartsData = async () => {
   users.map(async (user) => {
     const dartUser = await getDartsUser(user.displayName);
-    
+
     user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
     user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
     user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
@@ -191,7 +189,7 @@ const handleDartsData = async () => {
     if (parseFloat(user.avgPointsPerTurn) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerTurn);
     if (user.highestCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.highestCheckout;
 
-    if(!game.training) await putDartsUser(dartUser)
+    if (!game.training) await putDartsUser(dartUser)
   })
 
   game.podium = {
@@ -201,8 +199,8 @@ const handleDartsData = async () => {
   }
 
   const { record, userWon, ...gameWithoutRecordAndUserWon } = game;
-  if(!game.trainnig) await putDartsGame(gameWithoutRecordAndUserWon);
-  setGameState();
+  if (!game.trainnig) await putDartsGame(gameWithoutRecordAndUserWon);
+  setGameState(game);
 }
 
 const handleSpecialValue = async (value, specialState, setSpecialState) => {
@@ -255,19 +253,25 @@ const handleUsersState = (value, specialState, setSpecialState) => {
     specialState[1] === "DOUBLE" ? currentUser.throws["doubles"] += 1 : currentUser.throws["triples"] += 1;
     handleTurnsSum();
     handlePoints(specialState[1], value);
-    handleavgPointsPerTurn();
+    handleAvgPointsPerTurn();
     setSpecialState([false, ""]);
   } else {
     if (setSpecialState !== "DOORS") currentUser.throws["normal"] += 1;
     currentUser.turns[currentUser.currentTurn] = value;
     handleTurnsSum();
     handlePoints();
-    handleavgPointsPerTurn();
+    handleAvgPointsPerTurn();
   }
 
-  if (game.userWon || !currentUser.turn || !game.active) return;
+  if (game.userWon || !currentUser.turn || !game.active) {
+    console.log(game);
+    console.log(currentUser);
+    // handleRecord("save");
+    setGameState(game);
+    return;
+  }
 
-  if (currentUser.currentTurn === 3 || currentUser.points == 0 ) {
+  if (currentUser.currentTurn === 3 || currentUser.points == 0) {
     currentUser.currentTurn = 1;
     currentUser.turn = false;
     currentUser.allGainedPoints = game.startPoints - currentUser.points;
@@ -296,34 +300,31 @@ export const handleRecord = (action) => {
       user: currentUserCopy,
     });
   } else if (action === "back") {
-    if (game.record.length > 1) {
-      game.record.splice(-1);
-      const restoredState = game.record[game.record.length - 1];
+    game.record.splice(-1);
+    const restoredState = game.record[game.record.length - 1];
 
-      if (restoredState) {
-        const currentUserCopy = { ...restoredState.user };
+    if (restoredState) {
+      const currentUserCopy = { ...restoredState.user };
 
-        if (currentUser.previousUserPlace !== 0 && currentUser.currentTurn === 1) {
-          game.podium[currentUser.previousUserPlace] = null;
-        }
-
-        if (restoredState.game["turn"] !== currentUser.displayName) {
-          currentUser.turn = false;
-        } 
-        currentUser = {
-          ...currentUserCopy,
-          turns: { ...currentUserCopy.turns },
-          throws: { ...currentUserCopy.throws },
-        };
-        game.round = restoredState.game.round;
-        game.turn = restoredState.game.turn;
+      if (currentUser.previousUserPlace !== 0 && currentUser.currentTurn === 1) {
+        game.podium[currentUser.previousUserPlace] = null;
       }
-    } else {
-      ShowNewToast("Back button", "This is the start of the game")
+
+      if (restoredState.game["turn"] !== currentUser.displayName) {
+        currentUser.turn = false;
+      }
+      currentUser = {
+        ...currentUserCopy,
+        turns: { ...currentUserCopy.turns },
+        throws: { ...currentUserCopy.throws },
+      };
+      game.round = restoredState.game.round;
+      game.turn = restoredState.game.turn;
     }
+    console.log(game);  
   }
   setUserState();
-  setGameState();
+  setGameState(game);
 }
 
 const setUserState = () => {
@@ -335,9 +336,10 @@ const setUserState = () => {
   });
 }
 
-const setGameState = () => {
-  setGame(game);
-  localStorage.setItem("dartsGame", JSON.stringify(game));
+export const setGameState = (gameP) => {
+  setGame(gameP);
+  game = gameP;
+  localStorage.setItem("dartsGame", JSON.stringify(gameP));
 }
 
 // Global

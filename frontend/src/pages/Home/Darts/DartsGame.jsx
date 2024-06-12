@@ -65,7 +65,11 @@ function DartsGame() {
     }
   }, [users, game.turn]);
 
-  const keyboardParams = { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, ShowNewToast, setOverthrow }
+  useEffect(() => {
+    if (!game?.active) setShow(true);
+  }, []);
+
+  const keyboardParams = { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {

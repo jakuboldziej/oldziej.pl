@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button, buttonVariants } from '../ui/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
-import { handleRecord } from './utils';
+import { setGameState } from './utils';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -90,18 +90,18 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleSummaryBackButton = () => {
-    console.log(game);
-    if (game.userWon) {
-      // resetowanie gry w osobnej funkcji utils
-      setGame({
-        ...game,
-        userWon: "",
-        podium: { 1: null, 2: null, 3: null },
-        active: true
-      })
+    const gameDataBack = {
+      ...game,
+      userWon: "",
+      podium: { 1: null, 2: null, 3: null },
+      active: true,
     }
-    // handleRecord("back");
-    // setShow(false);
+    if (game.userWon) {
+      setGame(gameDataBack)
+      setGameState(gameDataBack);
+    }
+    setShow(false);
+    console.log(gameDataBack);
   }
 
   const handleDisabledBack = () => {
