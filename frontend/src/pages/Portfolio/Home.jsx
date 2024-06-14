@@ -12,11 +12,12 @@ function Home() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 2 }}
-          className='particles fixed h-screen w-full'>
+          className='particles fixed h-screen w-full'
+        >
           <Particles className='h-full' />
         </motion.div>
-        <div className='home-portfolio-content h-screen flex flex-col items-center text-white'>
-          <div className='w-full h-80 mt-20'>
+        <div className='home-portfolio-content h-full flex flex-col items-center text-white'>
+          <div className='w-full h-[600px] pt-20'>
             <div className='relative flex flex-col items-center gap-3 h-36'>
               <FadeText className='text-5xl' text='Jakub' framerProps={{ show: { transition: { delay: 0.3 } } }} />
               <FadeText className='text-5xl' text='Ołdziejewski' framerProps={{ show: { transition: { delay: 0.6 } } }} />
@@ -25,8 +26,10 @@ function Home() {
               </BoxReveal>
             </div>
           </div>
-          <div className='flex flex-col items-center w-full h-80'>
-            <span>asdf</span>
+          <div className='flex flex-col items-center w-full h-80 border-t border-[#b7eb34] '>
+            <div className='flex items-center justify-center bg-slate-500 w-full h-10 p-6'>
+              Home
+            </div>
           </div>
         </div>
       </div>
