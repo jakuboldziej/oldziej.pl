@@ -1,5 +1,5 @@
 import { deleteDartsGame } from "@/fetch";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 function Keyboard({ params }) {
   const { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = params;

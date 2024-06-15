@@ -1,5 +1,5 @@
 import lodash from 'lodash';
-import { getDartsUser, putDartsGame, putDartsUser } from "../../fetch";
+import { getDartsUser, putDartsGame, putDartsUser } from "../../../fetch";
 
 // Game Logic
 

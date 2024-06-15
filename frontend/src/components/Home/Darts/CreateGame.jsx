@@ -3,15 +3,15 @@ import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/DartsGameContext";
 import lodash from 'lodash';
 import { getDartsUsers, postDartsGame } from "@/fetch";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Card, CardContent, CardHeader } from "../ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Checkbox } from "../ui/checkbox";
+import { Card, CardContent, CardHeader } from "../../ui/card";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { Checkbox } from "../../ui/checkbox";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog";
+import { Label } from "../../ui/label";
+import { Input } from "../../ui/input";
 import { AuthContext } from "@/context/AuthContext";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {

@@ -1,5 +1,5 @@
-import LeftNavBar from "@/components/FTP/LeftNavBar"
-import NavBar from "@/components/NavBar"
+import LeftNavBar from "@/components/Home/FTP/LeftNavBar"
+import NavBar from "@/components/Home/NavBar"
 
 function Settings() {
   return (

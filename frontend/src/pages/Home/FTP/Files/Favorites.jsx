@@ -1,6 +1,6 @@
-import LeftNavBar from "@/components/FTP/LeftNavBar"
-import MyFileCard from "@/components/FTP/MyFileCard";
-import NavBar from "@/components/NavBar"
+import LeftNavBar from "@/components/Home/FTP/LeftNavBar"
+import MyFileCard from "@/components/Home/FTP/MyFileCard";
+import NavBar from "@/components/Home/NavBar"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FtpContext } from "@/context/FtpContext";
 import { Loader2 } from "lucide-react";

@@ -1,10 +1,10 @@
 import React, { useContext } from 'react'
 import MyDialog from '../MyComponents/MyDialog'
-import { Button } from '../ui/button'
-import { Card, CardDescription, CardHeader } from '../ui/card'
+import { Button } from '@/components/ui/button'
+import { Card, CardDescription, CardHeader } from '@/components/ui/card'
 import { formatDataSize } from './utils'
-import { Label } from '../ui/label'
-import { Input } from '../ui/input'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { FtpContext } from '@/context/FtpContext'
 
 function MyDialogs(props) {

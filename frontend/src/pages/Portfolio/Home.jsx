@@ -1,36 +1,38 @@
-import BoxReveal from '@/components/magicui/box-reveal'
-import { FadeText } from '@/components/magicui/fade-text'
-import Particles from '@/components/magicui/particles.tsx'
-import React from 'react'
-import { motion } from "framer-motion"
+import React, { useEffect, useRef, useState } from 'react'
+import MyParticles from '@/components/Portfolio/MyParticles'
+import LandingPage from '../../components/Portfolio/LandingPage'
+import "/src/styles/portfolio.scss"
+import Navbar from '@/components/Portfolio/Navbar'
+import { useScroll } from 'framer-motion'
+import Projects from '@/components/Portfolio/Projects'
 
 function Home() {
+  const { scrollY } = useScroll();
+  const [currentPage, setCurrentPage] = useState(1);
+  const landingPageRef = useRef(null);
+  const projectsRef = useRef(null);
+
+  const pagesRefs = [landingPageRef, projectsRef];
+
+  scrollY.on('change', () => {
+    const calcCurrentPage = scrollY.current / window.innerHeight
+    if (calcCurrentPage % 1 === 0) {
+      setCurrentPage(calcCurrentPage + 1);
+    }
+  });
+
+  window.onbeforeunload = () => {
+    window.scrollTo(0, 0);
+  }
+
   return (
     <>
-      <div className='home-portfolio'>
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 2 }}
-          className='particles fixed h-screen w-full'
-        >
-          <Particles className='h-full' />
-        </motion.div>
-        <div className='home-portfolio-content h-full flex flex-col items-center text-white'>
-          <div className='w-full h-[600px] pt-20'>
-            <div className='relative flex flex-col items-center gap-3 h-36'>
-              <FadeText className='text-5xl' text='Jakub' framerProps={{ show: { transition: { delay: 0.3 } } }} />
-              <FadeText className='text-5xl' text='Ołdziejewski' framerProps={{ show: { transition: { delay: 0.6 } } }} />
-              <BoxReveal duration={1}>
-                Full-stack Developer
-              </BoxReveal>
-            </div>
-          </div>
-          <div className='flex flex-col items-center w-full h-80 border-t border-[#b7eb34] '>
-            <div className='flex items-center justify-center bg-slate-500 w-full h-10 p-6'>
-              Home
-            </div>
-          </div>
+      <Navbar currentPage={currentPage} pagesRefs={pagesRefs} />
+      <div className='home-portfolio rubik'>
+        <MyParticles />
+        <div className='home-portfolio-content text-white'>
+          <LandingPage landingPageRef={landingPageRef} />
+          <Projects projectsRef={projectsRef} />
         </div>
       </div>
     </>

@@ -1,5 +1,5 @@
-import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
-import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
+import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../../ui/select";
 
 function MySelect({ children, placeholder }) {
   // const form = useForm();

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import NavBar from "@/components/NavBar"
+import NavBar from "@/components/Home/NavBar"
 import { getDartsUsers } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";

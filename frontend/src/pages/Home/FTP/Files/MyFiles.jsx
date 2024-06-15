@@ -1,18 +1,18 @@
-import LeftNavBar from "@/components/FTP/LeftNavBar";
-import NavBar from "@/components/NavBar";
+import LeftNavBar from "@/components/Home/FTP/LeftNavBar";
+import NavBar from "@/components/Home/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/FTP/utils";
+import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/FTP/utils";
 import { Button } from "@/components/ui/button";
-import ShowNewToast from "@/components/MyComponents/ShowNewToast";
+import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
-import MyDialogs from "@/components/FTP/MyDialogs";
+import MyDialogs from "@/components/Home/FTP/MyDialogs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import MyFileCard from "@/components/FTP/MyFileCard";
-import MyFolderCard from "@/components/FTP/MyFolderCard";
+import MyFileCard from "@/components/Home/FTP/MyFileCard";
+import MyFolderCard from "@/components/Home/FTP/MyFolderCard";
 import { AuthContext } from "@/context/AuthContext";
 
 function MyFiles() {

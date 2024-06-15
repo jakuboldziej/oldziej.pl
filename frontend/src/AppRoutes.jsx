@@ -16,6 +16,7 @@ import Settings from './pages/Home/FTP/Settings';
 import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
 import RequireAuth from '@auth-kit/react-router/RequireAuth'
 import Storage from './pages/Home/FTP/Storage';
+import NotFoundPortfolio from './pages/Portfolio/NotFoundPortfolio';
 
 function AppRoutes({ subdomain }) {
   const ProtectedRoute = ({ children }) => {
@@ -54,6 +55,7 @@ function AppRoutes({ subdomain }) {
           <Route path="/">
             <Route index element={<HomeP />} />
           </Route>
+          <Route path="*" element={<NotFoundPortfolio />} />
         </Routes>
       )}
     </>
