@@ -1,8 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import { DartsGameContext } from "@/context/DartsGameContext"
 import Keyboard from "@/components/Home/Darts/Keyboard";
-import RedDot from "@/images/icons/red_dot.png";
-import GreenDot from "@/images/icons/green_dot.png";
+import RedDot from "@/assets/images/icons/red_dot.png";
+import GreenDot from "@/assets/images/icons/green_dot.png";
 import GameSummary from "@/components/Home/Darts/GameSummary";
 import { handleRound, totalThrows } from "@/components/Home/Darts/utils";
 import { Link } from "react-router-dom";

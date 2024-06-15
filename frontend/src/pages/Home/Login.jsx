@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { Loader2  } from "lucide-react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
@@ -88,7 +87,7 @@ function Login() {
         <div className="container-login100">
           <div className="wrap-login100">
             <form className="login100-form validate-form" onSubmit={handleSubmit}>
-              <span className="login100-form-title p-b-34 p-t-27">
+              <span className="login100-form-title p-b-34 p-y-27">
                 Log in
               </span>
               <div className="wrap-input100 validate-input" style={dynamicBorderStyle} data-validate="Enter username">

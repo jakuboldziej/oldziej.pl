@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreateGame";
-import NavBar from "@/components/Home/NavBar"
-import RedDot from "@/images/icons/red_dot.png";
-import GreenDot from "@/images/icons/green_dot.png";
+import NavBar from "@/components/Home/NavBar";
+import RedDot from "@/assets//images/icons/red_dot.png";
+import GreenDot from "@/assets//images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
-import { getDartsGames, getDartsUser, getDartsUsers, putDartsUser } from "@/fetch";
+import { getDartsGames, getDartsUsers } from "@/fetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";

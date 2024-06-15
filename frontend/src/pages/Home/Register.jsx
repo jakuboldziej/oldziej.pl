@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import "@/styles/home.scss"
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
 import { postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";

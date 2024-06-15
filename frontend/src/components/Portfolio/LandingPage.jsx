@@ -6,8 +6,8 @@ import TypingAnimation from '@/components/magicui/typing-animation'
 
 function LandingPage({ landingPageRef }) {
   return (
-    <section ref={landingPageRef} id='landing-page' className='pointer-events-none'>
-      <div className='portfolio-desc w-full flex flex-col justify-evenly mt-[64px]'>
+    <section ref={landingPageRef} id='landing-page'>
+      <div className='portfolio-landing-page w-full flex flex-col justify-evenly'>
         <div className='flex flex-col items-center gap-3 h-36'>
           <FadeText className='text-5xl font-bold' text='Jakub' framerProps={{ show: { transition: { delay: 0.3 } } }} />
           <FadeText className='text-5xl font-bold' text='Ołdziejewski' framerProps={{ show: { transition: { delay: 0.6 } } }} />
@@ -15,7 +15,13 @@ function LandingPage({ landingPageRef }) {
             Full-stack Developer
           </BoxReveal>
         </div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className='flex justify-center'>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          viewport={{ once: true }}
+          className='flex justify-center'
+        >
           <TypingAnimation className='w-[41rem] min-h-[15rem]	leading-[3rem]' duration={60}
             text={`I'm a ${new Date().getFullYear() - 2004}-year-old freelance full-stack developer. I enjoy tackling development challenges and automating processes to improve efficiency.`} />
         </motion.div>
