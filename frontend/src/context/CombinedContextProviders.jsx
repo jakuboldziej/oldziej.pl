@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@/components/theme-provider';
 import { DartsGameContextProvider } from './DartsGameContext';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@/components/ui/shadcn/sonner';
 import { FtpContextProvider } from './FtpContext';
 import { AuthContextProvider } from './AuthContext';
 import { LangContextProvider } from './LangContext';

@@ -1,5 +1,5 @@
 import MyTooltip from '../MyComponents/MyTooltip'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
 import { totalThrows } from './utils';
 
 function UserDataTable({ users, game }) {

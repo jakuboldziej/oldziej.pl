@@ -1,5 +1,5 @@
-import { Form, FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
-import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "../../ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/shadcn/form";
+import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue } from "@/components/ui/shadcn/select";
 
 function MySelect({ children, placeholder }) {
   // const form = useForm();

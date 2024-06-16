@@ -6,9 +6,9 @@ import GreenDot from "@/assets//images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { getDartsGames, getDartsUsers } from "@/fetch";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/shadcn/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
+import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Loader2 } from "lucide-react";
 

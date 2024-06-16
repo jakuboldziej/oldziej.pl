@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { textData } from '@/assets/text'
+
 
 export const createNumberArray = (toNumber) => {
   const numbersArray = [];
@@ -12,11 +14,11 @@ export const handleCurrentPagesNames = (numbersList, lang) => {
   const currentPagesNames = [];
   for (let number of numbersList) {
     if (number === 1) {
-      currentPagesNames.push(lang === "pl" ? "Home" : "Home");
+      currentPagesNames.push(textData?.[lang].pagination.home);
     } else if (number === 2) {
-      currentPagesNames.push(lang === "pl" ? "Projekty" : "Projects");
+      currentPagesNames.push(textData?.[lang].pagination.experience);
     } else if (number === 3) {
-      currentPagesNames.push(lang === "pl" ? "O mnie" : "About");
+      currentPagesNames.push(textData?.[lang].pagination.about);
     }
   }
   return currentPagesNames;

@@ -2,15 +2,15 @@ export const textData = {
   "pl": {
     "pagination": {
       "home": "Home",
-      "projects": "Projekty",
+      "experience": "Doświadczenie",
       "about": "O mnie",
       "dots": "Scrolluj, aby zobaczyć, co się stanie"
     },
     "landingPage": {
       "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance software developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
     },
-    "projects": {
-
+    "experience": {
+      "button": "Projekty"
     },
     "about": {
       "descBreaking": "Kultura, w której się wychowałem, tańczę od 2010 roku.",
@@ -26,21 +26,20 @@ export const textData = {
     "notFound": {
       "header": "404 - Nie znaleziono strony",
       "lostInSpace": "Wygląda na to, że zgubiłeś się w kosmosie...",
-      "button": "Powrót"
     }
   },
   "en": {
     "pagination": {
       "home": "Home",
-      "projects": "Projects",
+      "experience": "Experience",
       "about": "About",
       "dots": "Scroll to see what happens"
     },
     "landingPage": {
       "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance software developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
     },
-    "projects": {
-
+    "experience": {
+      "button": "Projects"
     },
     "about": {
       "descBreaking": "A culture that I grew up in, dancing since 2010.",
@@ -56,7 +55,6 @@ export const textData = {
     "notFound": {
       "header": "404 - Not Found",
       "lostInSpace": "Seems like you got lost in space...",
-      "button": "Back"
     }
   }
 }

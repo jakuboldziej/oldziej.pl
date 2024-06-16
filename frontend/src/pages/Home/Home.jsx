@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import NavBar from "@/components/Home/NavBar"
 import { getDartsUsers } from "@/fetch";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { FtpContext } from "@/context/FtpContext";

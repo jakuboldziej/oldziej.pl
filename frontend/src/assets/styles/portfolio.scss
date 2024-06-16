@@ -9,12 +9,20 @@
 
 // Global
 
+.container_no_nav {
+  height: calc(100vh - 64px) !important;
+}
+
 .particles {
   pointer-events: none;
 }
 
-.portfolio-footer, .portfolio-about-me, .portfolio-projects {
+.portfolio-footer, .portfolio-about-me, .portfolio-experience, .projects {
   padding: 0 11vw;
+
+  @media screen and (max-width: 639px) {
+    padding: 0 5vw;
+  }
 }
 
 // Navbar
@@ -79,7 +87,6 @@ html {
   @media screen and (max-width: 639px) {
     display: flex;
     flex-direction: column;
-    gap: 200px;
   }
 
   section {

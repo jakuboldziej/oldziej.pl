@@ -7,8 +7,8 @@ import GameSummary from "@/components/Home/Darts/GameSummary";
 import { handleRound, totalThrows } from "@/components/Home/Darts/utils";
 import { Link } from "react-router-dom";
 import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { buttonVariants } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
+import { buttonVariants } from "@/components/ui/shadcn/button";
 import UserDataTable from "@/components/Home/Darts/UserDataTable";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 

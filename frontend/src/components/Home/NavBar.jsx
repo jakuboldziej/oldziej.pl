@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "../ui/sheet"
+import { Button } from "@/components/ui/shadcn/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet"
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";

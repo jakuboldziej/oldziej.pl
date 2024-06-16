@@ -1,7 +1,9 @@
 import { motion } from "framer-motion"
-import Particles from '../magicui/particles'
+import Particles from '@/components/ui/magicui/particles'
 
 function MyParticles() {
+  const isMobile = window.innerWidth < 640;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -9,7 +11,7 @@ function MyParticles() {
       transition={{ duration: 3 }}
       className='particles fixed h-screen w-full'
     >
-      <Particles className='h-full' />
+      <Particles className='h-full' quantity={isMobile ? 250 : 500} />
     </motion.div>
   )
 }

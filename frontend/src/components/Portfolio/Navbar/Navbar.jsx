@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { motion, useCycle } from "framer-motion"
 import { createNumberArray, handleCurrentPagesNames, useDimensions } from '../utils';
-import { BreadcrumbSeparator } from '../../ui/breadcrumb';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../ui/tooltip';
+import { BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
 import MenuToggle from './MenuToggle';
 import Navigation from './Navigation';
-import WordFadeIn from '@/components/magicui/word-fade-in';
+import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
 
 const sidebar = {
@@ -30,7 +30,7 @@ const sidebar = {
 
 function Navbar({ currentPage, pagesRefs }) {
   const { lang, langText } = useContext(LangContext)
-  const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(currentPage)));
+  const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(currentPage), lang));
   const [highestPage, setHighestPage] = useState(1);
 
   const [isOpen, toggleOpen] = useCycle(false, true);

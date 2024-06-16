@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
-import { FadeText } from '@/components/magicui/fade-text'
+import { FadeText } from '@/components/ui/magicui/fade-text'
 import { motion } from "framer-motion"
-import BoxReveal from '@/components/magicui/box-reveal'
-import TypingAnimation from '@/components/magicui/typing-animation'
+import BoxReveal from '@/components/ui/magicui/box-reveal'
+import TypingAnimation from '@/components/ui/magicui/typing-animation'
 import { LangContext } from '@/context/LangContext'
 
 function LandingPage({ landingPageRef }) {
@@ -26,7 +26,9 @@ function LandingPage({ landingPageRef }) {
           className='flex justify-center'
         >
           {langText.landingPage &&
-            <TypingAnimation className={`${lang === "en" ? 'w-[41rem]' : 'w-[42rem]'} min-h-[15rem] px-5 sm:px-0 text-3xl sm:text-4xl sm:leading-[3rem]`} duration={60}
+            <TypingAnimation
+              className={`${lang === "en" ? 'w-[41rem] min-h-[252px]' : 'w-[42rem] min-h-[324px]'}  px-[5vw] sm:px-0 text-3xl sm:text-4xl sm:leading-[3rem]`}
+              duration={60}
               text={langText.landingPage.desc} />
           }
         </motion.div>

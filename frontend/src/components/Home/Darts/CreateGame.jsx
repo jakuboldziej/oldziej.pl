@@ -3,15 +3,15 @@ import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/DartsGameContext";
 import lodash from 'lodash';
 import { getDartsUsers, postDartsGame } from "@/fetch";
-import { Button } from "../../ui/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
-import { Checkbox } from "../../ui/checkbox";
+import { Button } from "@/components/ui/shadcn/button";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
+import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/shadcn/select";
+import { Checkbox } from "@/components/ui/shadcn/checkbox";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog";
-import { Label } from "../../ui/label";
-import { Input } from "../../ui/input";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/shadcn/dialog";
+import { Label } from "@/components/ui/shadcn/label";
+import { Input } from "@/components/ui/shadcn/input";
 import { AuthContext } from "@/context/AuthContext";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
@@ -223,7 +223,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         <DrawerTrigger asChild>
           {children}
         </DrawerTrigger>
-        <DrawerContent className="create-game-modal">
+        <DrawerContent className="create-game-modal border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <DrawerHeader>
             <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>

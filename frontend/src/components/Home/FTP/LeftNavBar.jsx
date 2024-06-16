@@ -1,7 +1,7 @@
 import { Files, Settings, Share2, FileUp, FileHeart, PackageOpen, Package, Database, Menu } from 'lucide-react'
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/shadcn/sheet';
 
 function LeftNavBar() {
   const [isHovered, setIsHovered] = useState(false);
