@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 
@@ -100,6 +100,13 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   const games = await gamesResponse.json();
   return games;
 };
+
+// Get gamesPlayed for portfolio
+export const getGamesPlayedPortfolio = async () => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/portfolio/kubek`);
+  const res = await userResponse.json();
+  return res.gamesPlayed;
+}
 
 // FTP
 

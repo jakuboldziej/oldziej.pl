@@ -24,11 +24,14 @@ const layoutVariants = {
 
 function Navigation({ isOpen }) {
   return (
-    <motion.div variants={layoutVariants} whileHover={{ ...layoutVariants[isOpen ? "open" : "closed"] }}>
-      <motion.ul variants={variants}>
-        {itemIds.map((i) => (
-          <MenuItem i={i} key={i} />
-        ))}
+    <motion.div variants={layoutVariants} >
+      <motion.ul variants={variants} className="backdrop-filter backdrop-blur">
+        <MenuItem>
+          asdf11
+        </MenuItem>
+        <MenuItem>
+          <span><span className="hover:text-lime transition-all">PL</span> | <span className="hover:text-lime transition-all">EN</span></span>
+        </MenuItem>
       </motion.ul>
     </motion.div>
   );

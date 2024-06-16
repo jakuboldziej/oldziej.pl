@@ -37,16 +37,17 @@
     }
     
     ul {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
       padding: 25px;
       position: absolute;
       top: 50px;
-      width: 100px;
       right: 45px;
     }
     
     li {
       list-style: none;
-      margin-bottom: 20px;
       display: flex;
       align-items: center;
       cursor: pointer;

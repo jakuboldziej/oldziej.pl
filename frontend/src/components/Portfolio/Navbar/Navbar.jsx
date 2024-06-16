@@ -48,7 +48,12 @@ function Navbar({ currentPage, pagesRefs }) {
   };
 
   return (
-    <motion.div className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40'>
+    <motion.div 
+    initial={{ y: -64 }}
+    animate={{ y: 0 }}
+    transition={{ duration: 1.8 }}
+    viewport={{ once: true }}
+    className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40'>
       <div className='current-pages-names flex gap-2'>
         {currentPagesNames.map((name, i) => (
           <div key={name} className='flex items-center gap-2 h-[24px]'>

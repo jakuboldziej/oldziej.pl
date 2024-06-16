@@ -18,16 +18,14 @@ const variants = {
   }
 };
 
-
-function MenuItem({ i }) {
-
+function MenuItem({ children }) {
   return (
     <motion.li
       variants={variants}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
     >
-      <div className="text-placeholder">asdf</div>
+      {children}
     </motion.li>
   )
 }

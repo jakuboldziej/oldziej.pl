@@ -153,6 +153,11 @@ router.post('/dartsUsers', async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
+});
+
+// Get gamesPlayed for portfolio
+router.get('/dartsUsers/portfolio/:displayName', getDartsUser, async (req, res) => {
+  res.send({gamesPlayed: res.user.gamesPlayed})
 })
 
 module.exports = router

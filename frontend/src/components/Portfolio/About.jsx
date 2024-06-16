@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React from 'react'
 import { BentoCard, BentoGrid } from '../magicui/bento-grid'
 import { Car, MountainSnow, PersonStanding, Target } from 'lucide-react'
 import Bouldering from "@/assets/images/bouldering.jfif"
@@ -14,7 +14,7 @@ const features = [
     href: "https://www.instagram.com/bbkubek/",
     target: "_blank",
     cta: "See more of me",
-    background: <video src={Breaking} loop muted autoPlay={true} className="absolute w-full h-fit [mask-image:linear-gradient(to_top,transparent_1%,#000_100%)]" />,
+    background: <video src={Breaking} loop muted autoPlay={true} className="absolute top-0 h-max [mask-image:linear-gradient(to_top,transparent_1%,#000_100%)]" />,
     className: "sm:col-start-1 sm:col-end-1 sm:row-start-1 sm:row-end-4 max-w-[410px]",
   },
   {
@@ -30,11 +30,12 @@ const features = [
   {
     Icon: Target,
     name: "Darts",
-    description: `In the meantime I play darts in my room, in 2023 I've created a web app for darts and since then I played 0 games.`,
+    description: '',
+    numberTicker: true,
     href: "/projects/darts",
     target: "_parent",
     cta: "Check out my app",
-    background: <img src={Darts} className="absolute w-full h-full [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]" />,
+    background: <img src={Bouldering} className="absolute w-full h-full [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]" />,
     className: "sm:col-start-2 sm:col-end-2 sm:row-start-3 sm:row-end-4 max-w-[410px]",
   },
   {
