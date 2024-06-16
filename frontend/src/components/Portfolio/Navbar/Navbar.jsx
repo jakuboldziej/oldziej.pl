@@ -29,7 +29,7 @@ const sidebar = {
 };
 
 function Navbar({ currentPage, pagesRefs }) {
-  const { lang } = useContext(LangContext)
+  const { lang, langText } = useContext(LangContext)
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(currentPage)));
   const [highestPage, setHighestPage] = useState(1);
 
@@ -49,13 +49,25 @@ function Navbar({ currentPage, pagesRefs }) {
     window.scrollTo({ top: pagesRefs[i].current.offsetTop, behavior: 'smooth' });
   };
 
+  const handleClickOutside = (event) => {
+    if (containerRef.current && !containerRef.current.contains(event.target) && isOpen) {
+      toggleOpen();
+    }
+  }
+
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside)
+
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [isOpen])
+
   return (
     <motion.div
       initial={{ y: -64 }}
       animate={{ y: 0 }}
       transition={{ duration: 1.8 }}
       viewport={{ once: true }}
-      className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40'>
+      className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'>
       <div className='current-pages-names flex gap-2'>
         {currentPagesNames.map((name, i) => (
           <div key={name} className='flex items-center gap-2 h-[24px]'>
@@ -70,7 +82,7 @@ function Navbar({ currentPage, pagesRefs }) {
                       <span className='text-md'>...</span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>Scroll to see what happens</p>
+                      <p>{langText.pagination?.dots}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

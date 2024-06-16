@@ -1,11 +1,14 @@
-import React from 'react'
+import { LangContext } from '@/context/LangContext';
+import React, { useContext } from 'react'
 
 function Footer() {
+  const { langText } = useContext(LangContext);
+
   return (
     <section id='footer'>
       <div className='portfolio-footer w-full flex flex-row items-center justify-around'>
         <div className='contact flex flex-col  gap-4'>
-          <span className='opacity-80 sm:text-4xl'>Contact</span>
+          <span className='opacity-80 sm:text-4xl'>{langText.footer?.contact}</span>
           <a href='mailto:jakub.oldziej@wp.pl' target='_blank' className='sm:text-2xl hover:opacity-80'>jakub.oldziej@wp.pl</a>
         </div>
         <div className='social-media flex flex-col sm:text-4xl gap-4'>

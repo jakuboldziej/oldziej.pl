@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ArrowRightIcon } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { motion } from "framer-motion"
 import { getGamesPlayedPortfolio } from "@/fetch";
 import NumberTicker from "./number-ticker";
+import { LangContext } from "@/context/LangContext";
 
 const BentoGrid = ({
   children,
@@ -15,18 +16,14 @@ const BentoGrid = ({
   className?: string;
 }) => {
   return (
-    <motion.div
-      initial={{ y: -100, opacity: 0 }}
-      whileInView={{ y: 0, opacity: 1 }}
-      transition={{ duration: 1 }}
-      viewport={{ once: true, amount: 0.3 }}
+    <div
       className={cn(
         "grid auto-rows-[22rem] grid-cols-3 gap-4",
         className,
       )}
     >
       {children}
-    </motion.div>
+    </div>
   );
 };
 
@@ -52,6 +49,8 @@ const BentoCard = ({
   cta: string;
 }) => {
   const [gamesPlayed, setGamesPlayed] = useState(0);
+  const { lang } = useContext(LangContext);
+
   useEffect(() => {
     const fetchGamesPlayed = async () => {
       setGamesPlayed(await getGamesPlayedPortfolio());
@@ -81,8 +80,15 @@ const BentoCard = ({
         <p className="max-w-lg text-neutral-400">
           {numberTicker ?
             <>
-              <span>
-                In the meantime I play darts in my room, in 2023 I've created a web app for darts and since then I played <NumberTicker delay={0.18} value={gamesPlayed} /> games.</span>
+              {lang === "pl" ? (
+                <span>
+                  W międzyczasie gram w rzutki w swoim pokoju, w 2023 roku stworzyłem aplikację internetową do darta i od tego czasu zagrałem <NumberTicker delay={0.18} value={gamesPlayed} /> gier.
+                </span>
+              ) : (
+                <span>
+                  In the meantime I play darts in my room, in 2023 I've created a web app for darts and since then I played <NumberTicker delay={0.18} value={gamesPlayed} /> games.
+                </span>
+              )}
             </>
             : description
           }

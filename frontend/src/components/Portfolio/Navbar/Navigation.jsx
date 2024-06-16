@@ -26,22 +26,24 @@ const layoutVariants = {
 function Navigation({ isOpen }) {
   const { lang, setLang } = useContext(LangContext);
 
-  const handleLangChange = (lang) => {
-    location.reload();
-    setLang(lang);
-    localStorage.setItem('lang', lang);
+  const handleLangChange = (langP) => {
+    if (langP !== lang) {
+      location.reload();
+      setLang(langP);
+      localStorage.setItem('lang', langP);
+    }
   }
 
   return (
     <motion.div variants={layoutVariants} >
-      <motion.ul variants={variants} className="backdrop-filter backdrop-blur">
+      <motion.ul variants={variants} className={"bg-black"}>
         <MenuItem>
           asdf11
         </MenuItem>
         <MenuItem>
-          <span><span className={`${lang === "pl" ? 'text-lime font-bold' : 'text-white'} hover:text-pink transition-all`} onClick={() => handleLangChange('pl')}>PL</span>
+          <span><span className={`${lang === "pl" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all`} onClick={() => handleLangChange('pl')}>PL</span>
           <span> | </span>
-          <span className={`${lang === "en" ? 'text-lime font-bold' : 'text-white'} hover:text-pink transition-all `} onClick={() => handleLangChange('en')}>EN</span></span>
+          <span className={`${lang === "en" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all `} onClick={() => handleLangChange('en')}>EN</span></span>
         </MenuItem>
       </motion.ul>
     </motion.div>
