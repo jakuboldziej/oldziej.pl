@@ -1,6 +1,7 @@
-import * as React from "react";
+import React, { useContext } from "react";
 import { motion } from "framer-motion";
 import MenuItem from "./MenuItem";
+import { LangContext } from "@/context/LangContext";
 
 const variants = {
   open: {
@@ -23,6 +24,14 @@ const layoutVariants = {
 };
 
 function Navigation({ isOpen }) {
+  const { lang, setLang } = useContext(LangContext);
+
+  const handleLangChange = (lang) => {
+    location.reload();
+    setLang(lang);
+    localStorage.setItem('lang', lang);
+  }
+
   return (
     <motion.div variants={layoutVariants} >
       <motion.ul variants={variants} className="backdrop-filter backdrop-blur">
@@ -30,7 +39,9 @@ function Navigation({ isOpen }) {
           asdf11
         </MenuItem>
         <MenuItem>
-          <span><span className="hover:text-lime transition-all">PL</span> | <span className="hover:text-lime transition-all">EN</span></span>
+          <span><span className={`${lang === "pl" ? 'text-lime font-bold' : 'text-white'} hover:text-pink transition-all`} onClick={() => handleLangChange('pl')}>PL</span>
+          <span> | </span>
+          <span className={`${lang === "en" ? 'text-lime font-bold' : 'text-white'} hover:text-pink transition-all `} onClick={() => handleLangChange('en')}>EN</span></span>
         </MenuItem>
       </motion.ul>
     </motion.div>

@@ -31,6 +31,7 @@ module.exports = {
       },
       colors: {
         'lime': '#b7eb34',
+        'pink': '#f50add'
       },
     },
   },

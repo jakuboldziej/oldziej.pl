@@ -8,15 +8,15 @@ export const createNumberArray = (toNumber) => {
   return numbersArray;
 }
 
-export const handleCurrentPagesNames = (numbersList) => {
+export const handleCurrentPagesNames = (numbersList, lang) => {
   const currentPagesNames = [];
   for (let number of numbersList) {
     if (number === 1) {
-      currentPagesNames.push("Home");
+      currentPagesNames.push(lang === "pl" ? "Home" : "Home");
     } else if (number === 2) {
-      currentPagesNames.push("Projects");
+      currentPagesNames.push(lang === "pl" ? "Projekty" : "Projects");
     } else if (number === 3) {
-      currentPagesNames.push("About");
+      currentPagesNames.push(lang === "pl" ? "O mnie" : "About");
     }
   }
   return currentPagesNames;

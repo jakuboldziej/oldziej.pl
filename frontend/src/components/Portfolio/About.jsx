@@ -3,7 +3,7 @@ import { BentoCard, BentoGrid } from '../magicui/bento-grid'
 import { Car, MountainSnow, PersonStanding, Target } from 'lucide-react'
 import Bouldering from "@/assets/images/bouldering.jfif"
 import Formula1 from "@/assets/images/formula1.jpg"
-import Darts from "@/assets/images/darts.jpg"
+import Darts from "@/assets/images/darts.webp"
 import Breaking from "@/assets/videos/breaking.mp4"
 
 const features = [
@@ -35,7 +35,7 @@ const features = [
     href: "/projects/darts",
     target: "_parent",
     cta: "Check out my app",
-    background: <img src={Bouldering} className="absolute w-full h-full [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]" />,
+    background: <img src={Darts} className="absolute w-full h-full [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)]" />,
     className: "sm:col-start-2 sm:col-end-2 sm:row-start-3 sm:row-end-4 max-w-[410px]",
   },
   {
