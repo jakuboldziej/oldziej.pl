@@ -17,6 +17,7 @@ import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
 import RequireAuth from '@auth-kit/react-router/RequireAuth'
 import Storage from './pages/Home/FTP/Storage';
 import NotFoundPortfolio from './pages/Portfolio/NotFoundPortfolio';
+import Zaslepka from './components/Portfolio/Zaslepka';
 
 function AppRoutes({ subdomain }) {
   const ProtectedRoute = ({ children }) => {
@@ -53,6 +54,9 @@ function AppRoutes({ subdomain }) {
       ) : (
         <Routes>
           <Route path="/">
+            <Route index element={<Zaslepka />} />
+          </Route>
+          <Route path="/test">
             <Route index element={<HomeP />} />
           </Route>
           <Route path="*" element={<NotFoundPortfolio />} />

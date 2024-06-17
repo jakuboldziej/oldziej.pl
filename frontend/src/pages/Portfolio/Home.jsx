@@ -32,7 +32,6 @@ function Home() {
   }
 
   return (
-    <>
       <div className='home-portfolio rubik'>
         <Navbar currentPage={currentPage} pagesRefs={pagesRefs} />
         <MyParticles />
@@ -43,7 +42,6 @@ function Home() {
           <Footer />
         </div>
       </div>
-    </>
   )
 }
 

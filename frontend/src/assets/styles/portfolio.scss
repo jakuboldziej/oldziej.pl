@@ -9,6 +9,8 @@
 
 // Global
 
+$lime: #b7eb34;
+
 .container_no_nav {
   height: calc(100vh - 64px) !important;
 }
@@ -17,7 +19,7 @@
   pointer-events: none;
 }
 
-.portfolio-footer, .portfolio-about-me, .portfolio-experience, .projects {
+.portfolio-footer, .portfolio-about-me, .portfolio-experience, .projects-scroll {
   padding: 0 11vw;
 
   @media screen and (max-width: 639px) {
@@ -64,15 +66,43 @@
 }
 
 // Footer
-
 .portfolio-footer {
   .contact, .social-media {
     height: 120px;
   }
 }
 
-// Parallax
+// Text underline hover
+.text-underline-hover {
+  position: relative;
+  text-decoration: none;
+  font-weight: 400;
+  transition: all .35s ease;
 
+  &::before {
+      content: ""; 
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background-color: $lime;
+      visibility: hidden;
+      -webkit-transform: scaleX(0);
+      transform: scaleX(0);
+      -webkit-transition: all 0.3s ease-in-out 0s; 
+      transition: all 0.3s ease-in-out 0s; 
+  }   
+
+  &:hover {
+      &::before {
+          visibility: visible;
+          -webkit-transform: scaleX(1);
+          transform: scaleX(1);
+      }   
+  }   
+}
+// Parallax
 html {
   scroll-snap-type: y mandatory;
   -ms-overflow-style: none;

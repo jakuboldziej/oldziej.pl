@@ -7,6 +7,7 @@ import MenuToggle from './MenuToggle';
 import Navigation from './Navigation';
 import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
+import { Link } from 'react-router-dom';
 
 const sidebar = {
   open: (height = 1000) => ({
@@ -28,7 +29,7 @@ const sidebar = {
   },
 };
 
-function Navbar({ currentPage, pagesRefs }) {
+function Navbar({ currentPage, pagesRefs, isNotFound = false }) {
   const { lang, langText } = useContext(LangContext)
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(currentPage), lang));
   const [highestPage, setHighestPage] = useState(1);
@@ -68,29 +69,33 @@ function Navbar({ currentPage, pagesRefs }) {
       transition={{ duration: 1.8 }}
       viewport={{ once: true }}
       className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'>
-      <div className='current-pages-names flex gap-2'>
-        {currentPagesNames.map((name, i) => (
-          <div key={name} className='flex items-center gap-2 h-[24px]'>
-            <WordFadeIn onClick={(e) => handlePaginationClick(e, i)} className='cursor-pointer' words={name} />
-            {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
-            {currentPagesNames.length === 1 &&
-              <>
-                <BreadcrumbSeparator className='[&>svg]:size-5' />
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className='text-md'>...</span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{langText.pagination?.dots}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </>
-            }
-          </div>
-        ))}
-      </div>
+      {!isNotFound ? (
+        <div className='current-pages-names flex gap-2'>
+          {currentPagesNames.map((name, i) => (
+            <div key={name} className='flex items-center gap-2 h-[24px]'>
+              <WordFadeIn onClick={(e) => handlePaginationClick(e, i)} className='cursor-pointer' words={name} />
+              {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
+              {currentPagesNames.length === 1 &&
+                <>
+                  <BreadcrumbSeparator className='[&>svg]:size-5' />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className='text-md'>...</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{langText.pagination?.dots}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
+              }
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Link to="/" className='font-bold'>Home</Link>
+      )}
       <motion.nav
         initial={false}
         animate={isOpen ? "open" : "closed"}

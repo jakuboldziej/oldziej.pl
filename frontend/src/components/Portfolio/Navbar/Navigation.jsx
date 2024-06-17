@@ -29,7 +29,6 @@ function Navigation({ isOpen }) {
   const handleLangChange = (langP) => {
     if (langP !== lang) {
       location.reload();
-      setLang(langP);
       localStorage.setItem('lang', langP);
     }
   }

@@ -394,7 +394,7 @@ function FtpPage() {
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
                           <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
-                          <div className='attrs flex sm:justify-evenly items-center'>
+                          <div className='attrs flex justify-evenly items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatDataSize(file.length)}</span>
                             <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>

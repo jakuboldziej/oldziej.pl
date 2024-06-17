@@ -46,7 +46,9 @@ const services = [
   "postgresql",
   "mysql",
   "vercel",
-  "netlify"
+  "netlify",
+  "trello",
+  "digitalocean"
 ]
 
 function IconClouds() {

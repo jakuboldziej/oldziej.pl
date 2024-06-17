@@ -4,6 +4,7 @@ import GradualSpacing from "@/components/ui/magicui/gradual-spacing";
 import MyParticles from "@/components/Portfolio/MyParticles";
 import { LangContext } from "@/context/LangContext";
 import { useContext } from "react";
+import Navbar from "@/components/Portfolio/Navbar/Navbar";
 
 function NotFoundPortfolio() {
   const { langText } = useContext(LangContext);
@@ -12,14 +13,15 @@ function NotFoundPortfolio() {
   const navigate = useNavigate();
 
   return (
-    <>
+    <div className="notfound-page-wrapper rubik">
+      <Navbar isNotFound={true} />
       <MyParticles />
       <div className="notfound-page text-white">
-        <span className="text-4xl">{langText.notFound?.header}</span>
-        {langText.notFound && <GradualSpacing duration={1} className="text-2xl" text={langText.notFound?.lostInSpace}/>}
+        <span className="text-2xl sm:text-4xl">{langText.notFound?.header}</span>
+        {langText.notFound && <GradualSpacing duration={1} className="sm:text-2xl text-[4.9vw]" text={langText.notFound?.lostInSpace}/>}
         <Button onClick={() => navigate("/")} variant="outline_lime">Home</Button>
       </div>
-    </>
+    </div>
   );
 };
 
