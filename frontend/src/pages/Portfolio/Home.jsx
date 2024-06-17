@@ -7,9 +7,13 @@ import { useInView } from 'framer-motion'
 import Experience from '@/components/Portfolio/Experience'
 import Footer from '@/components/Portfolio/Footer'
 import About from '@/components/Portfolio/About'
+import { useLocation } from "react-router"
 
 function Home() {
   document.title = "Oldziej | Portfolio";
+
+  const location = useLocation();
+  const projectsRedirect = location.state?.projectsRedirect;
 
   // Pagination
   const landingPageRef = useRef(null);
@@ -28,6 +32,7 @@ function Home() {
 
   // Scroll to top on refresh
   window.onbeforeunload = () => {
+    window.history.replaceState({}, '')
     window.scrollTo(0, 0);
   }
 
@@ -37,7 +42,7 @@ function Home() {
         <MyParticles />
         <div className='home-portfolio-content text-white'>
           <LandingPage landingPageRef={landingPageRef} />
-          <Experience experienceRef={experienceRef} />
+          <Experience experienceRef={experienceRef} projectsRedirect={projectsRedirect} />
           <About aboutRef={aboutRef} />
           <Footer />
         </div>

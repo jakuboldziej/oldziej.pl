@@ -8,7 +8,7 @@ import DartsGame from './pages/Home/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/DartsUser";
 import FtpPage from './pages/Home/FTP/FtpPage';
 import MyFiles from './pages/Home/FTP/Files/MyFiles';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import Shared from './pages/Home/FTP/Files/Shared';
 import Favorites from './pages/Home/FTP/Files/Favorites';
 import UploadFiles from './pages/Home/FTP/Files/UploadFiles';
@@ -58,6 +58,7 @@ function AppRoutes({ subdomain }) {
           </Route>
           <Route path="/test">
             <Route index element={<HomeP />} />
+            <Route path='projects' element={<Navigate to="/test" replace state={{ projectsRedirect: true }} />} />
           </Route>
           <Route path="*" element={<NotFoundPortfolio />} />
         </Routes>
