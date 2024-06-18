@@ -24,6 +24,10 @@ export const handleCurrentPagesNames = (numbersList, lang) => {
   return currentPagesNames;
 }
 
+export const scrollToTop = (ref, smoothness = 'smooth') => {
+  window.scrollTo({ top: ref, behavior: smoothness });
+}
+
 // Navbar
 
 export const useDimensions = ref => {

@@ -1,13 +1,18 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/shadcn/drawer';
 import { Button } from '@/components/ui/shadcn/button';
 import ExperienceProjects from './ExperienceProjects';
 import { LangContext } from '@/context/LangContext';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
-function ProjectsDrawer({ projectsRedirect }) {
+function ProjectsDrawer({ params }) {
+  const { projectsRedirect, scrolledToProjects } = params;
   const { langText } = useContext(LangContext);
-  const [drawerOpen, setDrawerOpen] = useState(projectsRedirect);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    if (scrolledToProjects && projectsRedirect) setDrawerOpen(true);
+  }, [scrolledToProjects]);
 
   return (
     <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>

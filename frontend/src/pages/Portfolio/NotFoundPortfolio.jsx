@@ -4,7 +4,7 @@ import GradualSpacing from "@/components/ui/magicui/gradual-spacing";
 import MyParticles from "@/components/Portfolio/MyParticles";
 import { LangContext } from "@/context/LangContext";
 import { useContext } from "react";
-import Navbar from "@/components/Portfolio/Navbar/Navbar";
+import Navbar from "@/components/Portfolio/Navbar";
 
 function NotFoundPortfolio() {
   const { langText } = useContext(LangContext);

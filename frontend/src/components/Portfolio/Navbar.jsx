@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { motion, useCycle } from "framer-motion"
-import { createNumberArray, handleCurrentPagesNames, useDimensions } from '../utils';
+import { motion, useCycle, useMotionValueEvent, useScroll } from "framer-motion"
+import { createNumberArray, handleCurrentPagesNames, scrollToTop, useDimensions } from './utils';
 import { BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
-import MenuToggle from './MenuToggle';
-import Navigation from './Navigation';
+import MenuToggle from './NavbarComponents/MenuToggle';
+import Navigation from './NavbarComponents/Navigation';
 import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
 import { Link } from 'react-router-dom';
@@ -29,10 +29,15 @@ const sidebar = {
   },
 };
 
-function Navbar({ currentPage, pagesRefs, isNotFound = false }) {
+function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotFound }) {
   const { lang, langText } = useContext(LangContext)
-  const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(currentPage), lang));
-  const [highestPage, setHighestPage] = useState(1);
+
+  const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
+  const [highestPage, setHighestPage] = useState(projectsRedirect ? 2 : 1);
+  
+  const [isHidden, setIsHidden] = useState(false);
+  const [firstAnimation, setFirstAnimation] = useState(true);
+  const { scrollY } = useScroll();
 
   const [isOpen, toggleOpen] = useCycle(false, true);
   const containerRef = useRef(null);
@@ -47,7 +52,7 @@ function Navbar({ currentPage, pagesRefs, isNotFound = false }) {
 
   const handlePaginationClick = (event, i) => {
     event.preventDefault();
-    window.scrollTo({ top: pagesRefs[i].current.offsetTop, behavior: 'smooth' });
+    scrollToTop(pagesRefs[i].current.offsetTop - 64);
   };
 
   const handleClickOutside = (event) => {
@@ -56,19 +61,42 @@ function Navbar({ currentPage, pagesRefs, isNotFound = false }) {
     }
   }
 
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious();
+    if (latest > previous && latest > 150) {
+      setFirstAnimation(false);
+      setIsHidden(true);
+    } else {
+      setIsHidden(false);
+    }
+  })
+
   useEffect(() => {
+    console.log(isOpen);
     document.addEventListener('click', handleClickOutside)
 
     return () => document.removeEventListener('click', handleClickOutside)
   }, [isOpen])
 
+  useEffect(() => {
+    if (projectsRedirect) {
+      scrollToTop(pagesRefs[1].current.offsetTop, "instant");
+      setScrolledToProjects(true);
+    }
+  }, [projectsRedirect]);
+
   return (
     <motion.div
-      initial={{ y: -64 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 1.8 }}
-      viewport={{ once: true }}
-      className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'>
+      initial={{ y: '-100%' }}
+      variants = {{
+        visible: { y : 0 },
+        hidden: {y: "-100%"}
+      }}
+      animate={isHidden ? "hidden" : "visible"}
+      transition={{ duration: firstAnimation ? 1.8 : 0.35, ease: 'easeInOut' }}
+      // viewport={{ once: true }}
+      className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'
+    >
       {!isNotFound ? (
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (

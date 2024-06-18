@@ -53,7 +53,7 @@ const services = [
 
 function IconClouds() {
   return (
-    <div className='flex gap-10 flex-col sm:flex-row'>
+    <div className='flex gap-10 flex-col sm:flex-row pointer-events-none sm:pointer-events-auto'>
       <IconCloud iconSlugs={programmingLanguages} />
       <IconCloud iconSlugs={frameworks} />
       <IconCloud iconSlugs={services} />

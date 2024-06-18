@@ -15,16 +15,16 @@ const variants = {
 const layoutVariants = {
   open: {
     display: 'block',
-    height: "auto",
+    opacity: 1,
   },
   closed: {
+    opacity: 0,
     display: 'none',
-    height: 0,
   },
 };
 
 function Navigation({ isOpen }) {
-  const { lang, setLang } = useContext(LangContext);
+  const { lang } = useContext(LangContext);
 
   const handleLangChange = (langP) => {
     if (langP !== lang) {
@@ -34,12 +34,12 @@ function Navigation({ isOpen }) {
   }
 
   return (
-    <motion.div variants={layoutVariants} >
-      <motion.ul variants={variants} className={"bg-black"}>
+    <motion.div transition={{ duration: 0.5 }} variants={layoutVariants}>
+      <motion.ul variants={variants} className="bg-black">
         <MenuItem>
           <span><span className={`${lang === "pl" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all`} onClick={() => handleLangChange('pl')}>PL</span>
-          <span> | </span>
-          <span className={`${lang === "en" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all `} onClick={() => handleLangChange('en')}>EN</span></span>
+            <span> | </span>
+            <span className={`${lang === "en" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all `} onClick={() => handleLangChange('en')}>EN</span></span>
         </MenuItem>
       </motion.ul>
     </motion.div>
