@@ -9,7 +9,7 @@ import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
 import { Link } from 'react-router-dom';
 
-function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome }) {
+function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome, isProjects = false }) {
   const { lang, langText } = useContext(LangContext)
 
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
@@ -79,7 +79,7 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
       }}
       animate={isHidden ? "hidden" : "visible"}
       transition={{ duration: firstAnimation ? 1.8 : 0.35, ease: 'easeInOut' }}
-      className={`portfolio-navbar ${isNotHome ? 'static' : 'fixed'} justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none`}
+      className={`portfolio-navbar ${isNotHome ? 'absolute' : 'fixed'} justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none`}
     >
       {!isNotHome ? (
         <div className='current-pages-names flex gap-2'>
@@ -106,7 +106,16 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
           ))}
         </div>
       ) : (
-        <Link to="/" className='font-bold'>Home</Link>
+        <div className='flex gap-2'>
+          <Link to="/test" className='font-bold'>Home</Link>
+          {isProjects && (
+            <>
+              <BreadcrumbSeparator className='[&>svg]:size-5' />
+              <Link to="/test" state={{ projectsRedirect: true }} className='font-bold'>{langText.pagination?.projects}</Link>
+            </>
+          )}
+        </div>
+
       )}
       <motion.nav
         initial={false}

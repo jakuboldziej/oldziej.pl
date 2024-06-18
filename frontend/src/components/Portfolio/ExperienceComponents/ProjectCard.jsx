@@ -8,6 +8,8 @@ import { Link } from 'react-router-dom';
 function ProjectCard({ image, link, linkText, redirect }) {
   const { langText } = useContext(LangContext);
 
+  console.log(link);
+
   return (
     <Card className='w-[320px] h-fit bg-transparent'>
       <img src={image} alt='projectImg' className='rounded-t-lg w-full' />

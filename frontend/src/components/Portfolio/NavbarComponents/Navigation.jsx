@@ -26,7 +26,7 @@ function Navigation({ isOpen }) {
 
   return (
     <motion.div transition={{ duration: 0.3 }} variants={layoutVariants}>
-      <motion.ul className="bg-black">
+      <motion.ul className="bg-black z-50">
         <MenuItem>
           <span><span className={`${lang === "pl" ? 'text-lime font-bold' : 'text-white hover:text-pink'} transition-all`} onClick={() => handleLangChange('pl')}>PL</span>
             <span> | </span>

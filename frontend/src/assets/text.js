@@ -4,7 +4,8 @@ export const textData = {
       "home": "Home",
       "experience": "Doświadczenie",
       "about": "O mnie",
-      "dots": "Scrolluj, aby zobaczyć, co się stanie"
+      "dots": "Scrolluj, aby zobaczyć, co się stanie",
+      "projects": "Projekty"
     },
     "landingPage": {
       "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance software developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
@@ -24,6 +25,9 @@ export const textData = {
     "footer": {
       "contact": "Kontakt"
     },
+    "project": {
+      "designedBy": "Zaprojektowane przez:"
+    },
     "notFound": {
       "header": "404 - Nie znaleziono strony",
       "lostInSpace": "Wygląda na to, że zgubiłeś się w kosmosie...",
@@ -34,7 +38,8 @@ export const textData = {
       "home": "Home",
       "experience": "Experience",
       "about": "About",
-      "dots": "Scroll to see what happens"
+      "dots": "Scroll to see what happens",
+      "projects": "Projects"
     },
     "landingPage": {
       "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance software developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
@@ -53,6 +58,9 @@ export const textData = {
     },
     "footer": {
       "contact": "Contact"
+    },
+    "project": {
+      "designedBy": "Designed by:"
     },
     "notFound": {
       "header": "404 - Not Found",
