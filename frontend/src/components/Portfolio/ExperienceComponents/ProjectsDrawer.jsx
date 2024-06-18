@@ -20,7 +20,7 @@ function ProjectsDrawer({ params }) {
         <Button variant="outline_lime" onClick={() => setDrawerOpen(true)}>{langText.experience?.button}</Button>
       </DrawerTrigger>
       <DrawerContent className='container_no_nav border-slate-800 backdrop-filter backdrop-blur-sm text-white'>
-      <ScrollArea className="h-full w-full sm:p-10 p-4 pt-4">
+      <ScrollArea className="h-full w-full sm:p-10 sm:pt-4 p-4">
         <ExperienceProjects />
       </ScrollArea>
       </DrawerContent>

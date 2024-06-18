@@ -1,90 +1,17 @@
-import { Card, CardContent, CardFooter } from '@/components/ui/shadcn/card'
-import React, { useContext } from 'react'
-import { Button } from '@/components/ui/shadcn/button'
-import { ArrowRightIcon } from 'lucide-react'
-import Darts from "@/assets/images/darts.webp"
-import Cloud from "@/assets/images/cloud.png"
-import Mmagusiak from "@/assets/images/mmagusiak.jpg"
-import Hagapolska from "@/assets/images/hagapolska.png"
-import { LangContext } from '@/context/LangContext'
+import React from 'react'
+import Darts from "@/assets/images/AboutPage/darts.jpg"
+import Cloud from "@/assets/images/ExperiencePage/cloud.png"
+import Hagapolska from "@/assets/images/ExperiencePage/hagapolska.png"
+import Mmagusiak from "@/assets/images/ExperiencePage/mmagusiak.jpg"
+import ProjectCard from './ProjectCard'
 
 function ExperienceProjects() {
-  const { langText } = useContext(LangContext);
-
   return (
-    <div className='projects flex flex-wrap justify-center w-full h-full'>
-      <div className='projects-wrapper w-fit h-full flex justify-center sm:justify-start flex-wrap gap-10'>
-      <Card className='w-80 h-fit bg-transparent'>
-          <img src={Mmagusiak} alt='projectImg' className='rounded-t-lg h-[318px]' />
-        <CardContent className='p-6'>
-          <a href='https://www.mmagusiak.com' target='_blank' className='text-underline-hover'>www.mmagusiak.com</a>
-        </CardContent>
-        <CardFooter>
-          <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
-            <a href="/projects">
-              {langText.experience?.projectButton}
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-        </CardFooter>
-      </Card>
-      <Card className='w-80 h-fit bg-transparent'>
-        <img src={Hagapolska} alt='projectImg' className='rounded-t-lg h-[318px]' />
-          <CardContent className='p-6'>
-            <a href='https://hagapolska.pl' target='_blank' className='text-underline-hover'>hagapolska.pl</a>
-          </CardContent>
-          <CardFooter>
-            <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
-              <a href="/projects">
-                {langText.experience?.projectButton}
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-          </CardFooter>
-      </Card>
-      {/* <Card className='w-80 h-fit bg-transparent'>
-        <img src={Hagapolska} alt='projectImg' className='rounded-t-lg h-[318px]' />
-          <CardContent className='p-6'>
-            <a href='https://hagapolska.pl' target='_blank' className='text-underline-hover'>military-eagle.pl</a>
-          </CardContent>
-          <CardFooter>
-            <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
-              <a href="/projects">
-                {langText.experience?.projectButton}
-                <ArrowRightIcon className="ml-2 h-4 w-4" />
-              </a>
-            </Button>
-          </CardFooter>
-      </Card> */}
-      <Card className='w-80 h-fit bg-transparent'>
-        <img src={Darts} alt='projectImg' className='rounded-t-lg h-[318px]' />
-        <CardContent className='p-6'>
-          <a href='https://home.oldziej.pl/darts' target='_blank' className='text-underline-hover'>Darts Web App</a>
-        </CardContent>
-        <CardFooter>
-          <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
-            <a href="/projects">
-              {langText.experience?.projectButton}
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-        </CardFooter>
-      </Card>
-      <Card className='w-80 h-fit bg-transparent'>
-        <img src={Cloud} alt='projectImg' className='rounded-t-lg h-[318px]' />
-        <CardContent className='p-6'>
-          <a href='https://home.oldziej.pl/ftp' target='_blank' className='text-underline-hover'>Cloud Web App</a>
-        </CardContent>
-        <CardFooter>
-          <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
-            <a href="/projects">
-              {langText.experience?.projectButton}
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
-        </CardFooter>
-      </Card>
-      </div>
+    <div className='projects flex flex-wrap justify-center gap-10 w-full h-full'>
+      <ProjectCard image={Mmagusiak} link={'https://www.mmagusiak.com'} linkText={"www.mmagusiak.com"} redirect={"/test/projects/mmagusiak"} />
+      <ProjectCard image={Hagapolska} link={'https://hagapolska.pl'} linkText={"hagapolska.pl"} redirect={"/test/projects/hagapolska"} />
+      <ProjectCard image={Darts} link={'https://home.oldziej.pl/darts'} linkText={"Darts Web App"} redirect={"/test/projects"} />
+      <ProjectCard image={Cloud} link={'https://home.oldziej.pl/ftp'} linkText={"Cloud Web App"} redirect={"/test/projects"} />
     </div>
   )
 }

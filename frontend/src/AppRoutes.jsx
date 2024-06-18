@@ -18,6 +18,7 @@ import RequireAuth from '@auth-kit/react-router/RequireAuth'
 import Storage from './pages/Home/FTP/Storage';
 import NotFoundPortfolio from './pages/Portfolio/NotFoundPortfolio';
 import Zaslepka from './components/Portfolio/Zaslepka';
+import Project from './pages/Portfolio/Project';
 
 function AppRoutes({ subdomain }) {
   const ProtectedRoute = ({ children }) => {
@@ -59,6 +60,7 @@ function AppRoutes({ subdomain }) {
           <Route path="/test">
             <Route index element={<HomeP />} />
             <Route path='projects' element={<Navigate to="/test" replace state={{ projectsRedirect: true }} />} />
+            <Route path='projects/:projectName' element={<Project />} />
           </Route>
           <Route path="*" element={<NotFoundPortfolio />} />
         </Routes>

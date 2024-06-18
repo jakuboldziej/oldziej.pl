@@ -17,12 +17,14 @@ $lime: #b7eb34;
 
 .particles {
   pointer-events: none;
+  z-index: 0;
 }
 
-.portfolio-footer, .portfolio-about-me, .portfolio-experience, .projects-scroll {
+.portfolio-footer, .portfolio-about-me, .portfolio-experience {
   padding: 0 11vw;
+  z-index: 10;
 
-  @media screen and (max-width: 639px) {
+  @media screen and (max-width: 1024px) {
     padding: 0 5vw;
   }
 }

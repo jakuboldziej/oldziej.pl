@@ -9,27 +9,7 @@ import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
 import { Link } from 'react-router-dom';
 
-const sidebar = {
-  open: (height = 1000) => ({
-    clipPath: `circle(${height * 2 + 200}px at 40px 40px)`,
-    transition: {
-      type: "spring",
-      stiffness: 20,
-      restDelta: 2,
-    },
-  }),
-  closed: {
-    clipPath: "circle(30px at 40px 40px)",
-    transition: {
-      delay: 0.5,
-      type: "spring",
-      stiffness: 400,
-      damping: 40,
-    },
-  },
-};
-
-function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotFound }) {
+function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome }) {
   const { lang, langText } = useContext(LangContext)
 
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
@@ -89,19 +69,19 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
       setScrolledToProjects(true);
     }
   }, [projectsRedirect]);
-
+  
   return (
     <motion.div
-      initial={{ y: '-100%' }}
+      initial={{ y: isNotHome ? 0 : '-100%' }}
       variants = {{
         visible: { y : 0 },
         hidden: {y: "-100%"}
       }}
       animate={isHidden ? "hidden" : "visible"}
       transition={{ duration: firstAnimation ? 1.8 : 0.35, ease: 'easeInOut' }}
-      className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'
+      className={`portfolio-navbar ${isNotHome ? 'static' : 'fixed'} justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none`}
     >
-      {!isNotFound ? (
+      {!isNotHome ? (
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (
             <div key={name} className='flex items-center gap-2 h-[24px]'>
@@ -134,11 +114,9 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
         custom={height}
         ref={containerRef}
       >
-        <motion.div className="background" variants={sidebar} />
         <Navigation isOpen={isOpen} />
         <MenuToggle toggle={() => toggleOpen()} />
       </motion.nav>
-
     </motion.div>
   )
 }

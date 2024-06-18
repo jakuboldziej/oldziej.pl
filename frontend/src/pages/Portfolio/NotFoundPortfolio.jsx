@@ -13,8 +13,8 @@ function NotFoundPortfolio() {
   const navigate = useNavigate();
 
   return (
-    <div className="notfound-page-wrapper rubik">
-      <Navbar isNotFound={true} />
+    <div className="notfound-page-portoflio rubik">
+      <Navbar isNotHome={true} />
       <MyParticles />
       <div className="notfound-page text-white">
         <span className="text-2xl sm:text-4xl">{langText.notFound?.header}</span>

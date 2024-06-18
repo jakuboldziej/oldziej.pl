@@ -44,7 +44,7 @@ function Home() {
   const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects };
 
   return (
-    <div className='home-portfolio rubik'>
+    <div className='home-portfolio rubik relative'>
       <Navbar currentPage={currentPage} pagesRefs={pagesRefs} projectsRedirect={projectsRedirect} setScrolledToProjects={setScrolledToProjects} />
       <MyParticles />
       <div className='home-portfolio-content text-white'>
