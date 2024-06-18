@@ -10,7 +10,8 @@ export const textData = {
       "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance software developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
     },
     "experience": {
-      "button": "Projekty"
+      "button": "Projekty",
+      "projectButton": "Zobacz więcej"
     },
     "about": {
       "descBreaking": "Kultura, w której się wychowałem, tańczę od 2010 roku.",
@@ -39,7 +40,8 @@ export const textData = {
       "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance software developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
     },
     "experience": {
-      "button": "Projects"
+      "button": "Projects",
+      "projectButton": "See more"
     },
     "about": {
       "descBreaking": "A culture that I grew up in, dancing since 2010.",

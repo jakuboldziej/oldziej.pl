@@ -35,6 +35,8 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
   const [highestPage, setHighestPage] = useState(projectsRedirect ? 2 : 1);
   
+  const isMobile = window.innerWidth < 640;
+
   const [isHidden, setIsHidden] = useState(false);
   const [firstAnimation, setFirstAnimation] = useState(true);
   const { scrollY } = useScroll();
@@ -63,16 +65,19 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
-    if (latest > previous && latest > 150) {
+    if (latest > previous && latest > 150 && isMobile) {
       setFirstAnimation(false);
       setIsHidden(true);
     } else {
       setIsHidden(false);
     }
-  })
+  });
 
   useEffect(() => {
-    console.log(isOpen);
+    if (isHidden && isOpen) toggleOpen();
+  }, [isHidden]);
+
+  useEffect(() => {
     document.addEventListener('click', handleClickOutside)
 
     return () => document.removeEventListener('click', handleClickOutside)
@@ -94,7 +99,6 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
       }}
       animate={isHidden ? "hidden" : "visible"}
       transition={{ duration: firstAnimation ? 1.8 : 0.35, ease: 'easeInOut' }}
-      // viewport={{ once: true }}
       className='portfolio-navbar fixed justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none'
     >
       {!isNotFound ? (
