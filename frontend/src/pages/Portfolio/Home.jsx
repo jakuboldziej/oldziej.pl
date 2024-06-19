@@ -43,10 +43,6 @@ function Home() {
     }
   }, []);
 
-  useEffect(() => {
-   console.log("cp", currentPage); 
-  }, [currentPage]);
-
   const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects };
 
   return (

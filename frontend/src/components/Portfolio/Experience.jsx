@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import IconClouds from './ExperienceComponents/IconClouds';
 import ProjectsDrawer from './ExperienceComponents/ProjectsDrawer';
 
@@ -18,4 +18,4 @@ function Experience({ params }) {
   )
 }
 
-export default Experience
+export default memo(Experience);

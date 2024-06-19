@@ -1,6 +1,6 @@
-import React from 'react'
-import { motion, useInView } from 'framer-motion'
-import AboutBentoGrid from './AboutComponents/AboutBentoGrid'
+import React from 'react';
+import { motion, useInView } from 'framer-motion';
+import AboutBentoGrid from './AboutComponents/AboutBentoGrid';
 
 function About({ aboutRef }) {
   const aboutInView = useInView(aboutRef, { amount: 0.9 });

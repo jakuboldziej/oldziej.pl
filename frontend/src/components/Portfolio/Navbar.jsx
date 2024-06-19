@@ -35,7 +35,7 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
 
   const handlePaginationClick = (event, i) => {
     event.preventDefault();
-    scrollToTop(pagesRefs[i].current.offsetTop - 64);
+    scrollToTop(pagesRefs[i].current.offsetTop - 128);
   };
 
   const handleClickOutside = (event) => {
@@ -44,15 +44,15 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
     }
   }
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious();
-    if (latest > previous && latest > 150 && isMobile) {
-      setFirstAnimation(false);
-      // setIsHidden(true);
-    } else {
-      // setIsHidden(false);
-    }
-  });
+  // useMotionValueEvent(scrollY, "change", (latest) => {
+  //   const previous = scrollY.getPrevious();
+  //   if (latest > previous && latest > 150 && isMobile) {
+  //     setFirstAnimation(false);
+  //     setIsHidden(true);
+  //   } else {
+  //     setIsHidden(false);
+  //   }
+  // });
 
   useEffect(() => {
     if (isHidden && isOpen) toggleOpen();
@@ -88,7 +88,7 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
             <div key={name} className='flex items-center gap-2 h-[24px]'>
               <WordFadeIn
                 onClick={(e) => handlePaginationClick(e, i)}
-                className={`cursor-pointer ${currentPage === i + 1 ? 'underline transition-all hover:decoration-pink decoration-lime underline-offset-4' : 'no-underline'} text-white`}
+                className={`cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
                 words={name}
               />
               {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
