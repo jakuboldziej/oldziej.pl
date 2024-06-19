@@ -7,6 +7,8 @@ import ImgHagaPolska from "@/assets/images/ProjectsImages/hagapolska.png"
 import ImgHagaPolskaMobile from "@/assets/images/ProjectsImages/hagapolska_mobile.png"
 import ImgDarts from "@/assets/images/ProjectsImages/darts.png"
 import ImgDartsMobile from "@/assets/images/ProjectsImages/darts_mobile.png"
+import ImgOldziej from "@/assets/images/ProjectsImages/oldziej.png"
+import ImgOldziejMobile from "@/assets/images/ProjectsImages/oldziej_mobile.png"
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
@@ -52,6 +54,16 @@ function Project() {
       ]);
     } else if (projectName === "darts") {
       setMainImage(isMobile ? ImgDartsMobile : ImgDarts);
+      setMainLink({text: "oldziej.pl/darts", href: 'https://oldziej.pl/darts'});
+      setDesignedBy('Jakub Ołdziejewski')
+      setTechStackIcons([
+        <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
+        <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
+        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
+      ]);
+    } else if (projectName === "oldziej") {
+      setMainImage(isMobile ? ImgOldziejMobile : ImgOldziej);
       setMainLink({text: "oldziej.pl/darts", href: 'https://oldziej.pl/darts'});
       setDesignedBy('Jakub Ołdziejewski')
       setTechStackIcons([

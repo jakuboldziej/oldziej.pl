@@ -8,7 +8,7 @@ export const textData = {
       "projects": "Projekty"
     },
     "landingPage": {
-      "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance software developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
+      "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance full-stack developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
     },
     "experience": {
       "button": "Projekty",
@@ -42,7 +42,7 @@ export const textData = {
       "projects": "Projects"
     },
     "landingPage": {
-      "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance software developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
+      "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance full-stack developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
     },
     "experience": {
       "button": "Projects",

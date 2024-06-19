@@ -15,7 +15,7 @@ function LandingPage({ landingPageRef }) {
           <FadeText className='text-5xl font-bold' text='Jakub' framerProps={{ show: { transition: { delay: 0.3 } } }} />
           <FadeText className='text-5xl font-bold' text='Ołdziejewski' framerProps={{ show: { transition: { delay: 0.6 } } }} />
           <BoxReveal duration={1}>
-            Software Developer
+            Full-stack Developer
           </BoxReveal>
         </div>
         <motion.div
