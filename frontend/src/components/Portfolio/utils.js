@@ -28,8 +28,6 @@ export const scrollToTop = (ref, smoothness = 'smooth') => {
   window.scrollTo({ top: ref, behavior: smoothness });
 }
 
-// Navbar
-
 export const useDimensions = ref => {
   const dimensions = useRef({ width: 0, height: 0 });
 
@@ -40,3 +38,25 @@ export const useDimensions = ref => {
 
   return dimensions.current;
 };
+
+export const calcCurrentPage = (scrollY, pagesRefs, currentPage, setCurrentPage, isMobile) => {
+  const viewportHeight = window.innerHeight;
+  const [landingPageRef, experienceRef, aboutRef] = pagesRefs;
+  if (scrollY > 0) {
+    if (scrollY >= landingPageRef.current.offsetTop 
+      && scrollY < experienceRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
+      && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (scrollY >= experienceRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
+      && scrollY < aboutRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
+      && currentPage !== 2) {
+      setCurrentPage(2);
+    } else if (scrollY >= aboutRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
+      && (aboutRef.current.getBoundingClientRect().top >= 0 || isMobile)
+      && currentPage !== 3) {
+      setCurrentPage(3);
+    } else if (aboutRef.current.getBoundingClientRect().top < -300 && !isMobile) {
+      setCurrentPage(4);
+    }
+  }
+}

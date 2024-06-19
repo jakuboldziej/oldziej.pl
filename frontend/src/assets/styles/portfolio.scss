@@ -74,7 +74,7 @@ $lime: #b7eb34;
   }
 }
 
-// Text underline hover
+// Text underline
 .text-underline-hover {
   position: relative;
   text-decoration: none;
@@ -94,7 +94,7 @@ $lime: #b7eb34;
       transform: scaleX(0);
       -webkit-transition: all 0.3s ease-in-out 0s; 
       transition: all 0.3s ease-in-out 0s; 
-  }   
+  }
 
   &:hover {
       &::before {
@@ -104,6 +104,13 @@ $lime: #b7eb34;
       }   
   }   
 }
+
+.portfolio-navbar .current-pages-names .cursor-pointer.text-underline {
+  background-color: red;
+  text-decoration-line: underline;
+  text-decoration-color: $lime;
+}
+
 // Parallax
 html {
   scroll-snap-type: y mandatory;

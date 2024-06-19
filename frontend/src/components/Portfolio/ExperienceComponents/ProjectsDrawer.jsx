@@ -14,10 +14,15 @@ function ProjectsDrawer({ params }) {
     if (scrolledToProjects && projectsRedirect) setDrawerOpen(true);
   }, [scrolledToProjects]);
 
+  const handleOpeningDrawer = (e) => {
+    e.preventDefault();
+    setDrawerOpen(true);
+  }
+
   return (
     <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
       <DrawerTrigger asChild>
-        <Button variant="outline_lime" onClick={() => setDrawerOpen(true)}>{langText.experience?.button}</Button>
+        <Button variant="outline_lime" onClick={(e) => handleOpeningDrawer(e)}>{langText.experience?.button || 'Projects'}</Button>
       </DrawerTrigger>
       <DrawerContent className='container_no_nav border-slate-800 backdrop-filter backdrop-blur-sm text-white'>
       <ScrollArea className="h-full w-full sm:p-10 sm:pt-4 p-4">

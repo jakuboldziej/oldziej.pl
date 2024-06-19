@@ -1,3 +1,4 @@
+import "@/assets/styles/portfolio.scss"
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { motion, useCycle, useMotionValueEvent, useScroll } from "framer-motion"
 import { createNumberArray, handleCurrentPagesNames, scrollToTop, useDimensions } from './utils';
@@ -14,7 +15,7 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
 
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
   const [highestPage, setHighestPage] = useState(projectsRedirect ? 2 : 1);
-  
+
   const isMobile = window.innerWidth < 640;
 
   const [isHidden, setIsHidden] = useState(false);
@@ -47,9 +48,9 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
     const previous = scrollY.getPrevious();
     if (latest > previous && latest > 150 && isMobile) {
       setFirstAnimation(false);
-      setIsHidden(true);
+      // setIsHidden(true);
     } else {
-      setIsHidden(false);
+      // setIsHidden(false);
     }
   });
 
@@ -69,23 +70,27 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
       setScrolledToProjects(true);
     }
   }, [projectsRedirect]);
-  
+
   return (
     <motion.div
-      initial={{ y: isNotHome ? 0 : '-100%' }}
-      variants = {{
-        visible: { y : 0 },
-        hidden: {y: "-100%"}
+      initial={isNotHome ? { opacity: 0 } :{ y: '-100%' }}
+      variants={{
+        visible: { y: 0, opacity: 1 },
+        hidden: { y: "-100%" }
       }}
       animate={isHidden ? "hidden" : "visible"}
-      transition={{ duration: firstAnimation ? 1.8 : 0.35, ease: 'easeInOut' }}
+      transition={{ duration: firstAnimation && !isNotHome ? 1.8 : 0.35, ease: 'easeInOut' }}
       className={`portfolio-navbar ${isNotHome ? 'absolute' : 'fixed'} justify-between top-0 left-0 flex w-full p-5 text-white z-40 backdrop-filter backdrop-blur sm:backdrop-blur-none`}
     >
       {!isNotHome ? (
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (
             <div key={name} className='flex items-center gap-2 h-[24px]'>
-              <WordFadeIn onClick={(e) => handlePaginationClick(e, i)} className='cursor-pointer' words={name} />
+              <WordFadeIn
+                onClick={(e) => handlePaginationClick(e, i)}
+                className={`cursor-pointer ${currentPage === i + 1 ? 'underline transition-all hover:decoration-pink decoration-lime underline-offset-4' : 'no-underline'} text-white`}
+                words={name}
+              />
               {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
               {currentPagesNames.length === 1 &&
                 <>

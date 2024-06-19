@@ -34,7 +34,7 @@ export default function WordFadeIn({
       initial="hidden"
       animate="visible"
       className={cn(
-        "font-display text-center font-bold tracking-[-0.02em] text-black drop-shadow-sm dark:text-white",
+        "font-display text-center font-bold tracking-[-0.02em] text-white",
         className,
       )}
       onClick={onClick}

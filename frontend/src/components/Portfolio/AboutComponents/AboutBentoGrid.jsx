@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { BentoCard, BentoGrid } from '@/components/ui/magicui/bento-grid'
 import { Car, MountainSnow, PersonStanding, Target } from 'lucide-react'
-import Bouldering from "@/assets/images/AboutPage/bouldering.jfif"
-import Formula1 from "@/assets/images/AboutPage/formula1.jpg"
-import Formula1Mobile from "@/assets/images/AboutPage/formula1_mobile.png"
-import Darts from "@/assets/images/AboutPage/darts.jpg"
+import Bouldering from "@/assets/images/Portfolio/AboutPage/bouldering.jfif"
+import Formula1 from "@/assets/images/Portfolio/AboutPage/formula1.jpg"
+import Formula1Mobile from "@/assets/images/Portfolio/AboutPage/formula1_mobile.png"
+import Darts from "@/assets/images/Portfolio/AboutPage/darts.jpg"
 import Breaking from "@/assets/videos/breaking.mp4"
 import { LangContext } from '@/context/LangContext'
 

@@ -1,19 +1,23 @@
 import MyParticles from '@/components/Portfolio/MyParticles'
 import Navbar from '@/components/Portfolio/Navbar'
 import { useParams } from 'react-router';
-import ImgMmagusiak from "@/assets/images/ProjectsImages/mmagusiak.png"
-import ImgMmagusiakMobile from "@/assets/images/ProjectsImages/mmagusiak_mobile.png"
-import ImgHagaPolska from "@/assets/images/ProjectsImages/hagapolska.png"
-import ImgHagaPolskaMobile from "@/assets/images/ProjectsImages/hagapolska_mobile.png"
-import ImgDarts from "@/assets/images/ProjectsImages/darts.png"
-import ImgDartsMobile from "@/assets/images/ProjectsImages/darts_mobile.png"
-import ImgOldziej from "@/assets/images/ProjectsImages/oldziej.png"
-import ImgOldziejMobile from "@/assets/images/ProjectsImages/oldziej_mobile.png"
+import ImgMmagusiak from "@/assets/images/Portfolio/ProjectsImages/mmagusiak.png"
+import ImgMmagusiakMobile from "@/assets/images/Portfolio/ProjectsImages/mmagusiak_mobile.png"
+import ImgHagaPolska from "@/assets/images/Portfolio/ProjectsImages/hagapolska.png"
+import ImgHagaPolskaMobile from "@/assets/images/Portfolio/ProjectsImages/hagapolska_mobile.png"
+import ImgDarts from "@/assets/images/Portfolio/ProjectsImages/darts.png"
+import ImgDartsMobile from "@/assets/images/Portfolio/ProjectsImages/darts_mobile.png"
+import ImgOldziej from "@/assets/images/Portfolio/ProjectsImages/oldziej.png"
+import ImgOldziejMobile from "@/assets/images/Portfolio/ProjectsImages/oldziej_mobile.png"
+import ImgCloud from "@/assets/images/Portfolio/ProjectsImages/cloud.png"
+import ImgCloudMobile from "@/assets/images/Portfolio/ProjectsImages/cloud_mobile.png"
+import MagicUiIcon from "@/assets/images/icons/magicui_icon.png"
+import LucideIcon from "@/assets/images/icons/lucide_icon.svg"
 import { useContext, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
-import { SiBootstrap, SiExpress, SiFirebase, SiFramer, SiLeaflet, SiReact, SiSanity, SiSass, SiShadcnui, SiTailwindcss } from '@icons-pack/react-simple-icons';
+import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiTailwindcss } from '@icons-pack/react-simple-icons';
 import { LangContext } from '@/context/LangContext';
 
 function Project() {
@@ -23,14 +27,14 @@ function Project() {
   const isMobile = window.innerWidth < 640;
 
   const [mainImage, setMainImage] = useState(null);
-  const [mainLink, setMainLink] = useState({text: '', href: ''});
+  const [mainLink, setMainLink] = useState({ text: '', href: '' });
   const [designedBy, setDesignedBy] = useState('');
   const [techStackIcons, setTechStackIcons] = useState([]);
 
   useEffect(() => {
     if (projectName === "mmagusiak") {
       setMainImage(isMobile ? ImgMmagusiakMobile : ImgMmagusiak);
-      setMainLink({text: "www.mmagusiak.com", href: 'https://www.mmagusiak.com'});
+      setMainLink({ text: "www.mmagusiak.com", href: 'https://www.mmagusiak.com' });
       setDesignedBy('Mateusz Magusiak')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
@@ -41,7 +45,7 @@ function Project() {
       ]);
     } else if (projectName === "hagapolska") {
       setMainImage(isMobile ? ImgHagaPolskaMobile : ImgHagaPolska);
-      setMainLink({text: "hagapolska.pl", href: 'https://hagapolska.pl'});
+      setMainLink({ text: "hagapolska.pl", href: 'https://hagapolska.pl' });
       setDesignedBy('Mateusz Magusiak')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
@@ -54,23 +58,43 @@ function Project() {
       ]);
     } else if (projectName === "darts") {
       setMainImage(isMobile ? ImgDartsMobile : ImgDarts);
-      setMainLink({text: "oldziej.pl/darts", href: 'https://oldziej.pl/darts'});
+      setMainLink({ text: "home.oldziej.pl/darts", href: 'https://home.oldziej.pl/darts' });
       setDesignedBy('Jakub Ołdziejewski')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
         <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
         <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
+        <SiIcons8 key={'#1FB141'} width={46} height={46} fill='#1FB141' />,
+        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
+        <SiChartdotjs key={'#FF6384'} width={46} height={46} fill='#FF6384' />,
+      ]);
+    } else if (projectName === "cloud") {
+      setMainImage(isMobile ? ImgCloudMobile : ImgCloud);
+      setMainLink({ text: "home.oldziej.pl/ftp", href: 'https://home.oldziej.pl/ftp' });
+      setDesignedBy('Jakub Ołdziejewski')
+      setTechStackIcons([
+        <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
+        <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
+        <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
+        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
+        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
+        <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />,
       ]);
     } else if (projectName === "oldziej") {
       setMainImage(isMobile ? ImgOldziejMobile : ImgOldziej);
-      setMainLink({text: "oldziej.pl/darts", href: 'https://oldziej.pl/darts'});
+      setMainLink({ text: "oldziej.pl", href: 'https://oldziej.pl' });
       setDesignedBy('Jakub Ołdziejewski')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
-        <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
         <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
+        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
+        <img key={'magicui'} title='magicui' alt='magicui' src={MagicUiIcon} width={46} height={46} />,
+        <SiSimpleicons key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
       ]);
     }
   }, [projectName]);
@@ -79,7 +103,13 @@ function Project() {
     <div className='project-portfolio rubik'>
       <Navbar isNotHome={true} isProjects={true} />
       <MyParticles />
-      <motion.div className='project-portfolio-content relative text-2xl mt-[64px] p-5 pt-0 sm:p-[3vw] sm:pt-0 h-[200vh] text-white flex flex-col gap-10'>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true, amount: 0.3 }}
+        className='project-portfolio-content relative text-2xl mt-[64px] p-5 pt-0 sm:p-[3vw] sm:pt-0 text-white flex flex-col gap-10'
+      >
         <img alt={mainImage} src={mainImage} />
         <Button
           title={mainLink.href}
@@ -93,7 +123,7 @@ function Project() {
         <span className='flex flex-wrap gap-2'>
           <div className='font-bold'>{langText.project?.designedBy}</div>
           <div>{designedBy}</div>
-          </span>
+        </span>
         <div className='flex flex-col'>
           <span className='font-bold'>Tech Stack:</span>
           <div className='icons flex flex-row flex-wrap gap-5 pt-5'>

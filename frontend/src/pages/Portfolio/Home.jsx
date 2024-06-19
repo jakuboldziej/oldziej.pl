@@ -3,15 +3,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import MyParticles from '@/components/Portfolio/MyParticles'
 import LandingPage from '@/components/Portfolio/LandingPage'
 import Navbar from '@/components/Portfolio/Navbar'
-import { useInView } from 'framer-motion'
+import { motion, useInView, useMotionValueEvent, useScroll } from 'framer-motion'
 import Experience from '@/components/Portfolio/Experience'
 import Footer from '@/components/Portfolio/Footer'
 import About from '@/components/Portfolio/About'
 import { useLocation } from "react-router"
-import { scrollToTop } from "@/components/Portfolio/utils"
+import { calcCurrentPage, scrollToTop } from "@/components/Portfolio/utils"
 
 function Home() {
   document.title = "Oldziej | Portfolio";
+
+  const isMobile = window.innerWidth < 640;
 
   const location = useLocation();
   const projectsRedirect = location.state?.projectsRedirect || false;
@@ -25,15 +27,15 @@ function Home() {
   const pagesRefs = [landingPageRef, experienceRef, aboutRef];
 
   const [currentPage, setCurrentPage] = useState(1);
-  const projectsInView = useInView(experienceRef, { amount: 0.3, once: true });
-  const aboutInView = useInView(aboutRef, { amount: 0.3, once: true });
 
-  useEffect(() => {
-    if (aboutInView || projectsInView) setCurrentPage((prev) => prev + 1);
-  }, [aboutInView, projectsInView]);
+  const { scrollY } = useScroll();
+
+  // Calculate current page
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
+  });
 
   // Scroll to top on refresh
-
   useEffect(() => {
     window.history.replaceState({}, '');
     if (!projectsRedirect) {
@@ -41,10 +43,18 @@ function Home() {
     }
   }, []);
 
+  useEffect(() => {
+   console.log("cp", currentPage); 
+  }, [currentPage]);
+
   const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects };
 
   return (
-    <div className='home-portfolio rubik relative'>
+    <motion.div
+      exit={{ opacity: 0}}
+      transition={{ duration: 0.3 }}
+      className='home-portfolio rubik relative'
+    >
       <Navbar currentPage={currentPage} pagesRefs={pagesRefs} projectsRedirect={projectsRedirect} setScrolledToProjects={setScrolledToProjects} />
       <MyParticles />
       <div className='home-portfolio-content text-white'>
@@ -53,7 +63,7 @@ function Home() {
         <About aboutRef={aboutRef} />
         <Footer />
       </div>
-    </div>
+    </motion.div>
   )
 }
 

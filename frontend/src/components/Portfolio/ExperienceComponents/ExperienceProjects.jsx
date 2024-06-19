@@ -1,9 +1,9 @@
 import React from 'react'
-import Darts from "@/assets/images/AboutPage/darts.jpg"
-import Cloud from "@/assets/images/ExperiencePage/cloud.png"
-import Oldziej from "@/assets/images/ExperiencePage/oldziej.png"
-import Hagapolska from "@/assets/images/ExperiencePage/hagapolska.png"
-import Mmagusiak from "@/assets/images/ExperiencePage/mmagusiak.jpg"
+import Darts from "@/assets/images/Portfolio/AboutPage/darts.jpg"
+import Cloud from "@/assets/images/Portfolio/ExperiencePage/cloud.png"
+import Oldziej from "@/assets/images/Portfolio/ExperiencePage/oldziej.png"
+import Hagapolska from "@/assets/images/Portfolio/ExperiencePage/hagapolska.png"
+import Mmagusiak from "@/assets/images/Portfolio/ExperiencePage/mmagusiak.jpg"
 import ProjectCard from './ProjectCard'
 
 function ExperienceProjects() {

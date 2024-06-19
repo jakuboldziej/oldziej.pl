@@ -1,4 +1,5 @@
 import IconCloud from '@/components/ui/magicui/icon-cloud';
+import { motion } from 'framer-motion';
 import React from 'react'
 
 const programmingLanguages = [
@@ -52,12 +53,20 @@ const services = [
 ]
 
 function IconClouds() {
+  const isMobile = window.innerWidth < 640;
+
   return (
-    <div className='flex gap-10 flex-col sm:flex-row pointer-events-none sm:pointer-events-auto'>
+    <motion.div
+      initial={{  opacity: isMobile ? 1 : 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true, amount: 0.3 }}
+      className='flex gap-10 flex-col sm:flex-row pointer-events-none sm:pointer-events-auto'
+    >
       <IconCloud iconSlugs={programmingLanguages} />
       <IconCloud iconSlugs={frameworks} />
       <IconCloud iconSlugs={services} />
-    </div>
+    </motion.div>
   )
 }
 
