@@ -13,12 +13,13 @@ import ImgCloud from "@/assets/images/Portfolio/ProjectsImages/cloud.png"
 import ImgCloudMobile from "@/assets/images/Portfolio/ProjectsImages/cloud_mobile.png"
 import MagicUiIcon from "@/assets/images/icons/magicui_icon.png"
 import LucideIcon from "@/assets/images/icons/lucide_icon.svg"
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
 import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiTailwindcss } from '@icons-pack/react-simple-icons';
 import { LangContext } from '@/context/LangContext';
+import { scrollToTop } from '@/components/Portfolio/utils';
 
 function Project() {
   const { langText } = useContext(LangContext);
@@ -99,6 +100,10 @@ function Project() {
     }
   }, [projectName]);
 
+  useLayoutEffect(() => {
+    scrollToTop(0, 'instant');
+  }, [])
+
   return (
     <div className='project-portfolio rubik'>
       <Navbar isNotHome={true} isProjects={true} />
@@ -110,6 +115,7 @@ function Project() {
         viewport={{ once: true, amount: 0.3 }}
         className='project-portfolio-content relative text-2xl mt-[64px] p-5 pt-0 sm:p-[3vw] sm:pt-0 text-white flex flex-col gap-10'
       >
+
         <img alt={mainImage} src={mainImage} />
         <Button
           title={mainLink.href}

@@ -21,10 +21,6 @@ function ProjectsDrawer({ params }) {
     setDrawerOpen(true);
   }
 
-  useEffect(() => {
-    console.log(windowHeight);
-  }, []);
-
   return (
     <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
       <DrawerTrigger asChild>

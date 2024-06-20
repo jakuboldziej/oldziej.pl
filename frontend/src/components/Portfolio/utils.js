@@ -43,7 +43,7 @@ export const calcCurrentPage = (scrollY, pagesRefs, currentPage, setCurrentPage,
   const viewportHeight = window.innerHeight;
   const [landingPageRef, experienceRef, aboutRef] = pagesRefs;
   if (scrollY > 0) {
-    if (scrollY >= landingPageRef.current.offsetTop 
+    if (scrollY >= landingPageRef.current.offsetTop
       && scrollY < experienceRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
       && currentPage !== 1) {
       setCurrentPage(1);

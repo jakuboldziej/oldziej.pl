@@ -6,7 +6,6 @@ import { BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
 import MenuToggle from './NavbarComponents/MenuToggle';
 import Navigation from './NavbarComponents/Navigation';
-import WordFadeIn from '@/components/ui/magicui/word-fade-in';
 import { LangContext } from '@/context/LangContext';
 import { Link } from 'react-router-dom';
 
@@ -66,14 +65,14 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
 
   useEffect(() => {
     if (projectsRedirect) {
-      scrollToTop(pagesRefs[1].current.offsetTop, "instant");
+      scrollToTop(pagesRefs[1].current.offsetTop - 128, "instant");
       setScrolledToProjects(true);
     }
   }, [projectsRedirect]);
 
   return (
     <motion.div
-      initial={isNotHome ? { opacity: 0 } :{ y: '-100%' }}
+      initial={isNotHome ? { opacity: 0 } : { y: '-100%' }}
       variants={{
         visible: { y: 0, opacity: 1 },
         hidden: { y: "-100%" }
@@ -86,11 +85,14 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (
             <div key={name} className='flex items-center gap-2 h-[24px]'>
-              <WordFadeIn
+              <motion.div
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
                 onClick={(e) => handlePaginationClick(e, i)}
-                className={`cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
-                words={name}
-              />
+                className={`font-bold cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
+              >{name}</motion.div>
               {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
               {currentPagesNames.length === 1 &&
                 <>

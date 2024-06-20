@@ -1,9 +1,9 @@
 import "@/assets/styles/portfolio.scss"
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import MyParticles from '@/components/Portfolio/MyParticles'
 import LandingPage from '@/components/Portfolio/LandingPage'
 import Navbar from '@/components/Portfolio/Navbar'
-import { motion, useInView, useMotionValueEvent, useScroll } from 'framer-motion'
+import { motion, useMotionValueEvent, useScroll } from 'framer-motion'
 import Experience from '@/components/Portfolio/Experience'
 import Footer from '@/components/Portfolio/Footer'
 import About from '@/components/Portfolio/About'
@@ -36,18 +36,16 @@ function Home() {
   });
 
   // Scroll to top on refresh
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.history.replaceState({}, '');
-    if (!projectsRedirect) {
-      scrollToTop(0);
-    }
+    if (!projectsRedirect) scrollToTop(0);
   }, []);
 
   const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects };
 
   return (
     <motion.div
-      exit={{ opacity: 0}}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       className='home-portfolio rubik relative'
     >
