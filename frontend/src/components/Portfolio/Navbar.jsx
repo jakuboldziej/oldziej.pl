@@ -85,14 +85,10 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (
             <div key={name} className='flex items-center gap-2 h-[24px]'>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                viewport={{ once: true }}
+              <div
                 onClick={(e) => handlePaginationClick(e, i)}
-                className={`font-bold cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
-              >{name}</motion.div>
+                className={`fadein-anim font-bold cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
+              >{name}</div>
               {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
               {currentPagesNames.length === 1 &&
                 <>

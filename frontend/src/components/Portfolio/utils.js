@@ -50,6 +50,7 @@ export const calcCurrentPage = (scrollY, pagesRefs, currentPage, setCurrentPage,
     } else if (scrollY >= experienceRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
       && scrollY < aboutRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
       && currentPage !== 2) {
+        console.log("exp");
       setCurrentPage(2);
     } else if (scrollY >= aboutRef.current.offsetTop - (isMobile ? viewportHeight / 2 : 200)
       && (aboutRef.current.getBoundingClientRect().top >= 0 || isMobile)

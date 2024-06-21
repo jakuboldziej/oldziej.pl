@@ -30,6 +30,22 @@ $lime: #b7eb34;
 }
 
 // Navbar
+.fadein-anim {
+  animation-duration: 0.3s !important;
+  animation-name: fadein !important;
+  transition: 0.3;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 .portfolio-navbar {
   nav {
     height: 24px;

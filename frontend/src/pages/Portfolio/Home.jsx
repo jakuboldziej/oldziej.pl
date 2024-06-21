@@ -20,6 +20,7 @@ function Home() {
   const [scrolledToProjects, setScrolledToProjects] = useState(false);
 
   // Pagination
+  const [isScrolling, setIsScrolling] = useState(false);
   const landingPageRef = useRef(null);
   const experienceRef = useRef(null);
   const aboutRef = useRef(null);
@@ -33,6 +34,7 @@ function Home() {
   // Calculate current page
   useMotionValueEvent(scrollY, "change", (latest) => {
     calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
+    setIsScrolling(true);
   });
 
   // Scroll to top on refresh
