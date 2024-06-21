@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 import { motion } from "framer-motion"
 import { getGamesPlayedPortfolio } from "@/fetch";
 import NumberTicker from "./number-ticker";
-import { LangContext } from "@/context/LangContext";
+import { PortfolioContext } from "@/context/PortfolioContext";
 
 const BentoGrid = ({
   children,
@@ -49,7 +49,7 @@ const BentoCard = ({
   cta: string;
 }) => {
   const [gamesPlayed, setGamesPlayed] = useState(0);
-  const { lang } = useContext(LangContext);
+  const { lang } = useContext(PortfolioContext);
 
   useEffect(() => {
     const fetchGamesPlayed = async () => {

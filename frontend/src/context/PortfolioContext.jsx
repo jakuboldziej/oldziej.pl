@@ -2,9 +2,9 @@
 import { createContext, useEffect, useState } from 'react'
 import { textData } from '@/assets/text'
 
-export const LangContext = createContext();
+export const PortfolioContext = createContext();
 
-export function LangContextProvider({ children }) {
+export function PortfolioContextProvider({ children }) {
   const [lang, setLang] = useState(() => {
     const storedLang = localStorage.getItem('lang');
     return storedLang ? storedLang : 'pl';
@@ -21,8 +21,8 @@ export function LangContextProvider({ children }) {
   }, [lang]);
 
   return (
-    <LangContext.Provider value={{ lang, setLang, langText }}>
+    <PortfolioContext.Provider value={{ lang, setLang, langText }}>
       {children}
-    </LangContext.Provider>
+    </PortfolioContext.Provider>
   )
 }

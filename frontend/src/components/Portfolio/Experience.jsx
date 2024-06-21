@@ -3,8 +3,8 @@ import IconClouds from './ExperienceComponents/IconClouds';
 import ProjectsDrawer from './ExperienceComponents/ProjectsDrawer';
 
 function Experience({ params }) {
-  const { experienceRef, projectsRedirect, scrolledToProjects } = params;
-  const drawerParams = { projectsRedirect, scrolledToProjects };
+  const { experienceRef, projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = params;
+  const drawerParams = { projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen };
 
   return (
     <section ref={experienceRef} id='experience'>

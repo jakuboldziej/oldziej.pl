@@ -6,10 +6,10 @@ import Formula1 from "@/assets/images/Portfolio/AboutPage/formula1.jpg"
 import Formula1Mobile from "@/assets/images/Portfolio/AboutPage/formula1_mobile.png"
 import Darts from "@/assets/images/Portfolio/AboutPage/darts.jpg"
 import Breaking from "@/assets/videos/breaking.mp4"
-import { LangContext } from '@/context/LangContext'
+import { PortfolioContext } from '@/context/PortfolioContext'
 
 function AboutBentoGrid({ aboutInView, isMobile }) {
-  const { langText } = useContext(LangContext);
+  const { langText } = useContext(PortfolioContext);
 
   const [cardFeatuers, setCardFeatuers] = useState();
 

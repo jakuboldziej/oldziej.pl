@@ -1,8 +1,8 @@
-import { LangContext } from '@/context/LangContext';
+import { PortfolioContext } from '@/context/PortfolioContext';
 import React, { useContext } from 'react'
 
 function Footer() {
-  const { langText } = useContext(LangContext);
+  const { langText } = useContext(PortfolioContext);
 
   return (
     <section id='footer'>

@@ -11,7 +11,7 @@ function MyParticles() {
       transition={{ duration: 3 }}
       className='particles fixed top-0 left-0 h-screen w-full'
     >
-      <Particles className='h-full' quantity={isMobile ? 250 : 500} />
+      <Particles className='h-full' quantity={isMobile ? 200 : 500} />
     </motion.div>
   )
 }

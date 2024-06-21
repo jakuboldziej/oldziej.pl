@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/shadcn/button";
 import GradualSpacing from "@/components/ui/magicui/gradual-spacing";
 import MyParticles from "@/components/Portfolio/MyParticles";
-import { LangContext } from "@/context/LangContext";
+import { PortfolioContext } from "@/context/PortfolioContext";
 import { useContext } from "react";
 import Navbar from "@/components/Portfolio/Navbar";
 
 function NotFoundPortfolio() {
-  const { langText } = useContext(LangContext);
+  const { langText } = useContext(PortfolioContext);
   document.title = langText.notFound?.header;
 
   const navigate = useNavigate();

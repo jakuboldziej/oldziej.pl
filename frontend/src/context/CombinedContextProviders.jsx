@@ -3,12 +3,12 @@ import { DartsGameContextProvider } from './DartsGameContext';
 import { Toaster } from '@/components/ui/shadcn/sonner';
 import { FtpContextProvider } from './FtpContext';
 import { AuthContextProvider } from './AuthContext';
-import { LangContextProvider } from './LangContext';
+import { PortfolioContextProvider } from './PortfolioContext';
 
 export const CombinedContextProvider = ({ children }) => {
   return (
     <AuthContextProvider>
-      <LangContextProvider>
+      <PortfolioContextProvider>
         <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
           <DartsGameContextProvider>
             <FtpContextProvider>
@@ -17,7 +17,7 @@ export const CombinedContextProvider = ({ children }) => {
             </FtpContextProvider>
           </DartsGameContextProvider>
         </ThemeProvider>
-      </LangContextProvider>
+      </PortfolioContextProvider>
     </AuthContextProvider>
   );
 };

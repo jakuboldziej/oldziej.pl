@@ -1,12 +1,12 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/shadcn/card'
 import { Button } from '@/components/ui/shadcn/button'
 import { useContext } from 'react';
-import { LangContext } from '@/context/LangContext';
+import { PortfolioContext } from '@/context/PortfolioContext';
 import { ArrowRightIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 function ProjectCard({ image, link, linkText, redirect }) {
-  const { langText } = useContext(LangContext);
+  const { langText } = useContext(PortfolioContext);
 
   return (
     <Card className='w-[320px] h-fit bg-transparent'>

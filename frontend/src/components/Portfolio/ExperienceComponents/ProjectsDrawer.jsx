@@ -1,14 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/shadcn/drawer';
 import { Button } from '@/components/ui/shadcn/button';
 import ExperienceProjects from './ExperienceProjects';
-import { LangContext } from '@/context/LangContext';
+import { PortfolioContext } from '@/context/PortfolioContext';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function ProjectsDrawer({ params }) {
-  const { projectsRedirect, scrolledToProjects } = params;
-  const { langText } = useContext(LangContext);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const { projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = params;
+  const { langText } = useContext(PortfolioContext);
 
   const windowHeight = window.innerHeight;
 

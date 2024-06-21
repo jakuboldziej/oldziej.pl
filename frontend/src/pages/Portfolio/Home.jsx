@@ -19,6 +19,8 @@ function Home() {
   const projectsRedirect = location.state?.projectsRedirect || false;
   const [scrolledToProjects, setScrolledToProjects] = useState(false);
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Pagination
   const [isScrolling, setIsScrolling] = useState(false);
   const landingPageRef = useRef(null);
@@ -33,7 +35,7 @@ function Home() {
 
   // Calculate current page
   useMotionValueEvent(scrollY, "change", (latest) => {
-    calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
+    if(!drawerOpen) calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
     setIsScrolling(true);
   });
 
@@ -43,7 +45,11 @@ function Home() {
     if (!projectsRedirect) scrollToTop(0);
   }, []);
 
-  const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects };
+  useEffect(() => {
+    console.log(drawerOpen);
+  }, [drawerOpen]);
+
+  const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen };
 
   return (
     <motion.div

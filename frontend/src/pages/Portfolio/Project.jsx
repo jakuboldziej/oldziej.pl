@@ -18,11 +18,11 @@ import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
 import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiTailwindcss } from '@icons-pack/react-simple-icons';
-import { LangContext } from '@/context/LangContext';
+import { PortfolioContext } from '@/context/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
 function Project() {
-  const { langText } = useContext(LangContext);
+  const { langText } = useContext(PortfolioContext);
   const { projectName } = useParams();
 
   const isMobile = window.innerWidth < 640;

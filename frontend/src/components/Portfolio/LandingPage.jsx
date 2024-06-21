@@ -3,10 +3,10 @@ import { FadeText } from '@/components/ui/magicui/fade-text'
 import { motion } from "framer-motion"
 import BoxReveal from '@/components/ui/magicui/box-reveal'
 import TypingAnimation from '@/components/ui/magicui/typing-animation'
-import { LangContext } from '@/context/LangContext'
+import { PortfolioContext } from '@/context/PortfolioContext'
 
 function LandingPage({ landingPageRef }) {
-  const { lang, langText } = useContext(LangContext);
+  const { lang, langText } = useContext(PortfolioContext);
 
   return (
     <section ref={landingPageRef} id='landing-page'>

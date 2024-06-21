@@ -6,11 +6,11 @@ import { BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
 import MenuToggle from './NavbarComponents/MenuToggle';
 import Navigation from './NavbarComponents/Navigation';
-import { LangContext } from '@/context/LangContext';
+import { PortfolioContext } from '@/context/PortfolioContext';
 import { Link } from 'react-router-dom';
 
 function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome, isProjects = false }) {
-  const { lang, langText } = useContext(LangContext)
+  const { lang, langText } = useContext(PortfolioContext)
 
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
   const [highestPage, setHighestPage] = useState(projectsRedirect ? 2 : 1);

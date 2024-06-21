@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { motion } from "framer-motion";
 import MenuItem from "./MenuItem";
-import { LangContext } from "@/context/LangContext";
+import { PortfolioContext } from "@/context/PortfolioContext";
 
 const layoutVariants = {
   open: {
@@ -14,8 +14,8 @@ const layoutVariants = {
   },
 };
 
-function Navigation({ isOpen }) {
-  const { lang } = useContext(LangContext);
+function Navigation() {
+  const { lang } = useContext(PortfolioContext);
 
   const handleLangChange = (langP) => {
     if (langP !== lang) {
