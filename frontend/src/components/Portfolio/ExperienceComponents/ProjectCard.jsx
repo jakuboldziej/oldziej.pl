@@ -10,7 +10,7 @@ function ProjectCard({ image, link, linkText, redirect }) {
 
   return (
     <Card className='w-[320px] h-fit bg-transparent'>
-      <img src={image} alt='projectImg' className='rounded-t-lg w-full' />
+      <img src={image} alt='projectImg' className='pointer-events-none rounded-t-lg w-full' />
       <CardContent className='p-6'>
         <Link to={link} target='_blank' className='text-underline-hover'>{linkText}</Link>
       </CardContent>

@@ -45,10 +45,6 @@ function Home() {
     if (!projectsRedirect) scrollToTop(0);
   }, []);
 
-  useEffect(() => {
-    console.log(drawerOpen);
-  }, [drawerOpen]);
-
   const experienceParams = { experienceRef, projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen };
 
   return (

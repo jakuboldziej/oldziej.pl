@@ -100,6 +100,10 @@ function Project() {
     }
   }, [projectName]);
 
+  useEffect(() => {
+    document.title = "Oldziej | " + mainLink.text;
+  }, [mainLink]);
+
   useLayoutEffect(() => {
     scrollToTop(0, 'instant');
   }, [])
