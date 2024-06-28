@@ -321,7 +321,7 @@ export const handleRecord = (action) => {
       game.round = restoredState.game.round;
       game.turn = restoredState.game.turn;
     }
-    console.log(game);  
+    console.log(game);
   }
   setUserState();
   setGameState(game);
