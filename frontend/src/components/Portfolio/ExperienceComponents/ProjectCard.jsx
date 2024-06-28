@@ -9,8 +9,10 @@ function ProjectCard({ image, link, linkText, redirect }) {
   const { langText } = useContext(PortfolioContext);
 
   return (
-    <Card className='w-[320px] h-fit bg-transparent'>
-      <img src={image} alt='projectImg' className='pointer-events-none rounded-t-lg w-full' />
+    <Card className='w-[320px] h-[452px] bg-transparent'>
+      <div className={`h-[318px] flex items-center ${linkText === "hagapolska.pl" && "p-6"}`}>
+        <img src={image} alt='projectImg' className='pointer-events-none rounded-t-lg w-full' />
+      </div>
       <CardContent className='p-6'>
         <Link to={link} target='_blank' className='text-underline-hover'>{linkText}</Link>
       </CardContent>
