@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
-import { setGameState } from './utils';
+import { handleRecord, setGameState } from './utils';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -90,18 +90,23 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleSummaryBackButton = () => {
+    const updatedUsers = game.users.map((user) => {
+      user.place = 0;
+      return user;
+    })
     const gameDataBack = {
       ...game,
       userWon: "",
       podium: { 1: null, 2: null, 3: null },
       active: true,
+      users: updatedUsers
     }
     if (game.userWon) {
       setGame(gameDataBack)
       setGameState(gameDataBack);
     }
     setShow(false);
-    console.log(gameDataBack);
+    handleRecord("back", true);
   }
 
   const handleDisabledBack = () => {
@@ -111,6 +116,10 @@ function GameSummary({ show, setShow }) {
     } else {
       return true;
     }
+  }
+
+  const handleDisabledPlayAgain = () => {
+
   }
 
   const deleteLSGame = () => {
@@ -124,50 +133,46 @@ function GameSummary({ show, setShow }) {
   }, [show]);
 
   return (
-    <>
-      <Dialog open={show}>
-        <DialogContent className='game-summary-modal'>
-          <DialogHeader>
-            <DialogTitle className='text-center text-2xl'>Game Summary</DialogTitle>
-            <hr />
-            <div className='text-white'>
-              {!game.training ?
-                <div className='summary flex flex-col items-center gap-5'>
-                  <div className="podium">
-                    <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                    <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                    <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-                  </div>
-                  <div>
-                    Time played: {timePlayed}
-                  </div>
-                </div>
-                :
-                <div className="training-stats flex flex-col items-center gap-5">
-                  <span className='text-lg font-bold'>Training Stats</span>
-                  <div className="podium">
-                    <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                    <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                    <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-                  </div>
-                  <div className="flex gap-4">
-                    <span>Time played: {timePlayed}</span>
-                    <span>StartPoints: {game.startPoints}</span>
-                  </div>
-                  <UserDataTable users={game.users} game={game} />
-                </div>
-              }
-              <span className='flex flex-col items-center gap-5 mt-5'>
-                <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
-                <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
-                <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled>Play Again</Button>
-                <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
-              </span>
+    <Dialog open={show}>
+      <DialogContent className='game-summary-modal'>
+        <DialogTitle className='text-center text-2xl'>Game Summary</DialogTitle>
+        <hr />
+        <div className='text-white'>
+          {!game.training ?
+            <div className='summary flex flex-col items-center gap-5'>
+              <div className="podium">
+                <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+                <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+                <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+              </div>
+              <div>
+                Time played: {timePlayed}
+              </div>
             </div>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    </>
+            :
+            <div className="training-stats flex flex-col items-center gap-5">
+              <span className='text-lg font-bold'>Training Stats</span>
+              <div className="podium">
+                <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+                <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+                <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+              </div>
+              <div className="flex gap-4">
+                <span>Time played: {timePlayed}</span>
+                <span>StartPoints: {game.startPoints}</span>
+              </div>
+              <UserDataTable users={game.users} game={game} />
+            </div>
+          }
+          <span className='flex flex-col items-center gap-5 mt-5'>
+            <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
+            <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
+            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={handleDisabledPlayAgain()}>Play Again</Button>
+            <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
+          </span>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 

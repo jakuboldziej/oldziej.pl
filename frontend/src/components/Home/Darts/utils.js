@@ -199,7 +199,7 @@ const handleDartsData = async () => {
   }
 
   const { record, userWon, ...gameWithoutRecordAndUserWon } = game;
-  if (!game.trainnig) await putDartsGame(gameWithoutRecordAndUserWon);
+  if (!game.training) await putDartsGame(gameWithoutRecordAndUserWon);
   setGameState(game);
 }
 
@@ -264,9 +264,6 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   }
 
   if (game.userWon || !currentUser.turn || !game.active) {
-    console.log(game);
-    console.log(currentUser);
-    // handleRecord("save");
     setGameState(game);
     return;
   }
@@ -287,7 +284,7 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   handleRecord("save");
 }
 
-export const handleRecord = (action) => {
+export const handleRecord = (action, backSummary = false) => {
   if (!game.active) return;
   if (action === "save") {
     const currentUserCopy = lodash.cloneDeep(currentUser);
@@ -300,7 +297,7 @@ export const handleRecord = (action) => {
       user: currentUserCopy,
     });
   } else if (action === "back") {
-    game.record.splice(-1);
+    if (!backSummary) game.record.splice(-1);
     const restoredState = game.record[game.record.length - 1];
 
     if (restoredState) {
@@ -321,7 +318,10 @@ export const handleRecord = (action) => {
       game.round = restoredState.game.round;
       game.turn = restoredState.game.turn;
     }
-    console.log(game);
+
+    if (backSummary) {
+      console.log(game);
+    }
   }
   setUserState();
   setGameState(game);
