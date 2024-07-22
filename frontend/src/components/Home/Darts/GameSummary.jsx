@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { DartsGameContext } from '@/context/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
@@ -28,11 +28,10 @@ function GameSummary({ show, setShow }) {
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
 
-    game.turn = game.users[0].displayName
-    game.users.map((user) => {
+    const updatedUsers = game.users.map((user) => {
       user.points = game.startPoints
       user.allGainedPoints = 0
-      user.turn = game.turn === user.displayName ? true : false
+      user.turn = false
       user.turnsSum = 0
       user.currentTurn = 1
       user.place = 0
@@ -52,8 +51,13 @@ function GameSummary({ show, setShow }) {
       user.sets = 0
       user.avgPointsPerTurn = 0
       user.highestTurnPoints = 0
+      user.highestCheckout = 0
+
+      return user;
     });
-    const firstUser = lodash.cloneDeep(game.users[0])
+    game.users = updatedUsers.sort(() => Math.random() - 0.5);
+    game.users[0].turn = true;
+    const firstUser = lodash.cloneDeep(game.users[0]);
     const gameCopy = lodash.cloneDeep(game);
     const gameData = {
       active: true,
@@ -63,6 +67,7 @@ function GameSummary({ show, setShow }) {
         3: null
       },
       userWon: "",
+      turn: firstUser.displayName,
       round: 1,
       record: [{
         game: {
@@ -72,7 +77,6 @@ function GameSummary({ show, setShow }) {
         user: firstUser
       }],
     }
-    setShow(false);
     const gameDataMerged = { ...gameCopy, ...gameData }
 
     if (!previousSettings.training) {
@@ -83,10 +87,10 @@ function GameSummary({ show, setShow }) {
       setGame(gameDataMerged);
     } else {
       game.training = true;
-      console.log(gameDataMerged);
       setGame(gameDataMerged);
     }
     localStorage.setItem("dartsGame", JSON.stringify(gameDataMerged))
+    setShow(false);
   }
 
   const handleSummaryBackButton = () => {

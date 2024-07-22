@@ -46,7 +46,7 @@ router.post("/login", (req, res) => {
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
         return res.status(400).send({
-          message: "Passwords does not match",
+          message: "Wrong password",
           error,
         });
       }
@@ -66,7 +66,7 @@ router.post("/login", (req, res) => {
       });
     }).catch((error) => {
       res.status(400).send({
-        message: "Passwords does not match",
+        message: "Wrong password",
         error,
       });
     });
@@ -86,7 +86,6 @@ router.post("/change-password", async (req, res) => {
     }
 
     // Compare current password (using bcrypt)
-    console.log(req.body.currentPassword, user.password);
     const passwordMatch = await bcrypt.compare(req.body.currentPassword, user.password);
     if (!passwordMatch) {
       return res.status(401).send({ message: "Incorrect current password" });

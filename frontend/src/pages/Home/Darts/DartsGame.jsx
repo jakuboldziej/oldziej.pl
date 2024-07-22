@@ -35,6 +35,10 @@ function DartsGame() {
   const [overthrow, setOverthrow] = useState(false);
 
   useEffect(() => {
+    if (!show) setUsers(game.users);
+  }, [show]);
+
+  useEffect(() => {
     let timer;
 
     if (overthrow) {

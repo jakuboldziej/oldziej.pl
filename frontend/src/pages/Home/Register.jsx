@@ -31,42 +31,36 @@ function Register() {
     const email = e.target[1].value;
     const password = e.target[2].value;
 
-    try {
-      setIsLoading(true);
+    setIsLoading(true);
 
-      await postDartsUser({
-        displayName: displayName,
-      });
-      const folderRes = await postFolder({
-        name: "Cloud drive",
-        owner: displayName
-      });
-      await postFtpUser({
-        displayName: displayName,
-        email: email,
-        main_folder: folderRes._id
-      });
+    await postDartsUser({
+      displayName: displayName,
+    });
+    const folderRes = await postFolder({
+      name: "Cloud drive",
+      owner: displayName
+    });
+    await postFtpUser({
+      displayName: displayName,
+      email: email,
+      main_folder: folderRes._id
+    });
 
-      const userRes = await registerUser({
-        email,
-        displayName,
-        password,
-      });
+    const userRes = await registerUser({
+      email,
+      displayName,
+      password,
+    });
 
-      signIn({
-        auth: {
-          token: userRes.token,
-          type: "Bearer"
-        },
-        userState: { displayName: displayName }
-      });
+    signIn({
+      auth: {
+        token: userRes.token,
+        type: "Bearer"
+      },
+      userState: { displayName: displayName }
+    });
 
-      navigate("/login");
-    } catch (err) {
-      console.log("Error fetching", err);
-      setErr(true);
-    }
-
+    navigate("/login");
     setIsLoading(false);
   }
 

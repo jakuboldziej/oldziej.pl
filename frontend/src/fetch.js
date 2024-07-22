@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 
@@ -152,16 +152,16 @@ export const putFtpUser = async (userData) => {
 // Files
 export const getFiles = async (userDisplayName = null) => {
   let url = `${mongodbApiUrl}/ftp/files`;
-  
+
   const queryParams = [];
   if (userDisplayName) {
     queryParams.push(`user=${userDisplayName}`)
   }
-  
+
   if (queryParams.length > 0) {
     url += `?${queryParams.join('&')}`;
   }
-  
+
   const response = await fetch(url);
   const data = await response.json();
   return data;
@@ -245,7 +245,7 @@ export const postFolder = async (data) => {
 
 export const getFolders = async (userDisplayName = null, folderName = null) => {
   let url = `${mongodbApiUrl}/ftp/folders`;
-  
+
   const queryParams = [];
   if (userDisplayName) {
     queryParams.push(`user=${userDisplayName}`)
@@ -253,11 +253,11 @@ export const getFolders = async (userDisplayName = null, folderName = null) => {
   if (folderName) {
     queryParams.push(`folderName=${folderName}`)
   }
-  
+
   if (queryParams.length > 0) {
     url += `?${queryParams.join('&')}`;
   }
-  
+
   const response = await fetch(url);
   const data = await response.json();
   return data.folders;
@@ -294,7 +294,7 @@ export const loginUser = async (userData) => {
     headers: {
       "Content-Type": "application/json",
     },
-  })
+  });
 
   return await response.json();
 }

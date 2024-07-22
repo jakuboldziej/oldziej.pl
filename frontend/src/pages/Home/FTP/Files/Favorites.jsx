@@ -27,9 +27,9 @@ function FavoriteFiles() {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
     if (scrollTop + clientHeight >= scrollHeight) {
       if (favoriteFolders.length > 0 && type === "folders") {
-        setCurrentPage((prev) => {prev.files, currentPage.folders + 1});
+        setCurrentPage((prev) => { prev.files, currentPage.folders + 1 });
       } else if (favoriteFiles.length > 0 && type === "files") {
-        setCurrentPage((prev) => {prev.folders, currentPage.files + 1});
+        setCurrentPage((prev) => { prev.folders, currentPage.files + 1 });
       }
     }
   };
@@ -37,10 +37,6 @@ function FavoriteFiles() {
   useEffect(() => {
     // if (files) handleRecentFilesShown("scroll")
   }, [currentPage]);
-
-  useEffect(() => {
-    console.log();
-  }, [favoriteFolders]);
 
   return (
     <>

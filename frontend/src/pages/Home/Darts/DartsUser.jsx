@@ -48,7 +48,6 @@ function DartsUser() {
     }
     if (gamesShown.length === 10) {
       fetchAllData()
-      console.log(gamesShown.length);
     }
   }, [gamesShown]);
 

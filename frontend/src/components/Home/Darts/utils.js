@@ -146,7 +146,7 @@ const handlePoints = (action, value) => {
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
     currentUser.throws["overthrows"] += 1;
-    setUserState();
+    setCurrentUserState();
     setOverthrow(currentUser.displayName);
   } else if (currentUser.points === 0) {
     const end = handleGameEnd();
@@ -235,7 +235,7 @@ const handleNextUser = () => {
   nextUser.turns = { 1: null, 2: null, 3: null };
   nextUser.turnsSum = 0;
 
-  setUserState();
+  setCurrentUserState();
 
   game.turn = nextUser.displayName;
   if (isLastUser) {
@@ -280,7 +280,7 @@ const handleUsersState = (value, specialState, setSpecialState) => {
   } else {
     currentUser.currentTurn += 1;
   }
-  setUserState();
+  setCurrentUserState();
   handleRecord("save");
 }
 
@@ -318,22 +318,22 @@ export const handleRecord = (action, backSummary = false) => {
       game.round = restoredState.game.round;
       game.turn = restoredState.game.turn;
     }
-
-    if (backSummary) {
-      console.log(game);
-    }
   }
-  setUserState();
+  setCurrentUserState();
   setGameState(game);
 }
 
-const setUserState = () => {
+const setCurrentUserState = () => {
   setUsers(prevUsers => {
     const updatedUsers = prevUsers.map(user =>
       user._id === currentUser._id ? currentUser : user
     );
     return updatedUsers;
   });
+}
+
+export const resetUsersState = () => {
+  setUsers(game.users);
 }
 
 export const setGameState = (gameP) => {
