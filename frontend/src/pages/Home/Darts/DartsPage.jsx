@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Loader2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/shadcn/tooltip";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -209,7 +210,7 @@ function DartsPage() {
                 </Dropdown.Menu>
               </Dropdown> */}
             </CardHeader>
-            <div className="info">
+            <CardContent className="info p-0">
               {isLoading ? <div className="flex justify-center w-100 pt-3">
                 <Loader2 className="h-10 w-10 animate-spin" />
               </div>
@@ -253,10 +254,16 @@ function DartsPage() {
                           <h6 style={{ fontSize: 13 }}>{dartUser.highestTurnPoints}</h6>
                         </span>
                       </MyTooltip>
+                      <MyTooltip title="Highest Checkout">
+                        <span className="elementInfo">
+                          <img width="25" height="25" src="https://img.icons8.com/color/25/cash-register.png" alt="cash-register" />
+                          <h6 style={{ fontSize: 13 }}>{dartUser.highestCheckout}</h6>
+                        </span>
+                      </MyTooltip>
                     </a>
                   )
                 })}
-            </div>
+            </CardContent>
           </Card>
           <Card className="my-card games">
             <CardHeader>
@@ -275,7 +282,7 @@ function DartsPage() {
               </Dropdown> */}
             </CardHeader>
             <ScrollArea onScroll={handleScroll}>
-              <CardContent className="info">
+              <CardContent className="info p-0 pr-3">
                 {isLoading ? <div className="flex justify-center w-100 pt-3">
                   <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
@@ -283,7 +290,7 @@ function DartsPage() {
                     return (
                       game.active ?
                         <div key={game._id} className="element">
-                          <MyTooltip title="Game Online">
+                          <MyTooltip title="Game Active">
                             <span className="elementInfo gameActive">
                               <img src={game.active ? GreenDot : RedDot} />
                             </span>
@@ -328,7 +335,7 @@ function DartsPage() {
                             {game.podium[3]}
                           </span>}
                           <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
-                            <span className="elementInfo usersCount absolute right-0">
+                            <span className="elementInfo usersCount absolute right-1">
                               <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                               {game.users.length}
                             </span>

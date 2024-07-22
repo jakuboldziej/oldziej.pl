@@ -26,6 +26,13 @@ export const putDartsUser = async (userData) => {
   });
 }
 
+export const deleteDartsUser = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`, {
+    method: "DELETE"
+  })
+  return await response.json();
+}
+
 export const postDartsUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
     method: "POST",
@@ -135,6 +142,13 @@ export const getFtpUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`);
   const users = await usersResponse.json();
   return users;
+}
+
+export const deleteFtpUser = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/users/${displayName}`, {
+    method: "DELETE"
+  })
+  return await response.json();
 }
 
 export const putFtpUser = async (userData) => {
@@ -283,7 +297,20 @@ export const putFolder = async (data) => {
   return folderRes.folder;
 }
 
-// Users
+// Auth Users
+export const getAuthUsers = async () => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`);
+  const users = await usersResponse.json();
+  return users;
+}
+
+export const deleteAuthUser = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`, {
+    method: "DELETE"
+  })
+  return await response.json();
+}
+
 export const loginUser = async (userData) => {
   const response = await fetch(`${mongodbApiUrl}/auth/login`, {
     method: "POST",

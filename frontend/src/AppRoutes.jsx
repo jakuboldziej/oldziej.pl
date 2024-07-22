@@ -8,7 +8,7 @@ import DartsGame from './pages/Home/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/DartsUser";
 import FtpPage from './pages/Home/FTP/FtpPage';
 import MyFiles from './pages/Home/FTP/Files/MyFiles';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import Shared from './pages/Home/FTP/Files/Shared';
 import Favorites from './pages/Home/FTP/Files/Favorites';
 import UploadFiles from './pages/Home/FTP/Files/UploadFiles';
@@ -19,8 +19,14 @@ import Storage from './pages/Home/FTP/Storage';
 import NotFoundPortfolio from './pages/Portfolio/NotFoundPortfolio';
 import Zaslepka from './components/Portfolio/Zaslepka';
 import Project from './pages/Portfolio/Project';
+import Admin from './pages/Home/Admin/Admin';
+import { useContext, useEffect } from 'react';
+import { AuthContext } from './context/AuthContext';
 
 function AppRoutes({ subdomain }) {
+  const { currentUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const ProtectedRoute = ({ children }) => {
     return (
       <RequireAuth
@@ -30,6 +36,16 @@ function AppRoutes({ subdomain }) {
       </RequireAuth>
     );
   };
+
+  const AdminRequireAuth = ({ children }) => {
+    useEffect(() => {
+      if (!currentUser || currentUser.displayName !== "kubek") {
+        navigate('/');
+      }
+    }, [currentUser]);
+    return children;
+  }
+
   return (
     <>
       {subdomain === "home" ? (
@@ -54,6 +70,9 @@ function AppRoutes({ subdomain }) {
               <Route path='favorites' element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
               <Route path='upload' element={<ProtectedRoute><UploadFiles /></ProtectedRoute>} />
             </Route>
+          </Route>
+          <Route path="admin" element={<AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} />}>
+            <Route index element={<AdminRequireAuth><Admin /></AdminRequireAuth>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

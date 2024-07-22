@@ -62,7 +62,6 @@ function Login() {
       displayName,
       password
     });
-    console.log(response);
     if (!response.token) {
       handleError(response.message, "rgb(248, 126, 126)")
       setIsLoading(false);

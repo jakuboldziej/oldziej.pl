@@ -9,7 +9,7 @@ import { AuthContext } from "@/context/AuthContext";
 
 function Home() {
   document.title = "Oldziej | Home";
-  
+
   const { currentUser } = useContext(AuthContext);
   const { files, fetchFiles, folders, fetchFolders } = useContext(FtpContext);
 
@@ -43,32 +43,33 @@ function Home() {
               <CardTitle><Link to={"/darts"} className="hover:cursor-pointer hover:opacity-80">Darts</Link></CardTitle>
             </CardHeader>
             <div className="info">
-              {isLoading ? <div className="flex justify-center w-100 pt-3">
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
-              : dartUsers && dartUsers.map((dartUser) => {
-                return (
-                  <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
-                    <span className="elementInfo username">{dartUser.displayName}</span>
-                    <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["firstPlace"]}
-                    </span>
-                    <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
-                      {dartUser.throws["doors"]}
-                    </span>
-                    <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
-                      {dartUser.gamesPlayed}
-                    </span>
-                    <span className="elementInfo">
-                      <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
-                      <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
-                    </span>
-                  </a>
-                )
-              })}
+              {isLoading ?
+                <div className="flex justify-center w-100 pt-3">
+                  <Loader2 className="h-10 w-10 animate-spin" />
+                </div>
+                : dartUsers && dartUsers.map((dartUser) => {
+                  return (
+                    <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
+                      <span className="elementInfo username">{dartUser.displayName}</span>
+                      <span className="elementInfo">
+                        <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
+                        {dartUser.podiums["firstPlace"]}
+                      </span>
+                      <span className="elementInfo">
+                        <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
+                        {dartUser.throws["doors"]}
+                      </span>
+                      <span className="elementInfo">
+                        <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
+                        {dartUser.gamesPlayed}
+                      </span>
+                      <span className="elementInfo">
+                        <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
+                        <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
+                      </span>
+                    </a>
+                  )
+                })}
             </div>
           </Card>
           <Card className="my-card">

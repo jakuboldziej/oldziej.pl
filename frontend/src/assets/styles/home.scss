@@ -283,7 +283,6 @@ html {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding: 10px;
         margin: 10px 0 10px 0;
         overflow-y: auto;
 
@@ -293,10 +292,12 @@ html {
           flex-direction: row;
           align-items: center;
           border-radius: 15px;
-          min-height: 60px;
+          min-height: 67px;
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
           transition: transform 0.3s ease;
           text-decoration: none;
+          overflow: visible;
+
 
           &:nth-child(3n + 1) {
             background-color: $red;
@@ -342,7 +343,6 @@ html {
         }
 
         .element:hover {
-          transform: translateY(-5px);
           cursor: pointer;
         }
       }
@@ -904,6 +904,7 @@ html {
             @media screen and (max-width: 640px) {
               max-width: calc(40vw - 1rem);
             }
+
             height: 30px;
           }
 
@@ -946,6 +947,13 @@ html {
       padding: 30px;
     }
   }
+}
+
+// Admin Page
+.admin {
+  color: white;
+  padding: $navHeight + 20px 20px;
+  height: $containerHeight;
 }
 
 // Login/Register/NotFound Page

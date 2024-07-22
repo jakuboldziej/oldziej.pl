@@ -74,7 +74,7 @@ const getFtpUser = async (req, res, next) => {
     user = await FtpUser.findOne({ displayName });
     if (user == null) return res.status(404);
   } catch (err) {
-    return res.json({message: err.message })
+    return res.json({ message: err.message })
   }
   res.user = user;
   next();
@@ -316,7 +316,7 @@ router.post('/users', async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
-})
+});
 
 router.get('/users/:displayName', async (req, res) => {
   try {
@@ -325,7 +325,16 @@ router.get('/users/:displayName', async (req, res) => {
   } catch (err) {
     res.json({ message: err.message })
   }
-})
+});
+
+router.delete('/users/:displayName', async (req, res) => {
+  try {
+    await FtpUser.deleteOne({ displayName: req.params.displayName });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 router.put("/users/:displayName", getFtpUser, async (req, res) => {
   const { displayName, ...updateData } = req.body;

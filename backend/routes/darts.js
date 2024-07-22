@@ -10,7 +10,7 @@ const getDartsUser = async (req, res, next) => {
     user = await DartsUser.findOne({ displayName });
     if (user == null) return res.status(404);
   } catch (err) {
-    return res.json({message: err.message })
+    return res.json({ message: err.message })
   }
   res.user = user;
   next();
@@ -35,8 +35,8 @@ router.get('/dartsGames', async (req, res) => {
     const userDisplayName = req.query.user
     const limit = req.query.limit
     if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
-    
-    const dartsGames = await DartsGame.find(filter, null, {limit: limit, sort: {created_at: -1}});
+
+    const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });
     res.json(dartsGames)
   } catch (err) {
     res.json({ message: err.message })
@@ -114,7 +114,16 @@ router.get('/dartsUsers', async (req, res) => {
 
 router.get('/dartsUsers/:displayName', getDartsUser, async (req, res) => {
   res.send(res.user)
-})
+});
+
+router.delete('/dartsUsers/:displayName', async (req, res) => {
+  try {
+    await DartsUser.deleteOne({ displayName: req.params.displayName });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 
 router.put("/dartsUsers/:displayName", getDartsUser, async (req, res) => {
   const { displayName, ...updateData } = req.body;
@@ -157,7 +166,7 @@ router.post('/dartsUsers', async (req, res) => {
 
 // Get gamesPlayed for portfolio
 router.get('/dartsUsers/portfolio/:displayName', getDartsUser, async (req, res) => {
-  res.send({gamesPlayed: res.user.gamesPlayed})
+  res.send({ gamesPlayed: res.user.gamesPlayed })
 })
 
 module.exports = router

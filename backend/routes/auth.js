@@ -4,6 +4,40 @@ const User = require('../models/user')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+const getAuthUser = async (req, res, next) => {
+  let user;
+  try {
+    const { displayName } = req.params;
+    user = await User.findOne({ displayName });
+    if (user == null) return res.status(404);
+  } catch (err) {
+    return res.json({ message: err.message })
+  }
+  res.user = user;
+  next();
+}
+
+// Users
+router.get('/users', async (req, res) => {
+  try {
+    const users = await User.find()
+    res.json(users)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.delete('/users/:displayName', async (req, res) => {
+  try {
+    await User.deleteOne({ displayName: req.params.displayName });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Auth
+
 router.post("/register", (req, res) => {
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({

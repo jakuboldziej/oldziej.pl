@@ -1,8 +1,17 @@
-import React from 'react'
+import UsersTable from '@/components/Admin/UsersTable';
+import NavBar from '@/components/Home/NavBar';
+import React from 'react';
 
 function Admin() {
   return (
-    <div>Admin</div>
+    <>
+      <NavBar />
+      <div className='admin'>
+        <div className='users'>
+          <UsersTable />
+        </div>
+      </div>
+    </>
   )
 }
 
