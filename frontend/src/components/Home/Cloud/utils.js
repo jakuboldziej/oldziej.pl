@@ -129,7 +129,7 @@ export const addFolderToFolder = async (folder1, folder2) => {
 
 export const deleteFolderFromFolder = async (folder1, folder2) => {
   folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
-  
+
   await deleteFolder(folder2._id);
   await putFolder({ folder: folder1 });
   return { updatedCurrentFolder: folder1, updatedFolder: folder2 };
@@ -148,7 +148,7 @@ export const handleDataShown = async (folder) => {
   const folderPromises = folder.folders.map(async (folderId) => {
     return await getFolder(folderId);
   })
-  
+
   const currentFolderFolders = await Promise.all(folderPromises);
   currentFolderFolders && currentFolderFolders.map((folder) => {
     folder.type = "folder"

@@ -11,17 +11,17 @@ import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
 import { Progress } from '@/components/ui/shadcn/progress'
-import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/Home/FTP/utils'
+import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/Home/Cloud/utils'
 import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files, Folder } from 'lucide-react'
-import LeftNavBar from '@/components/Home/FTP/LeftNavBar'
+import LeftNavBar from '@/components/Home/Cloud/LeftNavBar'
 import { FtpContext } from '@/context/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
 import CopyTextButton from '@/components/Home/CopyTextButton'
 import { useNavigate } from 'react-router'
-import MyDialogs from '@/components/Home/FTP/MyDialogs'
+import MyDialogs from '@/components/Home/Cloud/MyDialogs'
 import { AuthContext } from '@/context/AuthContext'
 
-function FtpPage() {
+function CloudPage() {
   document.title = "Oldziej | Cloud";
   const { folders, setFolders, files, setFiles } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
@@ -321,7 +321,7 @@ function FtpPage() {
   return (
     <>
       <NavBar />
-      <div className='ftp-wrapper'>
+      <div className='cloud-wrapper'>
         <LeftNavBar />
         <div className='main ftp-page text-white'>
           <div className='left-side'>
@@ -478,7 +478,7 @@ function FtpPage() {
                   />
                 </form>
               </Form>
-              <div onClick={() => navigate("/ftp/storage")} className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
+              <div onClick={() => navigate("/cloud/storage")} className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span className='flex justify-between'>
                   <span>Your Storage <p>({files?.length || 0} Files)</p></span>
                   <span>{(calcStorageUsage(files)[1])}%</span>
@@ -510,4 +510,4 @@ function FtpPage() {
   )
 }
 
-export default FtpPage
+export default CloudPage

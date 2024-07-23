@@ -73,7 +73,7 @@ function Project() {
       ]);
     } else if (projectName === "cloud") {
       setMainImage(isMobile ? ImgCloudMobile : ImgCloud);
-      setMainLink({ text: "home.oldziej.pl/ftp", href: 'https://home.oldziej.pl/ftp' });
+      setMainLink({ text: "home.oldziej.pl/cloud", href: 'https://home.oldziej.pl/cloud' });
       setDesignedBy('Jakub Ołdziejewski')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,

@@ -115,7 +115,7 @@ export const getGamesPlayedPortfolio = async () => {
   return res.gamesPlayed;
 }
 
-// FTP
+// Cloud
 
 // Users
 export const postFtpUser = async (userData) => {

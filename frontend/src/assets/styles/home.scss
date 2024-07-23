@@ -139,7 +139,7 @@ html {
 
     .usersCard,
     .settingsCard {
-      max-height: 770px;
+      height: 725px;
       z-index: 9999;
       background-color: $green !important;
       color: black !important;
@@ -715,8 +715,8 @@ html {
   }
 }
 
-// FTP Page
-.ftp-wrapper {
+// Cloud Page
+.cloud-wrapper {
   .left-navbar {
     position: fixed;
     background-color: $creamy;

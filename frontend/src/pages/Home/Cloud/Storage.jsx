@@ -1,18 +1,18 @@
-import LeftNavBar from "@/components/Home/FTP/LeftNavBar"
+import LeftNavBar from "@/components/Home/Cloud/LeftNavBar"
 import NavBar from "@/components/Home/NavBar"
 
-function Settings() {
+function Storage() {
   return (
     <>
       <NavBar />
-      <div className="ftp-wrapper text-white">
+      <div className="cloud-wrapper text-white">
         <LeftNavBar />
         <div className="main settings-files">
-        Settings
+          Storage
         </div>
       </div>
     </>
   )
 }
 
-export default Settings
+export default Storage

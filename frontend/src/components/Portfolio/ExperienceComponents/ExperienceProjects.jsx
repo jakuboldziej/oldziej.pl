@@ -13,7 +13,7 @@ function ExperienceProjects() {
       <ProjectCard image={Hagapolska} link='https://hagapolska.pl' linkText="hagapolska.pl" redirect="/test/projects/hagapolska" />
       <ProjectCard image={Oldziej} link='https://oldziej.pl' linkText="oldziej.pl" redirect="/test/projects/oldziej" />
       <ProjectCard image={Darts} link='https://home.oldziej.pl/darts' linkText="Darts Web App" redirect="/test/projects/darts" />
-      <ProjectCard image={Cloud} link='https://home.oldziej.pl/ftp' linkText="Cloud Web App" redirect="/test/projects/cloud" />
+      <ProjectCard image={Cloud} link='https://home.oldziej.pl/cloud' linkText="Cloud Web App" redirect="/test/projects/cloud" />
     </div>
   )
 }

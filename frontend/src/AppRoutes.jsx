@@ -6,16 +6,16 @@ import NotFound from './pages/Home/NotFound';
 import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './pages/Home/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/DartsUser";
-import FtpPage from './pages/Home/FTP/FtpPage';
-import MyFiles from './pages/Home/FTP/Files/MyFiles';
+import CloudPage from './pages/Home/Cloud/CloudPage';
+import MyFiles from './pages/Home/Cloud/Files/MyFiles';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import Shared from './pages/Home/FTP/Files/Shared';
-import Favorites from './pages/Home/FTP/Files/Favorites';
-import UploadFiles from './pages/Home/FTP/Files/UploadFiles';
-import Settings from './pages/Home/FTP/Settings';
+import Shared from './pages/Home/Cloud/Files/Shared';
+import Favorites from './pages/Home/Cloud/Files/Favorites';
+import UploadFiles from './pages/Home/Cloud/Files/UploadFiles';
+import Settings from './pages/Home/Cloud/Settings';
 import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
 import RequireAuth from '@auth-kit/react-router/RequireAuth';
-import Storage from './pages/Home/FTP/Storage';
+import Storage from './pages/Home/Cloud/Storage';
 import NotFoundPortfolio from './pages/Portfolio/NotFoundPortfolio';
 import Zaslepka from './components/Portfolio/Zaslepka';
 import Project from './pages/Portfolio/Project';
@@ -60,8 +60,8 @@ function AppRoutes({ subdomain }) {
             <Route path='game' element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
             <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
           </Route>
-          <Route path="ftp" element={<AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} />}>
-            <Route index element={<ProtectedRoute><FtpPage /></ProtectedRoute>} />
+          <Route path="cloud" element={<AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} />}>
+            <Route index element={<ProtectedRoute><CloudPage /></ProtectedRoute>} />
             <Route path='settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path='storage' element={<ProtectedRoute><Storage /></ProtectedRoute>} />
             <Route path='files'>

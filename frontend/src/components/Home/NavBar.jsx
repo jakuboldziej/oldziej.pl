@@ -31,7 +31,7 @@ function NavBar() {
                 <Link to="/darts" className="block py-2 px-2 text-gray-400 hover:text-gray-200 p-0">Darts</Link>
               </li>
               <li>
-                <Link to="/ftp" className="block py-2 px-2 text-gray-400 hover:text-gray-200 p-0">Cloud</Link>
+                <Link to="/cloud" className="block py-2 px-2 text-gray-400 hover:text-gray-200 p-0">Cloud</Link>
               </li>
               <li className="ml-auto">
                 <Sheet>

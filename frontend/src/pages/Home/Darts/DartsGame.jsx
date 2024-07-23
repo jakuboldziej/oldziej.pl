@@ -73,7 +73,7 @@ function DartsGame() {
     if (!game?.active) setShow(true);
   }, []);
 
-  const keyboardParams = { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
+  const keyboardProps = { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {
@@ -139,7 +139,7 @@ function DartsGame() {
           <UserDataTable users={users} game={game} />
         </MyAccordion>
         {game.training && <span className="text-white fs-2 text-center">Training</span>}
-        <Keyboard params={keyboardParams} />
+        <Keyboard props={keyboardProps} />
       </div>
       <GameSummary show={show} setShow={setShow} />
     </div>

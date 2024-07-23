@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import CreateGame from "@/components/Home/Darts/CreateGame";
+import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import NavBar from "@/components/Home/NavBar";
 import RedDot from "@/assets//images/icons/red_dot.png";
 import GreenDot from "@/assets//images/icons/green_dot.png";
@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Loader2 } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/shadcn/tooltip";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";

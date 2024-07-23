@@ -52,19 +52,19 @@ function Home() {
                     <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                       <span className="elementInfo username">{dartUser.displayName}</span>
                       <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
+                        <img width="25" height="25" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
                         {dartUser.podiums["firstPlace"]}
                       </span>
                       <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
+                        <img width="25" height="25" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                         {dartUser.throws["doors"]}
                       </span>
                       <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
+                        <img width="25" height="25" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
                         {dartUser.gamesPlayed}
                       </span>
                       <span className="elementInfo">
-                        <img width="20" height="20" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
+                        <img width="25" height="25" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
                         <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
                       </span>
                     </a>
@@ -74,7 +74,7 @@ function Home() {
           </Card>
           <Card className="my-card">
             <CardHeader>
-              <CardTitle><Link to={"/ftp"} className="hover:cursor-pointer hover:opacity-80">FTP</Link></CardTitle>
+              <CardTitle><Link to={"/cloud"} className="hover:cursor-pointer hover:opacity-80">Cloud</Link></CardTitle>
             </CardHeader>
           </Card>
         </div>

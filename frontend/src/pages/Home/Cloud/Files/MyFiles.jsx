@@ -1,18 +1,18 @@
-import LeftNavBar from "@/components/Home/FTP/LeftNavBar";
+import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import NavBar from "@/components/Home/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
-import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/FTP/utils";
+import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { useNavigate } from "react-router";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/shadcn/context-menu";
-import MyDialogs from "@/components/Home/FTP/MyDialogs";
+import MyDialogs from "@/components/Home/Cloud/MyDialogs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/shadcn/breadcrumb";
-import MyFileCard from "@/components/Home/FTP/MyFileCard";
-import MyFolderCard from "@/components/Home/FTP/MyFolderCard";
+import MyFileCard from "@/components/Home/Cloud/MyFileCard";
+import MyFolderCard from "@/components/Home/Cloud/MyFolderCard";
 import { AuthContext } from "@/context/AuthContext";
 
 function MyFiles() {
@@ -92,7 +92,7 @@ function MyFiles() {
         newFileName: newFileName
       }
       const updatedFile = await putFile(data);
-  
+
       const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
       updateDataShown(updatedData);
       const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
@@ -318,7 +318,7 @@ function MyFiles() {
   return (
     <>
       <NavBar />
-      <div className="ftp-wrapper text-white">
+      <div className="cloud-wrapper text-white">
         <LeftNavBar />
         <div className="main my-files">
           <div className="folders-path">

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/shadcn/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { FileArchive, FileDown, FileText, Heart, HeartOff, Info, Mic, Move, PencilLine, Search, SquareArrowDown, Trash2, Video, Files } from 'lucide-react';
-import { downloadFile, handleFileTypes, renderFile } from "@/components/Home/FTP/utils";
+import { downloadFile, handleFileTypes, renderFile } from "@/components/Home/Cloud/utils";
 import { mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext } from "react";

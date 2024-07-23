@@ -26,5 +26,4 @@ export const handlePointsReverseX01 = () => {
   } else {
     return false;
   }
-
 }

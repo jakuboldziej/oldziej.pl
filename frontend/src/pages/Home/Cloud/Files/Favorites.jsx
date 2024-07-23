@@ -1,5 +1,5 @@
-import LeftNavBar from "@/components/Home/FTP/LeftNavBar"
-import MyFileCard from "@/components/Home/FTP/MyFileCard";
+import LeftNavBar from "@/components/Home/Cloud/LeftNavBar"
+import MyFileCard from "@/components/Home/Cloud/MyFileCard";
 import NavBar from "@/components/Home/NavBar"
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import { FtpContext } from "@/context/FtpContext";
@@ -41,7 +41,7 @@ function FavoriteFiles() {
   return (
     <>
       <NavBar />
-      <div className="ftp-wrapper text-white">
+      <div className="cloud-wrapper text-white">
         <LeftNavBar />
         <div className="main favorites">
           <div className='files flex flex-col gap-6'>

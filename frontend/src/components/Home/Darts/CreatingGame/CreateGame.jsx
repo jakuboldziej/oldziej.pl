@@ -8,11 +8,10 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from 
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/shadcn/select";
 import { Checkbox } from "@/components/ui/shadcn/checkbox";
-import ShowNewToast from "../MyComponents/ShowNewToast";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/shadcn/dialog";
-import { Label } from "@/components/ui/shadcn/label";
-import { Input } from "@/components/ui/shadcn/input";
+import ShowNewToast from "../../MyComponents/ShowNewToast";
+
 import { AuthContext } from "@/context/AuthContext";
+import CreateGameDialogs from "./CreateGameDialogs";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -26,6 +25,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [selectSets, setSelectSets] = useState(1);
   const [selectLegs, setSelectLegs] = useState(1);
   const [usersPodium, setUsersPodium] = useState("None");
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState('');
   const [showCustomPoints, setShowCustomPoints] = useState(false);
   const [customStartPoints, setCustomStartPoints] = useState('');
   const [egt, setEgt] = useState(0);
@@ -87,11 +88,22 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     if (twoPlayersGamemode === true && usersPlaying.length === 2) return;
     setUsersPlaying((prev) => [...prev, user]);
     setUsersNotPlaying((prev) => prev.filter((notPlayingUser) => notPlayingUser._id !== user._id));
+
+    if (usersPlaying.length < 1) setUsersPodium(1);
   }
 
   const handleRemovePlayer = (user) => {
-    setUsersPlaying((prev) => prev.filter((notPlayingUser) => notPlayingUser._id !== user._id));
+    const updatedUsersPlaying = usersPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id);
+    setUsersPlaying(updatedUsersPlaying);
     setUsersNotPlaying((prev) => [...prev, user]);
+
+    if (updatedUsersPlaying.length === 0) {
+      setUsersPodium("None");
+    } else {
+      if (userPodiumsCount.length !== 0 && usersPodium == userPodiumsCount[userPodiumsCount.length - 1].key) {
+        setUsersPodium(Number(userPodiumsCount[userPodiumsCount.length - 2].key))
+      }
+    }
   }
 
   const handleSelectStartPoints = (value) => {
@@ -112,6 +124,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const handleCustomStartPoints = () => {
     setShowCustomPoints(false);
     setSelectStartPoints(customStartPoints);
+  }
+
+  const handleAddingNewUser = () => {
+
+    setNewUser('');
   }
 
   const handleGameStart = async (training) => {
@@ -220,7 +237,17 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     estimatedGameTime();
+    localStorage.setItem("gameSettings", JSON.stringify({
+      users: usersPlaying,
+      gamemode: selectGameMode,
+      startPoints: selectStartPoints,
+      checkout: selectCheckOut,
+      sets: selectSets,
+      legs: selectLegs,
+    }));
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
+
+  const dialogProps = { setCustomStartPoints, showCustomPoints, setShowCustomPoints, handleCustomStartPoints, showAddUser, setShowAddUser, setNewUser, handleAddingNewUser };
 
   return (
     <>
@@ -234,13 +261,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
           </DrawerHeader>
           <div className="settings pt-3 overflow-y-auto">
             <Card className="usersCard">
-              <CardHeader className="text-lg">
-                Add Users
+              <CardHeader className="text-lg flex flex-row items-center justify-between">
+                <span>Add Users</span>
+                <Button variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
               </CardHeader>
               <hr />
               <CardContent className="card-content p-0">
+                <div className="text-xl py-3">Not Playing</div>
                 <div className="users">
-                  <div className="text-xl py-3">Not Playing</div>
                   {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
                     <div onClick={() => handleAddPlayer(user)} className="user text-white" style={handleNotPlayingStyle()} key={user._id}>
                       <span>{user.displayName}</span>
@@ -337,10 +365,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectItem value="Straight Out">Straight Out</SelectItem>
-                            <SelectItem value="Double Out">Double Out</SelectItem>
-                            <SelectItem value="Triple Out">Triple Out</SelectItem>
-                            <SelectItem value="Master Out">Master Out</SelectItem>
-                            <SelectItem value="Splitscore">Splitscore</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select><div className="text-lg">Sets</div><Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
@@ -366,7 +390,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   ) : (
                     null
                   )}
-
                 </div>
               </CardContent>
             </Card>
@@ -374,31 +397,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         </DrawerContent>
       </Drawer>
 
-      <Dialog open={showCustomPoints}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className='text-center text-2xl'>Set Custom Points</DialogTitle>
-          </DialogHeader>
-          <div className='text-white'>
-            <Label htmlFor="points">
-              Points
-            </Label>
-            <Input
-              id="points"
-              type="number"
-              min={1}
-              max={10000}
-              onChange={(e) => setCustomStartPoints(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
-              Close
-            </Button>
-            <Button onClick={handleCustomStartPoints} type="submit">Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <CreateGameDialogs props={dialogProps} />
     </>
   )
 }
