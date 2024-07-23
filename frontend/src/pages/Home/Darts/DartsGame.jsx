@@ -4,13 +4,13 @@ import Keyboard from "@/components/Home/Darts/Keyboard";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import GameSummary from "@/components/Home/Darts/GameSummary";
-import { handleRound, totalThrows } from "@/components/Home/Darts/utils";
+import { totalThrows } from "@/components/Home/Darts/game logic/userUtils";
+import { handleRound } from "@/components/Home/Darts/game logic/game";
 import { Link } from "react-router-dom";
 import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
 import { buttonVariants } from "@/components/ui/shadcn/button";
 import UserDataTable from "@/components/Home/Darts/UserDataTable";
-import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 
 function DartsGame() {
   const [show, setShow] = useState(false);
@@ -73,12 +73,12 @@ function DartsGame() {
     if (!game?.active) setShow(true);
   }, []);
 
-  const keyboardParams = { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
+  const keyboardParams = { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
 
   const userDynamicStyle = (user) => {
     return {
       borderLeft: `17px solid ${user.turn ? '#E00000' : '#FFF'}`,
-      backgroundColor: `${user.points === 0 ? 'gold' : '#00B524'}`,
+      backgroundColor: `${game.userWon === user.displayName ? 'gold' : '#00B524'}`,
       color: overthrow === user.displayName ? 'red' : 'white',
       boxShadow: overthrow === user.displayName ? '0 0 30px #E00000' : null,
     }
@@ -135,7 +135,7 @@ function DartsGame() {
         </div>
       </div>
       <div className="right-panel">
-        <MyAccordion>
+        <MyAccordion title={`Live Data (${game.gameMode})`}>
           <UserDataTable users={users} game={game} />
         </MyAccordion>
         {game.training && <span className="text-white fs-2 text-center">Training</span>}

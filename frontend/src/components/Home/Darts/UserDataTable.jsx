@@ -1,6 +1,6 @@
 import MyTooltip from '../MyComponents/MyTooltip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { totalThrows } from './utils';
+import { totalThrows } from './game logic/userUtils';
 
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {
@@ -18,7 +18,7 @@ function UserDataTable({ users, game }) {
     if (user.turn) {
       style = { ...style, borderLeft: '1px solid #E00000' };
     }
-    if (user.points === 0) {
+    if (game.userWon === user.displayName) {
       style = { ...style, color: 'gold' };
     }
     return style;

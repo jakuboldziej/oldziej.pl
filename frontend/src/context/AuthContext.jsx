@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useState } from 'react';
 import Cookies from 'js-cookie';
 import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';

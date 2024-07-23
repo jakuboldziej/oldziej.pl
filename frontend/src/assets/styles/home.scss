@@ -82,7 +82,6 @@ html {
 
 // Navbar
 .navbar {
-  position: fixed;
   width: 100%;
   border-bottom: 1px solid $green;
   max-height: $navHeight;
@@ -354,10 +353,9 @@ html {
 .home-page {
   height: $containerHeight;
   padding: 20px;
-  padding-top: $navHeight + 20px;
 
   @media screen and (max-width: 640px) {
-    padding: $navHeight + 20px 0 0 0;
+    padding: 20px 0 0 0;
   }
 
   .cards {
@@ -383,10 +381,11 @@ html {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding: $navHeight + 20px 20px 0 20px;
+  height: $containerHeight;
+  padding: 20px;
 
   @media screen and (max-width: 640px) {
-    padding: $navHeight + 20px 0 0 0;
+    padding: 20px 0 0 0;
   }
 
   .btn {
@@ -472,6 +471,10 @@ html {
       top: 5px;
       width: calc(100% - 20px);
       background-color: black;
+
+      @media screen and (max-width: 640px) {
+        display: none;
+      }
     }
 
     // Keyboard
@@ -660,7 +663,6 @@ html {
   flex-direction: column;
   align-items: center;
   color: white;
-  height: $containerHeight;
   padding-top: 20px;
 
   .header {
@@ -674,7 +676,6 @@ html {
     align-items: center;
     gap: 10px;
     width: 100%;
-    height: $containerHeight;
 
     div {
       display: flex;
@@ -716,8 +717,6 @@ html {
 
 // FTP Page
 .ftp-wrapper {
-  padding-top: $navHeight;
-
   .left-navbar {
     position: fixed;
     background-color: $creamy;
@@ -952,7 +951,7 @@ html {
 // Admin Page
 .admin {
   color: white;
-  padding: $navHeight + 20px 20px;
+  padding: 20px;
   height: $containerHeight;
 }
 

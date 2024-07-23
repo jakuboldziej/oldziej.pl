@@ -1,8 +1,11 @@
 import { deleteDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
+import { useContext } from "react";
+import { DartsGameContext } from "@/context/DartsGameContext";
 
 function Keyboard({ params }) {
-  const { handleRound, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = params;
+  const { game, setGame } = useContext(DartsGameContext);
+  const { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = params;
 
   const onclick = (param) => {
     handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow)

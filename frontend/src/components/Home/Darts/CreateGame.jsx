@@ -19,6 +19,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
   const [randomizePlayers, setRandomizePlayers] = useState(true);
+  const [twoPlayersGamemode, setTwoPlayersGamemode] = useState(false);
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
   const [selectCheckOut, setSelectCheckOut] = useState('Straight Out');
@@ -35,7 +36,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 21; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
+  for (let i = 1; i <= 1; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
@@ -82,30 +83,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     getUsers();
   }, [drawerOpen]);
 
-  const handleSelect = (user, action) => {
-    const updatedUsersPlaying = action === 'add'
-      ? [...usersPlaying, user]
-      : usersPlaying.filter((playingUser) => playingUser._id !== user._id);
+  const handleAddPlayer = (user) => {
+    if (twoPlayersGamemode === true && usersPlaying.length === 2) return;
+    setUsersPlaying((prev) => [...prev, user]);
+    setUsersNotPlaying((prev) => prev.filter((notPlayingUser) => notPlayingUser._id !== user._id));
+  }
 
-    const updatedUsersNotPlaying = action === 'add'
-      ? usersNotPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id)
-      : [...usersNotPlaying, user];
-
-    setUsersPlaying(updatedUsersPlaying);
-    setUsersNotPlaying(updatedUsersNotPlaying);
-
-    if (action === 'del') {
-      if (updatedUsersPlaying.length === 0) {
-        setUsersPodium("None");
-      } else {
-        if (userPodiumsCount.length !== 0 && usersPodium == userPodiumsCount[userPodiumsCount.length - 1].key) {
-          setUsersPodium(Number(userPodiumsCount[userPodiumsCount.length - 2].key))
-        }
-      }
-    } else if (action === 'add' && usersPodium === "None") {
-      setUsersPodium(1);
-    }
-  };
+  const handleRemovePlayer = (user) => {
+    setUsersPlaying((prev) => prev.filter((notPlayingUser) => notPlayingUser._id !== user._id));
+    setUsersNotPlaying((prev) => [...prev, user]);
+  }
 
   const handleSelectStartPoints = (value) => {
     const selectedValue = value;
@@ -116,7 +103,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       setSelectStartPoints(selectedValue);
       setCustomStartPoints(0);
     }
-  };
+  }
+
+  const handleGamemodeOptions = () => {
+    return selectGameMode;
+  }
 
   const handleCustomStartPoints = () => {
     setShowCustomPoints(false);
@@ -201,8 +192,22 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       sets: selectSets,
       legs: selectLegs,
       training: training
-    }))
+    }));
   }
+
+  const handleNotPlayingStyle = () => {
+    if (twoPlayersGamemode && usersPlaying.length === 2) {
+      return {
+        opacity: 0.5,
+        cursor: "default"
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (selectGameMode === "Reverse X01") setTwoPlayersGamemode(true);
+    else setTwoPlayersGamemode(false);
+  }, [selectGameMode]);
 
   useEffect(() => {
     const estimatedGameTime = () => {
@@ -237,7 +242,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                 <div className="users">
                   <div className="text-xl py-3">Not Playing</div>
                   {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'add')} className="user" style={{ color: 'white' }} key={user._id}>
+                    <div onClick={() => handleAddPlayer(user)} className="user text-white" style={handleNotPlayingStyle()} key={user._id}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : null}
@@ -257,7 +262,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                 </div>
                 <div className="users pt-3">
                   {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleSelect(user, 'del')} className="user playing" key={user._id}>
+                    <div onClick={() => handleRemovePlayer(user)} className="user playing" key={user._id}>
                       <span>{user.displayName}</span>
                     </div>
                   )) : null}
@@ -270,13 +275,13 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               <span>EGT: {egt}</span>
             </div>
             <Card className="settingsCard">
-              <CardHeader>
+              <CardHeader className="text-lg">
                 Settings
               </CardHeader>
               <hr />
               <CardContent className="card-content">
                 <div className="selects">
-                  <div className="text-lg">Podium</div>
+                  <div className="text-xl">Podium</div>
                   <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium}>
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Podium" />
@@ -287,7 +292,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <div className="text-lg">Gamemode</div>
+                  <div className="text-xl">Gamemode</div>
                   <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode}>
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Gamemode" />
@@ -295,17 +300,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="X01">X01</SelectItem>
-                        <SelectItem value="Cricket">Cricket</SelectItem>
-                        <SelectItem value="Around the Clock">Around the Clock</SelectItem>
-                        <SelectItem value="Shanghai">Shanghai</SelectItem>
-                        <SelectItem value="Elimination">Elimination</SelectItem>
-                        <SelectItem value="Highscore">Highscore</SelectItem>
-                        <SelectItem value="Killer">Killer</SelectItem>
-                        <SelectItem value="Splitscore">Splitscore</SelectItem>
+                        <SelectItem value="Reverse X01">Reverse X01 (2 Players)</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <div className="text-lg">Start Points</div>
+                  <div className="text-xl">Start Points</div>
                   <Select onValueChange={(value) => handleSelectStartPoints(value)} value={selectStartPoints}>
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Start Points" />
@@ -329,43 +328,45 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <div className="text-lg">Check-Out</div>
-                  <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
-                    <SelectTrigger className="text-white">
-                      <SelectValue placeholder="Select Check-Out" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="Straight Out">Straight Out</SelectItem>
-                        <SelectItem value="Double Out">Double Out</SelectItem>
-                        <SelectItem value="Triple Out">Triple Out</SelectItem>
-                        <SelectItem value="Master Out">Master Out</SelectItem>
-                        <SelectItem value="Splitscore">Splitscore</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <div className="text-lg">Sets</div>
-                  <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
-                    <SelectTrigger className="text-white">
-                      <SelectValue placeholder="Select Sets" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {numbersLegsSets}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <div className="text-lg">Legs</div>
-                  <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
-                    <SelectTrigger className="text-white">
-                      <SelectValue placeholder="Select Legs" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {numbersLegsSets}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  {handleGamemodeOptions() === "X01" ? (
+                    <>
+                      <div className="text-lg">Check-Out</div><Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Check-Out" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="Straight Out">Straight Out</SelectItem>
+                            <SelectItem value="Double Out">Double Out</SelectItem>
+                            <SelectItem value="Triple Out">Triple Out</SelectItem>
+                            <SelectItem value="Master Out">Master Out</SelectItem>
+                            <SelectItem value="Splitscore">Splitscore</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select><div className="text-lg">Sets</div><Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Sets" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {numbersLegsSets}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select><div className="text-lg">Legs</div><Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Legs" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {numbersLegsSets}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  ) : (
+                    null
+                  )}
+
                 </div>
               </CardContent>
             </Card>

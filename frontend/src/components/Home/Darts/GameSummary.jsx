@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialo
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
-import { handleRecord, setGameState } from './utils';
+import { handleRecord, setGameState } from './game logic/game';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -89,13 +89,15 @@ function GameSummary({ show, setShow }) {
       game.training = true;
       setGame(gameDataMerged);
     }
-    localStorage.setItem("dartsGame", JSON.stringify(gameDataMerged))
+    // setGameState(gameDataMerged);
     setShow(false);
   }
 
   const handleSummaryBackButton = () => {
+    const lastRecord = game.record[game.record.length - 1];
     const updatedUsers = game.users.map((user) => {
       user.place = 0;
+      if (user._id === lastRecord.user._id) return lastRecord.user;
       return user;
     })
     const gameDataBack = {
@@ -109,21 +111,19 @@ function GameSummary({ show, setShow }) {
       setGame(gameDataBack)
       setGameState(gameDataBack);
     }
-    setShow(false);
+    console.log(gameDataBack);
     handleRecord("back", true);
+    setShow(false);
   }
 
   const handleDisabledBack = () => {
-    const lsGame = JSON.parse(localStorage.getItem("dartsGame"));
-    if (game.record.length > 1 && lsGame) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-
-  const handleDisabledPlayAgain = () => {
-
+    return true;
+    // const lsGame = JSON.parse(localStorage.getItem("dartsGame"));
+    // if (game.record.length > 1 && lsGame) {
+    //   return false;
+    // } else {
+    //   return true;
+    // }
   }
 
   const deleteLSGame = () => {
@@ -149,9 +149,11 @@ function GameSummary({ show, setShow }) {
                 <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
                 <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
               </div>
-              <div>
-                Time played: {timePlayed}
+              <div className="flex gap-4">
+                <span>Time played: {timePlayed}</span>
+                <span>StartPoints: {game.startPoints}</span>
               </div>
+              <span>Gamemode: {game.gameMode}</span>
             </div>
             :
             <div className="training-stats flex flex-col items-center gap-5">
@@ -165,13 +167,14 @@ function GameSummary({ show, setShow }) {
                 <span>Time played: {timePlayed}</span>
                 <span>StartPoints: {game.startPoints}</span>
               </div>
+              <span>Gamemode: {game.gameMode}</span>
               <UserDataTable users={game.users} game={game} />
             </div>
           }
           <span className='flex flex-col items-center gap-5 mt-5'>
             <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
             <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
-            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={handleDisabledPlayAgain()}>Play Again</Button>
+            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
             <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
           </span>
         </div>

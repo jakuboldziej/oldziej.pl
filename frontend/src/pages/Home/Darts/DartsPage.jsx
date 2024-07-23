@@ -307,6 +307,18 @@ function DartsPage() {
                             <h6>{game.users[2].displayName}</h6>
                             <h6>{game.users[2].points}</h6>
                           </span>}
+                          <MyTooltip title="Game mode">
+                            <span className="elementInfo">
+                              <img width="25" height="25" src="https://img.icons8.com/office/25/controller.png" alt="controller" />
+                              <span className="text-sm text-center">{game.gameMode}</span>
+                            </span>
+                          </MyTooltip>
+                          <MyTooltip title="Start Points">
+                            <span className="elementInfo">
+                              <img width="25" height="25" src="https://img.icons8.com/ios-filled/20/finish-flag.png" alt="finish-flag" />
+                              {game.startPoints}
+                            </span>
+                          </MyTooltip>
                           <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
                             <span className="elementInfo usersCount absolute right-0">
                               <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
@@ -338,6 +350,12 @@ function DartsPage() {
                             <span className="elementInfo usersCount absolute right-1">
                               <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/20/person-male--v3.png" alt="person-male--v3" />
                               {game.users.length}
+                            </span>
+                          </MyTooltip>
+                          <MyTooltip title="Game mode">
+                            <span className="elementInfo">
+                              <img width="25" height="25" src="https://img.icons8.com/office/25/controller.png" alt="controller" />
+                              <span className="text-sm text-center">{game.gameMode}</span>
                             </span>
                           </MyTooltip>
                           <MyTooltip title="Start Points">
