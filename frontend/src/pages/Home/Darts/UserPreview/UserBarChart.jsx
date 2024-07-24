@@ -9,12 +9,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/shadcn/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/shadcn/chart"
 import { DatePickerWithRange } from "./DatePickerWithRange"
 import { useEffect, useState } from "react"
 import { subDays } from "date-fns"

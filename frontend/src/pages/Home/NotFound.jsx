@@ -1,13 +1,13 @@
 import NavBar from "@/components/Home/NavBar";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/shadcn/button";
 import { AuthContext } from "@/context/AuthContext";
 import { useContext } from "react";
+import { Button } from "@/components/ui/shadcn/button";
 
 function NotFound() {
   document.title = "Oldziej | 404 - Not Found";
   const navigate = useNavigate();
-  
+
   const { currentUser } = useContext(AuthContext);
 
   return (

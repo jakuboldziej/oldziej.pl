@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.VITE_MONGODB_API_LOCAL;
 
 // Darts
 
@@ -107,13 +107,6 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   const games = await gamesResponse.json();
   return games;
 };
-
-// Get gamesPlayed for portfolio
-export const getGamesPlayedPortfolio = async () => {
-  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/portfolio/kubek`);
-  const res = await userResponse.json();
-  return res.gamesPlayed;
-}
 
 // Cloud
 
@@ -340,4 +333,31 @@ export const registerUser = async (userData) => {
   })
 
   return await response.json();
+}
+
+// Statistics
+
+// Darts
+
+export const getStatisticsDartsGames = async () => {
+  const response = await fetch(`${mongodbApiUrl}/darts/statistics/dartsGames`);
+  return await response.json()
+}
+
+export const getStatisticsOverAllPoints = async () => {
+  const response = await fetch(`${mongodbApiUrl}/darts/statistics/overAllPoints`);
+  return await response.json()
+}
+
+export const getStatisticsDoorHits = async () => {
+  const response = await fetch(`${mongodbApiUrl}/darts/statistics/doorHits`);
+  return await response.json()
+}
+
+
+// Get gamesPlayed for portfolio
+export const getGamesPlayedPortfolio = async () => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/portfolio/kubek`);
+  const res = await userResponse.json();
+  return res.gamesPlayed;
 }

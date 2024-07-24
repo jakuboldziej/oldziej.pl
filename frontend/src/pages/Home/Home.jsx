@@ -1,36 +1,31 @@
-import { useContext, useEffect, useState } from "react";
-import NavBar from "@/components/Home/NavBar"
-import { getDartsUsers } from "@/fetch";
+import { useEffect, useState } from "react";
+import NavBar from "@/components/Home/NavBar";
+import { getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { FtpContext } from "@/context/FtpContext";
-import { AuthContext } from "@/context/AuthContext";
 
 function Home() {
   document.title = "Oldziej | Home";
 
-  const { currentUser } = useContext(AuthContext);
-  const { files, fetchFiles, folders, fetchFolders } = useContext(FtpContext);
-
-  const [dartUsers, setDartUsers] = useState([]);
+  const [dartsStatistics, setDartsStatistics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // first data fetch
-    const getDartUsers = async () => {
-      try {
-        setDartUsers(await getDartsUsers());
-        setIsLoading(false);
-      } catch (err) {
-        console.log('Error fetching', err);
-        setIsLoading(false);
-      }
-    }
-    getDartUsers();
+    // Get Statistics Data
+    const fetchData = async () => {
+      const gamesPlayed = await getStatisticsDartsGames();
+      const overAllPoints = await getStatisticsOverAllPoints();
+      const doorHits = await getStatisticsDoorHits();
+      setDartsStatistics({
+        gamesPlayed: gamesPlayed,
+        overAllPoints: overAllPoints,
+        doorHits: doorHits
+      });
 
-    if (currentUser && !files) fetchFiles(currentUser);
-    if (currentUser && !folders) fetchFolders(currentUser);
+      setIsLoading(false);
+    }
+    fetchData();
   }, []);
 
   return (
@@ -42,34 +37,30 @@ function Home() {
             <CardHeader>
               <CardTitle><Link to={"/darts"} className="hover:cursor-pointer hover:opacity-80">Darts</Link></CardTitle>
             </CardHeader>
-            <div className="info">
-              {isLoading ?
+            <div className="statistics flex justify-center flex-wrap gap-5">
+              {isLoading ? (
                 <div className="flex justify-center w-100 pt-3">
                   <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
-                : dartUsers && dartUsers.map((dartUser) => {
-                  return (
-                    <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
-                      <span className="elementInfo username">{dartUser.displayName}</span>
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
-                        {dartUser.podiums["firstPlace"]}
-                      </span>
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/officel/20/door.png" alt="door" />
-                        {dartUser.throws["doors"]}
-                      </span>
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/color/20/goal--v1.png" alt="goal--v1" />
-                        {dartUser.gamesPlayed}
-                      </span>
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/arcade/20/graph.png" alt="graph" />
-                        <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
-                      </span>
-                    </a>
-                  )
-                })}
+              ) : (
+                <>
+                  <div>
+                    <span>We've played</span>
+                    <span className="font-bold">{dartsStatistics.gamesPlayed}</span>
+                    <span>games</span>
+                  </div>
+                  <div>
+                    <span>We scored</span>
+                    <span className="font-bold">{dartsStatistics.overAllPoints}</span>
+                    <span>points</span>
+                  </div>
+                  <div>
+                    <span>We threw</span>
+                    <span className="font-bold">{dartsStatistics.doorHits}</span>
+                    <span>darts in the door</span>
+                  </div>
+                </>
+              )}
             </div>
           </Card>
           <Card className="my-card">
