@@ -5,7 +5,7 @@ import Register from './pages/Home/Register';
 import NotFound from './pages/Home/NotFound';
 import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './pages/Home/Darts/DartsGame';
-import DartsUser from "./pages/Home/Darts/DartsUser";
+import DartsUser from "./pages/Home/Darts/UserPreview/DartsUser";
 import CloudPage from './pages/Home/Cloud/CloudPage';
 import MyFiles from './pages/Home/Cloud/Files/MyFiles';
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';

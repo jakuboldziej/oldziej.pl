@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/shadcn/input";
 
 function CreateGameDialogs({ props }) {
   const {
+    customStartPoints,
     setCustomStartPoints,
     showCustomPoints,
     setShowCustomPoints,
     handleCustomStartPoints,
     showAddUser,
     setShowAddUser,
+    newUser,
     setNewUser,
     handleAddingNewUser
   } = props;
@@ -34,7 +36,7 @@ function CreateGameDialogs({ props }) {
             <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
               Close
             </Button>
-            <Button onClick={handleCustomStartPoints} type="submit">Save changes</Button>
+            <Button disabled={customStartPoints <= 0} onClick={handleCustomStartPoints} type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -49,6 +51,7 @@ function CreateGameDialogs({ props }) {
               id="user"
               type="text"
               placeholder="John Doe"
+              value={newUser}
               onChange={(e) => setNewUser(e.target.value)}
             />
           </div>
@@ -56,7 +59,7 @@ function CreateGameDialogs({ props }) {
             <Button onClick={() => setShowAddUser(false)} type="submit" variant="secondary">
               Close
             </Button>
-            <Button onClick={handleAddingNewUser} type="submit">Save changes</Button>
+            <Button disabled={newUser.trim() === ""} onClick={handleAddingNewUser} type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -59,13 +59,12 @@ const handlePoints = (action, value) => {
 const handleDartsData = async () => {
   if (!game.training) {
     users.map(async (user) => {
+      if (user.temporary) return;
       const dartUser = await getDartsUser(user.displayName);
 
       user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
       user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
       user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
-
-      console.log(user.throws);
 
       dartUser.throws["doors"] += user.throws["doors"];
       dartUser.throws["doubles"] += user.throws["doubles"];
@@ -86,8 +85,6 @@ const handleDartsData = async () => {
       await putDartsUser(dartUser);
     });
   }
-
-  console.log(game.users);
 
   game.podium = {
     1: game.podium[1],

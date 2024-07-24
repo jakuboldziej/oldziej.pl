@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/DartsGameContext";
-import lodash from 'lodash';
+import lodash, { uniqueId } from 'lodash';
 import { getDartsUsers, postDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
@@ -12,6 +12,7 @@ import ShowNewToast from "../../MyComponents/ShowNewToast";
 
 import { AuthContext } from "@/context/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
+import { Trash2 } from "lucide-react";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -95,7 +96,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const handleRemovePlayer = (user) => {
     const updatedUsersPlaying = usersPlaying.filter((notPlayingUser) => notPlayingUser._id !== user._id);
     setUsersPlaying(updatedUsersPlaying);
-    setUsersNotPlaying((prev) => [...prev, user]);
+    if (!user.temporary) setUsersNotPlaying((prev) => [...prev, user]);
 
     if (updatedUsersPlaying.length === 0) {
       setUsersPodium("None");
@@ -127,8 +128,31 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }
 
   const handleAddingNewUser = () => {
-
+    const tempUser = {
+      "temporary": true,
+      "_id": uniqueId("temp_user_"),
+      "displayName": newUser,
+      "gamesPlayed": 0,
+      "podiums": {
+        "firstPlace": 0,
+        "secondPlace": 0,
+        "thirdPlace": 0
+      },
+      "overAllPoints": 0,
+      "highestEndingAvg": 0,
+      "highestTurnPoints": 0,
+      "highestCheckout": 0,
+      "throws": {
+        "normal": 0,
+        "doubles": 0,
+        "tripes": 0,
+        "overthrows": 0,
+        "doors": 0
+      },
+    }
+    setUsersPlaying((prev) => [...prev, tempUser]);
     setNewUser('');
+    setShowAddUser(false);
   }
 
   const handleGameStart = async (training) => {
@@ -256,7 +280,18 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }));
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
-  const dialogProps = { setCustomStartPoints, showCustomPoints, setShowCustomPoints, handleCustomStartPoints, showAddUser, setShowAddUser, setNewUser, handleAddingNewUser };
+  const dialogProps = {
+    customStartPoints,
+    setCustomStartPoints,
+    showCustomPoints,
+    setShowCustomPoints,
+    handleCustomStartPoints,
+    showAddUser,
+    setShowAddUser,
+    newUser,
+    setNewUser,
+    handleAddingNewUser
+  };
 
   return (
     <>
@@ -299,8 +334,9 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                 </div>
                 <div className="users pt-3">
                   {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleRemovePlayer(user)} className="user playing" key={user._id}>
+                    <div onClick={() => handleRemovePlayer(user)} className="user playing flex justify-between" key={user._id}>
                       <span>{user.displayName}</span>
+                      {user.temporary && <span><Trash2 /></span>}
                     </div>
                   )) : null}
                 </div>

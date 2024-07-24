@@ -23,6 +23,25 @@
   src: url('@/assets/fonts/poppins/Poppins-SemiBold.ttf');
 }
 
+// Shadcn Charts
+@layer base {
+  :root {
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
 // Public
 * {
   margin: 0px;
@@ -139,7 +158,6 @@ html {
 
     .usersCard,
     .settingsCard {
-      height: 725px;
       z-index: 9999;
       background-color: $green !important;
       color: black !important;
@@ -671,27 +689,11 @@ html {
     width: 100%;
   }
 
-  .charts {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-
-    div {
+  .overall-stats {
+    .elementInfo {
       display: flex;
-      width: 80%;
-
-      canvas {
-        border: 1px white solid;
-      }
-
-      .options {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px;
-      }
+      flex-direction: column;
+      align-items: center
     }
   }
 }

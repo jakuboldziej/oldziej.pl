@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { dartsConn } = require("../server")
 
-const dartsGameSchema = new mongoose.Schema ({
+const dartsGameSchema = new mongoose.Schema({
   created_by: {
     type: String,
     required: true
@@ -9,7 +9,7 @@ const dartsGameSchema = new mongoose.Schema ({
   created_at: {
     type: Date,
     required: true,
-    default: Date.now
+    default: Date.now()
   },
   users: {
     type: Array,
