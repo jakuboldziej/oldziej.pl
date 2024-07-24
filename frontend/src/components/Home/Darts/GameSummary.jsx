@@ -51,7 +51,7 @@ function GameSummary({ show, setShow }) {
       user.sets = 0
       user.avgPointsPerTurn = 0
       user.highestGameTurnPoints = 0
-      user.highestGameCheckout = 0
+      user.gameCheckout = 0
 
       return user;
     });

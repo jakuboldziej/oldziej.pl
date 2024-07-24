@@ -35,7 +35,8 @@ const handlePodium = () => {
 }
 
 const handleGameEnd = () => {
-  currentUser.highestGameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+  currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+  currentUser.allGainedPoints = game.startPoints - currentUser.points;
   handlePodium();
 }
 
@@ -64,6 +65,8 @@ const handleDartsData = async () => {
       user.place === 2 ? dartUser.podiums["secondPlace"] += 1 : null;
       user.place === 3 ? dartUser.podiums["thirdPlace"] += 1 : null;
 
+      console.log(user.throws);
+
       dartUser.throws["doors"] += user.throws["doors"];
       dartUser.throws["doubles"] += user.throws["doubles"];
       dartUser.throws["triples"] += user.throws["triples"];
@@ -75,12 +78,11 @@ const handleDartsData = async () => {
 
         if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
         if (parseFloat(user.avgPointsPerTurn) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerTurn);
-        if (user.highestGameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.highestGameCheckout;
+        if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
       }
 
       !game.active ? dartUser.gamesPlayed += 1 : null;
 
-      console.log(dartUser);
       await putDartsUser(dartUser);
     });
   }

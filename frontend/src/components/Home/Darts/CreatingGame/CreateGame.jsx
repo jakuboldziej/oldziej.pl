@@ -133,7 +133,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
   const handleGameStart = async (training) => {
     let updatedUsers = usersPlaying.map((user) => ({
-      ...user,
+      _id: user._id,
+      displayName: user.displayName,
       points: selectStartPoints,
       allGainedPoints: 0,
       turn: false,
@@ -156,7 +157,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       sets: 0,
       avgPointsPerTurn: 0,
       highestGameTurnPoints: 0,
-      highestGameCheckout: 0
+      gameCheckout: 0
     }));
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);

@@ -1,22 +1,29 @@
 import { useParams } from 'react-router';
 import NavBar from '@/components/Home/NavBar';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { getDartsGames, getDartsUser } from '@/fetch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
+import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
+import { AuthContext } from '@/context/AuthContext';
 
 function DartsUser() {
+  const { currentUser } = useContext(AuthContext);
   const { username } = useParams();
   document.title = `Oldziej | ${username}`
-  const [user, setUser] = useState();
+  const [dartUser, setDartUser] = useState();
   const [isLoading, setIsLoading] = useState(true);
+
+  const findCurrentUserInGame = (users) => {
+    return users.find((user) => user.displayName === username);
+  }
 
   useEffect(() => {
     const fetchUserData = async () => {
       const resUser = await getDartsUser(username);
       const resGames = await getDartsGames(username);
       resUser.games = resGames;
-      setUser(resUser);
+      setDartUser(resUser);
       setIsLoading(false);
     }
 
@@ -37,18 +44,60 @@ function DartsUser() {
           </div>
         ) :
           <>
-            <div className='overall-stats'>
+            <div className='overall-stats flex flex-row gap-10 text-center text-lg'>
+              <span className="elementInfo">
+                <img width="35" height="35" src="https://img.icons8.com/color/35/first-place-ribbon.png" alt="first-place-ribbon" />
+                {dartUser.podiums["firstPlace"]}
+              </span>
+              <span className="elementInfo">
+                <img width="35" height="35" src="https://img.icons8.com/color/35/second-place-ribbon.png" alt="first-place-ribbon" />
+                {dartUser.podiums["secondPlace"]}
+              </span>
+              <span className="elementInfo">
+                <img width="35" height="35" src="https://img.icons8.com/color/35/third-place-ribbon.png" alt="first-place-ribbon" />
+                {dartUser.podiums["thirdPlace"]}
+              </span>
+              <MyTooltip title="Doors Hit">
+                <span className="elementInfo">
+                  <img width="35" height="35" src="https://img.icons8.com/officel/35/door.png" alt="door" />
+                  {dartUser.throws["doors"]}
+                </span>
+              </MyTooltip>
+              <MyTooltip title="Games Played">
+                <span className="elementInfo">
+                  <img width="35" height="35" src="https://img.icons8.com/color/35/goal--v1.png" alt="goal--v1" />
+                  {dartUser.gamesPlayed}
+                </span>
+              </MyTooltip>
+              <MyTooltip title="Highest Ending Average">
+                <span className="elementInfo">
+                  <img width="35" height="35" src="https://img.icons8.com/arcade/35/graph.png" alt="graph" />
+                  <h6>{dartUser.highestEndingAvg}</h6>
+                </span>
+              </MyTooltip>
+              <MyTooltip title="Highest Turn Points">
+                <span className="elementInfo">
+                  <img width="35" height="35" src="https://img.icons8.com/color/35/mountain.png" alt="mountain" />
+                  <h6>{dartUser.highestTurnPoints}</h6>
+                </span>
+              </MyTooltip>
+              <MyTooltip title="Highest Checkout">
+                <span className="elementInfo">
+                  <img width="35" height="35" src="https://img.icons8.com/color/35/cash-register.png" alt="cash-register" />
+                  <h6>{dartUser.highestCheckout}</h6>
+                </span>
+              </MyTooltip>
             </div>
             <div className='charts flex flex-col gap-10'>
-              {user.games.map((game) => (
+              {dartUser.games.map((game) => (
                 <Table className='border-2 border-white' key={game._id}>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Id</TableHead>
                       <TableHead>Start Points</TableHead>
-                      <TableHead>highestEndingAvg</TableHead>
-                      <TableHead>highestTurnPoints</TableHead>
-                      <TableHead>highestGameCheckout</TableHead>
+                      <TableHead>AllGainedPoints</TableHead>
+                      <TableHead>highestGameTurnPoints</TableHead>
+                      <TableHead>gameCheckout</TableHead>
                       <TableHead>avgPointsPerTurn</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -56,10 +105,10 @@ function DartsUser() {
                     <TableRow>
                       <TableCell>{game._id}</TableCell>
                       <TableCell>{game.startPoints}</TableCell>
-                      <TableCell>{game.users[0].highestEndingAvg}</TableCell>
-                      <TableCell>{game.users[0].highestTurnPoints}</TableCell>
-                      <TableCell>{game.users[0].highestGameCheckout}</TableCell>
-                      <TableCell>{game.users[0].avgPointsPerTurn}</TableCell>
+                      <TableCell>{findCurrentUserInGame(game.users).allGainedPoints}</TableCell>
+                      <TableCell>{findCurrentUserInGame(game.users).highestGameTurnPoints}</TableCell>
+                      <TableCell>{findCurrentUserInGame(game.users).gameCheckout}</TableCell>
+                      <TableCell>{findCurrentUserInGame(game.users).avgPointsPerTurn}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
