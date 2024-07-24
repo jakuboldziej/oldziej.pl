@@ -42,7 +42,7 @@ function UserDataTable({ users, game }) {
             <TableCell>{user.displayName}</TableCell>
             <TableCell>{game.startPoints - user.points}</TableCell>
             <TableCell>{displayUserThrows(user)}</TableCell>
-            <TableCell>{user.highestTurnPoints}</TableCell>
+            <TableCell>{user.highestGameTurnPoints}</TableCell>
             <TableCell>{user.avgPointsPerTurn}</TableCell>
             <TableCell>{user.legs}</TableCell>
             <TableCell>{user.sets}</TableCell>

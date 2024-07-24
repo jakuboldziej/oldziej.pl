@@ -50,8 +50,8 @@ function GameSummary({ show, setShow }) {
       user.legs = 0
       user.sets = 0
       user.avgPointsPerTurn = 0
-      user.highestTurnPoints = 0
-      user.highestCheckout = 0
+      user.highestGameTurnPoints = 0
+      user.highestGameCheckout = 0
 
       return user;
     });

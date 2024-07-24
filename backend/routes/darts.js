@@ -152,8 +152,8 @@ router.post('/dartsUsers', async (req, res) => {
     podiums: body.podiums,
     overAllPoints: body.overAllPoints,
     highestEndingAvg: body.highestEndingAvg,
-    highestOuts: body.highestOuts,
-    highestRoundPoints: body.highestRoundPoints,
+    highestCheckout: body.highestCheckout,
+    highestTurnPoints: body.highestTurnPoints,
     throws: body.throws,
   })
   try {

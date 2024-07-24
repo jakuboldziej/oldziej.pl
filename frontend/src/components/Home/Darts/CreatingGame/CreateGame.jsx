@@ -155,7 +155,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       legs: 0,
       sets: 0,
       avgPointsPerTurn: 0,
-      highestTurnPoints: 0,
+      highestGameTurnPoints: 0,
+      highestGameCheckout: 0
     }));
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
@@ -226,7 +227,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     else setTwoPlayersGamemode(false);
   }, [selectGameMode]);
 
+  const [hasMounted, setHasMounted] = useState(false);
+
   useEffect(() => {
+    if (!hasMounted) {
+      setHasMounted(true);
+      return;
+    }
+
     const estimatedGameTime = () => {
       let minutes = 0;
       let minutesPerStartPoints = 0;
