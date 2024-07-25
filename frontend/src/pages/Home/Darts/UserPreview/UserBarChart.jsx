@@ -1,5 +1,3 @@
-"use client"
-
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts"
 
 import {
@@ -30,23 +28,36 @@ const chartConfig = {
   },
 }
 
-export function UserBarChart() {
+export function UserBarChart({ dartUser }) {
+  const [gamesInDateRange, setGamesInDateRange] = useState(null);
+
   const [chartData, setChartData] = useState([
-    { month: "January", desktop: 186, mobile: 80 },
-    { month: "February", desktop: 305, mobile: 200 },
-    { month: "March", desktop: 237, mobile: 120 },
-    { month: "April", desktop: 73, mobile: 190 },
-    { month: "May", desktop: 209, mobile: 130 },
-    { month: "June", desktop: 214, mobile: 140 },
+    { date: "01.12.2024", desktop: 186, mobile: 80 },
+    { date: "02.12.2024", desktop: 305, mobile: 200 },
+    { date: "03.12.2024", desktop: 237, mobile: 120 },
+    { date: "04.12.2024", desktop: 73, mobile: 190 },
+    { date: "05.12.2024", desktop: 209, mobile: 130 },
+    { date: "06.12.2024", desktop: 214, mobile: 140 },
   ])
 
   const [date, setDate] = useState({
-    from: subDays(Date.now(), 30),
+    from: subDays(Date.now(), 5),
     to: new Date(Date.now()),
-  })
+  });
+
+  const handleGetGamesInDateRange = async () => {
+    if (date.from && date.to) {
+      const gamesInRange = dartUser.games.filter((game) => {
+        if (new Date(game.created_at) > new Date(date.from) && new Date(game.created_at) < new Date(date.to)) {
+          return game;
+        }
+      })
+      setGamesInDateRange(gamesInRange);
+    }
+  }
 
   useEffect(() => {
-    console.log(date);
+    handleGetGamesInDateRange();
   }, [date]);
 
   return (
@@ -73,11 +84,9 @@ export function UserBarChart() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
-              tickLine={false}
-              axisLine={false}
+              dataKey="date"
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={(value) => value.slice(0, 5)}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
             <Line

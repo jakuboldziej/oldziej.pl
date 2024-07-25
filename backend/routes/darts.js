@@ -202,6 +202,26 @@ router.get('/statistics/doorHits', async (req, res) => {
   }
 });
 
+router.get('/statistics/top3players', async (req, res) => {
+  try {
+    const top3Players = await DartsUser.find().sort({ "podiums.firstPlace": -1 }).limit(3);
+
+    res.json(top3Players);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/top3doorhitters', async (req, res) => {
+  try {
+    const top3DoorHitters = await DartsUser.find().sort({ "throws.doors": -1 }).limit(3);
+
+    res.json(top3DoorHitters);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
 // Get gamesPlayed for portfolio
 router.get('/dartsUsers/portfolio/:displayName', getDartsUser, async (req, res) => {
   res.send({ gamesPlayed: res.user.gamesPlayed })

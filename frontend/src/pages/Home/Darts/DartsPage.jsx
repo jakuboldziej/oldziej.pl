@@ -378,7 +378,7 @@ function DartsPage() {
                   <div>
                     <span>We threw</span>
                     <span className="font-bold">{dartsStatistics.doorHits}</span>
-                    <span>darts in the door</span>
+                    <span>darts at the door</span>
                   </div>
                 </>
               )}

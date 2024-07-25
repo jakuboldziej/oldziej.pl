@@ -83,8 +83,8 @@ function DartsUser() {
                 </span>
               </MyTooltip>
             </div>
-            <div className='charts w-11/12 pb-10'>
-              <UserBarChart />
+            <div className='charts w-[1000px] pb-10'>
+              <UserBarChart dartUser={dartUser} />
             </div>
           </>}
       </div>

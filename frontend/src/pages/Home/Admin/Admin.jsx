@@ -8,6 +8,7 @@ function Admin() {
       <NavBar />
       <div className='admin'>
         <div className='users'>
+          <span className='text-lg p-4'>Users</span>
           <UsersTable />
         </div>
       </div>

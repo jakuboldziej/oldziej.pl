@@ -354,6 +354,15 @@ export const getStatisticsDoorHits = async () => {
   return await response.json()
 }
 
+export const getStatisticsTop3Players = async () => {
+  const response = await fetch(`${mongodbApiUrl}/darts/statistics/top3players`);
+  return await response.json()
+}
+
+export const getStatisticsTop3DoorHitters = async () => {
+  const response = await fetch(`${mongodbApiUrl}/darts/statistics/top3doorhitters`);
+  return await response.json()
+}
 
 // Get gamesPlayed for portfolio
 export const getGamesPlayedPortfolio = async () => {
