@@ -239,7 +239,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }
 
   const handleNotPlayingStyle = () => {
-    if (twoPlayersGamemode && usersPlaying.length === 2) {
+    if (twoPlayersGamemode && usersPlaying.length >= 2) {
       return {
         opacity: 0.5,
         cursor: "default"
@@ -248,8 +248,17 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }
 
   useEffect(() => {
-    if (selectGameMode === "Reverse X01") setTwoPlayersGamemode(true);
-    else setTwoPlayersGamemode(false);
+    if (selectGameMode === "Reverse X01") {
+      if (usersPlaying.length > 2) {
+        const first2Players = usersPlaying.slice(0, 2);
+        const restPlayers = usersPlaying.slice(2);
+        setUsersPlaying(first2Players);
+        setUsersNotPlaying((prev) => [...prev, ...restPlayers]);
+      }
+      setTwoPlayersGamemode(true)
+    } else {
+      setTwoPlayersGamemode(false)
+    };
   }, [selectGameMode]);
 
   const [hasMounted, setHasMounted] = useState(false);
@@ -395,7 +404,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         <SelectItem value="901">901</SelectItem>
                         <SelectItem value="1001">1001</SelectItem>
                         <SelectItem value="Custom">Custom</SelectItem>
-                        {customStartPoints !== '' && customStartPoints !== '0' &&
+                        {customStartPoints != '' && customStartPoints != '0' &&
                           <SelectItem value={customStartPoints}>{customStartPoints}</SelectItem>
                         }
                       </SelectGroup>

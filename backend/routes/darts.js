@@ -164,9 +164,47 @@ router.post('/dartsUsers', async (req, res) => {
   }
 });
 
+// Statistics
+
+// Darts
+router.get('/statistics/dartsGames', async (req, res) => {
+  try {
+    const dartsGamesCount = await DartsGame.countDocuments();
+    res.json(dartsGamesCount);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/overAllPoints', async (req, res) => {
+  try {
+    const dartsUsers = await DartsUser.find();
+
+    const usersOverAllPoints = dartsUsers.map((user) => user.overAllPoints);
+    const overAllPoints = usersOverAllPoints.reduce((partialSum, a) => partialSum + a, 0);
+
+    res.json(overAllPoints);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/doorHits', async (req, res) => {
+  try {
+    const dartsUsers = await DartsUser.find();
+
+    const usersDoorHits = dartsUsers.map((user) => user.throws.doors);
+    const doorHits = usersDoorHits.reduce((partialSum, a) => partialSum + a, 0);
+
+    res.json(doorHits);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
 // Get gamesPlayed for portfolio
 router.get('/dartsUsers/portfolio/:displayName', getDartsUser, async (req, res) => {
   res.send({ gamesPlayed: res.user.gamesPlayed })
-})
+});
 
 module.exports = router

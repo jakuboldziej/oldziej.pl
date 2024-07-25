@@ -5,7 +5,7 @@ import RedDot from "@/assets//images/icons/red_dot.png";
 import GreenDot from "@/assets//images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
-import { getDartsGames, getDartsUsers } from "@/fetch";
+import { getDartsGames, getDartsUsers, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
@@ -24,8 +24,9 @@ function DartsPage() {
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
   const [filterGamesType, setFilterGamesType] = useState("created_at");
-  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [dartsStatistics, setDartsStatistics] = useState(null);
 
   const handleShow = () => {
     if (!playerInGame) {
@@ -142,19 +143,29 @@ function DartsPage() {
   }, [currentPage]);
 
   useEffect(() => {
-    const fetchFirstData = async () => {
+    const fetchData = async () => {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(null, 10));
         const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
         setDartUsers(sortedUsers);
         setGamesShown(fetchedGames);
+
+        const gamesPlayed = await getStatisticsDartsGames();
+        const overAllPoints = await getStatisticsOverAllPoints();
+        const doorHits = await getStatisticsDoorHits();
+        setDartsStatistics({
+          gamesPlayed: gamesPlayed,
+          overAllPoints: overAllPoints,
+          doorHits: doorHits
+        });
+
         setIsLoading(false);
       } catch (err) {
         console.log("Error fetching", err);
         setIsLoading(false);
       }
     }
-    fetchFirstData();
+    fetchData();
 
     // Managing live game
     const liveGame = JSON.parse(localStorage.getItem('dartsGame'));
@@ -191,23 +202,6 @@ function DartsPage() {
           <Card className="my-card leaderboard">
             <CardHeader>
               <CardTitle>Leaderboard</CardTitle>
-              {/* <Dropdown data-bs-theme="dark">
-                <Dropdown.Toggle className="custom-dropdown-toggle">
-                  <span className="background"></span>
-                </Dropdown.Toggle>
-                <Dropdown.Menu onChange={() => console.log('close')}>
-                  <Dropdown.Item onClick={() => setFilterUsersType("firstPlace")}>First Places</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("secondPlace")}>Second Places</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("thirdPlace")}>Third Places</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => setFilterUsersType("gamesPlayed")}>Games Played</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => setFilterUsersType("doors")}>Doors</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item onClick={() => setFilterUsersType("highestAvg")}>highestAvg</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterUsersType("highestRPT")}>highestRPT</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown> */}
             </CardHeader>
             <CardContent className="info p-0">
               {isLoading ? <div className="flex justify-center w-100 pt-3">
@@ -267,18 +261,6 @@ function DartsPage() {
           <Card className="my-card games">
             <CardHeader>
               <CardTitle>Games ({gamesShown.length})</CardTitle>
-              {/* <Dropdown data-bs-theme="dark">
-                <Dropdown.Toggle className="custom-dropdown-toggle">
-                  <span className="background"></span>
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
-                  <Slider defaultValue={[10]} max={100} step={1} />
-                </Dropdown.Menu>
-              </Dropdown> */}
             </CardHeader>
             <ScrollArea onScroll={handleScroll}>
               <CardContent className="info p-0 pr-3">
@@ -375,22 +357,35 @@ function DartsPage() {
           <Card className="my-card statistics">
             <CardHeader>
               <CardTitle>Statistics</CardTitle>
-              {/* <Dropdown data-bs-theme="dark">
-                <Dropdown.Toggle className="custom-dropdown-toggle">
-                  <span className="background"></span>
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item onClick={() => setFilterGamesType("created_at")}>Created At</Dropdown.Item>
-                  <Dropdown.Item onClick={() => setFilterGamesType("most_users")}>Most Users</Dropdown.Item>
-                  <Dropdown.Divider />
-                  <Dropdown.Item disabled>Games Amount: </Dropdown.Item>
-                  <Slider defaultValue={[10]} max={100} step={1} />
-                </Dropdown.Menu>
-              </Dropdown> */}
             </CardHeader>
+            <CardContent className="flex justify-center flex-wrap gap-5">
+              {isLoading ? (
+                <div className="flex justify-center w-100 pt-3">
+                  <Loader2 className="h-10 w-10 animate-spin" />
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <span>We've played</span>
+                    <span className="font-bold">{dartsStatistics.gamesPlayed}</span>
+                    <span>games</span>
+                  </div>
+                  <div>
+                    <span>We scored</span>
+                    <span className="font-bold">{dartsStatistics.overAllPoints}</span>
+                    <span>points</span>
+                  </div>
+                  <div>
+                    <span>We threw</span>
+                    <span className="font-bold">{dartsStatistics.doorHits}</span>
+                    <span>darts in the door</span>
+                  </div>
+                </>
+              )}
+            </CardContent>
           </Card>
         </div>
-      </div>
+      </div >
     </>
   )
 }
