@@ -146,7 +146,8 @@ function DartsPage() {
     const fetchData = async () => {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(null, 10));
-        const sortedUsers = handleFilterUsers(filterUsersType, await getDartsUsers());
+        const usersFetch = (await getDartsUsers()).filter((user) => user.visible === true);;
+        const sortedUsers = handleFilterUsers(filterUsersType, usersFetch);
         setDartUsers(sortedUsers);
         setGamesShown(fetchedGames);
 

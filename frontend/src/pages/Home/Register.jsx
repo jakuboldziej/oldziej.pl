@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
-import { postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
+import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/AuthContext";
@@ -11,7 +11,7 @@ function Register() {
 
   const { currentUser } = useContext(AuthContext);
 
-  const [err, setErr] = useState(false);
+  const [err, setErr] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -33,35 +33,51 @@ function Register() {
 
     setIsLoading(true);
 
-    await postDartsUser({
-      displayName: displayName,
-    });
-    const folderRes = await postFolder({
-      name: "Cloud drive",
-      owner: displayName
-    });
-    await postFtpUser({
-      displayName: displayName,
-      email: email,
-      main_folder: folderRes._id
-    });
+    const existingUser = await getAuthUser(displayName);
+    const existingUserWithEmail = await checkIfUserWithEmailExists(email);
+    console.log(existingUser);
+    console.log(existingUserWithEmail);
 
-    const userRes = await registerUser({
-      email,
-      displayName,
-      password,
-    });
+    if (existingUser) {
+      setErr("User with that username already exists")
+      setIsLoading(false);
+      return;
+    }
+    else if (existingUserWithEmail) {
+      setErr("User with that email already exists")
+      setIsLoading(false);
+      return;
+    } else {
+      await postDartsUser({
+        displayName: displayName,
+      });
+      const folderRes = await postFolder({
+        name: "Cloud drive",
+        owner: displayName
+      });
+      await postFtpUser({
+        displayName: displayName,
+        email: email,
+        main_folder: folderRes._id
+      });
 
-    signIn({
-      auth: {
-        token: userRes.token,
-        type: "Bearer"
-      },
-      userState: { displayName: displayName }
-    });
+      const userRes = await registerUser({
+        email,
+        displayName,
+        password,
+      });
 
-    navigate("/login");
-    setIsLoading(false);
+      signIn({
+        auth: {
+          token: userRes.token,
+          type: "Bearer"
+        },
+        userState: { displayName: displayName, verified: false }
+      });
+
+      navigate("/login");
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -93,7 +109,7 @@ function Register() {
               <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
                 <Loader2 className="h-10 w-10 animate-spin" />
               </div>
-              {err && <span id="error_message">Something went wrong.</span>}
+              {err && <span id="error_message">{err}</span>}
             </form>
           </div>
         </div>

@@ -17,7 +17,7 @@ function DartsUser() {
     const fetchUserData = async () => {
       const resUser = await getDartsUser(username);
       const resGames = await getDartsGames(username);
-      resUser.games = resGames;
+      resUser.games = resGames.reverse();
       setDartUser(resUser);
       setIsLoading(false);
     }
@@ -83,7 +83,7 @@ function DartsUser() {
                 </span>
               </MyTooltip>
             </div>
-            <div className='charts w-[1000px] pb-10'>
+            <div className='charts w-[99%] pb-10'>
               <UserBarChart dartUser={dartUser} />
             </div>
           </>}

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { dartsConn } = require("../server")
 
-const dartsUserSchema = new mongoose.Schema ({
+const dartsUserSchema = new mongoose.Schema({
   displayName: {
     type: String,
     required: true,
@@ -31,7 +31,7 @@ const dartsUserSchema = new mongoose.Schema ({
     required: true,
     default: 0
   },
-  highestTurnPoints : {
+  highestTurnPoints: {
     type: Number,
     required: true,
     default: 0
@@ -52,6 +52,10 @@ const dartsUserSchema = new mongoose.Schema ({
       doors: 0
     }
   },
+  visible: {
+    type: Boolean,
+    default: true
+  }
 })
 
 module.exports = dartsConn.model('DartsUser', dartsUserSchema)

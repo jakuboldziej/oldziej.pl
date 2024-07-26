@@ -39,6 +39,7 @@ function AppRoutes({ subdomain }) {
 
   const AdminRequireAuth = ({ children }) => {
     useEffect(() => {
+      console.log(currentUser);
       if (!currentUser || currentUser.displayName !== "kubek") {
         navigate('/');
       }

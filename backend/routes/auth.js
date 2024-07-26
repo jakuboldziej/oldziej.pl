@@ -27,6 +27,24 @@ router.get('/users', async (req, res) => {
   }
 });
 
+router.get('/users/:displayName', async (req, res) => {
+  try {
+    const user = await User.findOne({ displayName: req.params.displayName })
+    res.json(user)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/users/check-existing-mail/:email', async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email })
+    res.json(user)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
 router.delete('/users/:displayName', async (req, res) => {
   try {
     await User.deleteOne({ displayName: req.params.displayName });

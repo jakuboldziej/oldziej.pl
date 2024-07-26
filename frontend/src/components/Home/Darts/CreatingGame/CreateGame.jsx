@@ -54,7 +54,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     // get previous settings
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
     if (previousSettings) {
-      setUsersPlaying(previousSettings.users)
+      setUsersPlaying(previousSettings.users.filter((user) => user.visible === true))
       setSelectGameMode(previousSettings.gamemode)
       if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number => number === previousSettings.startPoints)[0]) {
         setSelectStartPoints(previousSettings.startPoints);
@@ -71,7 +71,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       try {
         const usersFetch = await getDartsUsers();
         if (previousSettings) {
-          const usersNotInPreviousSettings = usersFetch.filter((userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id));
+          const usersNotInPreviousSettings = usersFetch
+            .filter((userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id) && userFetch.visible === true);
           setUsersNotPlaying(usersNotInPreviousSettings);
           setUsersPodium(1);
         } else {

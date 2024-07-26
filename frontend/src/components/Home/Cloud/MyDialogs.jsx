@@ -46,7 +46,7 @@ function MyDialogs(props) {
           </CardHeader>
         </Card>
         <div className='p-4 flex gap-40'>
-        {dialogOpen.data?.type === "file" && <div>
+          {dialogOpen.data?.type === "file" && <div>
             <span className='text-slate-400'>Size:</span> <br />
             {formatDataSize(dialogOpen.data?.length)}
           </div>}

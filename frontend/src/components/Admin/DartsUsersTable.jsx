@@ -2,15 +2,18 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUsers, getFtpUser } from '@/fetch';
-import { Eye, Grip, Loader2, Trash, User, X } from 'lucide-react';
+import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/fetch';
+import { Eye, EyeOff, Grip, Loader2, Trash, User, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-function UsersTable() {
-  const [authUsers, setAuthUsers] = useState(null);
+function DartsUsersTable() {
+  const [dartsUsers, setDartsUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [isHovered, setIsHovered] = useState({
+    visible: false
+  });
 
   const handleDialogOpen = (user) => {
     setDialogOpen(true);
@@ -18,20 +21,40 @@ function UsersTable() {
   }
 
   const handleDeleteUser = async () => {
-    const ftpUser = await getFtpUser(selectedUser.displayName);
-    await deleteFolder(ftpUser.main_folder);
-
     await deleteDartsUser(selectedUser.displayName);
-    await deleteFtpUser(selectedUser.displayName);
-    await deleteAuthUser(selectedUser.displayName);
     setDialogOpen(false);
-    setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
+    setDartsUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
+  }
+
+  const handleVisibleUser = async (user) => {
+    user.visible = !user.visible;
+    const updatedUser = user;
+    setDartsUsers((prev) => prev.map((dUser) => dUser.displayName === user.displayName ? user : dUser));
+    await putDartsUser(updatedUser);
+
+    const gameSettings = JSON.parse(localStorage.getItem("gameSettings"));
+
+    if (gameSettings && user.visible === false) {
+      const existingUserInLS = gameSettings.users.find((user) => user.displayName === updatedUser.displayName);
+      if (existingUserInLS) {
+        existingUserInLS.visible = false;
+
+        const updatedGameSettingsUsers = gameSettings.users.filter((dUser) => dUser.displayName !== existingUserInLS.displayName);
+
+        localStorage.setItem("gameSettings", JSON.stringify({
+          ...gameSettings,
+          users: updatedGameSettingsUsers
+        }));
+      }
+    }
+
+    setIsHovered((prev) => ({ ...prev, visible: false }));
   }
 
   useEffect(() => {
     const fetchAuthUsers = async () => {
       try {
-        setAuthUsers(await getAuthUsers());
+        setDartsUsers(await getDartsUsers());
         setIsLoading(false);
       } catch (err) {
         console.log('Error fetching', err);
@@ -53,26 +76,45 @@ function UsersTable() {
             <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>DisplayName</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Games Played</TableHead>
+              <TableHead>highestCheckout</TableHead>
+              <TableHead>highestEndingAvg</TableHead>
+              <TableHead>highestTurnPoints</TableHead>
+              <TableHead>overAllPoints</TableHead>
+              <TableHead>visible</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {authUsers.map((user) => (
+            {dartsUsers.map((user) => (
               <TableRow key={user._id}>
                 <TableCell className="font-medium">{user._id}</TableCell>
                 <TableCell>{user.displayName}</TableCell>
-                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.gamesPlayed}</TableCell>
+                <TableCell>{user.highestCheckout}</TableCell>
+                <TableCell>{user.highestEndingAvg}</TableCell>
+                <TableCell>{user.highestTurnPoints}</TableCell>
+                <TableCell>{user.overAllPoints}</TableCell>
+                <TableCell>{user.visible ? "visible" : "hidden"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant='ghost'><Grip /></Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent className='mr-5'>
                       <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem><User height={20} />Profile</DropdownMenuItem>
-                      <DropdownMenuItem><Eye height={20} />Hide</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onMouseLeave={() => setIsHovered((prev) => ({ ...prev, visible: false }))}
+                        onMouseEnter={() => setIsHovered((prev) => ({ ...prev, visible: true }))}
+                        onClick={() => handleVisibleUser(user)}
+                      >
+                        {user.visible ?
+                          isHovered.visible ? <EyeOff height={20} /> : <Eye height={20} />
+                          : isHovered.visible ? <Eye height={20} /> : <EyeOff height={20} />
+                        }
+                        {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -94,8 +136,8 @@ function UsersTable() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
-            <Button variant='outline_red' onClick={handleDeleteUser}>Delete</Button>
-            <Button variant='outline_green' onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_red' onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_green' onClick={handleDeleteUser}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -103,4 +145,4 @@ function UsersTable() {
   )
 }
 
-export default UsersTable
+export default DartsUsersTable

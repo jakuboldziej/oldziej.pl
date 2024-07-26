@@ -34,7 +34,7 @@ export const deleteDartsUser = async (displayName) => {
 }
 
 export const postDartsUser = async (userData) => {
-  await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
     method: "POST",
     body: JSON.stringify({
       ...userData
@@ -43,6 +43,7 @@ export const postDartsUser = async (userData) => {
       "Content-Type": "application/json",
     },
   });
+  return await response.json();
 }
 
 export const postDartsGame = async (gameData) => {
@@ -295,6 +296,18 @@ export const getAuthUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`);
   const users = await usersResponse.json();
   return users;
+}
+
+export const getAuthUser = async (displayName) => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`);
+  const user = await usersResponse.json();
+  return user;
+}
+
+export const checkIfUserWithEmailExists = async (email) => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`);
+  const user = await usersResponse.json();
+  return user;
 }
 
 export const deleteAuthUser = async (displayName) => {
