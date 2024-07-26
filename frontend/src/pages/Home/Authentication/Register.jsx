@@ -59,10 +59,13 @@ function Register() {
         main_folder: folderRes._id
       });
 
+      const randomNumber = Math.floor(Math.random() * 900) + 100;
+      const friendsCode = displayName + randomNumber;
       const userRes = await registerUser({
         email,
         displayName,
         password,
+        friendsCode
       });
 
       signIn({

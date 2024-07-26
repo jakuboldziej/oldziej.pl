@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import NavBar from "@/components/Home/NavBar";
 import RedDot from "@/assets//images/icons/red_dot.png";
@@ -11,9 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Loader2 } from "lucide-react";
+import { AuthContext } from "@/context/AuthContext";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
+  const { currentUser } = useContext(AuthContext);
 
   const location = useLocation();
 
@@ -145,7 +147,7 @@ function DartsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(null, 10));
+        const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
         const usersFetch = (await getDartsUsers()).filter((user) => user.visible === true);;
         const sortedUsers = handleFilterUsers(filterUsersType, usersFetch);
         setDartUsers(sortedUsers);
@@ -182,7 +184,7 @@ function DartsPage() {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames());
+      const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName));
       setGames(fetchedGames);
     }
     if (gamesShown.length === 10) {
@@ -268,7 +270,7 @@ function DartsPage() {
                 {isLoading ? <div className="flex justify-center w-100 pt-3">
                   <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
-                  : gamesShown && gamesShown.map((game) => {
+                  : gamesShown.length > 0 ? gamesShown.map((game) => {
                     return (
                       game.active ?
                         <div key={game._id} className="element">
@@ -351,7 +353,9 @@ function DartsPage() {
                           </MyTooltip>
                         </div>
                     )
-                  })}
+                  }) : (
+                    <span className="text-lg">Play some games!</span>
+                  )}
               </CardContent>
             </ScrollArea>
           </Card>

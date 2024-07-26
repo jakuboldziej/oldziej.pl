@@ -73,10 +73,16 @@ function Login() {
         token: response.token,
         type: "Bearer"
       },
-      userState: { displayName: displayName, verified: true }
+      userState: {
+        displayName: displayName,
+        verified: response.verified
+      }
     });
 
-    setCurrentUser({ displayName: displayName, verified: true });
+    setCurrentUser({
+      displayName: displayName,
+      verified: response.verified,
+    });
 
     if (searchParams.get("returnUrl")) {
       navigate(searchParams.get("returnUrl"), { replace: true });

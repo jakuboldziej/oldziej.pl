@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useContext } from "react";
 import { AuthContext } from "@/context/AuthContext";
+import { Contact, Settings } from "lucide-react";
 
 function NavBar() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
@@ -17,6 +18,7 @@ function NavBar() {
     navigate('/login');
     setCurrentUser(null);
   }
+
 
   return (
     <>
@@ -40,11 +42,24 @@ function NavBar() {
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
-                      <SheetTitle>{currentUser.displayName}</SheetTitle>
+                      <SheetTitle className="flex items-center gap-5">
+                        {currentUser.displayName} {!currentUser.verified && "(not verified)"}
+                        {currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive">Admin</Button>) : null}
+                      </SheetTitle>
                     </SheetHeader>
-                    <div className="py-5 text-white">
-                      <Button onClick={() => navigate("/user/settings")} variant="outline_white">Settings</Button>
-                      {currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive" className="mx-3">Admin</Button>) : null}
+                    <div className="py-5 text-white flex flex-col gap-5 w-fit">
+                      <Button onClick={() => navigate("/user/settings")} variant="outline_white" className="justify-between">
+                        <span className="flex items-center gap-2">
+                          <Settings />
+                          <span>Settings</span>
+                        </span>
+                      </Button>
+                      <Button disabled={!currentUser.verified} onClick={() => navigate("/user/friends")} variant="outline_lime">
+                        <span className="flex items-center gap-2">
+                          <Contact />
+                          <span>Friends</span>
+                        </span>
+                      </Button>
                     </div>
                     <div className="absolute right-2 bottom-2 text-white">
                       <Button variant="outline_red" onClick={logout}>Log Out</Button>

@@ -20,7 +20,7 @@ const getAuthUser = async (req, res, next) => {
 // Users
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find()
+    const users = await User.find({}, { password: 0 })
     res.json(users)
   } catch (err) {
     res.json({ message: err.message })
@@ -45,6 +45,25 @@ router.get('/users/check-existing-mail/:email', async (req, res) => {
   }
 });
 
+router.put("/users/:displayName", getAuthUser, async (req, res) => {
+  const { displayName, ...updateData } = req.body;
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      res.user._id,
+      updateData,
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(updatedUser);
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
+
 router.delete('/users/:displayName', async (req, res) => {
   try {
     await User.deleteOne({ displayName: req.params.displayName });
@@ -62,6 +81,7 @@ router.post("/register", (req, res) => {
       email: req.body.email,
       displayName: req.body.displayName,
       password: hashedPassword,
+      friendsCode: req.body.friendsCode
     });
 
     user.save().then((result) => {
@@ -115,6 +135,7 @@ router.post("/login", (req, res) => {
       res.status(200).send({
         message: "Login Successful",
         token,
+        verified: user.verified
       });
     }).catch((error) => {
       res.status(400).send({

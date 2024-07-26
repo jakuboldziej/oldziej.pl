@@ -310,6 +310,18 @@ export const checkIfUserWithEmailExists = async (email) => {
   return user;
 }
 
+export const putAuthUser = async (userData) => {
+  await fetch(`${mongodbApiUrl}/auth/users/${userData.displayName}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...userData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
 export const deleteAuthUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`, {
     method: "DELETE"
@@ -339,6 +351,7 @@ export const registerUser = async (userData) => {
       email: userData.email,
       displayName: userData.displayName,
       password: userData.password,
+      friendsCode: userData.friendsCode
     }),
     headers: {
       "Content-Type": "application/json",

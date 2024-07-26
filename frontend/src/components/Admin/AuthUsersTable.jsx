@@ -2,11 +2,14 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUsers, getFtpUser } from '@/fetch';
-import { Eye, EyeOff, Grip, Loader2, Trash, User, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUsers, getFtpUser, putAuthUser } from '@/fetch';
+import { Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 function AuthUsersTable() {
+  const navigate = useNavigate();
+
   const [authUsers, setAuthUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -26,6 +29,12 @@ function AuthUsersTable() {
     await deleteAuthUser(selectedUser.displayName);
     setDialogOpen(false);
     setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
+  }
+
+  const handleVerified = async (user) => {
+    user.verified = !user.verified;
+    await putAuthUser(user);
+    setAuthUsers((prev) => prev.map((aUser) => aUser.displayName === user.displayName ? user : aUser));
   }
 
   useEffect(() => {
@@ -54,6 +63,8 @@ function AuthUsersTable() {
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>DisplayName</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Friends Code</TableHead>
+              <TableHead>Verified</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -63,6 +74,8 @@ function AuthUsersTable() {
                 <TableCell className="font-medium">{user._id}</TableCell>
                 <TableCell>{user.displayName}</TableCell>
                 <TableCell>{user.email}</TableCell>
+                <TableCell>{user.friendsCode}</TableCell>
+                <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -71,6 +84,12 @@ function AuthUsersTable() {
                     <DropdownMenuContent className='mr-5'>
                       <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate(`/user/${navigate}`)}><User height={20} /> Profile</DropdownMenuItem>
+                      {user.verified === false ? (
+                        <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldOff height={20} /> Disprove</DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

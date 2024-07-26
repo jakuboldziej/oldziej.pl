@@ -1468,7 +1468,8 @@ html {
   }
 }
 
-.notfound-page {
+.notfound-page,
+.verified-page {
   display: flex;
   flex-direction: column;
   justify-content: center;
