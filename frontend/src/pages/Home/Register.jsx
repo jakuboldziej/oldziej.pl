@@ -35,8 +35,6 @@ function Register() {
 
     const existingUser = await getAuthUser(displayName);
     const existingUserWithEmail = await checkIfUserWithEmailExists(email);
-    console.log(existingUser);
-    console.log(existingUserWithEmail);
 
     if (existingUser) {
       setErr("User with that username already exists")
