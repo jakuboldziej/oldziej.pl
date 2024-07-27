@@ -13,6 +13,8 @@ function Register() {
 
   const [err, setErr] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] = useState('');
+
   const navigate = useNavigate();
 
   const signIn = useSignIn();
@@ -81,6 +83,11 @@ function Register() {
     }
   }
 
+  useEffect(() => {
+    if (password.length < 6 && password.length !== 0) setErr("Password must be at least 6 characters long.");
+    else setErr('');
+  }, [password]);
+
   return (
     <>
       <div className="register-page">
@@ -99,7 +106,7 @@ function Register() {
                 <span className="focus-input100" data-placeholder="&#xf207;"></span>
               </div>
               <div className="wrap-input100 validate-input" data-validate="Enter password">
-                <input className="input100" type="password" name="pass" placeholder="Password" required />
+                <input value={password} onChange={(e) => setPassword(e.target.value)} className="input100" type="password" name="pass" placeholder="Password" required />
                 <span className="focus-input100" data-placeholder="&#xf191;"></span>
               </div>
               <div className="container-login100-form-btn">

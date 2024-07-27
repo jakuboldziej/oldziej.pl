@@ -149,6 +149,19 @@ router.post('/users/send-friends-request/', async (req, res) => {
   }
 });
 
+router.get('/users/accept-friends-request/:userId', async (req, res) => {
+  try {
+    const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName });
+    const userId = (await User.findOne({ displayName: req.params.userDisplayName }))._id.toString();
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+
+    if (isUserFriendsWithCurrentUser) res.json(true)
+    else res.json(false)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
 // Auth
 
 router.post("/register", (req, res) => {

@@ -368,7 +368,6 @@ export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName
   return user;
 }
 
-
 export const sendFriendsRequest = async (data) => {
   const currentUserDisplayName = data.currentUserDisplayName;
   const userFriendCode = data.userFriendCode;

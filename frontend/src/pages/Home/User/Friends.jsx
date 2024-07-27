@@ -1,9 +1,8 @@
 import CopyTextButton from '@/components/Home/CopyTextButton';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
-import NavBar from '@/components/Home/NavBar';
 import { Button } from '@/components/ui/shadcn/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Input } from '@/components/ui/shadcn/input';
 import { AuthContext } from '@/context/AuthContext';
 import { getAuthUser, sendFriendsRequest } from '@/fetch';
@@ -17,13 +16,21 @@ function Friends() {
   const [typeFriendsCode, setTypeFriendsCode] = useState('');
   const [err, setErr] = useState("");
 
-  const handleSendNewFriendRequest = async () => {
+  const handleSendNewFriendsRequest = async () => {
     const response = await sendFriendsRequest({
       currentUserDisplayName: currentUser.displayName,
       userFriendCode: typeFriendsCode
     });
     setErr(response.message);
     setTimeout(() => setErr(''), 5000);
+  }
+
+  const handleAcceptFriendsRequest = async (userId) => {
+    console.log(userId);
+  }
+
+  const handleDeclineFriendsRequest = async (userId) => {
+    console.log(userId);
   }
 
   useEffect(() => {
@@ -98,7 +105,7 @@ function Friends() {
                     <CardContent>
                       <div className="flex w-full max-w-sm items-center space-x-2">
                         <Input value={typeFriendsCode} onChange={(e) => setTypeFriendsCode(e.target.value)} type="text" placeholder={authUser.friendsCode} />
-                        <Button onClick={handleSendNewFriendRequest} type="submit" disabled={typeFriendsCode.length === 0}>Send</Button>
+                        <Button onClick={handleSendNewFriendsRequest} type="submit" disabled={typeFriendsCode.length === 0}>Send</Button>
                       </div>
                       {err && <span id="error_message">{err}</span>}
                     </CardContent>
@@ -126,10 +133,20 @@ function Friends() {
                         <span>Received:</span>
                         <div className='received-list flex flex-col gap-1'>
                           {authUser.friendsRequests.received.length > 0 ? authUser.friendsRequests.received.map((user) => (
-                            <div key={user._id} className='request flex justify-center gap-2'>
+                            <div key={user._id} className='request flex items-center justify-around gap-2 rounded-lg p-1'>
                               <span>{user.displayName}</span>
-                              <UserRoundCheck />
-                              <UserRoundX />
+                              <div className='flex gap-1'>
+                                <MyTooltip title="Accept request">
+                                  <Button onClick={() => handleAcceptFriendsRequest(user._id)} variant="outline_green" size="icon" className="justify-center">
+                                    <UserRoundCheck />
+                                  </Button>
+                                </MyTooltip>
+                                <MyTooltip title="Decline request">
+                                  <Button onClick={() => handleDeclineFriendsRequest(user._id)} variant="outline_red" size="icon" className="justify-center">
+                                    <UserRoundX />
+                                  </Button>
+                                </MyTooltip>
+                              </div>
                             </div>
                           )) : (
                             <span>None</span>
