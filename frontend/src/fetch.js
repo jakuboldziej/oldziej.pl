@@ -298,8 +298,8 @@ export const getAuthUsers = async () => {
   return users;
 }
 
-export const getAuthUser = async (displayName) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`);
+export const getAuthUser = async (identifier) => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`);
   const user = await usersResponse.json();
   return user;
 }
@@ -352,6 +352,32 @@ export const registerUser = async (userData) => {
       displayName: userData.displayName,
       password: userData.password,
       friendsCode: userData.friendsCode
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
+}
+
+// Friends
+export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName, userDisplayName) => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-if-friends/${currentUserDisplayName}/${userDisplayName}`);
+  const user = await usersResponse.json();
+  return user;
+}
+
+
+export const sendFriendsRequest = async (data) => {
+  const currentUserDisplayName = data.currentUserDisplayName;
+  const userFriendCode = data.userFriendCode;
+
+  const response = await fetch(`${mongodbApiUrl}/auth/users/send-friends-request/`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentUserDisplayName: currentUserDisplayName,
+      userFriendCode: userFriendCode
     }),
     headers: {
       "Content-Type": "application/json",

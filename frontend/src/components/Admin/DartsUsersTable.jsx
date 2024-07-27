@@ -81,7 +81,7 @@ function DartsUsersTable() {
               <TableHead>highestEndingAvg</TableHead>
               <TableHead>highestTurnPoints</TableHead>
               <TableHead>overAllPoints</TableHead>
-              <TableHead>visible</TableHead>
+              <TableHead>Visible</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -95,7 +95,7 @@ function DartsUsersTable() {
                 <TableCell>{user.highestEndingAvg}</TableCell>
                 <TableCell>{user.highestTurnPoints}</TableCell>
                 <TableCell>{user.overAllPoints}</TableCell>
-                <TableCell>{user.visible ? "visible" : "hidden"}</TableCell>
+                <TableCell>{user.visible ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

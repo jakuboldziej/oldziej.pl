@@ -1,5 +1,4 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
-import NavBar from "@/components/Home/NavBar";
 import { FtpContext } from "@/context/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
@@ -317,7 +316,6 @@ function MyFiles() {
 
   return (
     <>
-      <NavBar />
       <div className="cloud-wrapper text-white">
         <LeftNavBar />
         <div className="main my-files">

@@ -1,4 +1,3 @@
-import NavBar from '@/components/Home/NavBar'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/shadcn/form'
 import { Input } from '@/components/ui/shadcn/input'
 import { Label } from '@/components/ui/shadcn/label'
@@ -20,6 +19,7 @@ import CopyTextButton from '@/components/Home/CopyTextButton'
 import { useNavigate } from 'react-router'
 import MyDialogs from '@/components/Home/Cloud/MyDialogs'
 import { AuthContext } from '@/context/AuthContext'
+import MyTooltip from '@/components/Home/MyComponents/MyTooltip'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
@@ -320,7 +320,6 @@ function CloudPage() {
 
   return (
     <>
-      <NavBar />
       <div className='cloud-wrapper'>
         <LeftNavBar />
         <div className='main ftp-page text-white'>
@@ -397,7 +396,16 @@ function CloudPage() {
                           <div className='attrs flex justify-evenly items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatDataSize(file.length)}</span>
-                            <CopyTextButton textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}><Share2 /></CopyTextButton>
+                            <CopyTextButton
+                              textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
+                              toastTitle="Link Copied"
+                              toastDesc="Link copied to clipboard"
+                            >
+                              <MyTooltip title="Copy link to clipboard">
+                                <Share2 />
+                              </MyTooltip>
+                            </CopyTextButton>
+
                             <DropdownMenu>
                               <DropdownMenuTrigger>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>

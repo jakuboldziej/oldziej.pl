@@ -1,10 +1,8 @@
-import LeftNavBar from "@/components/Home/Cloud/LeftNavBar"
-import MyFileCard from "@/components/Home/Cloud/MyFileCard";
-import NavBar from "@/components/Home/NavBar"
+import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import { FtpContext } from "@/context/FtpContext";
 import { Loader2 } from "lucide-react";
-import { useContext, useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react";
 
 function FavoriteFiles() {
   const { folders, files } = useContext(FtpContext);
@@ -39,60 +37,57 @@ function FavoriteFiles() {
   }, [currentPage]);
 
   return (
-    <>
-      <NavBar />
-      <div className="cloud-wrapper text-white">
-        <LeftNavBar />
-        <div className="main favorites">
-          <div className='files flex flex-col gap-6'>
-            <span className='text-3xl'>Files</span>
-            <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
-              <div className='files flex flex-col gap-4'>
-                {favoriteFiles !== null ? (
-                  favoriteFiles.length > 0 ? (
-                    favoriteFiles.map((file) => (
-                      // <MyFileCard key={file._id} {...cardProps} file={file} />
-                      <span key={file._id}>{file.filename}</span>
-                    ))
-                  ) : (
-                    <div className="flex justify-center w-full pt-3">
-                      <Loader2 className="h-10 w-10 animate-spin" />
-                    </div>
-                  )
+    <div className="cloud-wrapper text-white">
+      <LeftNavBar />
+      <div className="main favorites">
+        <div className='files flex flex-col gap-6'>
+          <span className='text-3xl'>Files</span>
+          <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
+            <div className='files flex flex-col gap-4'>
+              {favoriteFiles !== null ? (
+                favoriteFiles.length > 0 ? (
+                  favoriteFiles.map((file) => (
+                    // <MyFileCard key={file._id} {...cardProps} file={file} />
+                    <span key={file._id}>{file.filename}</span>
+                  ))
                 ) : (
-                  <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
-                    No Favorite Folders...
+                  <div className="flex justify-center w-full pt-3">
+                    <Loader2 className="h-10 w-10 animate-spin" />
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-          <div className='folders flex flex-col gap-6'>
-            <span className='text-3xl'>Folders</span>
-            <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
-              <div className='folders flex flex-col gap-4'>
-                {favoriteFolders !== null ? (
-                  favoriteFolders.length > 0 ? (
-                    favoriteFolders.map((folder) => (
-                      // <MyFolderCard key={folder._id} {...cardProps} folder={folder} />
-                      <span key={folder._id}>{folder.name}</span>
-                    ))
-                  ) : (
-                    <div className="flex justify-center w-full pt-3">
-                      <Loader2 className="h-10 w-10 animate-spin" />
-                    </div>
-                  )
+                )
+              ) : (
+                <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                  No Favorite Folders...
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+        <div className='folders flex flex-col gap-6'>
+          <span className='text-3xl'>Folders</span>
+          <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
+            <div className='folders flex flex-col gap-4'>
+              {favoriteFolders !== null ? (
+                favoriteFolders.length > 0 ? (
+                  favoriteFolders.map((folder) => (
+                    // <MyFolderCard key={folder._id} {...cardProps} folder={folder} />
+                    <span key={folder._id}>{folder.name}</span>
+                  ))
                 ) : (
-                  <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
-                    No Favorite Folders...
+                  <div className="flex justify-center w-full pt-3">
+                    <Loader2 className="h-10 w-10 animate-spin" />
                   </div>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+                )
+              ) : (
+                <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                  No Favorite Folders...
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

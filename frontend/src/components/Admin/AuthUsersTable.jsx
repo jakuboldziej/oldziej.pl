@@ -3,9 +3,11 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
 import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUsers, getFtpUser, putAuthUser } from '@/fetch';
-import { Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
+import { Copy, Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import CopyTextButton from '../Home/CopyTextButton';
+import MyTooltip from '../Home/MyComponents/MyTooltip';
 
 function AuthUsersTable() {
   const navigate = useNavigate();
@@ -40,7 +42,8 @@ function AuthUsersTable() {
   useEffect(() => {
     const fetchAuthUsers = async () => {
       try {
-        setAuthUsers(await getAuthUsers());
+        const resUsers = await getAuthUsers();
+        setAuthUsers(resUsers);
         setIsLoading(false);
       } catch (err) {
         console.log('Error fetching', err);
@@ -74,7 +77,16 @@ function AuthUsersTable() {
                 <TableCell className="font-medium">{user._id}</TableCell>
                 <TableCell>{user.displayName}</TableCell>
                 <TableCell>{user.email}</TableCell>
-                <TableCell>{user.friendsCode}</TableCell>
+                <TableCell>
+                  <div className='flex gap-1'>
+                    {user.friendsCode}
+                    <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                      <MyTooltip title="Copy code to clipboard">
+                        <Copy height={15} />
+                      </MyTooltip>
+                    </CopyTextButton>
+                  </div>
+                </TableCell>
                 <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
@@ -84,7 +96,7 @@ function AuthUsersTable() {
                     <DropdownMenuContent className='mr-5'>
                       <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate(`/user/${navigate}`)}><User height={20} /> Profile</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
                       {user.verified === false ? (
                         <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
                       ) : (

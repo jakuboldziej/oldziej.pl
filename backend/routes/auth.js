@@ -3,6 +3,7 @@ const router = express.Router()
 const User = require('../models/user')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { Types } = require("mongoose");
 
 const getAuthUser = async (req, res, next) => {
   let user;
@@ -27,12 +28,18 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:displayName', async (req, res) => {
+router.get('/users/:identifier', async (req, res) => {
   try {
-    const user = await User.findOne({ displayName: req.params.displayName })
-    res.json(user)
+    const identifier = req.params.identifier;
+    if (Types.ObjectId.isValid(identifier)) {
+      const user = await User.findOne({ _id: identifier }, { password: 0 });
+      res.json(user);
+    } else {
+      const user = await User.findOne({ displayName: identifier }, { password: 0 });
+      res.json(user);
+    }
   } catch (err) {
-    res.json({ message: err.message })
+    res.json({ message: err.message });
   }
 });
 
@@ -70,6 +77,75 @@ router.delete('/users/:displayName', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// Friends
+
+router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', async (req, res) => {
+  try {
+    const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName });
+    const userId = (await User.findOne({ displayName: req.params.userDisplayName }))._id.toString();
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+
+    if (isUserFriendsWithCurrentUser) res.json(true)
+    else res.json(false)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.post('/users/send-friends-request/', async (req, res) => {
+  try {
+    const userFriendCode = req.body.userFriendCode;
+
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
+    let user = await User.findOne({ friendsCode: userFriendCode });
+
+    const userId = user._id.toString()
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isFriendRequestAlreadyPending = currentUser.friendsRequests.pending.find((friendId) => friendId === userId);
+    const isUserFriendCodeValid = user.friendsCode === userFriendCode ? true : false;
+    const isCurrentUserSendingToHimself = currentUser.friendsCode === userFriendCode ? true : false;
+
+    if (isUserFriendsWithCurrentUser) return res.json({
+      friends: true,
+      message: `You are already friends with ${user.displayName}.`
+    });
+    else if (isFriendRequestAlreadyPending) return res.json({
+      friends: false,
+      message: `You already sent friend request to ${user.displayName}.`
+    });
+    else if (!isUserFriendCodeValid) return res.json({
+      friends: false,
+      message: `Friend code is not valid (${userFriendCode}).`
+    });
+    else if (isCurrentUserSendingToHimself) return res.json({
+      friends: false,
+      message: `You can't send friend request to yourself!`
+    });
+    else {
+      currentUser.friendsRequests.pending.push(userId);
+      user.friendsRequests.received.push(currentUser._id.toString());
+
+      await User.findByIdAndUpdate(
+        currentUser._id,
+        currentUser,
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        user._id,
+        user,
+        { new: true }
+      );
+
+      return res.json({
+        friends: false,
+        message: `Friend request sent to ${user.displayName}.`
+      })
+    }
+  } catch (err) {
+    res.json({ message: err.message })
   }
 });
 

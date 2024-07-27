@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ShowNewToast from './MyComponents/ShowNewToast';
 
-const CopyTextButton = ({ textToCopy, children }) => {
+const CopyTextButton = ({ children, textToCopy, toastTitle, toastDesc }) => {
   const [copied, setCopied] = useState(false);
 
   const onCopy = () => {
@@ -12,7 +12,7 @@ const CopyTextButton = ({ textToCopy, children }) => {
 
   useEffect(() => {
     if (copied) {
-      ShowNewToast("Link Copied", "Link copied to clipboard.")
+      ShowNewToast(toastTitle, toastDesc)
     }
   }, [copied]);
 

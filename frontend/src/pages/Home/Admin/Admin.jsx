@@ -1,6 +1,5 @@
 import AuthUsersTable from '@/components/Admin/AuthUsersTable';
 import DartsUsersTable from '@/components/Admin/DartsUsersTable';
-import NavBar from '@/components/Home/NavBar';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
 import React, { useState } from 'react';
 
@@ -18,35 +17,32 @@ function Admin() {
   }
 
   return (
-    <>
-      <NavBar />
-      <div className='admin'>
-        <div className='users flex flex-col gap-5'>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("auth-users")} isActive={currentPage === "auth-users"}>Auth Users</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("darts-users")} isActive={currentPage === "darts-users"}>Darts Users</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("cloud-users")} isActive={currentPage === "cloud-users"}>Cloud Users</PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-          {currentPage === "auth-users" ? (
-            <AuthUsersTable />
+    <div className='admin'>
+      <div className='users flex flex-col gap-5'>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePaginationChange("auth-users")} isActive={currentPage === "auth-users"}>Auth Users</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePaginationChange("darts-users")} isActive={currentPage === "darts-users"}>Darts Users</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePaginationChange("cloud-users")} isActive={currentPage === "cloud-users"}>Cloud Users</PaginationLink>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+        {currentPage === "auth-users" ? (
+          <AuthUsersTable />
+        ) : (
+          currentPage === "darts-users" ? (
+            <DartsUsersTable />
           ) : (
-            currentPage === "darts-users" ? (
-              <DartsUsersTable />
-            ) : (
-              <span className='text-center text-2xl'>No data</span>
-            )
-          )}
-        </div>
+            <span className='text-center text-2xl'>No data</span>
+          )
+        )}
       </div>
-    </>
+    </div>
   )
 }
 

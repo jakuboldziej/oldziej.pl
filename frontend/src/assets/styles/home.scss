@@ -697,6 +697,13 @@ html {
   }
 }
 
+// Friends Page
+.friends-page {
+  .cards {
+    min-height: $containerHeight;
+  }
+}
+
 // left-navbar tiles
 .tile {
   display: flex;

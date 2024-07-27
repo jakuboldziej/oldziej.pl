@@ -1,16 +1,17 @@
-import { Link, useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/shadcn/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet"
+import { Link, useNavigate } from "react-router-dom";
+import { Button, buttonVariants } from "@/components/ui/shadcn/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { useContext } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { Contact, Settings } from "lucide-react";
+import { Badge } from "../ui/shadcn/badge";
+import { getAuthUser } from "@/fetch";
 
 function NavBar() {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
-
   const signOut = useSignOut();
 
   const logout = () => {
@@ -19,6 +20,32 @@ function NavBar() {
     setCurrentUser(null);
   }
 
+  const [authUser, setAuthUser] = useState();
+
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  const handleSheetClose = () => {
+    setSheetOpen(false);
+  };
+
+  const handleShowBadge = () => {
+    if (authUser) {
+      if (authUser.sumOfFriendsRequests > 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  useLayoutEffect(() => {
+    const fetchAuthUser = async () => {
+      const resAuthUser = await getAuthUser(currentUser.displayName);
+      resAuthUser.sumOfFriendsRequests = resAuthUser.friendsRequests.pending.length + resAuthUser.friendsRequests.received.length;
+      setAuthUser(resAuthUser);
+    }
+    fetchAuthUser();
+  }, []);
 
   return (
     <>
@@ -36,7 +63,7 @@ function NavBar() {
                 <Link to="/cloud" className="block py-2 px-2 text-gray-400 hover:text-gray-200 p-0">Cloud</Link>
               </li>
               <li className="ml-auto">
-                <Sheet>
+                <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline_white">{currentUser.displayName}</Button>
                   </SheetTrigger>
@@ -44,20 +71,36 @@ function NavBar() {
                     <SheetHeader>
                       <SheetTitle className="flex items-center gap-5">
                         {currentUser.displayName} {!currentUser.verified && "(not verified)"}
-                        {currentUser.displayName == "kubek" ? (<Button onClick={() => navigate("/admin")} variant="destructive">Admin</Button>) : null}
+                        {currentUser.displayName === "kubek" && (
+                          <Button variant="destructive" onClick={() => {
+                            navigate('/admin');
+                            handleSheetClose();
+                          }}>Admin</Button>
+                        )}
                       </SheetTitle>
                     </SheetHeader>
                     <div className="py-5 text-white flex flex-col gap-5 w-fit">
-                      <Button onClick={() => navigate("/user/settings")} variant="outline_white" className="justify-between">
-                        <span className="flex items-center gap-2">
-                          <Settings />
-                          <span>Settings</span>
-                        </span>
-                      </Button>
-                      <Button disabled={!currentUser.verified} onClick={() => navigate("/user/friends")} variant="outline_lime">
+                      <Button className="relative" disabled={!currentUser.verified} onClick={() => {
+                        navigate('/user/friends');
+                        handleSheetClose();
+                      }} variant="outline_lime">
                         <span className="flex items-center gap-2">
                           <Contact />
                           <span>Friends</span>
+                        </span>
+                        {handleShowBadge() && (
+                          <Badge className="absolute -top-2 -right-2" variant="destructive">{authUser.sumOfFriendsRequests}</Badge>
+                        )}
+                      </Button>
+                      <Button onClick={() => {
+                        navigate('/user/settings');
+                        handleSheetClose();
+                      }}
+                        variant="outline_white"
+                        className="justify-between">
+                        <span className="flex items-center gap-2">
+                          <Settings />
+                          <span>Settings</span>
                         </span>
                       </Button>
                     </div>

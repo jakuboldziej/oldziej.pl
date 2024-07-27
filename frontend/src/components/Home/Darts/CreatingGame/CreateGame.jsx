@@ -311,7 +311,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         </DrawerTrigger>
         <DrawerContent className="create-game-modal border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
           <DrawerHeader>
-            <DrawerTitle className="text-white border-b-2 border-[#00B524] pb-3">Create New Game</DrawerTitle>
+            <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>
           <div className="settings pt-3 overflow-y-auto">
             <Card className="usersCard">

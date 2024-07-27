@@ -27,6 +27,9 @@ const UserSchema = new mongoose.Schema({
   },
   friends: {
     type: Array,
+  },
+  friendsRequests: {
+    type: Object
   }
 })
 
