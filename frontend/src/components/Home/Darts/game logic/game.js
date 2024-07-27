@@ -28,9 +28,11 @@ export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUser
 }
 
 const handlePodium = () => {
-  if (game.gameMode === "X01") handlePodiumX01();
-  if (game.gameMode === "Reverse X01") handlePodiumReverseX01();
-  handleDartsData();
+  if (game.gameMode === "X01") {
+    handlePodiumX01();
+    handleDartsData();
+  }
+  else if (game.gameMode === "Reverse X01") handlePodiumReverseX01();
   handleShow();
 }
 

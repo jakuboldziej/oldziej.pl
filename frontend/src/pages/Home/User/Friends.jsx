@@ -74,65 +74,70 @@ function Friends() {
   return (
     <>
       <div className='friends-page flex text-white text-center'>
-        {isLoading ? (
-          <div className="flex justify-center w-100 pt-3 w-full">
-            <Loader2 className="h-10 w-10 animate-spin" />
-          </div>
-        ) : (
-          <div className='wrapper flex w-full'>
-            <div className='cards flex flex-col p-5 border-r border-green min-w-[380px]'>
-              <div className='fixed-wrapper flex flex-col gap-10 left-0 fixed min-w-[380px]'>
-                <div className='your-friends-code flex justify-center'>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Your friends code</CardTitle>
-                    </CardHeader >
-                    <CardContent className='flex justify-center gap-2'>
-                      <span className='text-3xl'>{authUser.friendsCode}</span>
-                      <CopyTextButton textToCopy={authUser.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
-                        <MyTooltip title="Copy code to clipboard">
-                          <Copy />
-                        </MyTooltip>
-                      </CopyTextButton>
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className='friends-code flex justify-center'>
-                  <Card className=" w-[330px]">
-                    <CardHeader>
-                      <CardTitle>Send new friend request</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex w-full max-w-sm items-center space-x-2">
-                        <Input value={typeFriendsCode} onChange={(e) => setTypeFriendsCode(e.target.value)} type="text" placeholder={authUser.friendsCode} />
-                        <Button onClick={handleSendNewFriendsRequest} type="submit" disabled={typeFriendsCode.length === 0}>Send</Button>
-                      </div>
-                      {err && <span id="error_message">{err}</span>}
-                    </CardContent>
-                  </Card>
-                </div>
-                <div className='friends-requests flex justify-center w-full'>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Friend requests</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-6">
-                      <div className='pending flex flex-col gap-2'>
-                        <span>Pending:</span>
-                        <div className='pending-list flex flex-col gap-1'>
-                          {authUser.friendsRequests.pending.length > 0 ? authUser.friendsRequests.pending.map((user) => (
+        <div className='wrapper flex w-full'>
+          <div className='cards flex flex-col p-5 border-r border-green min-w-[380px]'>
+            <div className='fixed-wrapper flex flex-col gap-10 left-0 fixed min-w-[380px]'>
+              <div className='your-friends-code flex justify-center'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Your friends code</CardTitle>
+                  </CardHeader >
+                  <CardContent className='flex justify-center gap-2'>
+                    <span className='text-3xl'>{authUser?.friendsCode}</span>
+                    <CopyTextButton textToCopy={authUser?.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                      <MyTooltip title="Copy code to clipboard">
+                        <Copy />
+                      </MyTooltip>
+                    </CopyTextButton>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className='friends-code flex justify-center'>
+                <Card className=" w-[330px]">
+                  <CardHeader>
+                    <CardTitle>Send new friend request</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex w-full max-w-sm items-center space-x-2">
+                      <Input value={typeFriendsCode} onChange={(e) => setTypeFriendsCode(e.target.value)} type="text" placeholder={authUser?.friendsCode} />
+                      <Button onClick={handleSendNewFriendsRequest} type="submit" disabled={typeFriendsCode.length === 0}>Send</Button>
+                    </div>
+                    {err && <span id="error_message">{err}</span>}
+                  </CardContent>
+                </Card>
+              </div>
+              <div className='friends-requests flex justify-center w-full'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Friend requests</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-col gap-6">
+                    <div className='pending flex flex-col gap-2'>
+                      <span>Pending:</span>
+                      <div className='pending-list flex flex-col gap-1'>
+                        {isLoading ? (
+                          <div className="flex justify-center w-100 pt-3 w-full">
+                            <Loader2 className="h-10 w-10 animate-spin" />
+                          </div>
+                        ) : (
+                          authUser.friendsRequests.pending.length > 0 ? authUser.friendsRequests.pending.map((user) => (
                             <div key={user._id} className='request'>
                               <span>{user.displayName}</span>
                             </div>
                           )) : (
                             <span>None</span>
-                          )}
-                        </div>
+                          ))}
                       </div>
-                      <div className='received flex flex-col gap-2'>
-                        <span>Received:</span>
-                        <div className='received-list flex flex-col gap-1'>
-                          {authUser.friendsRequests.received.length > 0 ? authUser.friendsRequests.received.map((user) => (
+                    </div>
+                    <div className='received flex flex-col gap-2'>
+                      <span>Received:</span>
+                      <div className='received-list flex flex-col gap-1'>
+                        {isLoading ? (
+                          <div className="flex justify-center w-100 pt-3 w-full">
+                            <Loader2 className="h-10 w-10 animate-spin" />
+                          </div>
+                        ) : (
+                          authUser.friendsRequests.received.length > 0 ? authUser.friendsRequests.received.map((user) => (
                             <div key={user._id} className='request flex items-center justify-around gap-2 rounded-lg p-1'>
                               <span>{user.displayName}</span>
                               <div className='flex gap-1'>
@@ -150,19 +155,23 @@ function Friends() {
                             </div>
                           )) : (
                             <span>None</span>
-                          )}
-                        </div>
+                          ))}
                       </div>
-
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-            <div className='friends flex flex-col gap-5 w-full p-5'>
-              <span className='text-3xl border-b border-green pb-5'>Friends</span>
-              <div className='friends-list w-full flex flex-wrap gap-5'>
-                {authUser.friends.map((friend) => (
+          </div>
+          <div className='friends flex flex-col gap-5 w-full p-5'>
+            <span className='text-3xl border-b border-green pb-5'>Friends</span>
+            <div className='friends-list w-full flex flex-wrap gap-5'>
+              {isLoading ? (
+                <div className="flex justify-center w-100 pt-3 w-full">
+                  <Loader2 className="h-10 w-10 animate-spin" />
+                </div>
+              ) : (
+                authUser.friends.map((friend) => (
                   <div key={friend._id} className='friend relative rounded-lg border border-green w-40 h-20'>
                     <div className='flex flex-col items-start p-4'>
                       <span>{friend.displayName}</span>
@@ -181,11 +190,10 @@ function Friends() {
                       </DropdownMenu>
                     </span>
                   </div>
-                ))}
-              </div>
+                )))}
             </div>
           </div>
-        )}
+        </div>
       </div >
     </>
   )

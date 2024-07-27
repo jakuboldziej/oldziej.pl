@@ -317,7 +317,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
                 <span>Add Users</span>
-                <Button variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
+                <Button className="transition-opacity" disabled={selectGameMode.includes("Reverse X01")} variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
               </CardHeader>
               <hr />
               <CardContent className="card-content p-0">
