@@ -3,10 +3,12 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
 import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/fetch';
-import { Eye, EyeOff, Grip, Loader2, Trash, User, X } from 'lucide-react';
+import { Eye, EyeOff, Grip, Loader2, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-function DartsUsersTable() {
+function DartsUsersTable({ props }) {
+  const { refreshingData, setRefreshingData } = props;
+
   const [dartsUsers, setDartsUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,16 +48,24 @@ function DartsUsersTable() {
     }
   }
 
-  useEffect(() => {
-    const fetchAuthUsers = async () => {
-      try {
-        setDartsUsers(await getDartsUsers());
-        setIsLoading(false);
-      } catch (err) {
-        console.log('Error fetching', err);
-        setIsLoading(false);
-      }
+  const fetchAuthUsers = async () => {
+    try {
+      setDartsUsers(await getDartsUsers());
+      setIsLoading(false);
+    } catch (err) {
+      console.log('Error fetching', err);
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (refreshingData) {
+      fetchAuthUsers();
+      setRefreshingData(false);
+    }
+  }, [refreshingData]);
+
+  useEffect(() => {
     fetchAuthUsers();
   }, []);
 

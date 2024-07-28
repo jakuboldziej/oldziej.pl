@@ -1,13 +1,20 @@
 import AuthUsersTable from '@/components/Admin/AuthUsersTable';
 import DartsUsersTable from '@/components/Admin/DartsUsersTable';
+import { Button } from '@/components/ui/shadcn/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
-import React, { useState } from 'react';
+import { SocketIoContext } from '@/context/SocketIoContext';
+import { RotateCcw } from 'lucide-react';
+import React, { useContext, useEffect, useState } from 'react';
 
 function Admin() {
+  document.title = "Oldziej | Admin";
+  const { onlineFriends } = useContext(SocketIoContext);
+
   const [currentPage, setCurrentPage] = useState(() => {
     const storedCurrentPage = localStorage.getItem('currentAdminPage');
     return storedCurrentPage ? JSON.parse(storedCurrentPage) : "auth-users";
   });
+  const [refreshingData, setRefreshingData] = useState(false);
 
   const handlePaginationChange = (page) => {
     if (page !== currentPage) {
@@ -16,8 +23,20 @@ function Admin() {
     }
   }
 
+  useEffect(() => {
+    setRefreshingData(true);
+  }, [onlineFriends]);
+
+  const tableProps = {
+    refreshingData,
+    setRefreshingData
+  }
+
   return (
-    <div className='admin'>
+    <div className='admin relative'>
+      <div className='refresh absolute right-8'>
+        <Button onClick={() => setRefreshingData(true)} variant="ghost" size="icon" className="justify-center"><RotateCcw /></Button>
+      </div>
       <div className='users flex flex-col gap-5'>
         <Pagination>
           <PaginationContent>
@@ -33,10 +52,10 @@ function Admin() {
           </PaginationContent>
         </Pagination>
         {currentPage === "auth-users" ? (
-          <AuthUsersTable />
+          <AuthUsersTable props={tableProps} />
         ) : (
           currentPage === "darts-users" ? (
-            <DartsUsersTable />
+            <DartsUsersTable props={tableProps} />
           ) : (
             <span className='text-center text-2xl'>No data</span>
           )

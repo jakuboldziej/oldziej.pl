@@ -2,7 +2,7 @@ import lodash from 'lodash';
 import { getDartsUser, putDartsGame, putDartsUser } from "@/fetch";
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum, setCurrentUserState, totalThrows } from './userUtils';
 import { handlePodiumX01, handlePointsX01 } from './game modes/X01';
-import { handlePodiumReverseX01, handlePointsReverseX01 } from './game modes/Reverse X01';
+import { doorsValueReverseX01, handlePodiumReverseX01, handlePointsReverseX01, zeroValueReverseX01 } from './game modes/Reverse X01';
 
 let game;
 let setGame;
@@ -100,7 +100,11 @@ const handleDartsData = async () => {
 const handleSpecialValue = async (value, specialState, setSpecialState) => {
   if (value === "DOORS") {
     currentUser.throws["doors"] += 1;
-    handleUsersState(0, specialState, "DOORS");
+    if (game.gameMode === "Reverse X01") {
+      handleUsersState(doorsValueReverseX01, specialState);
+    } else {
+      handleUsersState(0, specialState, "DOORS");
+    }
   } else if (value === "BACK") {
     handleRecord("back");
   } else if (value === "DOUBLE" || value === "TRIPLE") {
@@ -151,7 +155,11 @@ const handleUsersState = (value, specialState, setSpecialState) => {
     setSpecialState([false, ""]);
   } else {
     if (setSpecialState !== "DOORS") currentUser.throws["normal"] += 1;
-    currentUser.turns[currentUser.currentTurn] = value;
+    if (game.gameMode === "Reverse X01" && value === 0) {
+      currentUser.turns[currentUser.currentTurn] = zeroValueReverseX01;
+    } else {
+      currentUser.turns[currentUser.currentTurn] = value;
+    }
     handleTurnsSum();
     handlePoints();
     handleAvgPointsPerTurn();

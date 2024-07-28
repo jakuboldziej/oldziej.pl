@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_MONGODB_API_LOCAL : import.meta.env.VITE_MONGODB_API;
+export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_DOMAIN + "/api";
 
 // Darts
 

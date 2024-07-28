@@ -5,8 +5,12 @@ require('dotenv').config()
 
 const express = require("express")
 const mongoose = require("mongoose");
-const bodyParser = require("body-parser")
-const app = express()
+const bodyParser = require("body-parser");
+const app = express();
+const { createServer } = require('http')
+const { Server } = require("socket.io")
+
+const environment = process.env.NODE_ENV || 'production';
 
 app.use(express.static(path.join(__dirname, '../frontend', 'dist')));
 
@@ -40,11 +44,47 @@ app.use('/api/darts', dartsRouter)
 const usersRouter = require('./routes/auth');
 app.use('/api/auth', usersRouter)
 
-const ftpRouter = require('./routes/ftp')
+const ftpRouter = require('./routes/ftp');
 app.use('/api/ftp', ftpRouter)
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
 });
 
-app.listen(3000, () => console.log('Server Started on port 3000'))
+const domain = environment === "production" ? process.env.SOCKETIO_CORS_DOMAIN : process.env.SOCKETIO_CORS_DOMAIN_LOCAL;
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: domain
+  }
+});
+
+app.locals.io = io;
+
+const { addingOnlineUser, removeUserOnDisconnect } = require('./socket.io/listeners');
+
+io.on('connection', (socket) => {
+  // Listeners 
+
+  // Handling Online Users
+
+  socket.on("addingOnlineUser", (data) => {
+    const onlineUsersData = addingOnlineUser(data);
+    io.emit('onlineUsersListener', JSON.stringify({
+      updatedOnlineUsers: onlineUsersData.onlineUsers,
+      updatedUser: onlineUsersData.updatedUser,
+      isUserOnline: true
+    }));
+  });
+
+  socket.on('disconnect', () => {
+    const onlineUsersData = removeUserOnDisconnect(socket.id)
+    io.emit('onlineUsersListener', JSON.stringify({
+      updatedOnlineUsers: onlineUsersData.onlineUsers,
+      updatedUser: onlineUsersData.updatedUser,
+      isUserOnline: false
+    }));
+  });
+});
+
+server.listen(3000, () => console.log('Server started on port 3000'))

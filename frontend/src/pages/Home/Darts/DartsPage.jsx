@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import RedDot from "@/assets//images/icons/red_dot.png";
 import GreenDot from "@/assets//images/icons/green_dot.png";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
@@ -16,6 +16,7 @@ function DartsPage() {
   document.title = "Oldziej | Darts";
   const { currentUser } = useContext(AuthContext);
 
+  const navigate = useNavigate();
   const location = useLocation();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -153,8 +154,10 @@ function DartsPage() {
           const fetchDartsUser = await getDartsUser(fetchAuthFriend.displayName);
           return fetchDartsUser;
         });
-        const userFriends = await Promise.all(fetchAuthUserFriends);
+
+        const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
         const sortedUsers = handleFilterUsers(filterUsersType, userFriends);
+
         setDartUsers(sortedUsers);
         setGamesShown(fetchedGames);
 
@@ -266,7 +269,7 @@ function DartsPage() {
                   {currentUser.verified ? (
                     <>
                       <span>Invite some friends!</span>
-                      <Button href="/user/friends" variant="outline_lime">
+                      <Button onClick={() => navigate("/user/friends")} variant="outline_lime">
                         <span className="flex items-center gap-2">
                           <Contact />
                           <span>Friends</span>

@@ -35,7 +35,7 @@ function Home() {
 
   // Calculate current page
   useMotionValueEvent(scrollY, "change", (latest) => {
-    if(!drawerOpen) calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
+    if (!drawerOpen) calcCurrentPage(latest, pagesRefs, currentPage, setCurrentPage, isMobile);
     setIsScrolling(true);
   });
 
@@ -57,7 +57,7 @@ function Home() {
       <MyParticles />
       <div className='home-portfolio-content text-white'>
         <LandingPage landingPageRef={landingPageRef} />
-        <Experience params={experienceParams} />
+        <Experience props={experienceParams} />
         <About aboutRef={aboutRef} />
         <Footer />
       </div>

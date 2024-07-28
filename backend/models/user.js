@@ -29,7 +29,15 @@ const UserSchema = new mongoose.Schema({
     type: Array,
   },
   friendsRequests: {
-    type: Object
+    type: Object,
+    default: {
+      pending: [],
+      received: []
+    }
+  },
+  online: {
+    type: Boolean,
+    default: false
   }
 })
 

@@ -97,6 +97,8 @@ router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', a
 
 router.post('/users/send-friends-request/', async (req, res) => {
   try {
+    const io = req.app.locals.io;
+
     const userFriendCode = req.body.userFriendCode;
 
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
@@ -139,6 +141,11 @@ router.post('/users/send-friends-request/', async (req, res) => {
         { new: true }
       );
 
+      io.emit("countersListener", JSON.stringify({
+        friendsRequestsReceived: user.friendsRequests.received.length,
+        userDisplayName: user.displayName
+      }));
+
       return res.json({
         message: `Friend request sent to ${user.displayName}.`,
         sentToUserDisplayName: user.displayName
@@ -151,6 +158,8 @@ router.post('/users/send-friends-request/', async (req, res) => {
 
 router.post('/users/accept-friends-request/', async (req, res) => {
   try {
+    const io = req.app.locals.io;
+
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
     let user = await User.findOne({ displayName: req.body.userDisplayName });
     const userId = user._id.toString();
@@ -178,6 +187,12 @@ router.post('/users/accept-friends-request/', async (req, res) => {
         user,
         { new: true }
       );
+
+      io.emit("countersListener", JSON.stringify({
+        friendsRequestsReceived: currentUser.friendsRequests.received.length,
+        userDisplayName: currentUser.displayName
+      }));
+
       res.json({
         message: `${currentUser.displayName} accepted ${user.displayName}'s friends request.`,
         newCurrentUserFriend: userId
@@ -190,6 +205,8 @@ router.post('/users/accept-friends-request/', async (req, res) => {
 
 router.post('/users/decline-friends-request/', async (req, res) => {
   try {
+    const io = req.app.locals.io;
+
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
     let user = await User.findOne({ displayName: req.body.userDisplayName });
     const userId = user._id.toString();
@@ -214,6 +231,12 @@ router.post('/users/decline-friends-request/', async (req, res) => {
         user,
         { new: true }
       );
+
+      io.emit("countersListener", JSON.stringify({
+        friendsRequestsReceived: currentUser.friendsRequests.received.length,
+        userDisplayName: currentUser.displayName
+      }));
+
       res.json({
         message: `${currentUser.displayName} declined ${user.displayName}'s friends request.`,
         newCurrentUserFriend: userId
@@ -284,6 +307,8 @@ router.post("/register", (req, res) => {
       res.status(201).send({
         message: "User Created Successfully",
         result,
+        verified: user.verified,
+        friendsRequestsReceived: user.friendsRequests.received.length,
         token
       });
     }).catch((error) => {

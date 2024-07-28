@@ -1,14 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Button, buttonVariants } from "@/components/ui/shadcn/button";
+import { Button } from "@/components/ui/shadcn/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
 import { Contact, Settings } from "lucide-react";
 import { Badge } from "../ui/shadcn/badge";
-import { getAuthUser } from "@/fetch";
+import { SocketIoContext } from "@/context/SocketIoContext";
 
 function NavBar() {
+  const { counters } = useContext(SocketIoContext);
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -27,12 +28,10 @@ function NavBar() {
   };
 
   const handleShowBadge = () => {
-    if (currentUser) {
-      if (currentUser.friendsRequestsReceived > 0) {
-        return true;
-      } else {
-        return false;
-      }
+    if (counters.friendsRequestsReceived > 0) {
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -54,12 +53,17 @@ function NavBar() {
               <li className="ml-auto">
                 <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="outline_white">{currentUser.displayName}</Button>
+                    <Button variant="outline_white">
+                      {currentUser.displayName}
+                    </Button>
                   </SheetTrigger>
                   <SheetContent>
                     <SheetHeader>
                       <SheetTitle className="flex items-center gap-5">
-                        {currentUser.displayName} {!currentUser.verified && "(not verified)"}
+                        <span className="cursor-pointer hover:opacity-90 transition-opacity" onClick={() => navigate(`/user/${currentUser.displayName}`)}>
+                          {currentUser.displayName}
+                        </span>
+                        {!currentUser.verified && "(not verified)"}
                         {currentUser.displayName === "kubek" && (
                           <Button variant="destructive" onClick={() => {
                             navigate('/admin');
@@ -78,7 +82,7 @@ function NavBar() {
                           <span>Friends</span>
                         </span>
                         {handleShowBadge() && (
-                          <Badge className="absolute -top-2 -right-2" variant="destructive">{currentUser.friendsRequestsReceived}</Badge>
+                          <Badge className="absolute -top-2 -right-2" variant="destructive">{counters.friendsRequestsReceived}</Badge>
                         )}
                       </Button>
                       <Button onClick={() => {

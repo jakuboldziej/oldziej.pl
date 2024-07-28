@@ -1,7 +1,7 @@
-const { ftpConn } = require("../server");
+const { ftpConn } = require("../server")
 const { mongoose } = require("mongoose");
 
-const FtpFolderSchema = new mongoose.Schema ({
+const FtpFolderSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,

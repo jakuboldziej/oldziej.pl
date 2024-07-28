@@ -6,20 +6,25 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/shadcn/input';
 import { AuthContext } from '@/context/AuthContext';
 import { acceptFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/fetch';
-import { Copy, Loader2, Menu, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
+import { Copy, Loader2, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
+import RedDot from "@/assets/images/icons/red_dot.png";
+import GreenDot from "@/assets/images/icons/green_dot.png";
+import { SocketIoContext } from '@/context/SocketIoContext';
+import { useNavigate } from 'react-router';
 
 function Friends() {
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  document.title = "Oldziej | Friends";
+
+  const navigate = useNavigate();
+
+  const { onlineFriends, counters } = useContext(SocketIoContext);
+  const { currentUser } = useContext(AuthContext);
 
   const [authUser, setAuthUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [typeFriendsCode, setTypeFriendsCode] = useState('');
   const [err, setErr] = useState("");
-
-  useEffect(() => {
-    console.log(currentUser);
-  }, [currentUser]);
 
   const handleSendNewFriendsRequest = async (e) => {
     e.preventDefault();
@@ -28,7 +33,6 @@ function Friends() {
       currentUserDisplayName: currentUser.displayName,
       userFriendCode: typeFriendsCode
     });
-
     if (response?.sentToUserDisplayName) {
       const pendingFriend = await getAuthUser(response.sentToUserDisplayName);
       authUser.friendsRequests.pending.push({
@@ -56,24 +60,19 @@ function Friends() {
       userDisplayName: userDisplayName
     });
     const fetchFriend = await getAuthUser(userDisplayName);
-    const updatedFriends = await updateAuthUserFriends(false, authUser.friends, {
+    const fetchFriendData = {
       _id: fetchFriend._id,
       displayName: fetchFriend.displayName,
       friends: fetchFriend.friends,
-    });
+    }
     const updatedReceivedFriendsRequests = authUser.friendsRequests.received.filter((fUser) => fUser.displayName !== userDisplayName);
     setAuthUser((prev) => ({
       ...prev,
-      friends: updatedFriends,
+      friends: [...prev.friends, fetchFriendData],
       friendsRequests: {
         pending: prev.friendsRequests.pending,
         received: updatedReceivedFriendsRequests
       }
-    }));
-
-    setCurrentUser((prev) => ({
-      ...prev,
-      friendsRequestsReceived: prev.friendsRequestsReceived - 1
     }));
   }
 
@@ -90,11 +89,6 @@ function Friends() {
         pending: prev.friendsRequests.pending,
         received: updatedReceivedFriendsRequests
       }
-    }));
-
-    setCurrentUser((prev) => ({
-      ...prev,
-      friendsRequestsReceived: prev.friendsRequestsReceived - 1
     }));
   }
 
@@ -136,11 +130,56 @@ function Friends() {
         _id: fetchFriend._id,
         displayName: fetchFriend.displayName,
         friends: fetchFriend.friends,
+        online: fetchFriend.online
       }
     });
 
     return await Promise.all(updatedAuthUserFriends);
   }
+
+  const updateOnlineFriends = async (updatedOnlineFriends) => {
+    const updatedOnline = authUser.friends.map((user) => {
+      const friend = updatedOnlineFriends.find((onlineFriend) => onlineFriend.displayName === user.displayName);
+      if (friend) {
+        return {
+          _id: friend._id,
+          displayName: friend.displayName,
+          friends: friend.friends,
+          online: friend.online
+        }
+      }
+      else return user;
+    });
+    const updatedFriends = await updateAuthUserFriends(false, updatedOnline);
+    setAuthUser((prev) => ({
+      ...prev,
+      friends: updatedFriends
+    }));
+  }
+
+  useEffect(() => {
+    const updateReceivedRequests = async () => {
+      let fetchAuthUser = await getAuthUser(currentUser.displayName);
+      const updatedReceivedRequests = fetchAuthUser.friendsRequests.received.map(async (userId) => {
+        const receivedFriend = await getAuthUser(userId);
+        return {
+          _id: receivedFriend._id,
+          displayName: receivedFriend.displayName,
+        }
+      });
+
+      fetchAuthUser.friendsRequests.received = await Promise.all(updatedReceivedRequests);
+      fetchAuthUser.friends = authUser.friends;
+      setAuthUser(fetchAuthUser);
+    }
+    authUser?.displayName && counters.friendsRequestsReceived > 0 && updateReceivedRequests();
+  }, [counters.friendsRequestsReceived, authUser?.displayName]);
+
+  useEffect(() => {
+    if (authUser) {
+      updateOnlineFriends(onlineFriends);
+    }
+  }, [onlineFriends]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -251,12 +290,12 @@ function Friends() {
                               <span>{user.displayName}</span>
                               <div className='flex gap-1'>
                                 <MyTooltip title="Accept request">
-                                  <Button onClick={() => handleAcceptFriendsRequest(user.displayName)} variant="outline_green" size="icon" className="justify-center">
+                                  <Button type="button" onClick={() => handleAcceptFriendsRequest(user.displayName)} variant="outline_green" size="icon" className="justify-center">
                                     <UserRoundCheck />
                                   </Button>
                                 </MyTooltip>
                                 <MyTooltip title="Decline request">
-                                  <Button onClick={() => handleDeclineFriendsRequest(user.displayName)} variant="outline_red" size="icon" className="justify-center">
+                                  <Button type="button" onClick={() => handleDeclineFriendsRequest(user.displayName)} variant="outline_red" size="icon" className="justify-center">
                                     <UserRoundX />
                                   </Button>
                                 </MyTooltip>
@@ -283,7 +322,10 @@ function Friends() {
                 authUser.friends.length > 0 ? authUser.friends.map((friend) => (
                   <div key={friend._id} className='friend relative rounded-lg border border-green w-40 h-20'>
                     <div className='flex flex-col items-start p-4'>
-                      <span>{friend.displayName}</span>
+                      <span className='flex items-center gap-2'>
+                        {friend.displayName}
+                        {friend.online ? <img src={GreenDot} className='h-[15px]' /> : <img src={RedDot} className='h-[15px]' />}
+                      </span>
                       <span className='text-sm text-slate-400'>Friends: {friend.friends.length}</span>
                     </div>
                     <span className='absolute top-0 right-2 h-full flex items-center'>
@@ -294,6 +336,7 @@ function Friends() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
+                          <DropdownMenuItem className='gap-2' onClick={() => navigate(`/user/${friend.displayName}`)}><User /> Profile</DropdownMenuItem>
                           <DropdownMenuItem className='gap-2' onClick={() => handleRemoveFriend(friend.displayName)}><UserMinus />Remove friend</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

@@ -2,14 +2,15 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUsers, getFtpUser, putAuthUser } from '@/fetch';
+import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUser, getAuthUsers, getFtpUser, putAuthUser, removeFriend } from '@/fetch';
 import { Copy, Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import CopyTextButton from '../Home/CopyTextButton';
 import MyTooltip from '../Home/MyComponents/MyTooltip';
 
-function AuthUsersTable() {
+function AuthUsersTable({ props }) {
+  const { refreshingData, setRefreshingData } = props;
   const navigate = useNavigate();
 
   const [authUsers, setAuthUsers] = useState(null);
@@ -28,7 +29,22 @@ function AuthUsersTable() {
 
     await deleteDartsUser(selectedUser.displayName);
     await deleteFtpUser(selectedUser.displayName);
+
+    // Remove deleted user from friends
+    authUsers.map(async (user) => {
+      if (user.displayName !== selectedUser.displayName) {
+        const friendToRemove = await getAuthUser(selectedUser.displayName);
+
+        if (user.friends.includes(friendToRemove._id)) {
+          await removeFriend({
+            currentUserDisplayName: user.displayName,
+            userDisplayName: friendToRemove.displayName
+          });
+        }
+      }
+    });
     await deleteAuthUser(selectedUser.displayName);
+
     setDialogOpen(false);
     setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
   }
@@ -39,17 +55,25 @@ function AuthUsersTable() {
     setAuthUsers((prev) => prev.map((aUser) => aUser.displayName === user.displayName ? user : aUser));
   }
 
-  useEffect(() => {
-    const fetchAuthUsers = async () => {
-      try {
-        const resUsers = await getAuthUsers();
-        setAuthUsers(resUsers);
-        setIsLoading(false);
-      } catch (err) {
-        console.log('Error fetching', err);
-        setIsLoading(false);
-      }
+  const fetchAuthUsers = async () => {
+    try {
+      const resUsers = await getAuthUsers();
+      setAuthUsers(resUsers);
+      setIsLoading(false);
+    } catch (err) {
+      console.log('Error fetching', err);
+      setIsLoading(false);
     }
+  }
+
+  useEffect(() => {
+    if (refreshingData) {
+      fetchAuthUsers();
+      setRefreshingData(false);
+    }
+  }, [refreshingData]);
+
+  useEffect(() => {
     fetchAuthUsers();
   }, []);
 
@@ -67,6 +91,7 @@ function AuthUsersTable() {
               <TableHead>DisplayName</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Friends Code</TableHead>
+              <TableHead>Online</TableHead>
               <TableHead>Verified</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
@@ -87,6 +112,7 @@ function AuthUsersTable() {
                     </CopyTextButton>
                   </div>
                 </TableCell>
+                <TableCell>{user.online ? "Yes" : "No"}</TableCell>
                 <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
@@ -123,8 +149,8 @@ function AuthUsersTable() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
-            <Button variant='outline_red' onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_green' onClick={handleDeleteUser}>Delete</Button>
+            <Button variant='outline_green' onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_red' onClick={handleDeleteUser}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

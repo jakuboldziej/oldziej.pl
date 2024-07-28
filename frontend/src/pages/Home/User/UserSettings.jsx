@@ -1,4 +1,6 @@
 function UserSettings() {
+  document.title = "Oldziej | Settings";
+
   return (
     <div className='settings text-white text-center'>
       UserSettings

@@ -70,21 +70,21 @@ function Register() {
         friendsCode
       });
 
-      const userState = {
-        displayName: displayName,
-        verified: response.verified,
-        friendsRequestsReceived: 0
-      }
-
       signIn({
         auth: {
           token: userRes.token,
           type: "Bearer"
         },
-        userState: userState
+        userState: {
+          displayName: displayName,
+          verified: userRes.verified,
+        }
       });
 
-      setCurrentUser(userState);
+      setCurrentUser({
+        displayName: displayName,
+        verified: userRes.verified,
+      });
 
       navigate("/login");
       setIsLoading(false);
@@ -118,7 +118,7 @@ function Register() {
                 <span className="focus-input100" data-placeholder="&#xf191;"></span>
               </div>
               <div className="container-login100-form-btn">
-                <button className="login100-form-btn">
+                <button disabled={password.length < 6} className="login100-form-btn">
                   Register
                 </button>
               </div>

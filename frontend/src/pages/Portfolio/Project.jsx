@@ -17,7 +17,7 @@ import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
-import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiTailwindcss } from '@icons-pack/react-simple-icons';
+import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
 import { PortfolioContext } from '@/context/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
@@ -64,10 +64,12 @@ function Project() {
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
         <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiSocketdotio key={'#FFFFFF2'} width={46} height={46} fill='#FFFFFF' />,
         <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
         <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
         <SiIcons8 key={'#1FB141'} width={46} height={46} fill='#1FB141' />,
+        <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />,
         <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
         <SiChartdotjs key={'#FF6384'} width={46} height={46} fill='#FF6384' />,
       ]);
@@ -78,6 +80,7 @@ function Project() {
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
         <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
+        <SiSocketdotio key={'#FFFFFF2'} width={46} height={46} fill='#FFFFFF' />,
         <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
         <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,

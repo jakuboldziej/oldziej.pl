@@ -13,6 +13,7 @@ import { buttonVariants } from "@/components/ui/shadcn/button";
 import UserDataTable from "@/components/Home/Darts/UserDataTable";
 
 function DartsGame() {
+  document.title = "Oldziej | Darts Game";
   const [show, setShow] = useState(false);
 
   function handleShow(breakpoint) {
