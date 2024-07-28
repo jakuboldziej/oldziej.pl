@@ -20,8 +20,6 @@ function NavBar() {
     setCurrentUser(null);
   }
 
-  const [authUser, setAuthUser] = useState();
-
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const handleSheetClose = () => {
@@ -29,23 +27,14 @@ function NavBar() {
   };
 
   const handleShowBadge = () => {
-    if (authUser) {
-      if (authUser.sumOfFriendsRequests > 0) {
+    if (currentUser) {
+      if (currentUser.friendsRequestsReceived > 0) {
         return true;
       } else {
         return false;
       }
     }
   }
-
-  useLayoutEffect(() => {
-    const fetchAuthUser = async () => {
-      const resAuthUser = await getAuthUser(currentUser.displayName);
-      resAuthUser.sumOfFriendsRequests = resAuthUser.friendsRequests.pending.length + resAuthUser.friendsRequests.received.length;
-      setAuthUser(resAuthUser);
-    }
-    fetchAuthUser();
-  }, []);
 
   return (
     <>
@@ -89,7 +78,7 @@ function NavBar() {
                           <span>Friends</span>
                         </span>
                         {handleShowBadge() && (
-                          <Badge className="absolute -top-2 -right-2" variant="destructive">{authUser.sumOfFriendsRequests}</Badge>
+                          <Badge className="absolute -top-2 -right-2" variant="destructive">{currentUser.friendsRequestsReceived}</Badge>
                         )}
                       </Button>
                       <Button onClick={() => {

@@ -11,9 +11,6 @@ function DartsUsersTable() {
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [isHovered, setIsHovered] = useState({
-    visible: false
-  });
 
   const handleDialogOpen = (user) => {
     setDialogOpen(true);
@@ -47,8 +44,6 @@ function DartsUsersTable() {
         }));
       }
     }
-
-    setIsHovered((prev) => ({ ...prev, visible: false }));
   }
 
   useEffect(() => {
@@ -105,14 +100,9 @@ function DartsUsersTable() {
                       <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onMouseLeave={() => setIsHovered((prev) => ({ ...prev, visible: false }))}
-                        onMouseEnter={() => setIsHovered((prev) => ({ ...prev, visible: true }))}
                         onClick={() => handleVisibleUser(user)}
                       >
-                        {user.visible ?
-                          isHovered.visible ? <EyeOff height={20} /> : <Eye height={20} />
-                          : isHovered.visible ? <Eye height={20} /> : <EyeOff height={20} />
-                        }
+                        {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
                         {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>

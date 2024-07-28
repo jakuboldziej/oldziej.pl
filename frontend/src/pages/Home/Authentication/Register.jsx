@@ -9,7 +9,7 @@ import { AuthContext } from "@/context/AuthContext";
 function Register() {
   document.title = "Oldziej | Register";
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -70,13 +70,21 @@ function Register() {
         friendsCode
       });
 
+      const userState = {
+        displayName: displayName,
+        verified: response.verified,
+        friendsRequestsReceived: 0
+      }
+
       signIn({
         auth: {
           token: userRes.token,
           type: "Bearer"
         },
-        userState: { displayName: displayName, verified: false }
+        userState: userState
       });
+
+      setCurrentUser(userState);
 
       navigate("/login");
       setIsLoading(false);

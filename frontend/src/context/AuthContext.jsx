@@ -8,7 +8,7 @@ const store = createStore({
   authType: "cookie",
   cookieDomain: window.location.hostname,
   cookieSecure: false,
-})
+});
 
 export const AuthContext = createContext();
 

@@ -386,6 +386,60 @@ export const sendFriendsRequest = async (data) => {
   return await response.json();
 }
 
+export const acceptFriendsRequest = async (data) => {
+  const currentUserDisplayName = data.currentUserDisplayName;
+  const userDisplayName = data.userDisplayName;
+
+  const response = await fetch(`${mongodbApiUrl}/auth/users/accept-friends-request/`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentUserDisplayName: currentUserDisplayName,
+      userDisplayName: userDisplayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
+}
+
+export const declineFriendsRequest = async (data) => {
+  const currentUserDisplayName = data.currentUserDisplayName;
+  const userDisplayName = data.userDisplayName;
+
+  const response = await fetch(`${mongodbApiUrl}/auth/users/decline-friends-request/`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentUserDisplayName: currentUserDisplayName,
+      userDisplayName: userDisplayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
+}
+
+export const removeFriend = async (data) => {
+  const currentUserDisplayName = data.currentUserDisplayName;
+  const userDisplayName = data.userDisplayName;
+
+  const response = await fetch(`${mongodbApiUrl}/auth/users/remove-friend/`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentUserDisplayName: currentUserDisplayName,
+      userDisplayName: userDisplayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
 // Statistics
 
 // Darts

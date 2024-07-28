@@ -68,21 +68,21 @@ function Login() {
       return;
     }
 
+    const userState = {
+      displayName: displayName,
+      verified: response.verified,
+      friendsRequestsReceived: response.friendsRequestsReceived
+    }
+
     signIn({
       auth: {
         token: response.token,
         type: "Bearer"
       },
-      userState: {
-        displayName: displayName,
-        verified: response.verified
-      }
+      userState: userState
     });
 
-    setCurrentUser({
-      displayName: displayName,
-      verified: response.verified,
-    });
+    setCurrentUser(userState);
 
     if (searchParams.get("returnUrl")) {
       navigate(searchParams.get("returnUrl"), { replace: true });

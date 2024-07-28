@@ -101,32 +101,32 @@ router.post('/users/send-friends-request/', async (req, res) => {
 
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
     let user = await User.findOne({ friendsCode: userFriendCode });
-
+    if (!user) return res.json({
+      message: `Friend code is not valid (${userFriendCode}).`
+    });
     const userId = user._id.toString()
+    const currentUserId = currentUser._id.toString();
+
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
-    const isFriendRequestAlreadyPending = currentUser.friendsRequests.pending.find((friendId) => friendId === userId);
-    const isUserFriendCodeValid = user.friendsCode === userFriendCode ? true : false;
+    const isCurrentUserAlreadyPending = currentUser.friendsRequests.pending.find((friendId) => friendId === userId);
+    const isUserAlreadyPending = user.friendsRequests.pending.find((friendId) => friendId === currentUserId);
     const isCurrentUserSendingToHimself = currentUser.friendsCode === userFriendCode ? true : false;
 
     if (isUserFriendsWithCurrentUser) return res.json({
-      friends: true,
       message: `You are already friends with ${user.displayName}.`
     });
-    else if (isFriendRequestAlreadyPending) return res.json({
-      friends: false,
+    else if (isCurrentUserAlreadyPending) return res.json({
       message: `You already sent friend request to ${user.displayName}.`
     });
-    else if (!isUserFriendCodeValid) return res.json({
-      friends: false,
-      message: `Friend code is not valid (${userFriendCode}).`
+    else if (isUserAlreadyPending) return res.json({
+      message: `${user.displayName} already sent you a friend request.`
     });
     else if (isCurrentUserSendingToHimself) return res.json({
-      friends: false,
       message: `You can't send friend request to yourself!`
     });
     else {
       currentUser.friendsRequests.pending.push(userId);
-      user.friendsRequests.received.push(currentUser._id.toString());
+      user.friendsRequests.received.push(currentUserId);
 
       await User.findByIdAndUpdate(
         currentUser._id,
@@ -140,8 +140,8 @@ router.post('/users/send-friends-request/', async (req, res) => {
       );
 
       return res.json({
-        friends: false,
-        message: `Friend request sent to ${user.displayName}.`
+        message: `Friend request sent to ${user.displayName}.`,
+        sentToUserDisplayName: user.displayName
       })
     }
   } catch (err) {
@@ -149,14 +149,112 @@ router.post('/users/send-friends-request/', async (req, res) => {
   }
 });
 
-router.get('/users/accept-friends-request/:userId', async (req, res) => {
+router.post('/users/accept-friends-request/', async (req, res) => {
   try {
-    const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName });
-    const userId = (await User.findOne({ displayName: req.params.userDisplayName }))._id.toString();
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
+    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    const userId = user._id.toString();
+    const currentUserId = currentUser._id.toString();
+
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
 
-    if (isUserFriendsWithCurrentUser) res.json(true)
-    else res.json(false)
+    if (isUserFriendsWithCurrentUser) return res.json({
+      message: `You are already friends with ${user.displayName}.`
+    });
+    else {
+      currentUser.friendsRequests.received = currentUser.friendsRequests.received.filter((id) => id !== userId);
+      user.friendsRequests.pending = user.friendsRequests.pending.filter((id) => id !== currentUserId);
+
+      currentUser.friends.push(userId);
+      user.friends.push(currentUserId);
+
+      await User.findByIdAndUpdate(
+        currentUser._id,
+        currentUser,
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        user._id,
+        user,
+        { new: true }
+      );
+      res.json({
+        message: `${currentUser.displayName} accepted ${user.displayName}'s friends request.`,
+        newCurrentUserFriend: userId
+      })
+    }
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.post('/users/decline-friends-request/', async (req, res) => {
+  try {
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
+    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    const userId = user._id.toString();
+    const currentUserId = currentUser._id.toString();
+
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+
+    if (isUserFriendsWithCurrentUser) return res.json({
+      message: `You are already friends with ${user.displayName}.`
+    });
+    else {
+      currentUser.friendsRequests.received = currentUser.friendsRequests.received.filter((id) => id !== userId);
+      user.friendsRequests.pending = user.friendsRequests.pending.filter((id) => id !== currentUserId);
+
+      await User.findByIdAndUpdate(
+        currentUser._id,
+        currentUser,
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        user._id,
+        user,
+        { new: true }
+      );
+      res.json({
+        message: `${currentUser.displayName} declined ${user.displayName}'s friends request.`,
+        newCurrentUserFriend: userId
+      })
+    }
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.post('/users/remove-friend/', async (req, res) => {
+  try {
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
+    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    const userId = user._id.toString();
+    const currentUserId = currentUser._id.toString();
+
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+
+    if (!isUserFriendsWithCurrentUser) return res.json({
+      message: `${currentUser.displayName} is not friends with ${user.displayName}.`
+    });
+    else {
+      currentUser.friends = currentUser.friends.filter((id) => id !== userId);
+      user.friends = user.friends.filter((id) => id !== currentUserId);
+
+      await User.findByIdAndUpdate(
+        currentUser._id,
+        currentUser,
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        user._id,
+        user,
+        { new: true }
+      );
+      res.json({
+        message: `${currentUser.displayName} removed ${user.displayName} as a friend.`,
+        removedFriend: userId
+      })
+    }
   } catch (err) {
     res.json({ message: err.message })
   }
@@ -224,7 +322,8 @@ router.post("/login", (req, res) => {
       res.status(200).send({
         message: "Login Successful",
         token,
-        verified: user.verified
+        verified: user.verified,
+        friendsRequestsReceived: user.friendsRequests.received.length
       });
     }).catch((error) => {
       res.status(400).send({
