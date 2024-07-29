@@ -6,7 +6,7 @@ import { PortfolioContext } from '@/context/PortfolioContext';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function ProjectsDrawer({ props }) {
-  const { projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = params;
+  const { projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = props;
   const { langText } = useContext(PortfolioContext);
 
   const windowHeight = window.innerHeight;
