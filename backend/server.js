@@ -1,5 +1,6 @@
 const dotenv = require('dotenv');
 const path = require('path');
+const bcrypt = require("bcrypt");
 
 require('dotenv').config()
 
@@ -9,6 +10,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
+const { instrument, RedisStore } = require("@socket.io/admin-ui");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -21,7 +23,7 @@ app.use((req, res, next) => {
   res.setHeader("Content-Security-Policy", "upgrade-insecure-requests");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   next();
 });
 
@@ -55,37 +57,41 @@ const domain = environment === "production" ? process.env.SOCKETIO_CORS_DOMAIN :
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: domain,
+    origin: [
+      domain,
+      "https://admin.socket.io"
+    ],
+    credentials: true
   },
-  transports: ['websocket']
+  transports: ['websocket'],
 });
 
 app.locals.io = io;
 
-const { addingOnlineUser, removeUserOnDisconnect } = require('./socket.io/listeners');
+const { addingOnlineUser, scheduleUserOffline } = require('./socket.io/listeners');
 
 io.on('connection', (socket) => {
-  console.log("New connection", socket.id);
-  // Listeners 
 
   // Handling Online Users
-
   socket.on("addingOnlineUser", (data) => {
-    const onlineUsersData = addingOnlineUser(data);
-    io.emit('onlineUsersListener', JSON.stringify({
-      updatedOnlineUsers: onlineUsersData.onlineUsers,
-      updatedUser: onlineUsersData.updatedUser,
-      isUserOnline: true
-    }));
+    addingOnlineUser(data, socket.id, io);
   });
 
   socket.on('disconnect', () => {
-    const onlineUsersData = removeUserOnDisconnect(socket.id)
-    io.emit('onlineUsersListener', JSON.stringify({
-      updatedOnlineUsers: onlineUsersData.onlineUsers,
-      updatedUser: onlineUsersData.updatedUser,
-      isUserOnline: false
-    }));
+    scheduleUserOffline(socket.id, io);
+  });
+});
+
+// Admin UI
+
+bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
+  instrument(io, {
+    auth: {
+      type: 'basic',
+      username: "admin",
+      password: hashedPassword
+    },
+    mode: environment
   });
 });
 

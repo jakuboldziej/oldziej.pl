@@ -4,5 +4,6 @@ const socketIoUrl = import.meta.env.MODE === "development" ? import.meta.env.VIT
 
 export const socket = io(socketIoUrl, {
   autoConnect: false,
-  transports: ['websocket']
+  transports: ['websocket'],
+  withCredentials: true
 });

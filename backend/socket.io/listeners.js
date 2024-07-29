@@ -3,23 +3,56 @@ const { changeDbUserOnlineStatus } = require('./utils');
 // Handling Online Users
 
 let onlineUsers = [];
+let disconnectTimeouts = {};
 
-const addingOnlineUser = (data) => {
+const addingOnlineUser = (data, socketId, io) => {
   const emit = JSON.parse(data);
 
-  const isUserOnline = onlineUsers.find((user) => user._id === emit.user._id)
+  const existingUser = onlineUsers.find((user) => user._id === emit.user._id);
 
-  if (!isUserOnline) {
-    onlineUsers.push(emit.user);
+  if (!existingUser) {
+    onlineUsers.push({ ...emit.user, socketId });
     changeDbUserOnlineStatus(emit.user._id, true);
 
-    return { onlineUsers, updatedUser: { _id: emit.user._id, displayName: emit.user.displayName } };
+    io.emit('onlineUsersListener', JSON.stringify({
+      updatedOnlineUsers: onlineUsers,
+      updatedUser: {
+        _id: emit.user._id,
+        displayName: emit.user.displayName
+      },
+      isUserOnline: true
+    }));
+  } else {
+    existingUser.socketId = socketId;
   }
-  return { onlineUsers, updatedUser: null };
+
+  // Clearing the Timeout
+  if (disconnectTimeouts[emit.user._id]) {
+    clearTimeout(disconnectTimeouts[emit.user._id]);
+    delete disconnectTimeouts[emit.user._id];
+  }
 }
 
-const removeUserOnDisconnect = (socketId) => {
+const scheduleUserOffline = (socketId, io) => {
+  const delay = 30000;
+
   const user = onlineUsers.find((user) => user.socketId === socketId);
+
+  if (user) {
+    disconnectTimeouts[user._id] = setTimeout(() => {
+      const onlineUsersData = removeUserOnDisconnect(user._id);
+
+      io.emit('onlineUsersListener', JSON.stringify({
+        updatedOnlineUsers: onlineUsersData.onlineUsers,
+        updatedUser: onlineUsersData.updatedUser,
+        isUserOnline: false
+      }));
+    }, delay);
+  }
+}
+
+const removeUserOnDisconnect = (userId) => {
+  const user = onlineUsers.find((user) => user._id === userId);
 
   if (user) {
     const index = onlineUsers.indexOf(user);
@@ -32,7 +65,11 @@ const removeUserOnDisconnect = (socketId) => {
   }
 }
 
+// Listeners
+
+
 module.exports = {
   addingOnlineUser,
   removeUserOnDisconnect,
+  scheduleUserOffline,
 };

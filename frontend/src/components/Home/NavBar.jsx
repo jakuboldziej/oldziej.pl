@@ -9,7 +9,7 @@ import { Badge } from "../ui/shadcn/badge";
 import { SocketIoContext } from "@/context/SocketIoContext";
 
 function NavBar() {
-  const { counters } = useContext(SocketIoContext);
+  const { listeners } = useContext(SocketIoContext);
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ function NavBar() {
   };
 
   const handleShowBadge = () => {
-    if (counters.friendsRequestsReceived > 0) {
+    if (listeners.friendsRequestsReceived > 0) {
       return true;
     } else {
       return false;
@@ -82,7 +82,7 @@ function NavBar() {
                           <span>Friends</span>
                         </span>
                         {handleShowBadge() && (
-                          <Badge className="absolute -top-2 -right-2" variant="destructive">{counters.friendsRequestsReceived}</Badge>
+                          <Badge className="absolute -top-2 -right-2" variant="destructive">{listeners.friendsRequestsReceived}</Badge>
                         )}
                       </Button>
                       <Button onClick={() => {

@@ -18,7 +18,7 @@ function Friends() {
 
   const navigate = useNavigate();
 
-  const { onlineFriends, counters } = useContext(SocketIoContext);
+  const { onlineFriends, listeners, setListeners } = useContext(SocketIoContext);
   const { currentUser } = useContext(AuthContext);
 
   const [authUser, setAuthUser] = useState(null);
@@ -64,6 +64,8 @@ function Friends() {
       _id: fetchFriend._id,
       displayName: fetchFriend.displayName,
       friends: fetchFriend.friends,
+      friendsCode: fetchFriend.friendsCode,
+      online: fetchFriend.online
     }
     const updatedReceivedFriendsRequests = authUser.friendsRequests.received.filter((fUser) => fUser.displayName !== userDisplayName);
     setAuthUser((prev) => ({
@@ -130,6 +132,7 @@ function Friends() {
         _id: fetchFriend._id,
         displayName: fetchFriend.displayName,
         friends: fetchFriend.friends,
+        friendsCode: fetchFriend.friendsCode,
         online: fetchFriend.online
       }
     });
@@ -157,6 +160,51 @@ function Friends() {
     }));
   }
 
+  // Listeners
+
+  useEffect(() => {
+    if (authUser) {
+      updateOnlineFriends(onlineFriends);
+    }
+  }, [onlineFriends]);
+
+  useEffect(() => {
+    const updateFriends = async () => {
+      const updatedPending = authUser.friendsRequests.pending.filter((req) => req.displayName !== listeners.acceptedRequestFrom);
+      const fetchFriend = await getAuthUser(listeners.acceptedRequestFrom);
+      const fetchFriendData = {
+        _id: fetchFriend._id,
+        displayName: fetchFriend.displayName,
+        friends: fetchFriend.friends,
+        friendsCode: fetchFriend.friendsCode,
+        online: fetchFriend.online
+      }
+
+      setAuthUser((prev) => ({
+        ...prev,
+        friends: [...prev.friends, fetchFriendData],
+        friendsRequests: {
+          received: prev.friendsRequests.received,
+          pending: updatedPending
+        }
+      }));
+      setListeners((prev) => ({
+        ...prev,
+        acceptedRequestFrom: ''
+      }));
+    }
+
+    if (listeners.acceptedRequestFrom && authUser?.displayName &&
+      authUser?.friendsRequests.pending.find((req) => req.displayName === listeners.acceptedRequestFrom)) {
+      updateFriends();
+    } else {
+      setListeners((prev) => ({
+        ...prev,
+        acceptedRequestFrom: ''
+      }));
+    }
+  }, [listeners.acceptedRequestFrom, authUser?.displayName]);
+
   useEffect(() => {
     const updateReceivedRequests = async () => {
       let fetchAuthUser = await getAuthUser(currentUser.displayName);
@@ -172,14 +220,9 @@ function Friends() {
       fetchAuthUser.friends = authUser.friends;
       setAuthUser(fetchAuthUser);
     }
-    authUser?.displayName && counters.friendsRequestsReceived > 0 && updateReceivedRequests();
-  }, [counters.friendsRequestsReceived, authUser?.displayName]);
+    authUser?.displayName && listeners.friendsRequestsReceived > 0 && updateReceivedRequests();
+  }, [listeners.friendsRequestsReceived, authUser?.displayName]);
 
-  useEffect(() => {
-    if (authUser) {
-      updateOnlineFriends(onlineFriends);
-    }
-  }, [onlineFriends]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -215,8 +258,8 @@ function Friends() {
   return (
     <>
       <div className='friends-page flex text-white text-center'>
-        <div className='wrapper flex flex-col sm:flex-row w-full'>
-          <div className='cards flex flex-col items-center p-5 sm:border-r border-green min-w-[380px]'>
+        <div className='wrapper flex flex-col-reverse sm:flex-row w-full'>
+          <div className='cards flex flex-col items-center p-2 sm:p-5 sm:border-r border-green min-w-[380px]'>
             <div className='fixed-wrapper flex flex-col gap-10 left-0 w-full sm:w-[380px]'>
               <div className='your-friends-code flex justify-center'>
                 <Card>
@@ -311,16 +354,16 @@ function Friends() {
               </div>
             </div>
           </div>
-          <div className='friends flex flex-col gap-5 w-full p-5'>
+          <div className='friends flex flex-col gap-5 w-full p-2 sm:p-5'>
             <span className='text-3xl border-b border-green pb-5'>Friends</span>
-            <div className='friends-list w-full flex flex-wrap gap-5'>
+            <div className='friends-list flex flex-wrap justify-center sm:justify-start gap-5'>
               {isLoading ? (
                 <div className="flex justify-center w-100 pt-3 w-full">
                   <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
               ) : (
                 authUser.friends.length > 0 ? authUser.friends.map((friend) => (
-                  <div key={friend._id} className='friend relative rounded-lg border border-green w-40 h-20'>
+                  <div key={friend._id} className='friend relative rounded-lg border border-green w-[47%] sm:w-40  h-20'>
                     <div className='flex flex-col items-start p-4'>
                       <span className='flex items-center gap-2'>
                         {friend.displayName}
@@ -337,6 +380,13 @@ function Friends() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
                           <DropdownMenuItem className='gap-2' onClick={() => navigate(`/user/${friend.displayName}`)}><User /> Profile</DropdownMenuItem>
+                          <CopyTextButton textToCopy={friend.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                            <DropdownMenuItem>
+                              <MyTooltip title="Copy code to clipboard">
+                                <span className='flex gap-2'><Copy /> Copy friends code</span>
+                              </MyTooltip>
+                            </DropdownMenuItem>
+                          </CopyTextButton>
                           <DropdownMenuItem className='gap-2' onClick={() => handleRemoveFriend(friend.displayName)}><UserMinus />Remove friend</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

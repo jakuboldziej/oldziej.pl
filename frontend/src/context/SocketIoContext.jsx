@@ -1,4 +1,4 @@
-import { socket } from '@/lib/socketio';
+import { socket } from '@/lib/socketio'; console.log
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { getAuthUser } from '@/fetch';
@@ -11,16 +11,17 @@ export const SocketIoContextProvider = ({ children }) => {
 
   const [isServerConnected, setIsServerConnected] = useState(socket.connected);
   const [onlineFriends, setOnlineFriends] = useState([]);
-  const [counters, setCounters] = useState({
+  const [listeners, setListeners] = useState({
     friendsRequestsReceived: 0,
-  })
+    acceptedRequestFrom: '',
+  });
 
   // Emitters
 
   const addingOnlineUser = async (displayName) => {
     const user = await getAuthUser(displayName);
 
-    setCounters((prev) => ({
+    setListeners((prev) => ({
       ...prev,
       friendsRequestsReceived: user.friendsRequests.received.length
     }));
@@ -40,7 +41,6 @@ export const SocketIoContextProvider = ({ children }) => {
   useEffect(() => {
     const getOnlineUsers = async (data) => {
       const { updatedOnlineUsers, isUserOnline, updatedUser } = JSON.parse(data);
-
       const authUser = await getAuthUser(currentUser.displayName);
       const updatedCurrentUserFriends = updatedOnlineUsers.filter((user) => {
         if (authUser.friends.includes(user._id)) return user;
@@ -57,26 +57,54 @@ export const SocketIoContextProvider = ({ children }) => {
       }
     }
 
-    const getCounters = async (data) => {
-      const { userDisplayName, ...counterData } = JSON.parse(data);
-      if (userDisplayName === currentUser.displayName) {
-        setCounters((prev) => ({
+    const sendFriendsRequest = (data) => {
+      const { ...requestData } = JSON.parse(data);
+
+      if (requestData.userDisplayName === currentUser.displayName) {
+        setListeners((prev) => ({
           ...prev,
-          ...counterData
+          friendsRequestsReceived: requestData.friendsRequestsReceived
         }));
 
-        if (counterData?.friendsRequestsReceived) {
-          ShowNewToast("Friends", "You have a new friend request!")
+        if (requestData?.friendsRequestsReceived) {
+          ShowNewToast("Friends", `${requestData.currentUserDisplayName} sent you a friend request!`)
         }
       }
     }
 
+    const acceptFriendsRequest = (data) => {
+      const { ...requestData } = JSON.parse(data);
+
+      if (requestData.accepted && requestData.sentFrom === currentUser.displayName) {
+        setListeners((prev) => ({
+          ...prev,
+          acceptedRequestFrom: requestData.sentTo
+        }));
+        ShowNewToast("Friends", `${requestData.sentTo} accepted your friends request!`)
+      }
+    }
+
+    const updateCounters = (data) => {
+      const { currentUserDisplayName, ...counterData } = JSON.parse(data);
+
+      if (currentUserDisplayName === currentUser.displayName) {
+        setListeners((prev) => ({
+          ...prev,
+          ...counterData
+        }));
+      }
+    }
+
     socket.on('onlineUsersListener', getOnlineUsers);
-    socket.on('countersListener', getCounters);
+    socket.on('sendFriendsRequest', sendFriendsRequest);
+    socket.on('acceptFriendsRequest', acceptFriendsRequest);
+    socket.on('updateCounters', updateCounters)
 
     return () => {
       socket.off('onlineUsersListener', getOnlineUsers);
-      socket.off('countersListener', getCounters);
+      socket.off('sendFriendsRequest', sendFriendsRequest);
+      socket.off('acceptFriendsRequest', acceptFriendsRequest);
+      socket.off('updateCounters', updateCounters);
     };
   }, [currentUser]);
 
@@ -119,7 +147,7 @@ export const SocketIoContextProvider = ({ children }) => {
   }, []);
 
   return (
-    <SocketIoContext.Provider value={{ isServerConnected, onlineFriends, counters }}>
+    <SocketIoContext.Provider value={{ isServerConnected, onlineFriends, listeners, setListeners }}>
       {children}
     </SocketIoContext.Provider>
   );

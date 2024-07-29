@@ -701,6 +701,10 @@ html {
 .friends-page {
   .cards {
     min-height: $containerHeight;
+
+    @media screen and (max-width: 640px) {
+      min-height: 0;
+    }
   }
 }
 

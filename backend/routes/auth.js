@@ -141,9 +141,10 @@ router.post('/users/send-friends-request/', async (req, res) => {
         { new: true }
       );
 
-      io.emit("countersListener", JSON.stringify({
+      io.emit("sendFriendsRequest", JSON.stringify({
         friendsRequestsReceived: user.friendsRequests.received.length,
-        userDisplayName: user.displayName
+        currentUserDisplayName: currentUser.displayName,
+        userDisplayName: user.displayName,
       }));
 
       return res.json({
@@ -188,9 +189,15 @@ router.post('/users/accept-friends-request/', async (req, res) => {
         { new: true }
       );
 
-      io.emit("countersListener", JSON.stringify({
-        friendsRequestsReceived: currentUser.friendsRequests.received.length,
-        userDisplayName: currentUser.displayName
+      io.emit("acceptFriendsRequest", JSON.stringify({
+        accepted: true,
+        sentFrom: user.displayName,
+        sentTo: currentUser.displayName,
+      }));
+
+      io.emit("updateCounters", JSON.stringify({
+        currentUserDisplayName: currentUser.displayName,
+        friendsRequestsReceived: currentUser.friendsRequests.received.length
       }));
 
       res.json({
@@ -232,9 +239,9 @@ router.post('/users/decline-friends-request/', async (req, res) => {
         { new: true }
       );
 
-      io.emit("countersListener", JSON.stringify({
-        friendsRequestsReceived: currentUser.friendsRequests.received.length,
-        userDisplayName: currentUser.displayName
+      io.emit("updateCounters", JSON.stringify({
+        currentUserDisplayName: currentUser.displayName,
+        friendsRequestsReceived: currentUser.friendsRequests.received.length
       }));
 
       res.json({
