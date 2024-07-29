@@ -9,6 +9,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
+const { createAdapter } = require("@socket.io/cluster-adapter");
+const { setupWorker } = require("@socket.io/sticky");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -56,10 +58,15 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: domain
-  }
+  },
+  transports: ["websocket"]
 });
 
 app.locals.io = io;
+
+io.adapter(createAdapter());
+
+setupWorker(io);
 
 const { addingOnlineUser, removeUserOnDisconnect } = require('./socket.io/listeners');
 
@@ -85,6 +92,14 @@ io.on('connection', (socket) => {
       updatedUser: onlineUsersData.updatedUser,
       isUserOnline: false
     }));
+  });
+
+  socket.on('error', (err) => {
+    console.error('Socket error:', err);
+  });
+
+  socket.on('connect_error', (err) => {
+    console.error('Socket connection error:', err);
   });
 });
 
