@@ -20,7 +20,7 @@ function DartsGame() {
     setShow(true);
   }
 
-  const { game, setGame } = useContext(DartsGameContext);
+  const { game } = useContext(DartsGameContext);
 
   if (!game) {
     return (

@@ -151,6 +151,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         "doors": 0
       },
     }
+
+    if (usersPlaying.length < 1) setUsersPodium(1);
     setUsersPlaying((prev) => [...prev, tempUser]);
     setNewUser('');
     setShowAddUser(false);

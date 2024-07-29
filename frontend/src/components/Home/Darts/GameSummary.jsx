@@ -60,6 +60,7 @@ function GameSummary({ show, setShow }) {
     const firstUser = lodash.cloneDeep(game.users[0]);
     const gameCopy = lodash.cloneDeep(game);
     const gameData = {
+      created_ad: Date.now(),
       active: true,
       podium: {
         1: null,

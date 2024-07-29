@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useContext, useState } from "react";
 import { AuthContext } from "@/context/AuthContext";
-import { Contact, Settings } from "lucide-react";
+import { Contact, Settings, Target } from "lucide-react";
 import { Badge } from "../ui/shadcn/badge";
 import { SocketIoContext } from "@/context/SocketIoContext";
 
@@ -73,7 +73,7 @@ function NavBar() {
                       </SheetTitle>
                     </SheetHeader>
                     <div className="py-5 text-white flex flex-col gap-5 w-fit">
-                      <Button className="relative" disabled={!currentUser.verified} onClick={() => {
+                      <Button className="relative w-fit" disabled={!currentUser.verified} onClick={() => {
                         navigate('/user/friends');
                         handleSheetClose();
                       }} variant="outline_lime">
@@ -86,11 +86,22 @@ function NavBar() {
                         )}
                       </Button>
                       <Button onClick={() => {
+                        navigate(`/darts/users/${currentUser.displayName}`);
+                        handleSheetClose();
+                      }}
+                        variant="outline_green"
+                        className="justify-between w-fit">
+                        <span className="flex items-center gap-2">
+                          <Target />
+                          <span>Darts Profile</span>
+                        </span>
+                      </Button>
+                      <Button onClick={() => {
                         navigate('/user/settings');
                         handleSheetClose();
                       }}
                         variant="outline_white"
-                        className="justify-between">
+                        className="justify-between w-fit">
                         <span className="flex items-center gap-2">
                           <Settings />
                           <span>Settings</span>
