@@ -9,8 +9,6 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
-const { createAdapter } = require("@socket.io/cluster-adapter");
-const { setupWorker } = require("@socket.io/sticky");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -61,16 +59,12 @@ const io = new Server(server, {
   }
 });
 
-if (environment === "production") {
-  io.adapter(createAdapter());
-  setupWorker(io);
-}
-
 app.locals.io = io;
 
 const { addingOnlineUser, removeUserOnDisconnect } = require('./socket.io/listeners');
 
 io.on('connection', (socket) => {
+  console.log("New connection", socket.id);
   // Listeners 
 
   // Handling Online Users
