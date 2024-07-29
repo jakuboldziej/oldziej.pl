@@ -9,8 +9,6 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
-const { createAdapter } = require("@socket.io/cluster-adapter");
-const { setupWorker } = require("@socket.io/sticky");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -54,19 +52,14 @@ app.get('*', (req, res) => {
 });
 
 const domain = environment === "production" ? process.env.SOCKETIO_CORS_DOMAIN : process.env.SOCKETIO_CORS_DOMAIN_LOCAL;
-const server = createServer(app);
+const server = createServer();
 const io = new Server(server, {
   cors: {
     origin: domain
   },
-  transports: ["websocket"]
 });
 
 app.locals.io = io;
-
-io.adapter(createAdapter());
-
-setupWorker(io);
 
 const { addingOnlineUser, removeUserOnDisconnect } = require('./socket.io/listeners');
 
