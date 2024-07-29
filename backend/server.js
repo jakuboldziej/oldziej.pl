@@ -52,11 +52,12 @@ app.get('*', (req, res) => {
 });
 
 const domain = environment === "production" ? process.env.SOCKETIO_CORS_DOMAIN : process.env.SOCKETIO_CORS_DOMAIN_LOCAL;
-const server = createServer();
+const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: domain
+    origin: domain,
   },
+  transports: ['websocket']
 });
 
 app.locals.io = io;
@@ -86,14 +87,6 @@ io.on('connection', (socket) => {
       isUserOnline: false
     }));
   });
-
-  socket.on('error', (err) => {
-    console.error('Socket error:', err);
-  });
-
-  socket.on('connect_error', (err) => {
-    console.error('Socket connection error:', err);
-  });
 });
 
-server.listen(3000, () => console.log('Server started on port 3000'))
+server.listen(3000, () => console.log('Server started on port 3000'));

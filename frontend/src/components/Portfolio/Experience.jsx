@@ -3,7 +3,7 @@ import IconClouds from './ExperienceComponents/IconClouds';
 import ProjectsDrawer from './ExperienceComponents/ProjectsDrawer';
 
 function Experience({ props }) {
-  const { experienceRef, projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = params;
+  const { experienceRef, projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen } = props;
   const drawerParams = { projectsRedirect, scrolledToProjects, drawerOpen, setDrawerOpen };
 
   return (

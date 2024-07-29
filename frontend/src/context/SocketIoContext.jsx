@@ -108,6 +108,10 @@ export const SocketIoContextProvider = ({ children }) => {
     socket.on('connect', connectToServer);
     socket.on('disconnect', disconnectFromServer);
 
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+    });
+
     return () => {
       socket.off('connect', connectToServer);
       socket.off('disconnect', disconnectFromServer);
