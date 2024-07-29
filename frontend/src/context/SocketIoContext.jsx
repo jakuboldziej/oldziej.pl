@@ -1,4 +1,4 @@
-import { socket } from '@/lib/socketio'; console.log
+import { socket } from '@/lib/socketio';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { getAuthUser } from '@/fetch';

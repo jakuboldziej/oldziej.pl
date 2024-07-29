@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
-const { instrument, RedisStore } = require("@socket.io/admin-ui");
+const { instrument } = require("@socket.io/admin-ui");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -71,7 +71,6 @@ app.locals.io = io;
 const { addingOnlineUser, scheduleUserOffline } = require('./socket.io/listeners');
 
 io.on('connection', (socket) => {
-
   // Handling Online Users
   socket.on("addingOnlineUser", (data) => {
     addingOnlineUser(data, socket.id, io);
