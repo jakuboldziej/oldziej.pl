@@ -50,7 +50,8 @@ function DartsUsersTable({ props }) {
 
   const fetchAuthUsers = async () => {
     try {
-      setDartsUsers(await getDartsUsers());
+      const fetchedDartsUsers = await getDartsUsers();
+      setDartsUsers(fetchedDartsUsers);
       setIsLoading(false);
     } catch (err) {
       console.log('Error fetching', err);

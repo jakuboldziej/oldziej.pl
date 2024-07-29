@@ -36,10 +36,19 @@ const handlePodium = () => {
   handleShow();
 }
 
+const handleNextLeg = () => {
+  console.log(game.legs);
+}
+
 const handleGameEnd = () => {
-  currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
-  currentUser.allGainedPoints = game.startPoints - currentUser.points;
-  handlePodium();
+  currentUser.allGainedPoints += game.startPoints - currentUser.points;
+  if (game.legs === 1) {
+    handlePodium();
+    return true;
+  } else {
+    handleNextLeg();
+    return false;
+  }
 }
 
 const handlePoints = (action, value) => {
@@ -52,10 +61,15 @@ const handlePoints = (action, value) => {
       turns[currentUser.currentTurn] = `T${value}`;
     }
   }
-  let end = false;
-  if (game.gameMode === "X01") end = handlePointsX01(setOverthrow);
-  if (game.gameMode === "Reverse X01") end = handlePointsReverseX01();
-  if (end) handleGameEnd();
+  let stop = false;
+  if (game.gameMode === "X01") stop = handlePointsX01(setOverthrow);
+  if (game.gameMode === "Reverse X01") stop = handlePointsReverseX01();
+  if (stop) {
+    const endGame = handleGameEnd();
+
+    if (endGame) return true;
+    else return false;
+  }
 }
 
 const handleDartsData = async () => {
@@ -76,6 +90,7 @@ const handleDartsData = async () => {
       if (game.gameMode === "X01") {
         dartUser.throws["overthrows"] += user.throws["overthrows"];
         dartUser.overAllPoints += game.startPoints - user.points;
+        currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
         if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
         if (parseFloat(user.avgPointsPerTurn) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.avgPointsPerTurn);

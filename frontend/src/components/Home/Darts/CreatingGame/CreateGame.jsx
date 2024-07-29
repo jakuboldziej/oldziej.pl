@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getDartsUsers, postDartsGame } from "@/fetch";
+import { getAuthUser, getDartsUser, getDartsUsers, postDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
@@ -38,7 +38,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 1; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
+  for (let i = 1; i <= 2; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
@@ -69,14 +69,21 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
     const getUsers = async () => {
       try {
-        const usersFetch = await getDartsUsers();
+        let fetchAuthUser = await getAuthUser(currentUser.displayName);
+        const fetchDartsUser = await getDartsUser(currentUser.displayName);
+        const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
+          const fetchFriendsDartsUser = await getDartsUser(friendsDisplayName);
+          return fetchFriendsDartsUser;
+        });
+
+        const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
         if (previousSettings) {
-          const usersNotInPreviousSettings = usersFetch
+          const usersNotInPreviousSettings = userFriends
             .filter((userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id) && userFetch.visible === true);
           setUsersNotPlaying(usersNotInPreviousSettings);
           setUsersPodium(1);
         } else {
-          setUsersNotPlaying(usersFetch);
+          setUsersNotPlaying([...userFriends, fetchDartsUser]);
         }
       } catch (error) {
         console.error("Error getting users: ", error);
@@ -203,10 +210,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       gameMode: selectGameMode,
       startPoints: selectStartPoints,
       checkOut: selectCheckOut,
-      sets: selectSets,
-      legs: selectLegs,
+      sets: selectGameMode === "X01" ? selectSets : 1,
+      legs: selectGameMode === "X01" ? selectLegs : 1,
       round: 1,
     }
+
     updatedUsers[0].turn = true;
     const currentUserCopy = lodash.cloneDeep(updatedUsers[0]);
     const gameCopy = lodash.pick(gameData, ['round', 'turn']);
@@ -217,6 +225,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       },
       user: currentUserCopy
     }];
+
     if (training === true) {
       gameData.training = true;
       setGame(gameData);
@@ -319,7 +328,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
                 <span>Add Users</span>
-                <Button className="transition-opacity" disabled={selectGameMode.includes("Reverse X01")} variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
+                <Button className="transition-opacity" disabled={selectGameMode.includes("Reverse X01") && usersPlaying.length === 2} variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
               </CardHeader>
               <hr />
               <CardContent className="card-content p-0">

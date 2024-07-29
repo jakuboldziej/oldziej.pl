@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Contact, Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -149,9 +150,8 @@ function DartsPage() {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
         let fetchAuthUser = await getAuthUser(currentUser.displayName);
-        const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendId) => {
-          const fetchAuthFriend = await getAuthUser(friendId);
-          const fetchDartsUser = await getDartsUser(fetchAuthFriend.displayName);
+        const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
+          const fetchDartsUser = await getDartsUser(friendsDisplayName);
           return fetchDartsUser;
         });
 
@@ -210,7 +210,7 @@ function DartsPage() {
       <div className="cards">
         <Card className="my-card friends">
           <CardHeader>
-            <CardTitle>Friends</CardTitle>
+            <CardTitle><Link to="/user/friends" className="hover:cursor-pointer hover:opacity-80">Friends</Link></CardTitle>
           </CardHeader>
           <CardContent className="info p-0">
             {isLoading ? <div className="flex justify-center w-100 pt-3">

@@ -43,11 +43,11 @@ export const SocketIoContextProvider = ({ children }) => {
       const { updatedOnlineUsers, isUserOnline, updatedUser } = JSON.parse(data);
       const authUser = await getAuthUser(currentUser.displayName);
       const updatedCurrentUserFriends = updatedOnlineUsers.filter((user) => {
-        if (authUser.friends.includes(user._id)) return user;
+        if (authUser.friends.includes(user.displayName)) return user;
       })
       setOnlineFriends(updatedCurrentUserFriends);
 
-      const isUserFriendsWithCurrentUser = authUser.friends.find((userId) => userId === updatedUser._id);
+      const isUserFriendsWithCurrentUser = authUser.friends.find((friendsDisplayName) => friendsDisplayName === updatedUser.displayName);
       if (isUserFriendsWithCurrentUser) {
         if (isUserOnline) {
           ShowNewToast(updatedUser.displayName, "Just went online.");
@@ -130,6 +130,7 @@ export const SocketIoContextProvider = ({ children }) => {
     }
 
     const disconnectFromServer = () => {
+
       setIsServerConnected(false);
     }
 

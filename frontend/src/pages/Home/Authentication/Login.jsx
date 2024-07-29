@@ -76,7 +76,7 @@ function Login() {
       userState: {
         displayName: displayName,
         verified: response.verified,
-      }
+      },
     });
 
     setCurrentUser({

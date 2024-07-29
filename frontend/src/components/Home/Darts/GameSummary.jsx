@@ -60,7 +60,7 @@ function GameSummary({ show, setShow }) {
     const firstUser = lodash.cloneDeep(game.users[0]);
     const gameCopy = lodash.cloneDeep(game);
     const gameData = {
-      created_ad: Date.now(),
+      created_at: Date.now(),
       active: true,
       podium: {
         1: null,
@@ -90,7 +90,6 @@ function GameSummary({ show, setShow }) {
       game.training = true;
       setGame(gameDataMerged);
     }
-    // setGameState(gameDataMerged);
     setShow(false);
   }
 
@@ -112,7 +111,6 @@ function GameSummary({ show, setShow }) {
       setGame(gameDataBack)
       setGameState(gameDataBack);
     }
-    console.log(gameDataBack);
     handleRecord("back", true);
     setShow(false);
   }

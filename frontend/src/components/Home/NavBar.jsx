@@ -19,6 +19,7 @@ function NavBar() {
     signOut();
     navigate('/login');
     setCurrentUser(null);
+    localStorage.clear();
   }
 
   const [sheetOpen, setSheetOpen] = useState(false);

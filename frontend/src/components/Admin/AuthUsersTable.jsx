@@ -33,9 +33,7 @@ function AuthUsersTable({ props }) {
     // Remove deleted user from friends
     authUsers.map(async (user) => {
       if (user.displayName !== selectedUser.displayName) {
-        const friendToRemove = await getAuthUser(selectedUser.displayName);
-
-        if (user.friends.includes(friendToRemove._id)) {
+        if (user.friends.includes(selectedUser.displayName)) {
           await removeFriend({
             currentUserDisplayName: user.displayName,
             userDisplayName: friendToRemove.displayName

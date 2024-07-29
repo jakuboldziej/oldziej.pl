@@ -2,12 +2,17 @@ const express = require("express")
 const router = express.Router()
 const DartsGame = require('../models/dartsGame')
 const DartsUser = require('../models/dartsUser')
+const { Types } = require("mongoose")
 
 const getDartsUser = async (req, res, next) => {
   let user;
   try {
-    const { displayName } = req.params;
-    user = await DartsUser.findOne({ displayName });
+    const identifier = req.params.identifier;
+    if (Types.ObjectId.isValid(identifier)) {
+      user = await DartsUser.findOne({ _id: identifier });
+    } else {
+      user = await DartsUser.findOne({ displayName: identifier });
+    }
     if (user == null) return res.status(404);
   } catch (err) {
     return res.json({ message: err.message })
@@ -112,8 +117,8 @@ router.get('/dartsUsers', async (req, res) => {
   }
 })
 
-router.get('/dartsUsers/:displayName', getDartsUser, async (req, res) => {
-  res.send(res.user)
+router.get('/dartsUsers/:identifier', getDartsUser, async (req, res) => {
+  res.send(res.user);
 });
 
 router.delete('/dartsUsers/:displayName', async (req, res) => {
@@ -125,7 +130,7 @@ router.delete('/dartsUsers/:displayName', async (req, res) => {
   }
 });
 
-router.put("/dartsUsers/:displayName", getDartsUser, async (req, res) => {
+router.put("/dartsUsers/:identifier", getDartsUser, async (req, res) => {
   const { displayName, ...updateData } = req.body;
   try {
     const updatedUser = await DartsUser.findByIdAndUpdate(

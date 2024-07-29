@@ -7,7 +7,7 @@ const store = createStore({
   authName: "_auth",
   authType: "cookie",
   cookieDomain: window.location.hostname,
-  cookieSecure: false,
+  cookieSecure: window.location.protocol === 'https:',
 });
 
 export const AuthContext = createContext();

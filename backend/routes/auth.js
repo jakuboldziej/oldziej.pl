@@ -85,8 +85,7 @@ router.delete('/users/:displayName', async (req, res) => {
 router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', async (req, res) => {
   try {
     const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName });
-    const userId = (await User.findOne({ displayName: req.params.userDisplayName }))._id.toString();
-    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === userDisplayName);
 
     if (isUserFriendsWithCurrentUser) res.json(true)
     else res.json(false)
@@ -109,7 +108,7 @@ router.post('/users/send-friends-request/', async (req, res) => {
     const userId = user._id.toString()
     const currentUserId = currentUser._id.toString();
 
-    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
     const isCurrentUserAlreadyPending = currentUser.friendsRequests.pending.find((friendId) => friendId === userId);
     const isUserAlreadyPending = user.friendsRequests.pending.find((friendId) => friendId === currentUserId);
     const isCurrentUserSendingToHimself = currentUser.friendsCode === userFriendCode ? true : false;
@@ -166,7 +165,7 @@ router.post('/users/accept-friends-request/', async (req, res) => {
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
-    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
 
     if (isUserFriendsWithCurrentUser) return res.json({
       message: `You are already friends with ${user.displayName}.`
@@ -175,8 +174,8 @@ router.post('/users/accept-friends-request/', async (req, res) => {
       currentUser.friendsRequests.received = currentUser.friendsRequests.received.filter((id) => id !== userId);
       user.friendsRequests.pending = user.friendsRequests.pending.filter((id) => id !== currentUserId);
 
-      currentUser.friends.push(userId);
-      user.friends.push(currentUserId);
+      currentUser.friends.push(user.displayName);
+      user.friends.push(currentUser.displayName);
 
       await User.findByIdAndUpdate(
         currentUser._id,
@@ -219,7 +218,7 @@ router.post('/users/decline-friends-request/', async (req, res) => {
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
-    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
 
     if (isUserFriendsWithCurrentUser) return res.json({
       message: `You are already friends with ${user.displayName}.`
@@ -261,14 +260,14 @@ router.post('/users/remove-friend/', async (req, res) => {
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
-    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendId) => friendId === userId);
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
 
     if (!isUserFriendsWithCurrentUser) return res.json({
       message: `${currentUser.displayName} is not friends with ${user.displayName}.`
     });
     else {
-      currentUser.friends = currentUser.friends.filter((id) => id !== userId);
-      user.friends = user.friends.filter((id) => id !== currentUserId);
+      currentUser.friends = currentUser.friends.filter((friendDisplayName) => friendDisplayName !== user.displayName);
+      user.friends = user.friends.filter((friendDisplayName) => friendDisplayName !== currentUser.displayName);
 
       await User.findByIdAndUpdate(
         currentUser._id,
@@ -336,11 +335,11 @@ router.post("/login", (req, res) => {
   User.findOne({ displayName: req.body.displayName }).then((user) => {
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
-        return res.status(400).send({
+        return res.send({
           message: "Wrong password",
-          error,
         });
       }
+
       // create JWT token
       const token = jwt.sign(
         {
@@ -355,18 +354,16 @@ router.post("/login", (req, res) => {
         message: "Login Successful",
         token,
         verified: user.verified,
-        friendsRequestsReceived: user.friendsRequests.received.length
+        friendsRequestsReceived: user.friendsRequests.received.length,
       });
-    }).catch((error) => {
-      res.status(400).send({
-        message: "Wrong password",
-        error,
+    }).catch(() => {
+      res.status(500).send({
+        message: "An error occurred while processing your request.",
       });
     });
-  }).catch((e) => {
+  }).catch(() => {
     res.status(404).send({
       message: "User not found",
-      e,
     });
   });
 });

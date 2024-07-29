@@ -8,14 +8,14 @@ export const getDartsUsers = async () => {
   return users;
 }
 
-export const getDartsUser = async (displayName) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`);
+export const getDartsUser = async (identifier) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`);
   const user = await userResponse.json();
   return user;
 }
 
 export const putDartsUser = async (userData) => {
-  await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
     method: "PUT",
     body: JSON.stringify({
       ...userData
@@ -24,6 +24,8 @@ export const putDartsUser = async (userData) => {
       "Content-Type": "application/json",
     },
   });
+
+  return await response.json();
 }
 
 export const deleteDartsUser = async (displayName) => {
@@ -334,7 +336,7 @@ export const loginUser = async (userData) => {
     method: "POST",
     body: JSON.stringify({
       displayName: userData.displayName,
-      password: userData.password
+      password: userData.password,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -342,7 +344,7 @@ export const loginUser = async (userData) => {
   });
 
   return await response.json();
-}
+};
 
 export const registerUser = async (userData) => {
   const response = await fetch(`${mongodbApiUrl}/auth/register`, {

@@ -78,7 +78,7 @@ function Register() {
         userState: {
           displayName: displayName,
           verified: userRes.verified,
-        }
+        },
       });
 
       setCurrentUser({
