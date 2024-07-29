@@ -9,6 +9,8 @@ const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
+const { createAdapter } = require("@socket.io/cluster-adapter");
+const { setupWorker } = require("@socket.io/sticky");
 
 const environment = process.env.NODE_ENV || 'production';
 
@@ -58,6 +60,11 @@ const io = new Server(server, {
     origin: domain
   }
 });
+
+if (environment === "production") {
+  io.adapter(createAdapter());
+  setupWorker(io);
+}
 
 app.locals.io = io;
 
