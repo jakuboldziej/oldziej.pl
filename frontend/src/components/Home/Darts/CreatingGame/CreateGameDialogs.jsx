@@ -6,6 +6,8 @@ function CreateGameDialogs({ props }) {
   const {
     customStartPoints,
     setCustomStartPoints,
+    selectStartPoints,
+    setSelectStartPoints,
     showCustomPoints,
     setShowCustomPoints,
     handleCustomStartPoints,
@@ -15,6 +17,21 @@ function CreateGameDialogs({ props }) {
     setNewUser,
     handleAddingNewUser
   } = props;
+
+  const handleCustomStartPointsChange = (value) => {
+    if (value != 0) {
+      const convertToNumber = Number(value);
+      const convertToString = convertToNumber.toString();
+      setCustomStartPoints(convertToString);
+    }
+  }
+
+  const handleCancelCustomStartPoints = () => {
+    setCustomStartPoints("0");
+    setSelectStartPoints("501");
+    setShowCustomPoints(false);
+  }
+
   return (
     <>
       <Dialog open={showCustomPoints}>
@@ -29,11 +46,12 @@ function CreateGameDialogs({ props }) {
               placeholder="12345"
               min={1}
               max={10000}
-              onChange={(e) => setCustomStartPoints(e.target.value)}
+              value={customStartPoints}
+              onChange={(e) => handleCustomStartPointsChange(e.target.value)}
             />
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowCustomPoints(false)} type="submit" variant="secondary">
+            <Button onClick={() => handleCancelCustomStartPoints()} type="button" variant="secondary">
               Close
             </Button>
             <Button disabled={customStartPoints <= 0} onClick={handleCustomStartPoints} type="submit">Save changes</Button>

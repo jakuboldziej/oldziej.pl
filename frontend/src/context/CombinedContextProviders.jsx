@@ -14,8 +14,8 @@ export const CombinedContextProvider = ({ children }) => {
           <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
             <DartsGameContextProvider>
               <FtpContextProvider>
-                {children}
                 <Toaster />
+                {children}
               </FtpContextProvider>
             </DartsGameContextProvider>
           </ThemeProvider>

@@ -130,7 +130,6 @@ export const SocketIoContextProvider = ({ children }) => {
     }
 
     const disconnectFromServer = () => {
-
       setIsServerConnected(false);
     }
 

@@ -1,7 +1,7 @@
 import lodash from 'lodash';
 import { getDartsUser, putDartsGame, putDartsUser } from "@/fetch";
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum, setCurrentUserState, totalThrows } from './userUtils';
-import { handlePodiumX01, handlePointsX01 } from './game modes/X01';
+import { handleNextLeg, handlePodiumX01, handlePointsX01 } from './game modes/X01';
 import { doorsValueReverseX01, handlePodiumReverseX01, handlePointsReverseX01, zeroValueReverseX01 } from './game modes/Reverse X01';
 
 let game;
@@ -34,10 +34,6 @@ const handlePodium = () => {
   }
   else if (game.gameMode === "Reverse X01") handlePodiumReverseX01();
   handleShow();
-}
-
-const handleNextLeg = () => {
-  console.log(game.legs);
 }
 
 const handleGameEnd = () => {

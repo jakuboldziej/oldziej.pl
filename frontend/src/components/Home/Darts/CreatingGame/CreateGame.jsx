@@ -51,47 +51,52 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }, [usersPlaying]);
 
   useEffect(() => {
-    // get previous settings
-    const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
-    if (previousSettings) {
-      setUsersPlaying(previousSettings.users.filter((user) => user.visible === true))
-      setSelectGameMode(previousSettings.gamemode)
-      if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number => number === previousSettings.startPoints)[0]) {
-        setSelectStartPoints(previousSettings.startPoints);
+    const getData = async () => {
+      const fetchDartsUser = await getDartsUser(currentUser.displayName);
+      const userFriends = await getUsersFriends();
+
+      const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
+
+      if (previousSettings) {
+        const previousSettingsUsers = previousSettings.users.filter((user) => user.visible === true);
+        const previousSettingsUsernames = previousSettingsUsers.map(user => user.displayName);
+
+        const usersWithUser = [fetchDartsUser, ...userFriends];
+        const usersNotPlaying = usersWithUser.filter(user => !previousSettingsUsernames.includes(user.displayName));
+        const usersPlaying = usersWithUser.filter(user => previousSettingsUsernames.includes(user.displayName));
+
+        setUsersNotPlaying(usersNotPlaying);
+        setUsersPlaying(usersPlaying);
+
+        setSelectGameMode(previousSettings.gamemode);
+        if (usersPlaying.length > 0) setUsersPodium(1);
+        if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number => number === previousSettings.startPoints)[0]) {
+          setSelectStartPoints(previousSettings.startPoints);
+        } else {
+          setCustomStartPoints(previousSettings.startPoints);
+          setSelectStartPoints(previousSettings.startPoints);
+        }
+        setSelectCheckOut(previousSettings.checkout);
+        setSelectLegs(previousSettings.legs);
+        setSelectSets(previousSettings.sets);
       } else {
-        setCustomStartPoints(previousSettings.startPoints);
-        setSelectStartPoints(previousSettings.startPoints);
+        setUsersNotPlaying([fetchDartsUser, ...userFriends]);
       }
-      setSelectCheckOut(previousSettings.checkout);
-      setSelectLegs(previousSettings.legs);
-      setSelectSets(previousSettings.sets);
     }
 
-    const getUsers = async () => {
-      try {
-        let fetchAuthUser = await getAuthUser(currentUser.displayName);
-        const fetchDartsUser = await getDartsUser(currentUser.displayName);
-        const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
-          const fetchFriendsDartsUser = await getDartsUser(friendsDisplayName);
-          return fetchFriendsDartsUser;
-        });
-
-        const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
-        if (previousSettings) {
-          const usersNotInPreviousSettings = userFriends
-            .filter((userFetch) => !previousSettings.users.some((userSetting) => userSetting._id === userFetch._id) && userFetch.visible === true);
-          setUsersNotPlaying(usersNotInPreviousSettings);
-          setUsersPodium(1);
-        } else {
-          setUsersNotPlaying([...userFriends, fetchDartsUser]);
-        }
-      } catch (error) {
-        console.error("Error getting users: ", error);
-      }
-    };
-
-    getUsers();
+    if (drawerOpen) getData();
   }, [drawerOpen]);
+
+  const getUsersFriends = async () => {
+    let fetchAuthUser = await getAuthUser(currentUser.displayName);
+    const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
+      const fetchFriendsDartsUser = await getDartsUser(friendsDisplayName);
+      return fetchFriendsDartsUser;
+    });
+
+    const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
+    return userFriends;
+  }
 
   const handleAddPlayer = (user) => {
     if (twoPlayersGamemode === true && usersPlaying.length === 2) return;
@@ -301,9 +306,15 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }));
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
+  useEffect(() => {
+    console.log(selectStartPoints);
+  }, [selectStartPoints]);
+
   const dialogProps = {
     customStartPoints,
     setCustomStartPoints,
+    selectStartPoints,
+    setSelectStartPoints,
     showCustomPoints,
     setShowCustomPoints,
     handleCustomStartPoints,
@@ -363,7 +374,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                 </div>
               </CardContent>
             </Card>
-            <div className="sticky top-0 flex flex-col items-center gap-3 text-white">
+            <div className="sticky-top top-0 flex flex-col items-center gap-3 text-white">
               <Button variant="outline_red" className="glow-button-red" onClick={() => handleGameStart(false)}>Start</Button>
               <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
               <span>EGT: {egt}</span>

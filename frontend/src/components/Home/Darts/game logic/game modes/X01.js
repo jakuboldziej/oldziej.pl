@@ -33,3 +33,18 @@ export const handlePointsX01 = (setOverthrow) => {
     return true;
   }
 }
+
+export const handleNextLeg = () => {
+  console.log("nextLeg");
+  console.log(currentUser);
+  // zapisywanie danych w bazie zanim zresetuje się dane
+  // logika back button, przywraca stan gracza z poprzedniego rekordu
+  currentUser.points = game.startPoints;
+  currentUser.turnsSum = 0;
+  currentUser.turns = {
+    1: null,
+    2: null,
+    3: null
+  }
+  currentUser.legs += 1;
+}

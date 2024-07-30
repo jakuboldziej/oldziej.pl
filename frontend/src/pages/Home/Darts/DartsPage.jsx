@@ -150,13 +150,14 @@ function DartsPage() {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
         let fetchAuthUser = await getAuthUser(currentUser.displayName);
+        let fetchDartsUser = await getDartsUser(currentUser.displayName);
         const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
           const fetchDartsUser = await getDartsUser(friendsDisplayName);
           return fetchDartsUser;
         });
 
         const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
-        const sortedUsers = handleFilterUsers(filterUsersType, userFriends);
+        const sortedUsers = handleFilterUsers(filterUsersType, [...userFriends, fetchDartsUser]);
 
         setDartUsers(sortedUsers);
         setGamesShown(fetchedGames);
@@ -210,77 +211,59 @@ function DartsPage() {
       <div className="cards">
         <Card className="my-card friends">
           <CardHeader>
-            <CardTitle><Link to="/user/friends" className="hover:cursor-pointer hover:opacity-80">Friends</Link></CardTitle>
+            <CardTitle><Link to="/user/friends" className="hover:cursor-pointer hover:opacity-80">Leaderboard</Link></CardTitle>
           </CardHeader>
           <CardContent className="info p-0">
             {isLoading ? <div className="flex justify-center w-100 pt-3">
               <Loader2 className="h-10 w-10 animate-spin" />
             </div>
-              : dartUsers.length > 0 ? dartUsers.map((dartUser) => {
-                return (
-                  <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
-                    <span className="elementInfo username">{dartUser.displayName}</span>
+              : dartUsers.map((dartUser) => (
+                <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
+                  <span className="elementInfo username">{dartUser.displayName}</span>
+                  <span className="elementInfo">
+                    <img width="25" height="25" src="https://img.icons8.com/color/25/first-place-ribbon.png" alt="first-place-ribbon" />
+                    {dartUser.podiums["firstPlace"]}
+                  </span>
+                  <span className="elementInfo">
+                    <img width="25" height="25" src="https://img.icons8.com/color/25/second-place-ribbon.png" alt="first-place-ribbon" />
+                    {dartUser.podiums["secondPlace"]}
+                  </span>
+                  <span className="elementInfo">
+                    <img width="25" height="25" src="https://img.icons8.com/color/25/third-place-ribbon.png" alt="first-place-ribbon" />
+                    {dartUser.podiums["thirdPlace"]}
+                  </span>
+                  <MyTooltip title="Doors Hit">
                     <span className="elementInfo">
-                      <img width="25" height="25" src="https://img.icons8.com/color/25/first-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["firstPlace"]}
+                      <img width="25" height="25" src="https://img.icons8.com/officel/25/door.png" alt="door" />
+                      {dartUser.throws["doors"]}
                     </span>
+                  </MyTooltip>
+                  <MyTooltip title="Games Played">
                     <span className="elementInfo">
-                      <img width="25" height="25" src="https://img.icons8.com/color/25/second-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["secondPlace"]}
+                      <img width="25" height="25" src="https://img.icons8.com/color/25/goal--v1.png" alt="goal--v1" />
+                      {dartUser.gamesPlayed}
                     </span>
+                  </MyTooltip>
+                  <MyTooltip title="Highest Ending Average">
                     <span className="elementInfo">
-                      <img width="25" height="25" src="https://img.icons8.com/color/25/third-place-ribbon.png" alt="first-place-ribbon" />
-                      {dartUser.podiums["thirdPlace"]}
+                      <img width="25" height="25" src="https://img.icons8.com/arcade/25/graph.png" alt="graph" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
                     </span>
-                    <MyTooltip title="Doors Hit">
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/officel/25/door.png" alt="door" />
-                        {dartUser.throws["doors"]}
-                      </span>
-                    </MyTooltip>
-                    <MyTooltip title="Games Played">
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/color/25/goal--v1.png" alt="goal--v1" />
-                        {dartUser.gamesPlayed}
-                      </span>
-                    </MyTooltip>
-                    <MyTooltip title="Highest Ending Average">
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/arcade/25/graph.png" alt="graph" />
-                        <h6 style={{ fontSize: 13 }}>{dartUser.highestEndingAvg}</h6>
-                      </span>
-                    </MyTooltip>
-                    <MyTooltip title="Highest Turn Points">
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/color/25/mountain.png" alt="mountain" />
-                        <h6 style={{ fontSize: 13 }}>{dartUser.highestTurnPoints}</h6>
-                      </span>
-                    </MyTooltip>
-                    <MyTooltip title="Highest Checkout">
-                      <span className="elementInfo">
-                        <img width="25" height="25" src="https://img.icons8.com/color/25/cash-register.png" alt="cash-register" />
-                        <h6 style={{ fontSize: 13 }}>{dartUser.highestCheckout}</h6>
-                      </span>
-                    </MyTooltip>
-                  </a>
-                )
-              }) : (
-                <div className="flex flex-col items-center gap-5">
-                  {currentUser.verified ? (
-                    <>
-                      <span>Invite some friends!</span>
-                      <Button onClick={() => navigate("/user/friends")} variant="outline_lime">
-                        <span className="flex items-center gap-2">
-                          <Contact />
-                          <span>Friends</span>
-                        </span>
-                      </Button>
-                    </>
-                  ) : (
-                    <span className="text-lg text-center">You need to be verified to invite friends!</span>
-                  )}
-                </div>
-              )}
+                  </MyTooltip>
+                  <MyTooltip title="Highest Turn Points">
+                    <span className="elementInfo">
+                      <img width="25" height="25" src="https://img.icons8.com/color/25/mountain.png" alt="mountain" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestTurnPoints}</h6>
+                    </span>
+                  </MyTooltip>
+                  <MyTooltip title="Highest Checkout">
+                    <span className="elementInfo">
+                      <img width="25" height="25" src="https://img.icons8.com/color/25/cash-register.png" alt="cash-register" />
+                      <h6 style={{ fontSize: 13 }}>{dartUser.highestCheckout}</h6>
+                    </span>
+                  </MyTooltip>
+                </a>
+              ))}
           </CardContent>
         </Card>
         <Card className="my-card games">
@@ -412,7 +395,7 @@ function DartsPage() {
           </CardContent>
         </Card>
       </div>
-    </div >
+    </div>
   )
 }
 

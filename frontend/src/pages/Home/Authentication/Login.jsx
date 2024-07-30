@@ -1,3 +1,4 @@
+import "@/assets/styles/auth.scss";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
