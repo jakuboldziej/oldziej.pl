@@ -1,6 +1,6 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
-import { FtpContext } from "@/context/FtpContext";
+import { FtpContext } from "@/context/Home/FtpContext";
 import { Loader2 } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 

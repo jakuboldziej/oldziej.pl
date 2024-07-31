@@ -1,5 +1,5 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
-import { FtpContext } from "@/context/FtpContext";
+import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
 import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
@@ -12,7 +12,7 @@ import MyDialogs from "@/components/Home/Cloud/MyDialogs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/shadcn/breadcrumb";
 import MyFileCard from "@/components/Home/Cloud/MyFileCard";
 import MyFolderCard from "@/components/Home/Cloud/MyFolderCard";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 
 function MyFiles() {
   const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);

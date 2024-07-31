@@ -5,7 +5,7 @@ import { downloadFile, handleFileTypes, renderFile } from "@/components/Home/Clo
 import { mongodbApiUrl, putFile } from "@/fetch";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext } from "react";
-import { FtpContext } from "@/context/FtpContext";
+import { FtpContext } from "@/context/Home/FtpContext";
 
 function MyFileCard(props) {
   const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered } = props;

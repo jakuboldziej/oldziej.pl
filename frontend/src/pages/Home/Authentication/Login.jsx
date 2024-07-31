@@ -5,7 +5,7 @@ import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css
 import { Loader2 } from "lucide-react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { loginUser } from "@/fetch";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 import { useSearchParams } from "react-router-dom";
 
 function Login() {

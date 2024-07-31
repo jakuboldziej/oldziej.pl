@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/shadcn/drawer';
 import { Button } from '@/components/ui/shadcn/button';
 import ExperienceProjects from './ExperienceProjects';
-import { PortfolioContext } from '@/context/PortfolioContext';
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function ProjectsDrawer({ props }) {

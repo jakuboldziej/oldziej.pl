@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { DartsGameContext } from '@/context/DartsGameContext';
+import { DartsGameContext } from '@/context/Home/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialog';
@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
 import { handleRecord, setGameState } from './game logic/game';
+import { socket } from '@/lib/socketio';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -28,36 +29,39 @@ function GameSummary({ show, setShow }) {
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
 
+    const throwsData = {
+      doors: 0,
+      doubles: 0,
+      triples: 0,
+      normal: 0,
+      overthrows: 0,
+    }
     const updatedUsers = game.users.map((user) => {
-      user.points = game.startPoints
-      user.allGainedPoints = 0
-      user.turn = false
-      user.turnsSum = 0
-      user.currentTurn = 1
-      user.place = 0
+      user.points = game.startPoints;
+      user.allGainedPoints = 0;
+      user.turn = false;
+      user.turnsSum = 0;
+      user.currentTurn = 1;
+      user.place = 0;
       user.turns = {
         1: null,
         2: null,
         3: null
-      }
-      user.throws = {
-        doors: 0,
-        doubles: 0,
-        triples: 0,
-        normal: 0,
-        overthrows: 0,
-      }
-      user.legs = 0
-      user.sets = 0
-      user.avgPointsPerTurn = 0
-      user.highestGameTurnPoints = 0
-      user.gameCheckout = 0
+      };
+      user.throws = { ...throwsData };
+      user.currentThrows = { ...throwsData };
+      user.legs = 0;
+      user.sets = 0;
+      user.avgPointsPerTurn = "0.00";
+      user.highestGameAvg = "0.00";
+      user.highestGameTurnPoints = 0;
+      user.gameCheckout = 0;
 
       return user;
     });
     game.users = updatedUsers.sort(() => Math.random() - 0.5);
     game.users[0].turn = true;
-    const firstUser = lodash.cloneDeep(game.users[0]);
+    const usersCopy = lodash.cloneDeep(game.users);
     const gameCopy = lodash.cloneDeep(game);
     const gameData = {
       created_at: Date.now(),
@@ -68,14 +72,14 @@ function GameSummary({ show, setShow }) {
         3: null
       },
       userWon: "",
-      turn: firstUser.displayName,
+      turn: usersCopy[0].displayName,
       round: 1,
       record: [{
         game: {
           round: 1,
-          turn: firstUser.displayName
+          turn: usersCopy[0].displayName
         },
-        user: firstUser
+        users: usersCopy
       }],
     }
     const gameDataMerged = { ...gameCopy, ...gameData }
@@ -84,7 +88,9 @@ function GameSummary({ show, setShow }) {
       game.training = false;
       const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
       const gameData = await postDartsGame(gameWithoutRecordAndUserWon);
+
       gameDataMerged._id = gameData._id;
+      gameDataMerged["gameCode"] = gameData.gameCode;
       setGame(gameDataMerged);
     } else {
       game.training = true;
@@ -94,35 +100,11 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleSummaryBackButton = () => {
-    const lastRecord = game.record[game.record.length - 1];
-    const updatedUsers = game.users.map((user) => {
-      user.place = 0;
-      if (user._id === lastRecord.user._id) return lastRecord.user;
-      return user;
-    })
-    const gameDataBack = {
-      ...game,
-      userWon: "",
-      podium: { 1: null, 2: null, 3: null },
-      active: true,
-      users: updatedUsers
-    }
-    if (game.userWon) {
-      setGame(gameDataBack)
-      setGameState(gameDataBack);
-    }
-    handleRecord("back", true);
-    setShow(false);
+
   }
 
   const handleDisabledBack = () => {
     return true;
-    // const lsGame = JSON.parse(localStorage.getItem("dartsGame"));
-    // if (game.record.length > 1 && lsGame) {
-    //   return false;
-    // } else {
-    //   return true;
-    // }
   }
 
   const deleteLSGame = () => {
@@ -152,7 +134,10 @@ function GameSummary({ show, setShow }) {
                 <span>Time played: {timePlayed}</span>
                 <span>StartPoints: {game.startPoints}</span>
               </div>
-              <span>Gamemode: {game.gameMode}</span>
+              <span>
+                Gamemode: {game.gameMode}
+                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+              </span>
             </div>
             :
             <div className="training-stats flex flex-col items-center gap-5">
@@ -166,7 +151,10 @@ function GameSummary({ show, setShow }) {
                 <span>Time played: {timePlayed}</span>
                 <span>StartPoints: {game.startPoints}</span>
               </div>
-              <span>Gamemode: {game.gameMode}</span>
+              <span>
+                Gamemode: {game.gameMode}
+                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+              </span>
               <UserDataTable users={game.users} game={game} />
             </div>
           }

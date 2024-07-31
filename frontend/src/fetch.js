@@ -2,51 +2,7 @@ export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.met
 
 // Darts
 
-export const getDartsUsers = async () => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`);
-  const users = await usersResponse.json();
-  return users;
-}
-
-export const getDartsUser = async (identifier) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`);
-  const user = await userResponse.json();
-  return user;
-}
-
-export const putDartsUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
-    method: "PUT",
-    body: JSON.stringify({
-      ...userData
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  return await response.json();
-}
-
-export const deleteDartsUser = async (displayName) => {
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`, {
-    method: "DELETE"
-  })
-  return await response.json();
-}
-
-export const postDartsUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
-    method: "POST",
-    body: JSON.stringify({
-      ...userData
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return await response.json();
-}
+// Games
 
 export const postDartsGame = async (gameData) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
@@ -109,7 +65,62 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   const gamesResponse = await fetch(url);
   const games = await gamesResponse.json();
   return games;
-};
+}
+
+export const joinLiveGamePreview = async (gameCode) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsGames/join-live-game-preview/${gameCode}`, {
+    method: "POST",
+  });
+  return await response.json();
+}
+
+// Users
+
+export const getDartsUsers = async () => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`);
+  const users = await usersResponse.json();
+  return users;
+}
+
+export const getDartsUser = async (identifier) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`);
+  const user = await userResponse.json();
+  return user;
+}
+
+export const putDartsUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      ...userData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
+export const deleteDartsUser = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`, {
+    method: "DELETE"
+  })
+  return await response.json();
+}
+
+export const postDartsUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
+    method: "POST",
+    body: JSON.stringify({
+      ...userData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return await response.json();
+}
 
 // Cloud
 

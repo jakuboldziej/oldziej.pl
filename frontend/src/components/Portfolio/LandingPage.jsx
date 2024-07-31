@@ -3,7 +3,7 @@ import { FadeText } from '@/components/ui/magicui/fade-text'
 import { motion } from "framer-motion"
 import BoxReveal from '@/components/ui/magicui/box-reveal'
 import TypingAnimation from '@/components/ui/magicui/typing-animation'
-import { PortfolioContext } from '@/context/PortfolioContext'
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext'
 
 function LandingPage({ landingPageRef }) {
   const { lang, langText } = useContext(PortfolioContext);

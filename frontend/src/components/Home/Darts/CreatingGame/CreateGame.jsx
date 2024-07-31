@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { DartsGameContext } from "@/context/DartsGameContext";
+import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
 import { getAuthUser, getDartsUser, getDartsUsers, postDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Checkbox } from "@/components/ui/shadcn/checkbox";
 import ShowNewToast from "../../MyComponents/ShowNewToast";
 
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
 import { Trash2 } from "lucide-react";
+import { socket } from "@/lib/socketio";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -171,6 +172,13 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }
 
   const handleGameStart = async (training) => {
+    const throwsData = {
+      doors: 0,
+      doubles: 0,
+      triples: 0,
+      normal: 0,
+      overthrows: 0,
+    }
     let updatedUsers = usersPlaying.map((user) => ({
       _id: user._id,
       displayName: user.displayName,
@@ -185,16 +193,12 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         2: null,
         3: null
       },
-      throws: {
-        doors: 0,
-        doubles: 0,
-        triples: 0,
-        normal: 0,
-        overthrows: 0,
-      },
+      throws: { ...throwsData },
+      currentThrows: { ...throwsData },
       legs: 0,
       sets: 0,
-      avgPointsPerTurn: 0,
+      avgPointsPerTurn: "0.00",
+      highestGameAvg: "0.00",
       highestGameTurnPoints: 0,
       gameCheckout: 0
     }));
@@ -221,14 +225,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     updatedUsers[0].turn = true;
-    const currentUserCopy = lodash.cloneDeep(updatedUsers[0]);
+    const usersCopy = lodash.cloneDeep(updatedUsers);
     const gameCopy = lodash.pick(gameData, ['round', 'turn']);
     gameData.record = [{
       game: {
         round: gameCopy.round,
         turn: gameCopy.turn
       },
-      user: currentUserCopy
+      users: usersCopy
     }];
 
     if (training === true) {
@@ -237,10 +241,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     } else {
       const { record, ...gameWithoutRecord } = gameData;
       const game = await postDartsGame(gameWithoutRecord);
-      setGame({
-        _id: game._id,
-        ...gameData,
-      });
+
+      gameData._id = game._id;
+      gameData["gameCode"] = game.gameCode;
+      setGame(gameData);
     }
     navigate("game");
 
@@ -305,10 +309,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       legs: selectLegs,
     }));
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
-
-  useEffect(() => {
-    console.log(selectStartPoints);
-  }, [selectStartPoints]);
 
   const dialogProps = {
     customStartPoints,
@@ -435,7 +435,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   </Select>
                   {handleGamemodeOptions() === "X01" ? (
                     <>
-                      <div className="text-lg">Check-Out</div><Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
+                      <div className="text-lg">Check-Out</div>
+                      <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
                         <SelectTrigger className="text-white">
                           <SelectValue placeholder="Select Check-Out" />
                         </SelectTrigger>
@@ -444,22 +445,27 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                             <SelectItem value="Straight Out">Straight Out</SelectItem>
                           </SelectGroup>
                         </SelectContent>
-                      </Select><div className="text-lg">Sets</div><Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
-                        <SelectTrigger className="text-white">
-                          <SelectValue placeholder="Select Sets" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {numbersLegsSets}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select><div className="text-lg">Legs</div><Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
+                      </Select>
+                      <div className="text-lg">Legs</div>
+                      <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
                         <SelectTrigger className="text-white">
                           <SelectValue placeholder="Select Legs" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
                             {numbersLegsSets}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <div className="text-lg">Sets</div>
+                      <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Sets" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {/* {numbersLegsSets} */}
+                            <SelectItem value={1}>1</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

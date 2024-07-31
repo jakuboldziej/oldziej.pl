@@ -6,7 +6,7 @@ import { ReactNode } from "react";
 import { motion } from "framer-motion"
 import { getGamesPlayedPortfolio } from "@/fetch";
 import NumberTicker from "./number-ticker";
-import { PortfolioContext } from "@/context/PortfolioContext";
+import { PortfolioContext } from "@/context/Portfolio/PortfolioContext";
 
 const BentoGrid = ({
   children,

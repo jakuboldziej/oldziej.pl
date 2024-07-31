@@ -23,6 +23,7 @@ export const handlePointsReverseX01 = () => {
   const currentTurnValue = turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
+  currentUser.allGainedPoints += game.startPoints - currentUser.points;
 
   if (currentUser.points <= 0) {
     return true;

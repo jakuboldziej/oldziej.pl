@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Contact, Loader2 } from "lucide-react";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 import { Link } from "react-router-dom";
 
 function DartsPage() {

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router";
 import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 
 function Register() {
   document.title = "Oldziej | Register";

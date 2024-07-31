@@ -2,7 +2,7 @@ import AuthUsersTable from '@/components/Admin/AuthUsersTable';
 import DartsUsersTable from '@/components/Admin/DartsUsersTable';
 import { Button } from '@/components/ui/shadcn/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
-import { SocketIoContext } from '@/context/SocketIoContext';
+import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { RotateCcw } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 

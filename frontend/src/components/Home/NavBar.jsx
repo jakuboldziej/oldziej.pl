@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/shadcn/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useContext, useState } from "react";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 import { Contact, Settings, Target } from "lucide-react";
 import { Badge } from "../ui/shadcn/badge";
-import { SocketIoContext } from "@/context/SocketIoContext";
+import { SocketIoContext } from "@/context/Home/SocketIoContext";
 
 function NavBar() {
   const { listeners } = useContext(SocketIoContext);

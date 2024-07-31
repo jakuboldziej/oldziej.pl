@@ -1,7 +1,7 @@
 import { deleteDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { useContext } from "react";
-import { DartsGameContext } from "@/context/DartsGameContext";
+import { DartsGameContext } from "@/context/Home/DartsGameContext";
 
 function Keyboard({ props }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -50,8 +50,8 @@ function Keyboard({ props }) {
           <Button className="input special" disabled={handleDisabledSpecial('DOUBLE')} style={{ backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}` }} onClick={() => onclick('DOUBLE')}>DOUBLE</Button>
           <Button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{ backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}` }} onClick={() => onclick('TRIPLE')}>TRIPLE</Button>
           <Button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => onclick('BACK')}>BACK</Button>
-          {game.training && <Button className="input special" style={{ backgroundColor: "#E55555" }} onClick={handleEndTraining}>END</Button>}
-          {game.record.length === 1 && <Button className="input special" style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
+          {game.training && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: "#E55555" }} onClick={handleEndTraining}>END</Button>}
+          {game.record.length === 1 && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
         </span>
       </div>
     </>

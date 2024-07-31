@@ -33,6 +33,14 @@ const getDartsGame = async (req, res, next) => {
   next();
 }
 
+const generateUniqueGameCode = async () => {
+  let gameCode;
+  do {
+    gameCode = Math.floor(1000 + Math.random() * 9000);
+  } while (await DartsGame.findOne({ gameCode: gameCode.toString() }));
+  return gameCode.toString();
+}
+
 // Darts Games
 router.get('/dartsGames', async (req, res) => {
   try {
@@ -54,6 +62,7 @@ router.get('/dartsGames/:id', getDartsGame, async (req, res) => {
 
 router.post('/dartsGames', async (req, res) => {
   const body = req.body;
+
   const dartsGame = new DartsGame({
     created_by: body.created_by,
     created_at: body.created_at,
@@ -72,7 +81,8 @@ router.post('/dartsGames', async (req, res) => {
     sets: body.sets,
     legs: body.legs,
     round: 1,
-  })
+    gameCode: await generateUniqueGameCode()
+  });
   try {
     const newDartsGame = await dartsGame.save()
     res.json(newDartsGame)
@@ -106,6 +116,18 @@ router.delete('/dartsGames/:id', getDartsGame, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 })
+
+router.post("/dartsGames/join-live-game-preview/:gameCode", async (req, res) => {
+  const { gameCode } = req.params;
+  try {
+    const game = await DartsGame.findOne({ gameCode: gameCode });
+
+    if (game) return res.json({ ok: true, game: game })
+    else return res.json({ ok: false })
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
 
 // Darts Users
 router.get('/dartsUsers', async (req, res) => {

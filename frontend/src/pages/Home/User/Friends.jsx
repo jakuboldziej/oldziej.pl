@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Input } from '@/components/ui/shadcn/input';
-import { AuthContext } from '@/context/AuthContext';
+import { AuthContext } from '@/context/Home/AuthContext';
 import { acceptFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/fetch';
 import { Copy, Loader2, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
-import { SocketIoContext } from '@/context/SocketIoContext';
+import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { useNavigate } from 'react-router';
 
 function Friends() {
@@ -372,7 +372,7 @@ function Friends() {
                   <div className='flex flex-col items-start p-4'>
                     <span className='flex items-center gap-2'>
                       {friend.displayName}
-                      {friend.online ? <img src={GreenDot} className='h-[15px]' /> : <img src={RedDot} className='h-[15px]' />}
+                      <img className='h-[15px]' src={friend.online ? GreenDot : RedDot} />
                     </span>
                     <span className='text-sm text-slate-400'>Friends: {friend.friends.length}</span>
                   </div>

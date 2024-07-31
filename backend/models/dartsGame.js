@@ -55,6 +55,10 @@ const dartsGameSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  gameCode: {
+    type: String,
+    required: true
+  }
 })
 
 module.exports = dartsConn.model('DartsGame', dartsGameSchema)

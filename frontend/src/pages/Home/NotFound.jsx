@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/AuthContext";
+import { AuthContext } from "@/context/Home/AuthContext";
 import { useContext } from "react";
 import { Button } from "@/components/ui/shadcn/button";
 

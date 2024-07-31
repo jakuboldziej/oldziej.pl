@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/shadcn/card'
 import { Button } from '@/components/ui/shadcn/button'
 import { useContext } from 'react';
-import { PortfolioContext } from '@/context/PortfolioContext';
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { ArrowRightIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

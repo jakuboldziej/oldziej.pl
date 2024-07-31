@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/shadcn/button";
 import GradualSpacing from "@/components/ui/magicui/gradual-spacing";
 import MyParticles from "@/components/Portfolio/MyParticles";
-import { PortfolioContext } from "@/context/PortfolioContext";
+import { PortfolioContext } from "@/context/Portfolio/PortfolioContext";
 import { useContext } from "react";
 import Navbar from "@/components/Portfolio/Navbar";
 
@@ -18,7 +18,7 @@ function NotFoundPortfolio() {
       <MyParticles />
       <div className="notfound-page text-white">
         <span className="text-2xl sm:text-4xl">{langText.notFound?.header}</span>
-        {langText.notFound && <GradualSpacing duration={1} className="sm:text-2xl text-[4.9vw]" text={langText.notFound?.lostInSpace}/>}
+        {langText.notFound && <GradualSpacing duration={1} className="sm:text-2xl text-[4.9vw]" text={langText.notFound?.lostInSpace} />}
         <Button onClick={() => navigate("/")} variant="outline_lime">Home</Button>
       </div>
     </div>

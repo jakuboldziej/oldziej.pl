@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react"
-import { DartsGameContext } from "@/context/DartsGameContext"
+import { DartsGameContext } from "@/context/Home/DartsGameContext"
 import Keyboard from "@/components/Home/Darts/Keyboard";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
@@ -11,6 +11,9 @@ import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
 import { buttonVariants } from "@/components/ui/shadcn/button";
 import UserDataTable from "@/components/Home/Darts/UserDataTable";
+import CopyTextButton from "@/components/Home/CopyTextButton";
+import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
+import { Copy } from "lucide-react";
 
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
@@ -139,7 +142,21 @@ function DartsGame() {
         <MyAccordion title={`Live Data (${game.gameMode})`}>
           <UserDataTable users={users} game={game} />
         </MyAccordion>
-        {game.training && <span className="text-white fs-2 text-center">Training</span>}
+        {game.training ? (
+          <span className="text-white fs-2 text-center">Training</span>
+        ) : (
+          <span className="text-white fs-2 text-center flex justify-center gap-2">
+            <Link to="/darts/game/live" target="_blank" className="text-red-600 hover:text-red-400">Live Game</Link>
+            <div className="flex items-center">
+              Code: {game.gameCode}
+              <CopyTextButton textToCopy={game.gameCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                <MyTooltip title="Copy code to clipboard">
+                  <Copy height={15} />
+                </MyTooltip>
+              </CopyTextButton>
+            </div>
+          </span>
+        )}
         <Keyboard props={keyboardProps} />
       </div>
       <GameSummary show={show} setShow={setShow} />

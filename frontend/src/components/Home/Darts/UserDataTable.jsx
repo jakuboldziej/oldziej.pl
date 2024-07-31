@@ -5,7 +5,7 @@ import { totalThrows } from './game logic/userUtils';
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {
     return (
-      <MyTooltip title={`N: ${user.throws['normal']} | Dou: ${user.throws['doubles']} | T: ${user.throws['triples']} | Doo: ${user.throws['doors']} | O: ${user.throws['overthrows']}`}>
+      <MyTooltip title={`N: ${user.currentThrows['normal']} | Dou: ${user.currentThrows['doubles']} | T: ${user.currentThrows['triples']} | Doo: ${user.currentThrows['doors']} | O: ${user.currentThrows['overthrows']}`}>
         <span>
           {totalThrows(user)}
         </span>
@@ -30,8 +30,8 @@ function UserDataTable({ users, game }) {
           <TableHead>Player</TableHead>
           <TableHead>Points</TableHead>
           <TableHead>Throws</TableHead>
-          <TableHead><MyTooltip title="Your highest Round Points Thrown"><span>HRP</span></MyTooltip></TableHead>
-          <TableHead><MyTooltip title="Your average of points in the set"><span>AVG</span></MyTooltip></TableHead>
+          <TableHead><MyTooltip title="Your Highest Round Points thrown"><span>HRP</span></MyTooltip></TableHead>
+          <TableHead><MyTooltip title="Your Highest Average of points in a leg"><span>HAVG</span></MyTooltip></TableHead>
           <TableHead>Legs</TableHead>
           <TableHead>Sets</TableHead>
         </TableRow>
@@ -43,7 +43,7 @@ function UserDataTable({ users, game }) {
             <TableCell>{game.startPoints - user.points}</TableCell>
             <TableCell>{displayUserThrows(user)}</TableCell>
             <TableCell>{user.highestGameTurnPoints}</TableCell>
-            <TableCell>{user.avgPointsPerTurn}</TableCell>
+            <TableCell>{user.highestGameAvg}</TableCell>
             <TableCell>{user.legs}</TableCell>
             <TableCell>{user.sets}</TableCell>
           </TableRow>

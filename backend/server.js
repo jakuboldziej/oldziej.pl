@@ -70,7 +70,37 @@ app.locals.io = io;
 
 const { addingOnlineUser, scheduleUserOffline } = require('./socket.io/listeners');
 
+const liveGamesData = {};
+
 io.on('connection', (socket) => {
+  // Listeners
+
+  socket.on("joinLiveGamePreview", (data) => {
+    const joinData = JSON.parse(data);
+
+    socket.join(`game-${joinData.gameCode}`);
+
+    if (liveGamesData[joinData.gameCode]) {
+      socket.emit("updateLiveGameClient", JSON.stringify(liveGamesData[joinData.gameCode]));
+    }
+  });
+
+  socket.on("joinLiveGameFromQrCode", (data) => {
+    const joinData = JSON.parse(data);
+
+    const sendData = liveGamesData[joinData.gameCode] ? liveGamesData[joinData.gameCode] : joinData;
+
+    io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
+  })
+
+  socket.on("updateLiveGamePreview", (data) => {
+    const gameData = JSON.parse(data);
+
+    liveGamesData[gameData.gameCode] = gameData;
+
+    io.to(`game-${gameData.gameCode}`).emit("updateLiveGameClient", JSON.stringify(gameData));
+  })
+
   // Handling Online Users
   socket.on("addingOnlineUser", (data) => {
     addingOnlineUser(data, socket.id, io);

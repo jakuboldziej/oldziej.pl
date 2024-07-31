@@ -1,4 +1,4 @@
-import { PortfolioContext } from '@/context/PortfolioContext';
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import React, { useContext } from 'react'
 
 function Footer() {

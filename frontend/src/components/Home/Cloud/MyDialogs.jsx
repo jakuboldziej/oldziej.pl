@@ -5,7 +5,7 @@ import { Card, CardDescription, CardHeader } from '@/components/ui/shadcn/card'
 import { formatDataSize } from './utils'
 import { Label } from '@/components/ui/shadcn/label'
 import { Input } from '@/components/ui/shadcn/input'
-import { FtpContext } from '@/context/FtpContext'
+import { FtpContext } from '@/context/Home/FtpContext'
 
 function MyDialogs(props) {
   const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingFileName, creatingFolder, setCreatingFolder } = props;

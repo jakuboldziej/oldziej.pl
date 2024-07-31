@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { motion } from "framer-motion";
 import MenuItem from "./MenuItem";
-import { PortfolioContext } from "@/context/PortfolioContext";
+import { PortfolioContext } from "@/context/Portfolio/PortfolioContext";
 
 const layoutVariants = {
   open: {

@@ -6,7 +6,7 @@ import { BreadcrumbSeparator } from '@/components/ui/shadcn/breadcrumb';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/shadcn/tooltip';
 import MenuToggle from './NavbarComponents/MenuToggle';
 import Navigation from './NavbarComponents/Navigation';
-import { PortfolioContext } from '@/context/PortfolioContext';
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { Link } from 'react-router-dom';
 
 function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome, isProjects = false }) {

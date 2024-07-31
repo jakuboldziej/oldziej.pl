@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
 import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
-import { PortfolioContext } from '@/context/PortfolioContext';
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
 function Project() {

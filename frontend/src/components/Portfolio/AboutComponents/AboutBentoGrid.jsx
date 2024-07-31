@@ -6,7 +6,7 @@ import Formula1 from "@/assets/images/Portfolio/AboutPage/formula1.jpg"
 import Formula1Mobile from "@/assets/images/Portfolio/AboutPage/formula1_mobile.png"
 import Darts from "@/assets/images/Portfolio/AboutPage/darts.jpg"
 import Breaking from "@/assets/videos/breaking.mp4"
-import { PortfolioContext } from '@/context/PortfolioContext'
+import { PortfolioContext } from '@/context/Portfolio/PortfolioContext'
 
 function AboutBentoGrid({ aboutInView, isMobile }) {
   const { langText } = useContext(PortfolioContext);

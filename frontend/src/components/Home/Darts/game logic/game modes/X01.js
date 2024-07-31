@@ -1,5 +1,5 @@
 import { currentUser, game } from "../game";
-import { calculatePoints, setCurrentUserState } from "../userUtils";
+import { calculatePoints, setUsersState } from "../userUtils";
 
 export const handlePodiumX01 = () => {
   currentUser.place = 1;
@@ -19,7 +19,9 @@ export const handlePointsX01 = (setOverthrow) => {
   const currentTurnValue = turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
+  currentUser.allGainedPoints += game.startPoints - currentUser.points;
   const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
+
 
   if (currentUser.points < 0) {
     currentUser.points = initialPoints;
@@ -27,24 +29,44 @@ export const handlePointsX01 = (setOverthrow) => {
     currentUser.currentTurn = 3;
     currentUser.turns = { 1: null, 2: null, 3: null };
     currentUser.throws["overthrows"] += 1;
-    setCurrentUserState();
+    currentUser.currentThrows["overthrows"] += 1;
+    setUsersState();
     setOverthrow(currentUser.displayName);
   } else if (currentUser.points === 0) {
     return true;
   }
 }
 
-export const handleNextLeg = () => {
-  console.log("nextLeg");
-  console.log(currentUser);
-  // zapisywanie danych w bazie zanim zresetuje się dane
-  // logika back button, przywraca stan gracza z poprzedniego rekordu
-  currentUser.points = game.startPoints;
-  currentUser.turnsSum = 0;
-  currentUser.turns = {
-    1: null,
-    2: null,
-    3: null
-  }
+export const handleNextLeg = (users) => {
+  const legCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+  if (legCheckout > currentUser.gameCheckout) currentUser.gameCheckout = legCheckout;
   currentUser.legs += 1;
+
+  let endGame = false;
+  if (currentUser.legs === game.legs) endGame = true;
+
+  users.map((user) => {
+    if (user.avgPointsPerTurn > user.highestGameAvg) user.highestGameAvg = user.avgPointsPerTurn;
+    if (endGame) return;
+    user.points = game.startPoints;
+    user.avgPointsPerTurn = "0.00";
+    user.turnsSum = 0;
+    user.turns = {
+      1: null,
+      2: null,
+      3: null
+    }
+    user.currentThrows = {
+      doors: 0,
+      doubles: 0,
+      triples: 0,
+      normal: 0,
+      overthrows: 0,
+    }
+
+    return user;
+  });
+
+  if (endGame) return true;
+  else return false;
 }

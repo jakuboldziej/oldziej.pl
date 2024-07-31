@@ -1,15 +1,8 @@
 import { currentUser, game, setUsers } from "./game";
 
-export const resetUsersState = () => {
-  setUsers(game.users);
-}
-
-export const setCurrentUserState = () => {
-  setUsers(prevUsers => {
-    const updatedUsers = prevUsers.map(user =>
-      user._id === currentUser._id ? currentUser : user
-    );
-    return updatedUsers;
+export const setUsersState = () => {
+  setUsers((prevUsers) => {
+    return prevUsers.map((prevUser, i) => game.users[i]);
   });
 }
 
@@ -32,14 +25,16 @@ export const handleTurnsSum = () => {
   if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestGameTurnPoints) currentUser.highestGameTurnPoints = currentUser.turnsSum;
 }
 
-export const handleAvgPointsPerTurn = () => {
-  const pointsThrown = game.startPoints - currentUser.points;
-  const dartsThrown = totalThrows(currentUser);
-  const avg = pointsThrown / dartsThrown * 3;
-  currentUser.avgPointsPerTurn = (avg).toFixed(2);
-  if (isNaN(avg)) currentUser.avgPointsPerTurn = 0;
+export const handleAvgPointsPerTurn = (user) => {
+  const pointsThrown = game.startPoints - user.points;
+  const dartsThrown = totalThrows(user);
+  const avg = (pointsThrown / dartsThrown) * 3;
+  user.avgPointsPerTurn = (avg).toFixed(2);
+  if (isNaN(avg)) user.avgPointsPerTurn = 0;
+
+  return (avg).toFixed(2);
 }
 
 export const totalThrows = (user) => {
-  return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"]
+  return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - user.currentThrows["overthrows"];
 }
