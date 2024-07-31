@@ -6,25 +6,12 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialo
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/fetch';
 import lodash from 'lodash';
-import { handleRecord, setGameState } from './game logic/game';
 import { socket } from '@/lib/socketio';
+import { handleTimePlayed } from './game logic/gameUtils';
 
 function GameSummary({ show, setShow }) {
   const { game, setGame } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
-
-  const handleTimePlayed = () => {
-    const date = new Date(game.created_at);
-    const currentDate = new Date();
-
-    const timeDifference = currentDate.getTime() - date.getTime();
-
-    const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
-    const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-
-    const formattedTimeDifference = `${hoursDifference.toString().padStart(2, '0')}:${minutesDifference.toString().padStart(2, '0')}`;
-    setTimePlayed(formattedTimeDifference);
-  }
 
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
@@ -92,6 +79,13 @@ function GameSummary({ show, setShow }) {
       gameDataMerged._id = gameData._id;
       gameDataMerged["gameCode"] = gameData.gameCode;
       setGame(gameDataMerged);
+
+      socket.emit("playAgainButtonServer", JSON.stringify({
+        oldGameCode: gameCopy.gameCode,
+        newGame: gameDataMerged
+      }));
+      socket.emit("updateLiveGamePreview", JSON.stringify(gameDataMerged));
+
     } else {
       game.training = true;
       setGame(gameDataMerged);
@@ -113,7 +107,8 @@ function GameSummary({ show, setShow }) {
 
   useEffect(() => {
     if (show) {
-      handleTimePlayed();
+      const formattedTime = handleTimePlayed(game.created_at);
+      setTimePlayed(formattedTime);
     }
   }, [show]);
 
@@ -132,7 +127,7 @@ function GameSummary({ show, setShow }) {
               </div>
               <div className="flex gap-4">
                 <span>Time played: {timePlayed}</span>
-                <span>StartPoints: {game.startPoints}</span>
+                <span>Start Points: {game.startPoints}</span>
               </div>
               <span>
                 Gamemode: {game.gameMode}
@@ -149,7 +144,7 @@ function GameSummary({ show, setShow }) {
               </div>
               <div className="flex gap-4">
                 <span>Time played: {timePlayed}</span>
-                <span>StartPoints: {game.startPoints}</span>
+                <span>Start Points: {game.startPoints}</span>
               </div>
               <span>
                 Gamemode: {game.gameMode}

@@ -39,12 +39,14 @@ const handlePodium = () => {
 
 const handleGameEnd = () => {
   if (game.legs === 1) {
+    handleRecord("save");
     handlePodium();
     return true;
   } else {
     const endGame = handleNextLeg(users);
 
     if (endGame) {
+      handleRecord("save");
       handlePodium();
       return true;
     }

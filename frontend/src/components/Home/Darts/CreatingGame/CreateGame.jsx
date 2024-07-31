@@ -245,6 +245,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
       setGame(gameData);
+
+      socket.emit("updateLiveGamePreview", JSON.stringify(gameData));
     }
     navigate("game");
 

@@ -75,6 +75,8 @@ const liveGamesData = {};
 io.on('connection', (socket) => {
   // Listeners
 
+  // Live game
+
   socket.on("joinLiveGamePreview", (data) => {
     const joinData = JSON.parse(data);
 
@@ -100,6 +102,25 @@ io.on('connection', (socket) => {
 
     io.to(`game-${gameData.gameCode}`).emit("updateLiveGameClient", JSON.stringify(gameData));
   })
+
+  socket.on("playAgainButtonServer", (data) => {
+    const playAgainData = JSON.parse(data);
+    const oldGameCode = playAgainData.oldGameCode;
+    const newGame = playAgainData.newGame;
+
+    delete liveGamesData[oldGameCode];
+    liveGamesData[newGame.gameCode] = newGame;
+
+    io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
+    io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
+  })
+
+  // Deleting gameData on room-delete
+  io.of("/").adapter.on("delete-room", (roomCode) => {
+    if (liveGamesData[roomCode.split("-")[1]]) {
+      delete liveGamesData[roomCode.split("-")[1]];
+    }
+  });
 
   // Handling Online Users
   socket.on("addingOnlineUser", (data) => {

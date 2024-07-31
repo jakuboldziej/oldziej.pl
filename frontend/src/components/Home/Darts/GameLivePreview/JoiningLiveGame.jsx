@@ -35,8 +35,6 @@ function JoiningLiveGame({ props }) {
     }
   }
 
-  console.log(qrCodeLink, socket.id);
-
   useEffect(() => {
     setQrCodeLink(`${origin}/darts/game/join-game-from-qrcode?socketId=${socket.id}`);
   }, [isServerConnected]);
@@ -44,7 +42,12 @@ function JoiningLiveGame({ props }) {
   return (
     <div className='joininig-live-game text-white flex flex-col items-center justify-center gap-5 h-screen w-full p-2'>
       <span className='text-3xl text-center'>Join the live game from another device by scanning the QR code</span>
-      <Link to={qrCodeLink} target='_blank' className='qr-container bg-white p-4 sm:w-2/5 cursor-pointer'>
+      <Link
+        title="Join the live game from another device"
+        to={qrCodeLink}
+        target='_blank'
+        className='qr-container bg-white p-4 sm:w-2/5 cursor-pointer'
+      >
         <QRCode
           size={256}
           style={{ height: "auto", width: "100%" }}

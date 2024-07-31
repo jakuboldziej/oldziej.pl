@@ -23,7 +23,7 @@ import User from './pages/Home/User/User';
 import UserSettings from './pages/Home/User/UserSettings';
 import NavBar from './components/Home/NavBar';
 import { AuthContext } from './context/Home/AuthContext';
-import DartsGameLivePreview from './pages/Home/Darts/GameLivePreview/DartsGameLivePreview';
+import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePreviewPage';
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
 
 function AppRoutesHome() {
@@ -79,7 +79,7 @@ function AppRoutesHome() {
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />
           <Route path='game'>
             <Route index element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
-            <Route path='live' element={<DartsGameLivePreview />} />
+            <Route path='live' element={<GameLivePreviewPage />} />
             <Route path='join-game-from-qrcode' element={<JoinFromAnotherDevice />} />
           </Route>
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />

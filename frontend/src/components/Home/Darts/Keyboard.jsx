@@ -2,6 +2,7 @@ import { deleteDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { useContext } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
+import { socket } from "@/lib/socketio";
 
 function Keyboard({ props }) {
   const { game, setGame } = useContext(DartsGameContext);
@@ -19,7 +20,11 @@ function Keyboard({ props }) {
   }
 
   const handleQuit = async () => {
-    if (!game.training) await deleteDartsGame(game._id);
+    if (!game.training) {
+      game.active = false;
+      socket.emit("updateLiveGamePreview", JSON.stringify(game));
+      await deleteDartsGame(game._id);
+    }
     localStorage.setItem('dartsGame', null);
     handleShow();
   }
