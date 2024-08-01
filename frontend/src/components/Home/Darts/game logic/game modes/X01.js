@@ -1,3 +1,4 @@
+import { socket } from "@/lib/socketio";
 import { currentUser, game } from "../game";
 import { calculatePoints, setUsersState } from "../userUtils";
 
@@ -21,7 +22,7 @@ export const handlePointsX01 = (setOverthrow) => {
   const currentTurnValue = turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
-  currentUser.allGainedPoints += game.startPoints - currentUser.points;
+  currentUser.allGainedPoints = game.startPoints - currentUser.points;
   const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
 
 
@@ -33,7 +34,13 @@ export const handlePointsX01 = (setOverthrow) => {
     currentUser.throws["overthrows"] += 1;
     currentUser.currentThrows["overthrows"] += 1;
     setUsersState();
+
+    // Frontend effects
     setOverthrow(currentUser.displayName);
+    socket.emit("userOverthrow", JSON.stringify({
+      userDisplayName: currentUser.displayName,
+      gameCode: game.gameCode
+    }));
   } else if (currentUser.points === 0) {
     return true;
   }

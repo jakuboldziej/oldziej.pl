@@ -56,6 +56,7 @@ function DartsGame() {
     };
   }, [overthrow]);
 
+  // Scroll to user
   const usersContainerRef = useRef(null);
 
   useEffect(() => {

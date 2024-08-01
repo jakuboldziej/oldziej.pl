@@ -3,7 +3,7 @@ import Login from './pages/Home/Authentication/Login';
 import Register from './pages/Home/Authentication/Register';
 import NotFound from './pages/Home/NotFound';
 import DartsPage from './pages/Home/Darts/DartsPage';
-import DartsGame from './pages/Home/DartsGame';
+import DartsGame from './pages/Home/Darts/DartsGame';
 import DartsUser from "./pages/Home/Darts/UserPreview/DartsUser";
 import CloudPage from './pages/Home/Cloud/CloudPage';
 import MyFiles from './pages/Home/Cloud/Files/MyFiles';

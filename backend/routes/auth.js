@@ -258,16 +258,18 @@ router.post('/users/remove-friend/', async (req, res) => {
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
     let user = await User.findOne({ displayName: req.body.userDisplayName });
     const userId = user._id.toString();
-    const currentUserId = currentUser._id.toString();
 
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
 
-    if (!isUserFriendsWithCurrentUser) return res.json({
-      message: `${currentUser.displayName} is not friends with ${user.displayName}.`
-    });
+    if (!isUserFriendsWithCurrentUser) {
+      return res.json({
+        message: `${currentUser.displayName} is not friends with ${user.displayName}.`
+      });
+    }
     else {
       currentUser.friends = currentUser.friends.filter((friendDisplayName) => friendDisplayName !== user.displayName);
       user.friends = user.friends.filter((friendDisplayName) => friendDisplayName !== currentUser.displayName);
+
 
       await User.findByIdAndUpdate(
         currentUser._id,

@@ -31,16 +31,19 @@ function AuthUsersTable({ props }) {
     await deleteFtpUser(selectedUser.displayName);
 
     // Remove deleted user from friends
-    authUsers.map(async (user) => {
+    const friendRemovalPromises = authUsers.map(async (user) => {
       if (user.displayName !== selectedUser.displayName) {
         if (user.friends.includes(selectedUser.displayName)) {
           await removeFriend({
             currentUserDisplayName: user.displayName,
-            userDisplayName: friendToRemove.displayName
+            userDisplayName: selectedUser.displayName
           });
         }
       }
     });
+    // Wait for all friend removal promises to complete
+    await Promise.all(friendRemovalPromises);
+
     await deleteAuthUser(selectedUser.displayName);
 
     setDialogOpen(false);

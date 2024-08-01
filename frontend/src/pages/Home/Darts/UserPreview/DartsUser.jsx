@@ -87,41 +87,4 @@ function DartsUser() {
   )
 }
 
-// const findCurrentUserInGame = (users) => {
-//   return users.find((user) => user.displayName === username);
-// }
-
-// {dartUser.games.map((game) => (
-//   <Table className='border-2 border-white' key={game._id}>
-//     <TableHeader>
-//       <TableRow>
-//         <TableHead className='flex gap-4 justify-center'>
-//           <img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" />
-//           <img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="first-place-ribbon" />
-//           <img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="first-place-ribbon" />
-//         </TableHead>
-//         <TableHead>Start Points</TableHead>
-//         <TableHead>AllGainedPoints</TableHead>
-//         <TableHead>highestGameTurnPoints</TableHead>
-//         <TableHead>gameCheckout</TableHead>
-//         <TableHead>avgPointsPerTurn</TableHead>
-//       </TableRow>
-//     </TableHeader>
-//     <TableBody>
-//       <TableRow>
-//         <TableCell className='flex gap-4 justify-center'>
-//           <span>{game.podium[1] || "None"}</span>
-//           <span>{game.podium[2] || "None"}</span>
-//           <span>{game.podium[3] || "None"}</span>
-//         </TableCell>
-//         <TableCell>{game.startPoints}</TableCell>
-//         <TableCell>{findCurrentUserInGame(game.users).allGainedPoints}</TableCell>
-//         <TableCell>{findCurrentUserInGame(game.users).highestGameTurnPoints}</TableCell>
-//         <TableCell>{findCurrentUserInGame(game.users).gameCheckout}</TableCell>
-//         <TableCell>{findCurrentUserInGame(game.users).avgPointsPerTurn}</TableCell>
-//       </TableRow>
-//     </TableBody>
-//   </Table>
-// ))}
-
 export default DartsUser

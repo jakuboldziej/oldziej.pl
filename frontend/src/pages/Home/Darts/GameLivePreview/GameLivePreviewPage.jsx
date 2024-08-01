@@ -6,7 +6,24 @@ import React, { useEffect, useState } from 'react';
 
 function GameLivePreviewPage() {
   const [liveGame, setLiveGame] = useState(null);
+  const [overthrow, setOverthrow] = useState(false);
 
+  // Overthrow effect
+  useEffect(() => {
+    let timer;
+
+    if (overthrow) {
+      timer = setTimeout(() => {
+        setOverthrow(false);
+      }, 1000);
+    }
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [overthrow]);
+
+  // Socket.io
   useEffect(() => {
     socket.connect();
 
@@ -36,26 +53,34 @@ function GameLivePreviewPage() {
       ShowNewToast("Live Game Preview", "Host clicked play again button and started a new game!")
     }
 
+    const handleOverthrowEffect = (userDisplayName) => {
+      setOverthrow(userDisplayName);
+    }
+
     socket.on("updateLiveGameClient", updateLiveGameClient);
     socket.on("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
     socket.on("playAgainButtonClient", playAgainButtonClient);
+    socket.on("userOverthrowClient", handleOverthrowEffect);
 
     return () => {
       socket.off("updateLiveGameClient", updateLiveGameClient);
       socket.off("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
       socket.off("playAgainButtonClient", playAgainButtonClient);
+      socket.off("userOverthrowClient", handleOverthrowEffect);
     }
   }, []);
 
-  const joinGameProps = {
+  const componentsProps = {
+    liveGame,
     setLiveGame,
+    overthrow
   }
   return (
     <>
       {liveGame ? (
-        <GameLivePreview liveGame={liveGame} setLiveGame={setLiveGame} />
+        <GameLivePreview props={componentsProps} />
       ) : (
-        <JoiningLiveGame props={joinGameProps} />
+        <JoiningLiveGame props={componentsProps} />
       )}
     </>
   )

@@ -93,7 +93,7 @@ io.on('connection', (socket) => {
     const sendData = liveGamesData[joinData.gameCode] ? liveGamesData[joinData.gameCode] : joinData;
 
     io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
-  })
+  });
 
   socket.on("updateLiveGamePreview", (data) => {
     const gameData = JSON.parse(data);
@@ -101,7 +101,7 @@ io.on('connection', (socket) => {
     liveGamesData[gameData.gameCode] = gameData;
 
     io.to(`game-${gameData.gameCode}`).emit("updateLiveGameClient", JSON.stringify(gameData));
-  })
+  });
 
   socket.on("playAgainButtonServer", (data) => {
     const playAgainData = JSON.parse(data);
@@ -113,13 +113,12 @@ io.on('connection', (socket) => {
 
     io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
     io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
-  })
+  });
 
-  // Deleting gameData on room-delete
-  io.of("/").adapter.on("delete-room", (roomCode) => {
-    if (liveGamesData[roomCode.split("-")[1]]) {
-      delete liveGamesData[roomCode.split("-")[1]];
-    }
+  socket.on("userOverthrow", (data) => {
+    const { userDisplayName, gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
   });
 
   // Handling Online Users
@@ -130,6 +129,13 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     scheduleUserOffline(socket.id, io);
   });
+});
+
+// Deleting gameData on room-delete
+io.of("/").adapter.on("delete-room", (roomCode) => {
+  if (liveGamesData[roomCode.split("-")[1]]) {
+    delete liveGamesData[roomCode.split("-")[1]];
+  }
 });
 
 // Admin UI

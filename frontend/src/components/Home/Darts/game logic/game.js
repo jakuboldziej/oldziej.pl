@@ -83,6 +83,7 @@ export const handleDartsData = async () => {
   if (!game.training) {
     users.map(async (user) => {
       if (user.temporary) return;
+
       const dartUser = await getDartsUser(user.displayName);
 
       user.place === 1 ? dartUser.podiums["firstPlace"] += 1 : null;
@@ -99,12 +100,13 @@ export const handleDartsData = async () => {
         dartUser.overAllPoints += user.allGainedPoints;
         currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
-        if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
+        if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
         if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
+        if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
         if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
       }
 
-      !game.active ? dartUser.gamesPlayed += 1 : null;
+      dartUser.gamesPlayed += 1;
 
       await putDartsUser(dartUser);
     });
@@ -116,6 +118,9 @@ export const handleDartsData = async () => {
     3: game.podium[3],
   }
 
+  const { record, userWon, ...restGameData } = game;
+
+  if (!game.training) await putDartsGame(restGameData);
   setGameState(game);
 }
 
@@ -184,7 +189,7 @@ const handleUsersState = (value, specialState, setSpecialState) => {
     handlePoints();
   }
 
-  if (game.userWon || !currentUser.turn || !game.active) {
+  if (game.userWon || !currentUser.turn || game.active === false) {
     return;
   }
 
@@ -240,11 +245,7 @@ export const handleRecord = (action, backSummary = false) => {
 }
 
 export const setGameState = async (gameP) => {
-  const { record, userWon, ...restGameData } = gameP;
-
-  if (!gameP.training) await putDartsGame(restGameData);
   setGame(gameP);
-
   socket.emit("updateLiveGamePreview", JSON.stringify(gameP));
   localStorage.setItem("dartsGame", JSON.stringify(gameP));
 }

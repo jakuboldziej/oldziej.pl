@@ -179,6 +179,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       normal: 0,
       overthrows: 0,
     }
+
     let updatedUsers = usersPlaying.map((user) => ({
       _id: user._id,
       displayName: user.displayName,
@@ -224,6 +225,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       round: 1,
     }
 
+
     updatedUsers[0].turn = true;
     const usersCopy = lodash.cloneDeep(updatedUsers);
     const gameCopy = lodash.pick(gameData, ['round', 'turn']);
@@ -241,13 +243,13 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     } else {
       const { record, ...gameWithoutRecord } = gameData;
       const game = await postDartsGame(gameWithoutRecord);
-
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
       setGame(gameData);
 
       socket.emit("updateLiveGamePreview", JSON.stringify(gameData));
     }
+
     navigate("game");
 
     localStorage.setItem("gameSettings", JSON.stringify({
@@ -295,7 +297,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     const estimatedGameTime = () => {
       let minutes = 0;
       let minutesPerStartPoints = 0;
-      minutesPerStartPoints += selectStartPoints / 75;
+      minutesPerStartPoints += selectStartPoints / 130;
 
       if (usersPlaying.length > 0) minutes = (minutesPerStartPoints * selectLegs * selectSets) * usersPlaying.length;
       setEgt(minutes.toFixed());
@@ -337,7 +339,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
           <DrawerHeader>
             <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>
-          <div className="settings pt-3 overflow-y-auto">
+          <div className="settings py-3 overflow-y-auto">
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
                 <span>Add Users</span>
@@ -366,7 +368,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                     </div>
                   </div>
                 </div>
-                <div className="users pt-3">
+                <div className="users overflow-y-auto">
                   {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
                     <div onClick={() => handleRemovePlayer(user)} className="user playing flex justify-between" key={user._id}>
                       <span>{user.displayName}</span>
