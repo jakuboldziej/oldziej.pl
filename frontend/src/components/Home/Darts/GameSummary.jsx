@@ -107,7 +107,7 @@ function GameSummary({ show, setShow }) {
 
   useEffect(() => {
     if (show) {
-      const formattedTime = handleTimePlayed(game.created_at);
+      const formattedTime = handleTimePlayed(game.created_at, game.finished_at);
       setTimePlayed(formattedTime);
     }
   }, [show]);

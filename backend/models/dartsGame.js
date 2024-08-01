@@ -11,6 +11,10 @@ const dartsGameSchema = new mongoose.Schema({
     required: true,
     default: Date.now()
   },
+  finished_at: {
+    type: Date,
+    required: false
+  },
   users: {
     type: Array,
     required: true

@@ -8,8 +8,7 @@ import { handleTimePlayed } from '../game logic/gameUtils';
 function GameLivePreview({ liveGame, setLiveGame }) {
   const [users, setUsers] = useState(liveGame.users);
   const [showDialog, setShowDialog] = useState(false);
-  const [gameEndedTime, setGameEndedTime] = useState(0);
-
+  const [timePlayed, setTimePlayed] = useState(0);
 
   const handleCurrentUserTurn = (user, turn) => {
     if (turn) {
@@ -27,8 +26,8 @@ function GameLivePreview({ liveGame, setLiveGame }) {
     }
 
     if (!liveGame.active) {
-      const formattedTime = handleTimePlayed(liveGame.created_at);
-      setGameEndedTime(formattedTime);
+      const formattedTime = handleTimePlayed(liveGame.created_at, liveGame.finished_at);
+      setTimePlayed(formattedTime);
       setShowDialog(true);
     }
     else setShowDialog(false);
@@ -80,7 +79,7 @@ function GameLivePreview({ liveGame, setLiveGame }) {
                 <span className="place third-place">{liveGame.podium[3] ? liveGame.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
               </div>
               <div className="flex gap-4">
-                <span>Game ended: {gameEndedTime} ago</span>
+                <span>Time played: {timePlayed}</span>
                 <span>Start Points: {liveGame.startPoints}</span>
               </div>
               <span>

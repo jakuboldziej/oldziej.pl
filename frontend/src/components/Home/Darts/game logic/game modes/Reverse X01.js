@@ -10,6 +10,8 @@ export const handlePodiumReverseX01 = () => {
   game.podium[1] = reverseUser.displayName;
   game.userWon = reverseUser.displayName;
   game.active = false;
+  game.finished_at = Date.now();
+
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (usersWithoutPodium.length > 0) {
     const sortedUsers = usersWithoutPodium.sort((a, b) => a.allGainedPoints - b.allGainedPoints);

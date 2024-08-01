@@ -6,6 +6,8 @@ export const handlePodiumX01 = () => {
   game.podium[1] = currentUser.displayName;
   game.userWon = currentUser.displayName;
   game.active = false;
+  game.finished_at = Date.now();
+
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (usersWithoutPodium.length > 0) {
     const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);

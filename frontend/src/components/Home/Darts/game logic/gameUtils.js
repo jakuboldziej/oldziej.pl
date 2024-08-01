@@ -1,8 +1,8 @@
-export const handleTimePlayed = (gameCreatedAt) => {
+export const handleTimePlayed = (gameCreatedAt, gameFinishedAt) => {
   const date = new Date(gameCreatedAt);
-  const currentDate = new Date();
+  const finishedDate = new Date(gameFinishedAt);
 
-  const timeDifference = currentDate.getTime() - date.getTime();
+  const timeDifference = finishedDate.getTime() - date.getTime();
 
   const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
   const minutesDifference = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
