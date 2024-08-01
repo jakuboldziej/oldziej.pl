@@ -397,8 +397,6 @@ function Friends() {
                         <DropdownMenuItem className='gap-2' onClick={() => handleRemoveFriend(friend.displayName)}><UserMinus />Remove friend</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-
-                    span
                   </span>
                 </div>
               )) : (

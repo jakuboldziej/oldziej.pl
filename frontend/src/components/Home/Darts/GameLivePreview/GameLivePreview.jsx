@@ -41,9 +41,9 @@ function GameLivePreview({ liveGame, setLiveGame }) {
           <span>Gamemode: {liveGame.gameMode}</span>
           <span className='flex items-center gap-2'>Live: <img className='h-[15px]' src={liveGame.active ? GreenDot : RedDot} /></span>
         </div>
-        <div className='current-user flex flex-wrap items-center justify-center gap-10 w-full container_no_nav'>
+        <div className='users-playing flex flex-wrap items-center justify-center gap-10 w-full container_no_nav'>
           {users && users.map((user) => (
-            <div key={user._id}>
+            <div key={user._id} className='user'>
               <div className="p-1">
                 <div className="flex flex-col aspect-auto items-center justify-center p-6 gap-10">
                   <span className={`text-5xl ${handleCurrentUserTurn(user)}`}>{user.displayName}</span>
