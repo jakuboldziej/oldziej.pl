@@ -40,7 +40,14 @@ function JoiningLiveGame({ props }) {
 
   return (
     <div className='joininig-live-game text-white flex flex-col items-center justify-center gap-5 h-screen w-full p-2'>
-      <span className='text-3xl text-center'>Join the live game from another device by scanning the QR code</span>
+      <div className='flex flex-col items-center gap-5'>
+        <span className='text-center text-3xl'>Join the live game by entering the game code here</span>
+        <form onSubmit={handleJoinLiveGame} className="flex w-fit items-center space-x-2">
+          <Input autoFocus required type='number' placeholder='1234' value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
+          <Button type="submit">Join</Button>
+        </form>
+      </div>
+      <span className='text-center'>Or scan the QR code</span>
       <Link
         title="Join the live game from another device"
         to={qrCodeLink}
@@ -54,13 +61,7 @@ function JoiningLiveGame({ props }) {
           viewBox={`0 0 256 256`}
         />
       </Link>
-      <div className='flex flex-col gap-5'>
-        <span className='text-center'>Or put the code manually</span>
-        <form onSubmit={handleJoinLiveGame} className="flex w-full max-w-sm items-center space-x-2">
-          <Input autoFocus required type='number' placeholder='1234' value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
-          <Button type="submit">Join</Button>
-        </form>
-      </div>
+
     </div>
   )
 }
