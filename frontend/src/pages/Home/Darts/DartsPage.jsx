@@ -314,7 +314,9 @@ function DartsPage() {
                             {game.users.length}
                           </span>
                         </MyTooltip>
-                        <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
+                        <MyTooltip title={new Date(game.created_at).toLocaleString()}>
+                          <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
+                        </MyTooltip>
                       </div>
                       :
                       <div key={game._id} className="element">
@@ -335,12 +337,6 @@ function DartsPage() {
                           <img width="25" height="25" src="https://img.icons8.com/color/2525/third-place-ribbon.png" alt="first-place-ribbon" />
                           {game.podium[3]}
                         </span>}
-                        <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
-                          <span className="elementInfo usersCount absolute right-1">
-                            <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/25/person-male--v3.png" alt="person-male--v3" />
-                            {game.users.length}
-                          </span>
-                        </MyTooltip>
                         <MyTooltip title="Game mode">
                           <span className="elementInfo">
                             <img width="25" height="25" src="https://img.icons8.com/office/25/controller.png" alt="controller" />
@@ -351,6 +347,12 @@ function DartsPage() {
                           <span className="elementInfo">
                             <img width="25" height="25" src="https://img.icons8.com/ios-filled/25/finish-flag.png" alt="finish-flag" />
                             {game.startPoints}
+                          </span>
+                        </MyTooltip>
+                        <MyTooltip title={game.users.map(user => user.displayName).join(', ')}>
+                          <span className="elementInfo usersCount absolute right-1">
+                            <img width="25" height="25" src="https://img.icons8.com/pastel-glyph/25/person-male--v3.png" alt="person-male--v3" />
+                            {game.users.length}
                           </span>
                         </MyTooltip>
                         <MyTooltip title={new Date(game.created_at).toLocaleString()}>

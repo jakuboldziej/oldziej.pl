@@ -62,6 +62,7 @@ function GameLivePreview({ liveGame, setLiveGame }) {
                       <span>{user.turns[3]}</span>
                     </div>
                   </div>
+                  <span className='text-3xl'>Ø {user.avgPointsPerTurn}</span>
                 </div>
               </div>
             </div>
