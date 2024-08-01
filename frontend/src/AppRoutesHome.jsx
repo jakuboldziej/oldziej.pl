@@ -105,6 +105,7 @@ function AppRoutesHome() {
           <Route index element={<AdminRequireAuth><Admin /></AdminRequireAuth>} />
         </Route>
 
+        <Route path="/live" element={<Navigate to={`/darts/game/live`} replace />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
       </Routes>

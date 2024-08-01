@@ -121,11 +121,13 @@ function Friends() {
       friends: updatedAuthUserFriends
     }));
     const gameSettings = JSON.parse(localStorage.getItem("gameSettings"));
-    const updatedGameUsers = gameSettings.users.filter((user) => user.displayName !== userDisplayName);
-    localStorage.setItem("gameSettings", JSON.stringify({
-      ...gameSettings,
-      users: updatedGameUsers
-    }))
+    if (gameSettings?.users) {
+      const updatedGameUsers = gameSettings.users.filter((user) => user.displayName !== userDisplayName);
+      localStorage.setItem("gameSettings", JSON.stringify({
+        ...gameSettings,
+        users: updatedGameUsers
+      }))
+    }
   }
 
   const updateAuthUserFriends = async (first, authUserFriends, newFriend = false) => {
@@ -395,6 +397,8 @@ function Friends() {
                         <DropdownMenuItem className='gap-2' onClick={() => handleRemoveFriend(friend.displayName)}><UserMinus />Remove friend</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+
+                    span
                   </span>
                 </div>
               )) : (
