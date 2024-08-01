@@ -8,6 +8,8 @@ function GameLivePreviewPage() {
   const [liveGame, setLiveGame] = useState(null);
 
   useEffect(() => {
+    socket.connect();
+
     const updateLiveGameClient = (data) => {
       const gameData = JSON.parse(data);
       setLiveGame(gameData);
@@ -15,10 +17,8 @@ function GameLivePreviewPage() {
 
     const joinLiveGameFromQrCodeClient = (data) => {
       const joinData = JSON.parse(data);
-      console.log(joinData);
       if (joinData.socketId === socket.id) {
         socket.emit("joinLiveGamePreview", JSON.stringify({
-          socketId: socket.id,
           gameCode: joinData.game.gameCode
         }));
 
@@ -30,7 +30,6 @@ function GameLivePreviewPage() {
       const gameData = JSON.parse(data);
 
       socket.emit("joinLiveGamePreview", JSON.stringify({
-        socketId: socket.id,
         gameCode: gameData.gameCode
       }));
 

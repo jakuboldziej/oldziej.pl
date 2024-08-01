@@ -39,6 +39,8 @@ export const SocketIoContextProvider = ({ children }) => {
   // Listeners
 
   useEffect(() => {
+    if (!currentUser) return;
+
     const getOnlineUsers = async (data) => {
       const { updatedOnlineUsers, isUserOnline, updatedUser } = JSON.parse(data);
       const authUser = await getAuthUser(currentUser.displayName);

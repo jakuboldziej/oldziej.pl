@@ -24,7 +24,6 @@ function JoiningLiveGame({ props }) {
     const response = await joinLiveGamePreview(inputGameCode);
     if (response.ok) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
-        socketId: socket.id,
         gameCode: response.game.gameCode
       }));
 
@@ -58,7 +57,7 @@ function JoiningLiveGame({ props }) {
       <div className='flex flex-col gap-5'>
         <span className='text-center'>Or put the code manually</span>
         <form onSubmit={handleJoinLiveGame} className="flex w-full max-w-sm items-center space-x-2">
-          <Input autoFocus required placeholder='1234' value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
+          <Input autoFocus required type='number' placeholder='1234' value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
           <Button type="submit">Join</Button>
         </form>
       </div>

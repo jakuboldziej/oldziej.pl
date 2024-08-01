@@ -20,7 +20,9 @@ $lime: #b7eb34;
   z-index: 0;
 }
 
-.portfolio-footer, .portfolio-about-me, .portfolio-experience {
+.portfolio-footer,
+.portfolio-about-me,
+.portfolio-experience {
   padding: 0 11vw;
   z-index: 10;
 
@@ -50,7 +52,7 @@ $lime: #b7eb34;
   nav {
     height: 24px;
     width: 24px;
-    
+
     button {
       outline: none;
       border: none;
@@ -63,7 +65,7 @@ $lime: #b7eb34;
       border-radius: 50%;
       background: transparent;
     }
-    
+
     ul {
       display: flex;
       flex-direction: column;
@@ -73,7 +75,7 @@ $lime: #b7eb34;
       top: 64px;
       right: 42px;
     }
-    
+
     li {
       list-style: none;
       display: flex;
@@ -85,7 +87,9 @@ $lime: #b7eb34;
 
 // Footer
 .portfolio-footer {
-  .contact, .social-media {
+
+  .contact,
+  .social-media {
     height: 120px;
   }
 }
@@ -98,27 +102,27 @@ $lime: #b7eb34;
   transition: all .35s ease;
 
   &::before {
-      content: ""; 
-      position: absolute;
-      width: 100%;
-      height: 2px;
-      bottom: -2px;
-      left: 0;
-      background-color: $lime;
-      visibility: hidden;
-      -webkit-transform: scaleX(0);
-      transform: scaleX(0);
-      -webkit-transition: all 0.3s ease-in-out 0s; 
-      transition: all 0.3s ease-in-out 0s; 
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    bottom: -2px;
+    left: 0;
+    background-color: $lime;
+    visibility: hidden;
+    -webkit-transform: scaleX(0);
+    transform: scaleX(0);
+    -webkit-transition: all 0.3s ease-in-out 0s;
+    transition: all 0.3s ease-in-out 0s;
   }
 
   &:hover {
-      &::before {
-          visibility: visible;
-          -webkit-transform: scaleX(1);
-          transform: scaleX(1);
-      }   
-  }   
+    &::before {
+      visibility: visible;
+      -webkit-transform: scaleX(1);
+      transform: scaleX(1);
+    }
+  }
 }
 
 .portfolio-navbar .current-pages-names .cursor-pointer.text-underline {

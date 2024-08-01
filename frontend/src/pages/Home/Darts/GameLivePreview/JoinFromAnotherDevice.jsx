@@ -5,16 +5,16 @@ import { joinLiveGamePreview } from '@/fetch';
 import { socket } from '@/lib/socketio';
 import { Label } from '@radix-ui/react-label';
 import confetti from 'canvas-confetti';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom';
 
 function JoinFromAnotherDevice() {
+  const [isServerConnected, setIsServerConnected] = useState(socket.connected);
   const [searchParams, setSearchParamss] = useSearchParams();
   const [inputGameCode, setInputGameCode] = useState('');
   const [joinedGame, setJoinedGame] = useState(false);
 
   const socketId = searchParams.get("socketId");
-  console.log(socketId);
 
   const handleJoinLiveGame = async (e) => {
     e.preventDefault();
@@ -61,6 +61,29 @@ function JoinFromAnotherDevice() {
     }, 250);
   };
 
+  useEffect(() => {
+    socket.connect();
+    const connectToServer = () => {
+      setIsServerConnected(true);
+    }
+
+    const disconnectFromServer = () => {
+      setIsServerConnected(false);
+    }
+
+    socket.on('connect', connectToServer);
+    socket.on('disconnect', disconnectFromServer);
+
+    socket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+    });
+
+    return () => {
+      socket.off('connect', connectToServer);
+      socket.off('disconnect', disconnectFromServer);
+    };
+  }, []);
+
   return (
     <div className='text-white flex flex-col items-center justify-center gap-5 h-screen w-full p-2'>
       {socketId ? (
@@ -72,7 +95,7 @@ function JoinFromAnotherDevice() {
             <form onSubmit={handleJoinLiveGame} className="flex w-full max-w-sm items-end space-x-2 gap-1.5">
               <div className='grid w-full max-w-sm items-center gap-1.5'>
                 <Label htmlFor='game-code'>Code</Label>
-                <Input id='game-code' placeholder='1234' autoFocus required value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
+                <Input type='number' id='game-code' placeholder='1234' autoFocus required value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
               </div>
               <Button type="submit">Join</Button>
             </form>
