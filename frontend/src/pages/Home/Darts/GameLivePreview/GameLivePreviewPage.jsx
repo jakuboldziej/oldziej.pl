@@ -57,16 +57,24 @@ function GameLivePreviewPage() {
       setOverthrow(userDisplayName);
     }
 
+    const hostDisconnectedFromGameClient = (disconnected) => {
+      if (disconnected) {
+        setLiveGame(null);
+        ShowNewToast("Live Game Preview", "Host disconnected from the game.")
+      }
+    }
+
     socket.on("updateLiveGameClient", updateLiveGameClient);
     socket.on("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
     socket.on("playAgainButtonClient", playAgainButtonClient);
     socket.on("userOverthrowClient", handleOverthrowEffect);
+    socket.on("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
 
     return () => {
       socket.off("updateLiveGameClient", updateLiveGameClient);
       socket.off("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
       socket.off("playAgainButtonClient", playAgainButtonClient);
-      socket.off("userOverthrowClient", handleOverthrowEffect);
+      socket.off("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
     }
   }, []);
 

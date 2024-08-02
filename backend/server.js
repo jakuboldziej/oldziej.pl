@@ -103,6 +103,8 @@ io.on('connection', (socket) => {
     io.to(`game-${gameData.gameCode}`).emit("updateLiveGameClient", JSON.stringify(gameData));
   });
 
+  // Live game preview events
+
   socket.on("playAgainButtonServer", (data) => {
     const playAgainData = JSON.parse(data);
     const oldGameCode = playAgainData.oldGameCode;
@@ -119,6 +121,13 @@ io.on('connection', (socket) => {
     const { userDisplayName, gameCode } = JSON.parse(data);
 
     io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
+  });
+
+  socket.on("hostDisconnectedFromGame", (data) => {
+    const { gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
+    io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
   });
 
   // Handling Online Users

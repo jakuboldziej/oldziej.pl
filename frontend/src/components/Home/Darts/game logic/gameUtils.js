@@ -1,4 +1,5 @@
 export const handleTimePlayed = (gameCreatedAt, gameFinishedAt) => {
+  if (gameFinishedAt === 0) return "00:00";
   const date = new Date(gameCreatedAt);
   const finishedDate = new Date(gameFinishedAt);
 

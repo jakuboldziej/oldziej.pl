@@ -101,7 +101,11 @@ function GameSummary({ show, setShow }) {
     return true;
   }
 
-  const deleteLSGame = () => {
+  const handleBackToDarts = () => {
+    socket.emit("hostDisconnectedFromGame", JSON.stringify({
+      gameCode: game.gameCode
+    }));
+
     localStorage.setItem("dartsGame", null);
   }
 
@@ -117,45 +121,50 @@ function GameSummary({ show, setShow }) {
       <DialogContent className='game-summary-modal'>
         <DialogTitle className='text-center text-2xl'>Game Summary</DialogTitle>
         <hr />
-        <div className='text-white'>
-          {!game.training ?
-            <div className='summary flex flex-col items-center gap-5'>
-              <div className="podium">
-                <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+        <div className='text-white summary flex flex-col items-center'>
+          {game.podium[1] !== null ? (
+            !game.training ? (
+              <div className='flex flex-col items-center gap-5'>
+                <div className="podium">
+                  <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+                  <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+                  <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+                </div>
+                <div className="flex gap-4">
+                  <span>Time played: {timePlayed}</span>
+                  <span>Start Points: {game.startPoints}</span>
+                </div>
+                <span>
+                  Gamemode: {game.gameMode}
+                  {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+                </span>
               </div>
-              <div className="flex gap-4">
-                <span>Time played: {timePlayed}</span>
-                <span>Start Points: {game.startPoints}</span>
-              </div>
-              <span>
-                Gamemode: {game.gameMode}
-                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
-              </span>
-            </div>
-            :
-            <div className="training-stats flex flex-col items-center gap-5">
-              <span className='text-lg font-bold'>Training Stats</span>
-              <div className="podium">
-                <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-              </div>
-              <div className="flex gap-4">
-                <span>Time played: {timePlayed}</span>
-                <span>Start Points: {game.startPoints}</span>
-              </div>
-              <span>
-                Gamemode: {game.gameMode}
-                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
-              </span>
-              <UserDataTable users={game.users} game={game} />
-            </div>
-          }
+            )
+              : (
+                <div className="training-stats flex flex-col items-center gap-5">
+                  <span className='text-lg font-bold'>Training Stats</span>
+                  <div className="podium">
+                    <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+                    <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+                    <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
+                  </div>
+                  <div className="flex gap-4">
+                    <span>Time played: {timePlayed}</span>
+                    <span>Start Points: {game.startPoints}</span>
+                  </div>
+                  <span>
+                    Gamemode: {game.gameMode}
+                    {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+                  </span>
+                  <UserDataTable users={game.users} game={game} />
+                </div>
+              )
+          ) : (
+            <span className='text-xl text-red-500'>This game was abandoned</span>
+          )}
           <span className='flex flex-col items-center gap-5 mt-5'>
-            <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={deleteLSGame}>Create New Game</Link>
-            <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={deleteLSGame}>Back to Darts</Link>
+            <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={handleBackToDarts}>Create New Game</Link>
+            <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={handleBackToDarts}>Back to Darts</Link>
             <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
             <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
           </span>
