@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/fetch';
 import { Eye, EyeOff, Grip, Loader2, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { totalThrows } from '../Home/Darts/game logic/userUtils';
 
 function DartsUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -87,6 +88,7 @@ function DartsUsersTable({ props }) {
               <TableHead>highestEndingAvg</TableHead>
               <TableHead>highestTurnPoints</TableHead>
               <TableHead>overAllPoints</TableHead>
+              <TableHead>throws</TableHead>
               <TableHead>Visible</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
@@ -101,6 +103,7 @@ function DartsUsersTable({ props }) {
                 <TableCell>{user.highestEndingAvg}</TableCell>
                 <TableCell>{user.highestTurnPoints}</TableCell>
                 <TableCell>{user.overAllPoints}</TableCell>
+                <TableCell>{totalThrows(user, false)}</TableCell>
                 <TableCell>{user.visible ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>

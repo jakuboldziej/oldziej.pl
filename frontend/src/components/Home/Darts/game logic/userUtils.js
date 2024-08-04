@@ -35,6 +35,10 @@ export const handleAvgPointsPerTurn = (user) => {
   return (avg).toFixed(2);
 }
 
-export const totalThrows = (user) => {
-  return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - user.currentThrows["overthrows"];
+export const totalThrows = (user, cr = true) => {
+  if (cr)
+    return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - user.currentThrows["overthrows"];
+  else
+    return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"];
+
 }
