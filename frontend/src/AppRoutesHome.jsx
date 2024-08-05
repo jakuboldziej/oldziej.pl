@@ -25,6 +25,7 @@ import NavBar from './components/Home/NavBar';
 import { AuthContext } from './context/Home/AuthContext';
 import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePreviewPage';
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
+import EmailVerified from './pages/Home/EmailVerified';
 
 function AppRoutesHome() {
   const { currentUser } = useContext(AuthContext);
@@ -63,7 +64,18 @@ function AppRoutesHome() {
         navigate('/not-verified');
       }
     }, [currentUser]);
+
+    if (currentUser.verified !== true) return <LoadingScreen />;
+
     return children;
+  }
+
+  const LoadingScreen = () => {
+    return (
+      <div className='text-white h-screen text-center flex justify-center items-center'>
+        <span className='text-3xl'>Loading...</span>
+      </div>
+    )
   }
 
   return (
@@ -84,15 +96,15 @@ function AppRoutesHome() {
           </Route>
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
         </Route>
-        <Route path="cloud" element={<AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} />}>
-          <Route index element={<OnlyVerifiedAccess><ProtectedRoute><CloudPage /></ProtectedRoute></OnlyVerifiedAccess>} />
+        <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} /></OnlyVerifiedAccess>}>
+          <Route index element={<ProtectedRoute><CloudPage /></ProtectedRoute>} />
           <Route path='settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path='storage' element={<ProtectedRoute><Storage /></ProtectedRoute>} />
           <Route path='files'>
-            <Route index element={<OnlyVerifiedAccess><ProtectedRoute><MyFiles /></ProtectedRoute></OnlyVerifiedAccess>} />
-            <Route path='shared' element={<OnlyVerifiedAccess><ProtectedRoute><Shared /></ProtectedRoute></OnlyVerifiedAccess>} />
-            <Route path='favorites' element={<OnlyVerifiedAccess><ProtectedRoute><Favorites /></ProtectedRoute></OnlyVerifiedAccess>} />
-            <Route path='upload' element={<OnlyVerifiedAccess><ProtectedRoute><UploadFiles /></ProtectedRoute></OnlyVerifiedAccess>} />
+            <Route index element={<ProtectedRoute><MyFiles /></ProtectedRoute>} />
+            <Route path='shared' element={<ProtectedRoute><Shared /></ProtectedRoute>} />
+            <Route path='favorites' element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+            <Route path='upload' element={<ProtectedRoute><UploadFiles /></ProtectedRoute>} />
           </Route>
         </Route>
         <Route path="user">
@@ -106,8 +118,9 @@ function AppRoutesHome() {
         </Route>
 
         <Route path="/live" element={<Navigate to={`/darts/game/live`} replace />} />
-        <Route path="*" element={<NotFound />} />
         <Route path="/not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
+        <Route path="/verified" element={<EmailVerified />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   )

@@ -21,7 +21,7 @@ function Login() {
   const [borderBottomColor, setBorderBottomColor] = useState("#fff");
   const dynamicBorderStyle = { "--border-bottom-color": borderBottomColor };
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   // Redirect when already logged in
   useEffect(() => {

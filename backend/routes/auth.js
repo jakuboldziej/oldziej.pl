@@ -45,7 +45,7 @@ router.get('/users/:identifier', async (req, res) => {
 
 router.get('/users/check-existing-mail/:email', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email })
+    const user = await User.findOne({ email: req.params.email }, { password: 0 })
     res.json(user)
   } catch (err) {
     res.json({ message: err.message })
@@ -84,7 +84,7 @@ router.delete('/users/:displayName', async (req, res) => {
 
 router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', async (req, res) => {
   try {
-    const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName });
+    const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName }, { password: 0 });
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === userDisplayName);
 
     if (isUserFriendsWithCurrentUser) res.json(true)
@@ -100,8 +100,8 @@ router.post('/users/send-friends-request/', async (req, res) => {
 
     const userFriendCode = req.body.userFriendCode;
 
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
-    let user = await User.findOne({ friendsCode: userFriendCode });
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let user = await User.findOne({ friendsCode: userFriendCode }, { password: 0 });
     if (!user) return res.json({
       message: `Friend code is not valid (${userFriendCode}).`
     });
@@ -160,8 +160,8 @@ router.post('/users/accept-friends-request/', async (req, res) => {
   try {
     const io = req.app.locals.io;
 
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
-    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
@@ -213,8 +213,8 @@ router.post('/users/decline-friends-request/', async (req, res) => {
   try {
     const io = req.app.locals.io;
 
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
-    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
@@ -255,8 +255,8 @@ router.post('/users/decline-friends-request/', async (req, res) => {
 
 router.post('/users/remove-friend/', async (req, res) => {
   try {
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName });
-    let user = await User.findOne({ displayName: req.body.userDisplayName });
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
     const userId = user._id.toString();
 
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);

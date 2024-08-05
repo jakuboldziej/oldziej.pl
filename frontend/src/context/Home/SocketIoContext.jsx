@@ -3,11 +3,12 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { getAuthUser } from '@/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
+import Cookies from 'js-cookie';
 
 export const SocketIoContext = createContext();
 
 export const SocketIoContextProvider = ({ children }) => {
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [isServerConnected, setIsServerConnected] = useState(socket.connected);
   const [onlineFriends, setOnlineFriends] = useState([]);
@@ -97,16 +98,37 @@ export const SocketIoContextProvider = ({ children }) => {
       }
     }
 
+    const verifyEmail = async (data) => {
+      const verifyData = JSON.parse(data);
+      const userLoggedIn = currentUser.displayName === verifyData.userDisplayName;
+
+      if (!userLoggedIn) return;
+
+      if (verifyData.verified) {
+        ShowNewToast("Verify Email", "Your email was verified!");
+      }
+      else {
+        ShowNewToast("Verify Email", "Your account was disproved.");
+      }
+      const domain = import.meta.env.MODE === "development" ? ".home.localhost" : ".home.oldziej.pl";
+      const cookie = JSON.parse(Cookies.get("_auth_state"));
+      cookie.verified = verifyData.verified;
+      Cookies.set("_auth_state", JSON.stringify(cookie), { domain });
+      setCurrentUser(cookie);
+    }
+
     socket.on('onlineUsersListener', getOnlineUsers);
     socket.on('sendFriendsRequest', sendFriendsRequest);
     socket.on('acceptFriendsRequest', acceptFriendsRequest);
-    socket.on('updateCounters', updateCounters)
+    socket.on('updateCounters', updateCounters);
+    socket.on('verifyEmail', verifyEmail);
 
     return () => {
       socket.off('onlineUsersListener', getOnlineUsers);
       socket.off('sendFriendsRequest', sendFriendsRequest);
       socket.off('acceptFriendsRequest', acceptFriendsRequest);
       socket.off('updateCounters', updateCounters);
+      socket.off('verifyEmail', verifyEmail);
     };
   }, [currentUser]);
 

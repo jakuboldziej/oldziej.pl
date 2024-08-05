@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getStatisticsTop3DoorHitters, getStatisticsTop3Players } from "@/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { AuthContext } from "@/context/Home/AuthContext";
+import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 
 function Home() {
   document.title = "Oldziej | Home";
+
+  const { currentUser } = useContext(AuthContext);
 
   const [dartsStatistics, setDartsStatistics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -23,6 +27,10 @@ function Home() {
       setIsLoading(false);
     }
     fetchData();
+
+    if (currentUser && currentUser?.verified === false) {
+      ShowNewToast("Verify Email", "Verify your email to get full experience!");
+    }
   }, []);
 
   return (

@@ -2,7 +2,7 @@ import "@/assets/styles/auth.scss";
 import { useContext, useEffect, useState } from "react";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
-import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser } from "@/fetch";
+import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/fetch";
 import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
@@ -49,6 +49,9 @@ function Register() {
       setIsLoading(false);
       return;
     } else {
+      await sendVerificationEmail({
+        userEmail: email
+      });
       await postDartsUser({
         displayName: displayName,
       });

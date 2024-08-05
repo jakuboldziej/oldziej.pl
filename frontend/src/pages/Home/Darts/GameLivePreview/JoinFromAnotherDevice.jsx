@@ -10,7 +10,7 @@ import { useSearchParams } from 'react-router-dom';
 
 function JoinFromAnotherDevice() {
   const [isServerConnected, setIsServerConnected] = useState(socket.connected);
-  const [searchParams, setSearchParamss] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [inputGameCode, setInputGameCode] = useState('');
   const [joinedGame, setJoinedGame] = useState(false);
 

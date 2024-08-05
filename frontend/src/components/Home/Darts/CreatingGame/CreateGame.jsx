@@ -85,7 +85,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       }
     }
 
-    if (drawerOpen) getData();
+    if (drawerOpen) {
+      getData();
+      if (currentUser.verified === false) ShowNewToast("Verify Email", "Your data won't be saved because you're not verified!");
+    }
   }, [drawerOpen]);
 
   const getUsersFriends = async () => {

@@ -1,4 +1,4 @@
-export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_DOMAIN + "/api";
+export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 
 // Darts
 
@@ -125,6 +125,7 @@ export const postDartsUser = async (userData) => {
 // Cloud
 
 // Users
+
 export const postFtpUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/ftp/users`, {
     method: "POST",
@@ -171,6 +172,7 @@ export const putFtpUser = async (userData) => {
 }
 
 // Files
+
 export const getFiles = async (userDisplayName = null) => {
   let url = `${mongodbApiUrl}/ftp/files`;
 
@@ -248,6 +250,7 @@ export const putFile = async (data) => {
 }
 
 // Folders
+
 export const postFolder = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders`, {
     method: "POST",
@@ -305,6 +308,7 @@ export const putFolder = async (data) => {
 }
 
 // Auth Users
+
 export const getAuthUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`);
   const users = await usersResponse.json();
@@ -375,6 +379,7 @@ export const registerUser = async (userData) => {
 }
 
 // Friends
+
 export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName, userDisplayName) => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-if-friends/${currentUserDisplayName}/${userDisplayName}`);
   const user = await usersResponse.json();
@@ -444,6 +449,22 @@ export const removeFriend = async (data) => {
     body: JSON.stringify({
       currentUserDisplayName: currentUserDisplayName,
       userDisplayName: userDisplayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
+// Emails
+
+export const sendVerificationEmail = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/emails/send-verify-email`, {
+    method: "POST",
+    body: JSON.stringify({
+      userEmail: data.userEmail
     }),
     headers: {
       "Content-Type": "application/json",

@@ -56,7 +56,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
 });
 
-const domain = environment === "production" ? process.env.SOCKETIO_CORS_DOMAIN : process.env.SOCKETIO_CORS_DOMAIN_LOCAL;
+const domain = environment === "production" ? process.env.DOMAIN : process.env.LOCAL;
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
@@ -77,6 +77,17 @@ const liveGamesData = {};
 
 io.on('connection', (socket) => {
   // Listeners
+
+  // Admin Listeners
+
+  socket.on("verifyEmailAdmin", (data) => {
+    const verifyData = JSON.parse(data);
+
+    io.emit("verifyEmail", JSON.stringify({
+      userDisplayName: verifyData.userDisplayName,
+      verified: verifyData.verified
+    }));
+  });
 
   // Live game
 

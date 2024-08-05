@@ -82,7 +82,7 @@ const handlePoints = (action, value) => {
 export const handleDartsData = async () => {
   if (!game.training) {
     users.map(async (user) => {
-      if (user.temporary) return;
+      if (user.temporary || user.verified === false) return;
 
       const dartUser = await getDartsUser(user.displayName);
 

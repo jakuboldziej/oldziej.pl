@@ -4,14 +4,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
 import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUser, getAuthUsers, getFtpUser, putAuthUser, removeFriend } from '@/fetch';
 import { Copy, Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import CopyTextButton from '../Home/CopyTextButton';
 import MyTooltip from '../Home/MyComponents/MyTooltip';
+import Cookies from 'js-cookie';
+import { AuthContext } from '@/context/Home/AuthContext';
+import { socket } from '@/lib/socketio';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
   const navigate = useNavigate();
+
+  const { setCurrentUser } = useContext(AuthContext);
 
   const [authUsers, setAuthUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +59,11 @@ function AuthUsersTable({ props }) {
     user.verified = !user.verified;
     await putAuthUser(user);
     setAuthUsers((prev) => prev.map((aUser) => aUser.displayName === user.displayName ? user : aUser));
+
+    socket.emit("verifyEmailAdmin", JSON.stringify({
+      userDisplayName: user.displayName,
+      verified: user.verified
+    }));
   }
 
   const fetchAuthUsers = async () => {
