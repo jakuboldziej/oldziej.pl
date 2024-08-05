@@ -41,13 +41,16 @@ module.exports = { dartsConn, ftpConn, mongoURIFTP };
 app.use(express.json())
 
 const dartsRouter = require('./routes/darts')
-app.use('/api/darts', dartsRouter)
+app.use('/api/darts', dartsRouter);
 
 const usersRouter = require('./routes/auth');
-app.use('/api/auth', usersRouter)
+app.use('/api/auth', usersRouter);
 
 const ftpRouter = require('./routes/ftp');
-app.use('/api/ftp', ftpRouter)
+app.use('/api/ftp', ftpRouter);
+
+const emailsRouter = require('./routes/emails');
+app.use('/api/emails', emailsRouter);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
