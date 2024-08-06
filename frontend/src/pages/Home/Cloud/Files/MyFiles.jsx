@@ -13,6 +13,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbS
 import MyFileCard from "@/components/Home/Cloud/MyFileCard";
 import MyFolderCard from "@/components/Home/Cloud/MyFolderCard";
 import { AuthContext } from "@/context/Home/AuthContext";
+import Loading from "@/components/Home/Loading";
 
 function MyFiles() {
   const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
@@ -345,9 +346,7 @@ function MyFiles() {
                         )
                       ))
                     ) : (
-                      <div className="flex justify-center w-full pt-3">
-                        <Loader2 className="h-10 w-10 animate-spin" />
-                      </div>
+                      <Loading />
                     )
                   ) : (
                     <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>

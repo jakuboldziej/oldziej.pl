@@ -1,6 +1,4 @@
 import Home from './pages/Home/Home';
-import Login from './pages/Home/Authentication/Login';
-import Register from './pages/Home/Authentication/Register';
 import NotFound from './pages/Home/NotFound';
 import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './pages/Home/Darts/DartsGame';
@@ -43,7 +41,7 @@ function AppRoutesHome() {
   const ProtectedRoute = ({ children }) => {
     return (
       <RequireAuth
-        fallbackPath={`/login?returnUrl=${location.pathname}`}
+        fallbackPath={`/auth?returnUrl=${location.pathname}`}
       >
         {children}
       </RequireAuth>
@@ -84,13 +82,10 @@ function AppRoutesHome() {
       {currentUser && !listOfNonNavbarComponents.includes(location.pathname) && <NavBar />}
       <Routes>
         <Route path="/">
-          {/* Auth */}
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="auth" element={<MergedAuth />} />
-          {/* Home */}
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="live" element={<Navigate to={`/darts/game/live`} replace />} />
+
+          <Route path="auth" element={<MergedAuth />} />
           <Route path="not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
           <Route path="verified" element={<EmailVerified />} />
         </Route>
@@ -103,7 +98,7 @@ function AppRoutesHome() {
           </Route>
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
         </Route>
-        <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} /></OnlyVerifiedAccess>}>
+        <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/auth?returnUrl=${location.pathname}`} /></OnlyVerifiedAccess>}>
           <Route index element={<ProtectedRoute><CloudPage /></ProtectedRoute>} />
           <Route path='settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path='storage' element={<ProtectedRoute><Storage /></ProtectedRoute>} />
@@ -120,7 +115,7 @@ function AppRoutesHome() {
           <Route path="friends" element={<ProtectedRoute><OnlyVerifiedAccess><Friends /></OnlyVerifiedAccess></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
         </Route>
-        <Route path="admin" element={<AuthOutlet fallbackPath={`/login?returnUrl=${location.pathname}`} />}>
+        <Route path="admin" element={<AuthOutlet fallbackPath={`/auth?returnUrl=${location.pathname}`} />}>
           <Route index element={<AdminRequireAuth><Admin /></AdminRequireAuth>} />
         </Route>
 

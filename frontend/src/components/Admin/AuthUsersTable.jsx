@@ -11,6 +11,7 @@ import MyTooltip from '../Home/MyComponents/MyTooltip';
 import Cookies from 'js-cookie';
 import { AuthContext } from '@/context/Home/AuthContext';
 import { socket } from '@/lib/socketio';
+import Loading from '../Home/Loading';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -91,9 +92,7 @@ function AuthUsersTable({ props }) {
   return (
     <>
       {isLoading ? (
-        <div className="flex justify-center w-100 pt-3">
-          <Loader2 className="h-10 w-10 animate-spin" />
-        </div>
+        <Loading />
       ) : (
         <Table>
           <TableHeader>

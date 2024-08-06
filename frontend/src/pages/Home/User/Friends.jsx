@@ -12,6 +12,7 @@ import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { useNavigate } from 'react-router';
+import Loading from '@/components/Home/Loading';
 
 function Friends() {
   document.title = "Oldziej | Friends";
@@ -307,9 +308,7 @@ function Friends() {
                     <span>Pending:</span>
                     <div className='pending-list flex flex-col gap-1'>
                       {isLoading ? (
-                        <div className="flex justify-center w-100 pt-3 w-full">
-                          <Loader2 className="h-10 w-10 animate-spin" />
-                        </div>
+                        <Loading />
                       ) : (
                         authUser.friendsRequests.pending.length > 0 ? authUser.friendsRequests.pending.map((user) => (
                           <div key={user._id} className='request flex items-center justify-around gap-2 rounded-lg p-1'>
@@ -331,9 +330,7 @@ function Friends() {
                     <span>Received:</span>
                     <div className='received-list flex flex-col gap-1'>
                       {isLoading ? (
-                        <div className="flex justify-center w-100 pt-3 w-full">
-                          <Loader2 className="h-10 w-10 animate-spin" />
-                        </div>
+                        <Loading />
                       ) : (
                         authUser.friendsRequests.received.length > 0 ? authUser.friendsRequests.received.map((user) => (
                           <div key={user._id} className='request flex items-center justify-around gap-2 rounded-lg p-1'>
@@ -365,9 +362,7 @@ function Friends() {
           <span className='text-3xl border-b border-green pb-5'>Friends</span>
           <div className='friends-list flex flex-wrap justify-center sm:justify-start gap-5'>
             {isLoading ? (
-              <div className="flex justify-center w-100 pt-3 w-full">
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
+              <Loading />
             ) : (
               authUser.friends.length > 0 ? authUser.friends.map((friend) => (
                 <div key={friend._id} className='friend relative rounded-lg border border-green w-[47%] sm:w-40  h-20'>

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/Home/AuthContext";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
+import Loading from "@/components/Home/Loading";
 
 function Home() {
   document.title = "Oldziej | Home";
@@ -42,9 +43,7 @@ function Home() {
           </CardHeader>
           <div className="darts-info flex items-center flex-col gap-10">
             {isLoading ? (
-              <div className="flex justify-center w-100 pt-3">
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
+              <Loading />
             ) : (
               <>
                 <div className="top-players flex flex-col items-center gap-5 w-full">

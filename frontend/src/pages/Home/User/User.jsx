@@ -1,5 +1,5 @@
+import Loading from "@/components/Home/Loading";
 import { getAuthUser } from "@/fetch";
-import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
@@ -24,9 +24,7 @@ function User() {
   return (
     <div className='user text-white text-center p-5'>
       {isLoading ? (
-        <div className="flex justify-center w-100 pt-3 w-full">
-          <Loader2 className="h-10 w-10 animate-spin" />
-        </div>
+        <Loading />
       ) : (
         <span>{user.displayName}</span>
       )}

@@ -1,7 +1,3 @@
-import { Button } from '@/components/ui/shadcn/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
-import { Input } from '@/components/ui/shadcn/input'
-import { Label } from '@/components/ui/shadcn/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/shadcn/tabs'
 import React, { useContext, useEffect } from 'react'
 import Login from './Login'

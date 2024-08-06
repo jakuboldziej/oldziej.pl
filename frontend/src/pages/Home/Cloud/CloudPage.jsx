@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router'
 import MyDialogs from '@/components/Home/Cloud/MyDialogs'
 import { AuthContext } from '@/context/Home/AuthContext'
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip'
+import Loading from '@/components/Home/Loading'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
@@ -449,9 +450,7 @@ function CloudPage() {
                           </div>
                         </div>))
                     ) : (
-                      <div className="flex justify-center w-full pt-3">
-                        <Loader2 className="h-10 w-10 animate-spin" />
-                      </div>
+                      <Loading />
                     )
                   ) : (
                     <div className='flex flex-col items-center gap-2 justify-center w-100 pt-3'>

@@ -1,5 +1,4 @@
-import { useContext, useState } from "react";
-import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/fetch";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
@@ -10,6 +9,7 @@ import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
 import { Loader2 } from "lucide-react";
+import Loading from "@/components/Home/Loading";
 
 function Register() {
   document.title = "Oldziej | Register";
@@ -107,6 +107,15 @@ function Register() {
     }
   }
 
+  useEffect(() => {
+    if (err) {
+      const timer = setTimeout(() => {
+        setErr("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [err]);
+
   return (
     <Card>
       <form onSubmit={handleSubmit}>
@@ -130,11 +139,9 @@ function Register() {
         </CardContent>
         <CardFooter className="flex flex-col">
           {isLoading ? (
-            <div className="flex justify-center pt-3">
-              <Loader2 className="h-10 w-10 animate-spin" />
-            </div>
+            <Loading />
           ) : (
-            <Button type="submit">Register</Button>
+            <Button type="submit" disabled={passValidate.length < 6}>Register</Button>
           )}
           {err && <span id="error_message">{err}</span>}
         </CardFooter>

@@ -12,6 +12,7 @@ import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { Contact, Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { Link } from "react-router-dom";
+import Loading from "@/components/Home/Loading";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -214,9 +215,9 @@ function DartsPage() {
             <CardTitle><Link to="/user/friends" className="hover:cursor-pointer hover:opacity-80">Leaderboard</Link></CardTitle>
           </CardHeader>
           <CardContent className="info p-0">
-            {isLoading ? <div className="flex justify-center w-100 pt-3">
-              <Loader2 className="h-10 w-10 animate-spin" />
-            </div>
+            {isLoading ? (
+              <Loading />
+            )
               : dartUsers.map((dartUser) => (
                 <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
                   <span className="elementInfo username">{dartUser.displayName}</span>
@@ -272,9 +273,9 @@ function DartsPage() {
           </CardHeader>
           <ScrollArea onScroll={handleScroll}>
             <CardContent className="info p-0 pr-3">
-              {isLoading ? <div className="flex justify-center w-100 pt-3">
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
+              {isLoading ? (
+                <Loading />
+              )
                 : gamesShown.length > 0 ? gamesShown.map((game) => {
                   return (
                     game.active ?
@@ -372,9 +373,7 @@ function DartsPage() {
           </CardHeader>
           <CardContent className="flex justify-center flex-wrap gap-5">
             {isLoading ? (
-              <div className="flex justify-center w-100 pt-3">
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
+              <Loading />
             ) : (
               <>
                 <div className="text-center">

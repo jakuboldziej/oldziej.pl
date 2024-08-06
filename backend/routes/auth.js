@@ -364,7 +364,7 @@ router.post("/login", (req, res) => {
       });
     });
   }).catch(() => {
-    res.status(404).send({
+    res.send({
       message: "User not found",
     });
   });

@@ -1,4 +1,5 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
+import Loading from "@/components/Home/Loading";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { Loader2 } from "lucide-react";
@@ -51,9 +52,7 @@ function FavoriteFiles() {
                     <span key={file._id}>{file.filename}</span>
                   ))
                 ) : (
-                  <div className="flex justify-center w-full pt-3">
-                    <Loader2 className="h-10 w-10 animate-spin" />
-                  </div>
+                  <Loading />
                 )
               ) : (
                 <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
@@ -74,9 +73,7 @@ function FavoriteFiles() {
                     <span key={folder._id}>{folder.name}</span>
                   ))
                 ) : (
-                  <div className="flex justify-center w-full pt-3">
-                    <Loader2 className="h-10 w-10 animate-spin" />
-                  </div>
+                  <Loading />
                 )
               ) : (
                 <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>

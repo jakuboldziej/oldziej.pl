@@ -12,7 +12,7 @@
 $lime: #b7eb34;
 
 .container_no_nav {
-  height: calc(100vh - 64px) !important;
+  min-height: calc(100vh - 64px) !important;
 }
 
 .particles {

@@ -1,6 +1,5 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { loginUser } from "@/fetch";
 import { AuthContext } from "@/context/Home/AuthContext";
@@ -11,6 +10,7 @@ import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
 import { Loader2 } from "lucide-react";
+import Loading from "@/components/Home/Loading";
 
 function Login() {
   document.title = "Oldziej | Login";
@@ -65,6 +65,15 @@ function Login() {
     setIsLoading(false);
   }
 
+  useEffect(() => {
+    if (err) {
+      const timer = setTimeout(() => {
+        setErr("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [err]);
+
   return (
     <Card>
       <form onSubmit={handleSubmit}>
@@ -83,9 +92,7 @@ function Login() {
         </CardContent>
         <CardFooter className="flex flex-col">
           {isLoading ? (
-            <div className="flex justify-center pt-3">
-              <Loader2 className="h-10 w-10 animate-spin" />
-            </div>
+            <Loading />
           ) : (
             <Button type="submit">Login</Button>
           )}

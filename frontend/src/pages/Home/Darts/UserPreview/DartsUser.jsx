@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { getDartsGames, getDartsUser } from '@/fetch';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { UserBarChart } from './UserBarChart';
+import Loading from '@/components/Home/Loading';
 
 function DartsUser() {
   const { username } = useParams();
@@ -29,10 +30,7 @@ function DartsUser() {
         <b className='text-2xl'>{username}</b>
       </div>
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center mt-5 gap-2">
-          <Loader2 className="h-10 w-10 animate-spin" />
-          <div>Loading Statistics...</div>
-        </div>
+        <Loading />
       ) :
         <>
           <div className='overall-stats flex flex-row gap-10 text-center text-lg'>

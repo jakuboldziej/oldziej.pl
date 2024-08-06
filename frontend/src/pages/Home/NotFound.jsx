@@ -12,7 +12,7 @@ function NotFound() {
   return (
     <div className="notfound-page text-white">
       <span className="text-2xl">404 - Not Found</span>
-      {currentUser ? <Button onClick={() => navigate(-1)} variant="outline_green" className="glow-button-green">Back</Button> : <Button onClick={() => navigate('login')} variant="outline_green" className="glow-button-green">Login</Button>}
+      {currentUser ? <Button onClick={() => navigate(-1)} variant="outline_green" className="glow-button-green">Back</Button> : <Button onClick={() => navigate('/auth')} variant="outline_green" className="glow-button-green">Login</Button>}
     </div>
   );
 };
