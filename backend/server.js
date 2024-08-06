@@ -4,6 +4,10 @@ const bcrypt = require("bcrypt");
 
 require('dotenv').config()
 
+require('@babel/register')({
+  presets: ['@babel/preset-env', '@babel/preset-react']
+});
+
 const express = require("express")
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
