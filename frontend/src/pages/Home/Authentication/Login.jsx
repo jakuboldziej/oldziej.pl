@@ -1,55 +1,27 @@
-import "@/assets/styles/auth.scss";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
-import { Loader2 } from "lucide-react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { loginUser } from "@/fetch";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { useSearchParams } from "react-router-dom";
 
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
+import { Label } from "@/components/ui/shadcn/label";
+import { Input } from "@/components/ui/shadcn/input";
+import { Button } from "@/components/ui/shadcn/button";
+import { Loader2 } from "lucide-react";
+
 function Login() {
   document.title = "Oldziej | Login";
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const { setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const signIn = useSignIn();
-  const [passErr, setPassErr] = useState("");
-  const [passValidate, setPassValidate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [borderBottomColor, setBorderBottomColor] = useState("#fff");
-  const dynamicBorderStyle = { "--border-bottom-color": borderBottomColor };
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
-  // Redirect when already logged in
-  useEffect(() => {
-    if (currentUser) {
-      navigate("/")
-    }
-  }, [currentUser]);
-
-  const handleError = (message, color) => {
-    setErr(message);
-    setBorderBottomColor(color);
-  }
-
-  const handlePassword = (e) => {
-    const { value } = e.target;
-    const isValidPassword = /^(.{0}|.{6,})$/.test(value);
-
-    if (!isValidPassword) {
-      if (!passErr) {
-        setPassErr("Password must be at least 6 characters long.");
-        setBorderBottomColor("rgb(248, 126, 126)");
-      }
-    } else {
-      setPassErr("")
-      setBorderBottomColor("#fff");
-    }
-    setPassValidate(value);
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,7 +36,7 @@ function Login() {
       password
     });
     if (!response.token) {
-      handleError(response.message, "rgb(248, 126, 126)")
+      setErr(response.message)
       setIsLoading(false);
       return;
     }
@@ -94,37 +66,33 @@ function Login() {
   }
 
   return (
-    <>
-      <div className="login-page">
-        <div className="container-login100">
-          <div className="wrap-login100">
-            <form className="login100-form validate-form" onSubmit={handleSubmit}>
-              <span className="login100-form-title p-b-34 p-y-27">
-                Log in
-              </span>
-              <div className="wrap-input100 validate-input" style={dynamicBorderStyle} data-validate="Enter username">
-                <input className="input100" type="text" name="username" placeholder="Username" required />
-                <span className="focus-input100" data-placeholder="&#xf207;"></span>
-              </div>
-              <div className="wrap-input100 validate-input" style={dynamicBorderStyle} data-validate="Enter password">
-                <input className="input100" type="password" name="pass" placeholder="Password" required onChange={handlePassword} value={passValidate} />
-                <span className="focus-input100" data-placeholder="&#xf191;"></span>
-                {passErr && <span className="pass-error">{passErr}</span>}
-              </div>
-              <div className="container-login100-form-btn">
-                <button className="login100-form-btn">
-                  Login
-                </button>
-              </div>
-              <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
-              {err && <span id="error_message">{err}</span>}
-            </form>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" type="text" placeholder="johndoe" required />
           </div>
-        </div>
-      </div>
-    </>
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" placeholder="**********" required />
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col">
+          {isLoading ? (
+            <div className="flex justify-center pt-3">
+              <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+          ) : (
+            <Button type="submit">Login</Button>
+          )}
+          {err && <span id="error_message">{err}</span>}
+        </CardFooter>
+      </form>
+    </Card>
   )
 }
 

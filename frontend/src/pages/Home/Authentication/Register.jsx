@@ -1,31 +1,43 @@
-import "@/assets/styles/auth.scss";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import 'material-design-iconic-font/dist/css/material-design-iconic-font.min.css';
 import { useNavigate } from "react-router";
 import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/fetch";
-import { Loader2 } from "lucide-react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
+
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
+import { Label } from "@/components/ui/shadcn/label";
+import { Input } from "@/components/ui/shadcn/input";
+import { Button } from "@/components/ui/shadcn/button";
+import { Loader2 } from "lucide-react";
 
 function Register() {
   document.title = "Oldziej | Register";
 
-  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  const { setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
+  const [passErr, setPassErr] = useState("");
+  const [passValidate, setPassValidate] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [password, setPassword] = useState('');
 
   const navigate = useNavigate();
 
   const signIn = useSignIn();
 
-  // Redirect when already logged in
-  useEffect(() => {
-    if (currentUser) {
-      navigate("/")
+  const handlePassword = (e) => {
+    const { value } = e.target;
+    const isValidPassword = /^(.{0}|.{6,})$/.test(value);
+
+    if (!isValidPassword) {
+      if (!passErr) {
+        setPassErr("Password must be at least 6 characters long.");
+      }
+    } else {
+      setPassErr("")
     }
-  }, [currentUser, navigate]);
+    setPassValidate(value);
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,51 +102,44 @@ function Register() {
         verified: userRes.verified,
       });
 
-      navigate("/login");
+      navigate("/", { replace: true });
       setIsLoading(false);
     }
   }
 
-  useEffect(() => {
-    if (password.length < 6 && password.length !== 0) setErr("Password must be at least 6 characters long.");
-    else setErr('');
-  }, [password]);
-
   return (
-    <>
-      <div className="register-page">
-        <div className="container-login100">
-          <div className="wrap-login100">
-            <form className="login100-form validate-form" onSubmit={handleSubmit}>
-              <span className="login100-form-title p-b-34 p-t-27">
-                Register
-              </span>
-              <div className="wrap-input100 validate-input" data-validate="Enter username">
-                <input className="input100" type="text" name="username" placeholder="Username" required />
-                <span className="focus-input100" data-placeholder="&#xf207;"></span>
-              </div>
-              <div className="wrap-input100 validate-input" data-validate="Enter email">
-                <input className="input100" type="email" name="email" placeholder="Email" required />
-                <span className="focus-input100" data-placeholder="&#xf207;"></span>
-              </div>
-              <div className="wrap-input100 validate-input" data-validate="Enter password">
-                <input value={password} onChange={(e) => setPassword(e.target.value)} className="input100" type="password" name="pass" placeholder="Password" required />
-                <span className="focus-input100" data-placeholder="&#xf191;"></span>
-              </div>
-              <div className="container-login100-form-btn">
-                <button disabled={password.length < 6} className="login100-form-btn">
-                  Register
-                </button>
-              </div>
-              <div className={isLoading ? "flex justify-center pt-3" : "hidden"}>
-                <Loader2 className="h-10 w-10 animate-spin" />
-              </div>
-              {err && <span id="error_message">{err}</span>}
-            </form>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardHeader>
+          <CardTitle>Register</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="space-y-1">
+            <Label htmlFor="username">Username</Label>
+            <Input id="username" type="text" placeholder="johndoe" required />
           </div>
-        </div>
-      </div>
-    </>
+          <div className="space-y-1">
+            <Label htmlFor="password">Email</Label>
+            <Input id="email" type="email" placeholder="johndoe@gmail.com" required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" placeholder="**********" value={passValidate} onChange={handlePassword} required />
+            {passErr && <span id="error_message">{passErr}</span>}
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col">
+          {isLoading ? (
+            <div className="flex justify-center pt-3">
+              <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+          ) : (
+            <Button type="submit">Register</Button>
+          )}
+          {err && <span id="error_message">{err}</span>}
+        </CardFooter>
+      </form>
+    </Card>
   )
 }
 

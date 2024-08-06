@@ -26,6 +26,7 @@ import { AuthContext } from './context/Home/AuthContext';
 import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePreviewPage';
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
 import EmailVerified from './pages/Home/EmailVerified';
+import MergedAuth from './pages/Home/Authentication/MergedAuth';
 
 function AppRoutesHome() {
   const { currentUser } = useContext(AuthContext);
@@ -83,9 +84,15 @@ function AppRoutesHome() {
       {currentUser && !listOfNonNavbarComponents.includes(location.pathname) && <NavBar />}
       <Routes>
         <Route path="/">
+          {/* Auth */}
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="auth" element={<MergedAuth />} />
+          {/* Home */}
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="live" element={<Navigate to={`/darts/game/live`} replace />} />
+          <Route path="not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
+          <Route path="verified" element={<EmailVerified />} />
         </Route>
         <Route path="darts">
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />
@@ -117,9 +124,6 @@ function AppRoutesHome() {
           <Route index element={<AdminRequireAuth><Admin /></AdminRequireAuth>} />
         </Route>
 
-        <Route path="/live" element={<Navigate to={`/darts/game/live`} replace />} />
-        <Route path="/not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
-        <Route path="/verified" element={<EmailVerified />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
