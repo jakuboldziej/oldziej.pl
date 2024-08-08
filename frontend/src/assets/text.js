@@ -8,7 +8,7 @@ export const textData = {
       "projects": "Projekty"
     },
     "landingPage": {
-      "desc": `Jestem ${new Date().getFullYear() - 2004}-letnim freelance full-stack developerem. Lubię rozwiązywać problemy programistyczne i automatyzować procesy w celu zwiększenia wydajności.`,
+      "desc": "Jestem freelance full-stack developerem, specjalizującym się w automatyzacji procesów w celu optymalizacji wydajności. Tworzę kompleksowe rozwiązania, łącząc frontend i backend, aby dostarczać efektywne i skalowalne aplikacje.",
     },
     "experience": {
       "button": "Projekty",
@@ -17,7 +17,7 @@ export const textData = {
     "about": {
       "descBreaking": "Kultura, w której się wychowałem, tańczę od 2010 roku.",
       "descBouldering": "Swoją przygodę ze wspinaczką rozpocząłem w 2019 roku i od tego czasu osiągnąłem poziom wspinacza około 6C+.",
-      "descFormulaOne": "Mój szwagier wprowadził mnie w świat Formuły 1, w weekendy, z wyjątkiem tańczenia breaka, lubię patrzeć, jak kierowcy jeżdżą w kółko.",
+      "descFormulaOne": "Od kiedy odkryłem świat Formuły 1, uwielbiam spędzać weekendy, oglądając, jak kierowcy rywalizują na torze.",
       "ctaBreaking": "Zobacz więcej",
       "ctaBouldering": "Gdzie się wspinam?",
       "ctaDarts": `Sprawdź moją aplikację`,
@@ -42,7 +42,7 @@ export const textData = {
       "projects": "Projects"
     },
     "landingPage": {
-      "desc": `I'm a ${new Date().getFullYear() - 2004}-year-old freelance full-stack developer. I enjoy tackling development challenges and automating processes to improve efficiency.`,
+      "desc": "I am a freelance full-stack developer specializing in process automation to optimize performance. I create comprehensive solutions, combining frontend and backend to deliver efficient and scalable applications.",
     },
     "experience": {
       "button": "Projects",
@@ -51,7 +51,7 @@ export const textData = {
     "about": {
       "descBreaking": "A culture that I grew up in, dancing since 2010.",
       "descBouldering": "I started my climbing journey in 2019 and since then I've become around 6C+ level climber.",
-      "descFormulaOne": "My brother-in-law introduced me to the world of Formula 1, on the weekends except for dancing in breaking events I like to watch people drive in circles.",
+      "descFormulaOne": "Since discovering the world of Formula 1, I love spending my weekends watching drivers compete on the track.",
       "ctaBreaking": "See more of me",
       "ctaBouldering": "Where do I climb?",
       "ctaDarts": `Check out my app`,

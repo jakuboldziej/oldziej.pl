@@ -94,6 +94,15 @@ $lime: #b7eb34;
   }
 }
 
+// Landing page
+
+.portfolio-landing-page {
+  @media screen and (max-height: 667px) {
+    margin-top: 64px;
+    gap: 10px;
+  }
+}
+
 // Text underline
 .text-underline-hover {
   position: relative;

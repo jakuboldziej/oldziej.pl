@@ -354,5 +354,24 @@ router.put("/users/:displayName", getFtpUser, async (req, res) => {
   }
 });
 
+// Statistics
+
+router.get('/statistics/filesCreated', async (req, res) => {
+  try {
+    const allFiles = await bucket.find().toArray();
+    res.json(allFiles.length);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/foldersCreated', async (req, res) => {
+  try {
+    const folders = await FtpFolder.find({ name: { $ne: "Cloud drive" } });
+    res.json(folders.length)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
 
 module.exports = router

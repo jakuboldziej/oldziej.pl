@@ -46,7 +46,7 @@ function Project() {
       ]);
     } else if (projectName === "hagapolska") {
       setMainImage(isMobile ? ImgHagaPolskaMobile : ImgHagaPolska);
-      setMainLink({ text: "hagapolska.pl", href: 'https://hagapolska.pl' });
+      setMainLink({ text: "www.hagapolska.pl", href: 'https://www.hagapolska.pl' });
       setDesignedBy('Mateusz Magusiak')
       setTechStackIcons([
         <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,

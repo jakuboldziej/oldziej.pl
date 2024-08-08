@@ -57,15 +57,15 @@ function IconClouds() {
 
   return (
     <motion.div
-      initial={{  opacity: isMobile ? 1 : 0 }}
+      initial={{ opacity: isMobile ? 1 : 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true, amount: 0.3, offset: 0 }}
       className='flex gap-10 flex-col sm:flex-row pointer-events-none sm:pointer-events-auto'
     >
       <IconCloud iconSlugs={programmingLanguages} />
-        <IconCloud iconSlugs={frameworks} />
-        <IconCloud iconSlugs={services} />
+      <IconCloud iconSlugs={frameworks} />
+      <IconCloud iconSlugs={services} />
     </motion.div>
   )
 }

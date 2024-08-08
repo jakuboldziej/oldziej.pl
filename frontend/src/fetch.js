@@ -1,3 +1,5 @@
+import { calcStorageUsage } from "./components/Home/Cloud/utils";
+
 export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 
 // Darts
@@ -536,6 +538,23 @@ export const getStatisticsTop3Players = async () => {
 export const getStatisticsTop3DoorHitters = async () => {
   const response = await fetch(`${mongodbApiUrl}/darts/statistics/top3doorhitters`);
   return await response.json()
+}
+
+// Cloud
+
+export const getFilesCreated = async () => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/statistics/filesCreated`);
+  return await response.json();
+}
+
+export const getFoldersCreated = async () => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/statistics/foldersCreated`);
+  return await response.json();
+}
+
+export const getStorageUsed = async () => {
+  const response = await getFiles();
+  return calcStorageUsage(response.files).bytes;
 }
 
 // Get gamesPlayed for portfolio

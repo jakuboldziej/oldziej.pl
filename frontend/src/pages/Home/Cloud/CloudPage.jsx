@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
 import { Progress } from '@/components/ui/shadcn/progress'
 import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/Home/Cloud/utils'
-import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Loader2, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files, Folder } from 'lucide-react'
+import { FileDown, FileText, FileUp, Heart, HeartOff, Images, Info, Mic, Move, PencilLine, Plus, Search, Share2, Trash2, Video, SquareArrowDown, FileArchive, Files, Folder } from 'lucide-react'
 import LeftNavBar from '@/components/Home/Cloud/LeftNavBar'
 import { FtpContext } from '@/context/Home/FtpContext'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu'
@@ -335,7 +335,7 @@ function CloudPage() {
                   <CardContent className='flex flex-col gap-1'>
                     <span className='text-lg'>Images</span>
                     <span className='text-sm'>{fileTypes.fileImages.length} Files</span>
-                    {/* <span className='text-xs'>({calcStorageUsage(fileTypes.fileDocuments)[0]})</span> */}
+                    {/* <span className='text-xs'>({calcStorageUsage(fileTypes.fileDocuments).bytes})</span> */}
                   </CardContent>
                 </Card>
                 <Card className='category rounded-xl'>
@@ -488,12 +488,12 @@ function CloudPage() {
               <div onClick={() => navigate("/cloud/storage")} className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3'>
                 <span className='flex justify-between'>
                   <span>Your Storage <p>({files?.length || 0} Files)</p></span>
-                  <span>{(calcStorageUsage(files)[1])}%</span>
+                  <span>{(calcStorageUsage(files).percentage)}%</span>
                 </span>
                 <div className='text-sm'>
-                  {calcStorageUsage(files)[0]} used out of 100 GB
+                  {calcStorageUsage(files).bytes} used out of 100 GB
                 </div>
-                <Progress value={calcStorageUsage(files)[1]} />
+                <Progress value={calcStorageUsage(files).percentage} />
               </div>
               <div className='bg-slate-600 hover:cursor-pointer hover:bg-slate-500 transition duration-75 rounded-2xl p-5 flex flex-col gap-3 h-fit'>
                 <span>Your Shared Folders</span>
