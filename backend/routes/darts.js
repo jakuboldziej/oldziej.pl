@@ -250,7 +250,7 @@ router.get('/statistics/top3doorhitters', async (req, res) => {
 });
 
 // Get gamesPlayed for portfolio
-router.get('/dartsUsers/portfolio/:displayName', getDartsUser, async (req, res) => {
+router.get('/dartsUsers/portfolio/:identifier', getDartsUser, async (req, res) => {
   res.send({ gamesPlayed: res.user.gamesPlayed })
 });
 

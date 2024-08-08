@@ -40,7 +40,7 @@ function SettingsDialog({ props }) {
       }
 
       setSubmitLoading(false);
-      ShowNewToast("Settings Changed", "We've sent verification email on your old email address.", "warning");
+      ShowNewToast("Settings Changed", "We've sent verification email on your current email address.");
     } else if (dialogData.passwordOpened) {
       if (currentPasswordInput === newPasswordInput || currentPasswordInput === newRepeatPasswordInput) {
         setSubmitLoading(false);
