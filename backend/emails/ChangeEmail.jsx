@@ -1,5 +1,5 @@
 import React from "react";
-import { Html, Body, Button, Tailwind, Head, Container, Heading, Text, Font, Link } from "@react-email/components";
+import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Link, Section } from "@react-email/components";
 
 require('dotenv').config();
 
@@ -8,7 +8,7 @@ const ChangeEmail = ({ userEmail, newUserEmail }) => {
   const domain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
 
   return (
-    <Html className="w-full">
+    <Html>
       <Head>
         <Font
           fontFamily="Poppins-Regular"
@@ -21,10 +21,10 @@ const ChangeEmail = ({ userEmail, newUserEmail }) => {
         />
       </Head>
       <Tailwind>
-        <Body className="text-black text-center mx-auto">
-          <Container className="bg-white text-xl p-12">
+        <Body className="mx-auto">
+          <Section className="bg-white text-xl p-12 mx-auto text-center">
             <Heading className="text-sm text-slate-500"><Link href="https://oldziej.pl">oldziej.pl</Link></Heading>
-            <Heading className="leading-relaxed">Change Your Email</Heading>
+            <Heading className="leading-relaxed font-bold my-6">Change Your Email</Heading>
             <Text className="text-xl">Your email will be changed to: {newUserEmail}</Text>
             <Text className="text-xl">Change your email by clicking the link below:</Text>
             <Button
@@ -33,11 +33,11 @@ const ChangeEmail = ({ userEmail, newUserEmail }) => {
             >
               Change email
             </Button>
-            <Container>
+            <Section>
               <Text className="text-sm text-slate-400 mb-2">This message was generated automatically.</Text>
               <Text className="text-sm text-slate-400 m-0">Don't reply to this message.</Text>
-            </Container>
-          </Container>
+            </Section>
+          </Section>
         </Body>
       </Tailwind>
     </Html>
