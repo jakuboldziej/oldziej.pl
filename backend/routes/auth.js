@@ -284,7 +284,7 @@ router.post('/users/remove-friend/', async (req, res) => {
       res.json({
         message: `${currentUser.displayName} removed ${user.displayName} as a friend.`,
         removedFriend: userId
-      })
+      });
     }
   } catch (err) {
     res.json({ message: err.message })
@@ -370,17 +370,15 @@ router.post("/login", (req, res) => {
   });
 });
 
-router.post("/change-password", async (req, res) => {
+router.put("/change-password", async (req, res) => {
   try {
     const user = await User.findOne({ displayName: req.body.displayName });
-    if (!user) {
-      return res.status(404).send({ message: "User not found" });
-    }
+    if (!user) return res.status(404).send({ message: "User not found." });
 
     // Compare current password (using bcrypt)
     const passwordMatch = await bcrypt.compare(req.body.currentPassword, user.password);
     if (!passwordMatch) {
-      return res.status(401).send({ message: "Incorrect current password" });
+      return res.send({ error: "Incorrect current password." });
     }
 
     // Hash the new password
@@ -394,8 +392,7 @@ router.post("/change-password", async (req, res) => {
 
     res.status(200).send({ message: "Password changed successfully" });
   } catch (error) {
-    console.error(error); // Log the error for debugging
-    res.status(500).send({ message: "Error changing password" });
+    res.status(500).send({ error: "Error changing password" });
   }
 });
 

@@ -23,7 +23,7 @@ import NavBar from './components/Home/NavBar';
 import { AuthContext } from './context/Home/AuthContext';
 import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePreviewPage';
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
-import EmailVerified from './pages/Home/EmailVerified';
+import SuccessPage from './pages/Home/User/SuccessPage';
 import MergedAuth from './pages/Home/Authentication/MergedAuth';
 
 function AppRoutesHome() {
@@ -86,8 +86,10 @@ function AppRoutesHome() {
           <Route path="live" element={<Navigate to={`/darts/game/live`} replace />} />
 
           <Route path="auth" element={<MergedAuth />} />
+
+          {/* Response pages */}
           <Route path="not-verified" element={<ProtectedRoute><OnlyForVerifiedPage /></ProtectedRoute>} />
-          <Route path="verified" element={<EmailVerified />} />
+          <Route path="success" element={<SuccessPage />} />
         </Route>
         <Route path="darts">
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />

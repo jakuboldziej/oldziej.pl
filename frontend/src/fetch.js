@@ -307,7 +307,9 @@ export const putFolder = async (data) => {
   return folderRes.folder;
 }
 
-// Auth Users
+// Auth
+
+// Users
 
 export const getAuthUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`);
@@ -374,6 +376,24 @@ export const registerUser = async (userData) => {
       "Content-Type": "application/json",
     },
   })
+
+  return await response.json();
+}
+
+// Password
+
+export const changePassword = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/auth/change-password`, {
+    method: "PUT",
+    body: JSON.stringify({
+      displayName: data.displayName,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   return await response.json();
 }
@@ -465,6 +485,21 @@ export const sendVerificationEmail = async (data) => {
     method: "POST",
     body: JSON.stringify({
       userEmail: data.userEmail
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
+export const sendChangeEmail = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/emails/send-change-email`, {
+    method: "PUT",
+    body: JSON.stringify({
+      userEmail: data.userEmail,
+      newUserEmail: data.newUserEmail
     }),
     headers: {
       "Content-Type": "application/json",
