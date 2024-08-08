@@ -17,7 +17,7 @@ import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
-import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
+import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiResend, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
 import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
@@ -66,11 +66,12 @@ function Project() {
         <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
         <SiSocketdotio key={'#FFFFFF2'} width={46} height={46} fill='#FFFFFF' />,
         <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
+        <SiResend key={'#FFFFFF3'} width={46} height={46} fill='#FFFFFF' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
+        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
         <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
         <SiIcons8 key={'#1FB141'} width={46} height={46} fill='#1FB141' />,
         <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />,
-        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
         <SiChartdotjs key={'#FF6384'} width={46} height={46} fill='#FF6384' />,
       ]);
     } else if (projectName === "cloud") {
@@ -82,9 +83,10 @@ function Project() {
         <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
         <SiSocketdotio key={'#FFFFFF2'} width={46} height={46} fill='#FFFFFF' />,
         <SiMongodb key={'#47A248'} width={46} height={46} fill='#47A248' />,
+        <SiResend key={'#FFFFFF3'} width={46} height={46} fill='#FFFFFF' />,
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
-        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
         <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
+        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
         <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />,
       ]);
     } else if (projectName === "oldziej") {
