@@ -538,6 +538,34 @@ export const sendChangeEmail = async (data) => {
   return await response.json();
 }
 
+export const newUserRegisteredEmail = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/emails/new-user-registered`, {
+    method: "POST",
+    body: JSON.stringify({
+      newUserDisplayName: data.newUserDisplayName,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
+export const userDeletedAccountEmail = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/emails/user-deleted-account`, {
+    method: "POST",
+    body: JSON.stringify({
+      deletedUserDisplayName: data.deletedUserDisplayName,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+}
+
 // Statistics
 
 // Darts

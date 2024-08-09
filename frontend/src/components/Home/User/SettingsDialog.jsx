@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext, useEffect, useState } from "react";
-import { changePassword, handleDeleteAuthUser, sendChangeEmail } from "@/fetch";
+import { changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/fetch";
 import Loading from "../Loading";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router";
@@ -13,7 +13,7 @@ import { AuthContext } from "@/context/Home/AuthContext";
 function SettingsDialog({ props }) {
   const { dialogOpen, setDialogOpen, dialogData, authUser } = props;
 
-  const { setCurrentUser } = useContext(AuthContext);
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -86,10 +86,14 @@ function SettingsDialog({ props }) {
   }
 
   const handleDeleteUser = async () => {
+    await userDeletedAccountEmail({
+      deletedUserDisplayName: currentUser.displayName
+    });
+
     await handleDeleteAuthUser(authUser);
+    setCurrentUser(null);
     signOut();
     navigate("/auth");
-    setCurrentUser(null);
     localStorage.clear();
   }
 

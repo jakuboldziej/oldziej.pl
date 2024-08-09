@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { checkIfUserWithEmailExists, getAuthUser, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/fetch";
+import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/fetch";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
 
@@ -104,6 +104,10 @@ function Register() {
 
       navigate("/", { replace: true });
       setIsLoading(false);
+
+      await newUserRegisteredEmail({
+        newUserDisplayName: displayName
+      });
     }
   }
 

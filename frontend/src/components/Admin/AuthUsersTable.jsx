@@ -28,6 +28,7 @@ function AuthUsersTable({ props }) {
   const handleDeleteUser = async () => {
     await handleDeleteAuthUser(selectedUser);
     setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
+    setDialogOpen(false);
   }
 
   const handleVerified = async (user) => {

@@ -1,11 +1,11 @@
 import React from "react";
-import { Html, Body, Button, Tailwind, Head, Container, Heading, Text, Font, Section, Link } from "@react-email/components";
+import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Link, Section } from "@react-email/components";
 
 require('dotenv').config();
 
-const VerifyEmail = ({ userEmail }) => {
+const NewUserRegistered = ({ newUser }) => {
   const environment = process.env.NODE_ENV || "production";
-  const domain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
+  const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
 
   return (
     <Html>
@@ -24,13 +24,14 @@ const VerifyEmail = ({ userEmail }) => {
         <Body className="mx-auto">
           <Section className="bg-white text-xl p-12 mx-auto text-center">
             <Heading className="text-sm text-slate-500"><Link href="https://oldziej.pl">oldziej.pl</Link></Heading>
-            <Heading className="leading-relaxed font-bold my-6">Verify Your Email</Heading>
-            <Text className="text-xl">Please verify your email to get full experience by clicking the link below:</Text>
+            <Heading className="leading-relaxed font-bold my-6">New User Registered</Heading>
+            <Text className="text-xl">New user is registered: {newUser?.displayName}</Text>
+            <Text className="text-xl">Go to admin:</Text>
             <Button
               className="rounded-md text-white p-4 bg-[#00b524] mt-6"
-              href={`${domain}/api/emails/verify-email?userEmail=${userEmail}`}
+              href={`${domain}/admin`}
             >
-              Confirm my account
+              Admin
             </Button>
             <Section>
               <Text className="text-sm text-slate-400 mb-2">This message was generated automatically.</Text>
@@ -42,5 +43,5 @@ const VerifyEmail = ({ userEmail }) => {
     </Html>
   );
 }
-export default VerifyEmail;
+export default NewUserRegistered;
 

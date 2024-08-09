@@ -3,6 +3,8 @@ const { Resend } = require("resend");
 const router = express.Router();
 const User = require("../models/user");
 
+import NewUserRegistered from '../emails/Admin/NewUserRegistered';
+import UserDeletedAccount from '../emails/Admin/UserDeletedAccount';
 import ChangeEmail from '../emails/ChangeEmail';
 import VerifyEmail from '../emails/VerifyEmail';
 
@@ -93,6 +95,56 @@ router.get("/change-email", async (req, res) => {
 
       res.redirect(`${domain}/success?newUserEmail=true`);
     }
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+});
+
+// Admin
+
+const adminEmail = process.env.ADMIN_EMAIL;
+
+router.post("/new-user-registered", async (req, res) => {
+  try {
+    const newUserDisplayName = req.body.newUserDisplayName;
+
+    const newUser = await User.findOne({ displayName: newUserDisplayName });
+
+    const { data, error } = await resend.emails.send({
+      from: "oldziej.pl <noreply@oldziej.pl>",
+      to: adminEmail,
+      subject: `[Admin] - New User Registered: ${newUser.displayName}`,
+      react: NewUserRegistered({ newUser })
+    });
+
+    if (error) {
+      return res.status(400).json({ error });
+    }
+
+    res.json({ emailData: data, user: newUser })
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+});
+
+router.post("/user-deleted-account", async (req, res) => {
+  try {
+    const deletedUserDisplayName = req.body.deletedUserDisplayName;
+
+    const deletedUser = await User.findOne({ displayName: deletedUserDisplayName });
+
+    const { data, error } = await resend.emails.send({
+      from: "oldziej.pl <noreply@oldziej.pl>",
+      to: adminEmail,
+      subject: `[Admin] - User Deleted Account: ${deletedUser.displayName}`,
+      react: UserDeletedAccount({ deletedUser })
+    });
+
+    if (error) {
+      return res.status(400).json({ error });
+    }
+
+    res.json({ emailData: data, user: deletedUser })
   } catch (err) {
     res.json({ err: err.message })
   }
