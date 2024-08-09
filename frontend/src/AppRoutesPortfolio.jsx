@@ -8,12 +8,12 @@ import { Navigate, Route, Routes } from 'react-router'
 function AppRoutesPortfolio() {
   return (
     <Routes>
-      <Route path="/">
+      {/* <Route path="/">
         <Route index element={<Zaslepka />} />
-      </Route>
-      <Route path="/test">
+      </Route> */}
+      <Route path="/">
         <Route index element={<Home />} />
-        <Route path='projects' element={<Navigate to="/test" replace state={{ projectsRedirect: true }} />} />
+        <Route path='projects' element={<Navigate to="/" replace state={{ projectsRedirect: true }} />} />
         <Route path='projects/:projectName' element={<Project />} />
       </Route>
       <Route path="*" element={<NotFoundPortfolio />} />

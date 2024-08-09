@@ -110,11 +110,11 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
         </div>
       ) : (
         <div className='flex gap-2'>
-          <Link to="/test" className='font-bold'>Home</Link>
+          <Link to="/" className='font-bold'>Home</Link>
           {isProjects && (
             <>
               <BreadcrumbSeparator className='[&>svg]:size-5' />
-              <Link to="/test" state={{ projectsRedirect: true }} className='font-bold'>{langText.pagination?.projects}</Link>
+              <Link to="/" state={{ projectsRedirect: true }} className='font-bold'>{langText.pagination?.projects}</Link>
             </>
           )}
         </div>
