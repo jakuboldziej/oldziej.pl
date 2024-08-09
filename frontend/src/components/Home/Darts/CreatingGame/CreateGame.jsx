@@ -139,12 +139,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     return selectGameMode;
   }
 
-  const handleCustomStartPoints = () => {
+  const handleCustomStartPoints = (e) => {
+    e.preventDefault();
+
     setShowCustomPoints(false);
     setSelectStartPoints(customStartPoints);
   }
 
-  const handleAddingNewUser = () => {
+  const handleAddingNewUser = (e) => {
+    e.preventDefault();
+
     const tempUser = {
       "temporary": true,
       "_id": uniqueId("temp_user_"),

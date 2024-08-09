@@ -3,12 +3,17 @@ import { Button } from "@/components/ui/shadcn/button";
 import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { useEffect, useState } from "react";
-import { changePassword, sendChangeEmail } from "@/fetch";
+import { useContext, useEffect, useState } from "react";
+import { changePassword, handleDeleteAuthUser, sendChangeEmail } from "@/fetch";
 import Loading from "../Loading";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
+import { useNavigate } from "react-router";
+import { AuthContext } from "@/context/Home/AuthContext";
 
 function SettingsDialog({ props }) {
   const { dialogOpen, setDialogOpen, dialogData, authUser } = props;
+
+  const { setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -20,8 +25,19 @@ function SettingsDialog({ props }) {
   const [newPasswordInput, setNewPasswordInput] = useState('');
   const [newRepeatPasswordInput, setNewRepeatPasswordInput] = useState('');
 
-  const handleSubmitDialogDataChange = async (e) => {
+  const navigate = useNavigate();
+  const signOut = useSignOut();
+
+  const handleDialogSubmit = (e) => {
     e.preventDefault();
+    if (dialogData.deleteProfile) {
+      handleDeleteUser();
+    } else {
+      handleSubmitDialogDataChange();
+    }
+  }
+
+  const handleSubmitDialogDataChange = async () => {
     setSubmitLoading(true);
 
     if (dialogData.emailOpened) {
@@ -69,6 +85,14 @@ function SettingsDialog({ props }) {
     handleCloseDialog();
   }
 
+  const handleDeleteUser = async () => {
+    await handleDeleteAuthUser(authUser);
+    signOut();
+    navigate("/auth");
+    setCurrentUser(null);
+    localStorage.clear();
+  }
+
   const handleCloseDialog = () => {
     setErr("");
 
@@ -96,7 +120,7 @@ function SettingsDialog({ props }) {
         <DialogHeader>
           <DialogTitle className='text-center text-2xl'>{dialogData.title}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmitDialogDataChange}>
+        <form onSubmit={handleDialogSubmit}>
           <div className='text-white flex flex-col gap-5'>
             {dialogData.emailOpened && (
               <>
@@ -130,13 +154,23 @@ function SettingsDialog({ props }) {
                 </div>
               </>
             )}
+            {dialogData.deleteProfile && (
+              <div className="text-center text-xl">
+                <span>Are you sure you want to delete your profile?</span>
+                <span>Your darts and cloud data will be deleted</span>
+              </div>
+            )}
           </div>
           {submitLoading ? (
             <Loading />
           ) : (
             <DialogFooter className="pt-6">
               <Button type="button" variant="secondary" onClick={handleCloseDialog}>Close</Button>
-              <Button type="submit">Save changes</Button>
+              {dialogData.deleteProfile ? (
+                <Button variant="destructive" type="submit">Delete profile</Button>
+              ) : (
+                <Button type="submit">Save changes</Button>
+              )}
             </DialogFooter>
           )}
           {err && <span id="error_message" className="text-center">{err}</span>}

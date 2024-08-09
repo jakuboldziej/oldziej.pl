@@ -72,7 +72,7 @@ function MyFiles() {
   }
 
   const handleOpeningDialog = (data, action) => {
-    console.log(data);
+    // console.log(data);
     // if (data?.type !== "file") data.filename = data.name;
     if (action === "changeDataName") {
       setDialogOpen((prev) => ({ ...prev, changeDataName: true, data: data }));

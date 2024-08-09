@@ -2,22 +2,18 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteAuthUser, deleteDartsUser, deleteFolder, deleteFtpUser, getAuthUser, getAuthUsers, getFtpUser, putAuthUser, removeFriend } from '@/fetch';
-import { Copy, Grip, Loader2, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { getAuthUsers, handleDeleteAuthUser, putAuthUser } from '@/fetch';
+import { Copy, Grip, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import CopyTextButton from '../Home/CopyTextButton';
 import MyTooltip from '../Home/MyComponents/MyTooltip';
-import Cookies from 'js-cookie';
-import { AuthContext } from '@/context/Home/AuthContext';
 import { socket } from '@/lib/socketio';
 import Loading from '../Home/Loading';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
   const navigate = useNavigate();
-
-  const { setCurrentUser } = useContext(AuthContext);
 
   const [authUsers, setAuthUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,29 +26,7 @@ function AuthUsersTable({ props }) {
   }
 
   const handleDeleteUser = async () => {
-    const ftpUser = await getFtpUser(selectedUser.displayName);
-    await deleteFolder(ftpUser.main_folder);
-
-    await deleteDartsUser(selectedUser.displayName);
-    await deleteFtpUser(selectedUser.displayName);
-
-    // Remove deleted user from friends
-    const friendRemovalPromises = authUsers.map(async (user) => {
-      if (user.displayName !== selectedUser.displayName) {
-        if (user.friends.includes(selectedUser.displayName)) {
-          await removeFriend({
-            currentUserDisplayName: user.displayName,
-            userDisplayName: selectedUser.displayName
-          });
-        }
-      }
-    });
-    // Wait for all friend removal promises to complete
-    await Promise.all(friendRemovalPromises);
-
-    await deleteAuthUser(selectedUser.displayName);
-
-    setDialogOpen(false);
+    await handleDeleteAuthUser(selectedUser);
     setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
   }
 
@@ -154,7 +128,7 @@ function AuthUsersTable({ props }) {
             <DialogClose onClick={() => setDialogOpen(false)}>
               <X className="absolute right-2 top-2" />
             </DialogClose>
-            <DialogDescription>
+            <DialogDescription className='text-center text-xl'>
               Are you sure you want to delete {selectedUser?.displayName} with Darts and Cloud account?
             </DialogDescription>
           </DialogHeader>

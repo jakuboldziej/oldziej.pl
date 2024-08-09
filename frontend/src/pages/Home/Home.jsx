@@ -33,7 +33,6 @@ function Home() {
       const filesCreated = await getFilesCreated();
       const foldersCreated = await getFoldersCreated();
       const storageUsed = await getStorageUsed();
-      console.log(storageUsed);
 
       setCloudStatistics({
         filesCreated: filesCreated,

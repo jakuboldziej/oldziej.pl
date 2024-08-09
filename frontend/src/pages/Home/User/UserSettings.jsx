@@ -17,6 +17,7 @@ function UserSettings() {
   const [dialogData, setDialogData] = useState({
     emailOpened: false,
     passwordOpened: false,
+    deleteProfile: false,
     title: ""
   });
 
@@ -31,6 +32,7 @@ function UserSettings() {
         ...prev,
         emailOpened: true,
         passwordOpened: false,
+        deleteProfile: false,
         title: "Change email"
       }));
     } else if (type === "password") {
@@ -38,9 +40,21 @@ function UserSettings() {
         ...prev,
         passwordOpened: true,
         emailOpened: false,
+        deleteProfile: false,
         title: "Change password"
       }));
     }
+    setDialogOpen(true);
+  }
+
+  const handleOpenDeleteDialog = () => {
+    setDialogData((prev) => ({
+      ...prev,
+      passwordOpened: false,
+      emailOpened: false,
+      deleteProfile: true,
+      title: "Delete profile"
+    }));
     setDialogOpen(true);
   }
 
@@ -86,6 +100,9 @@ function UserSettings() {
                 <Input type="password" id="password" defaultValue="**********" readOnly />
                 <Button disabled={!handleVerifiedUser()} onClick={() => handleChangeButton("password")}>Change</Button>
               </div>
+            </div>
+            <div className="absolute bottom-12 left-12">
+              <Button variant="destructive" onClick={handleOpenDeleteDialog}>Delete profile</Button>
             </div>
           </div>
         </div>

@@ -382,6 +382,33 @@ export const registerUser = async (userData) => {
   return await response.json();
 }
 
+export const handleDeleteAuthUser = async (selectedUser) => {
+  const ftpUser = await getFtpUser(selectedUser.displayName);
+  await deleteFolder(ftpUser.main_folder);
+
+  await deleteDartsUser(selectedUser.displayName);
+  await deleteFtpUser(selectedUser.displayName);
+
+  const authUsers = await getAuthUsers();
+
+  // Remove deleted user from friends
+  const friendRemovalPromises = authUsers.map(async (user) => {
+    if (user.displayName !== selectedUser.displayName) {
+      if (user.friends.includes(selectedUser.displayName)) {
+        await removeFriend({
+          currentUserDisplayName: user.displayName,
+          userDisplayName: selectedUser.displayName
+        });
+      }
+    }
+  });
+
+  // Wait for all friend removal promises to complete
+  await Promise.all(friendRemovalPromises);
+
+  await deleteAuthUser(selectedUser.displayName);
+}
+
 // Password
 
 export const changePassword = async (data) => {
