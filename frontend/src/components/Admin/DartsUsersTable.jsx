@@ -6,6 +6,7 @@ import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/fetch';
 import { Eye, EyeOff, Grip, Loader2, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { totalThrows } from '../Home/Darts/game logic/userUtils';
+import Loading from '../Home/Loading';
 
 function DartsUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
