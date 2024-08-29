@@ -61,7 +61,7 @@ export function UserBarChart({ dartUser }) {
 
       let sameDateCounter = 0;
       const gamesInRangeChartData = dartUser.games.map((game, i) => {
-        if (new Date(game.created_at) > new Date(date.from) && new Date(game.created_at) < new Date(date.to)) {
+        if (new Date(game.created_at) >= new Date(date.from) && new Date(game.created_at) <= new Date(date.to)) {
           const dartsGameUser = game.users.find((user) => user.displayName === dartUser.displayName);
           let gameDate = format(game.created_at.split("T")[0], "dd.MM.yyyy");
           const previousGame = dartUser.games[i - 1];
