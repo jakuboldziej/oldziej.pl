@@ -10,13 +10,15 @@ export const FtpContextProvider = ({ children }) => {
   const [currentFolder, setCurrentFolder] = useState();
 
   const [files, setFiles] = useState(() => {
-    const storedFiles = localStorage.getItem('files');
-    return storedFiles ? JSON.parse(storedFiles) : null;
+    // const storedFiles = localStorage.getItem('files');
+    // return storedFiles ? JSON.parse(storedFiles) : null;
+    return null;
   });
 
   const [folders, setFolders] = useState(() => {
-    const storedFolders = localStorage.getItem('folders');
-    return storedFolders ? JSON.parse(storedFolders) : null;
+    // const storedFolders = localStorage.getItem('folders');
+    // return storedFolders ? JSON.parse(storedFolders) : null;
+    return null;
   });
 
   const [activeFolders, setActiveFolders] = useState([]);
