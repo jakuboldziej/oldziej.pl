@@ -9,8 +9,15 @@ import Footer from '@/components/Portfolio/Footer'
 import About from '@/components/Portfolio/About'
 import { useLocation } from "react-router"
 import { calcCurrentPage, scrollToTop } from "@/components/Portfolio/utils"
+import ReactGA from 'react-ga4';
 
 function Home() {
+  ReactGA.send({
+    hitType: "pageview",
+    page: "/",
+    title: "Home"
+  });
+
   document.title = "Oldziej | Portfolio";
 
   const isMobile = window.innerWidth < 640;

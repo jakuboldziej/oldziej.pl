@@ -15,11 +15,12 @@ const layoutVariants = {
 };
 
 function Navigation() {
-  const { lang } = useContext(PortfolioContext);
+  const { lang, setLang } = useContext(PortfolioContext);
 
   const handleLangChange = (langP) => {
     if (langP !== lang) {
       location.reload();
+      setLang(langP);
       localStorage.setItem('lang', langP);
     }
   }
