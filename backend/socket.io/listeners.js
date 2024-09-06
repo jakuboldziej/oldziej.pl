@@ -65,8 +65,6 @@ const removeUserOnDisconnect = (userId) => {
   }
 }
 
-// Listeners
-
 
 module.exports = {
   addingOnlineUser,

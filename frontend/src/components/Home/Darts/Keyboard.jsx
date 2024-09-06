@@ -11,6 +11,7 @@ function Keyboard({ props }) {
   const onclick = (param) => {
     handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow)
   }
+
   const numbers = [];
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => onclick(i)}>{i}</button>);
 

@@ -22,6 +22,7 @@ app.use(express.static(path.join(__dirname, '../frontend', 'dist')));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json())
 
 app.use((req, res, next) => {
   res.setHeader("Content-Security-Policy", "upgrade-insecure-requests");
@@ -42,7 +43,6 @@ ftpConn.once('open', () => console.log('Connected to Ftp Database'));
 
 module.exports = { dartsConn, ftpConn, mongoURIFTP };
 
-app.use(express.json())
 
 const dartsRouter = require('./routes/darts')
 app.use('/api/darts', dartsRouter);
@@ -66,7 +66,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       domain,
-      "https://admin.socket.io"
+      "https://admin.socket.io",
     ],
     credentials: true
   },
@@ -115,6 +115,8 @@ io.on('connection', (socket) => {
 
   socket.on("updateLiveGamePreview", (data) => {
     const gameData = JSON.parse(data);
+
+    console.log(gameData)
 
     liveGamesData[gameData.gameCode] = gameData;
 

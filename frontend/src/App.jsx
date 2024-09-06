@@ -4,7 +4,7 @@ import AppRoutesPortfolio from './AppRoutesPortfolio';
 import ReactGA from 'react-ga4';
 
 function App() {
-  ReactGA.initialize('G-24HWJJYM0P');
+  ReactGA.initialize(import.meta.env.VITE_GOOGLE_ANALYTICS_ID);
 
   const subdomain = window.location.host.split(".")[0];
   let AppRoutes;
