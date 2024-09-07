@@ -5,7 +5,6 @@ import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import GameSummary from "@/components/Home/Darts/GameSummary";
 import { totalThrows } from "@/components/Home/Darts/game logic/userUtils";
-import { handleRound } from "@/components/Home/Darts/game logic/game";
 import { Link } from "react-router-dom";
 import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
@@ -20,11 +19,11 @@ function DartsGame() {
   document.title = "Oldziej | Darts Game";
   const [show, setShow] = useState(false);
 
-  function handleShow(breakpoint) {
+  function handleShow() {
     setShow(true);
   }
 
-  const { game } = useContext(DartsGameContext);
+  const { game, overthrow, setOverthrow } = useContext(DartsGameContext);
 
   if (!game) {
     return (
@@ -34,14 +33,6 @@ function DartsGame() {
       </div>
     )
   }
-
-  const [users, setUsers] = useState(game?.users || null);
-  const [specialState, setSpecialState] = useState([false, ""]);
-  const [overthrow, setOverthrow] = useState(false);
-
-  useEffect(() => {
-    if (!show) setUsers(game.users);
-  }, [show]);
 
   useEffect(() => {
     let timer;
@@ -61,7 +52,7 @@ function DartsGame() {
   const usersContainerRef = useRef(null);
 
   useEffect(() => {
-    const userWithTurn = users.find((user) => user.turn);
+    const userWithTurn = game.users.find((user) => user.turn);
 
     if (userWithTurn && usersContainerRef.current) {
       const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn._id}"]`);
@@ -69,11 +60,7 @@ function DartsGame() {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-    if (game) {
-      game.users = users;
-      localStorage.setItem('dartsGame', JSON.stringify(game));
-    }
-  }, [users, game.turn]);
+  }, [game.users, game.turn]);
 
   useEffect(() => {
     if (!game?.active) setShow(true);
@@ -86,7 +73,7 @@ function DartsGame() {
     socket.emit("updateLiveGamePreview", JSON.stringify(game));
   }, []);
 
-  const keyboardProps = { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow }
+  const keyboardProps = { handleShow }
 
   const userDynamicStyle = (user) => {
     return {
@@ -110,7 +97,7 @@ function DartsGame() {
           <h2><img src={game.active ? GreenDot : RedDot} /></h2>
         </div>
         <div className="users" ref={usersContainerRef}>
-          {users.map((user) => (
+          {game.users.map((user) => (
             <Table className="user" data-userid={user._id} key={user._id} style={userDynamicStyle(user)}>
               <TableHeader>
                 <TableRow>
@@ -149,7 +136,7 @@ function DartsGame() {
       </div>
       <div className="right-panel">
         <MyAccordion title={`Live Data (${game.gameMode})`}>
-          <UserDataTable users={users} game={game} />
+          <UserDataTable users={game.users} game={game} />
         </MyAccordion>
         {game.training ? (
           <span className="text-white fs-2 text-center">Training</span>

@@ -13,27 +13,32 @@ const getDartsUser = async (req, res, next) => {
     } else {
       user = await DartsUser.findOne({ displayName: identifier });
     }
-    if (user == null) return res.status(404);
+    if (user == null) return res.status(404).json({ message: "User not found." });
+
+    res.user = user;
   } catch (err) {
     return res.json({ message: err.message })
   }
-  res.user = user;
   next();
 }
 
 const getDartsGame = async (req, res, next) => {
-  let game;
   try {
+    let game;
     if (Types.ObjectId.isValid(req.params.identifier)) {
-      game = await DartsGame.findById({ _id: req.params.identifier });
+      game = await DartsGame.findById(req.params.identifier);
     } else {
       game = await DartsGame.findOne({ gameCode: req.params.identifier });
     }
-    if (game == null) return res.status(404);
+
+    if (!game) {
+      return res.status(404).json({ message: "Game code is wrong." });
+    }
+
+    res.game = game;
   } catch (err) {
-    return res.status(500)
+    res.status(500).json({ message: err.message });
   }
-  res.game = game;
   next();
 }
 
@@ -61,8 +66,9 @@ router.get('/dartsGames', async (req, res) => {
 })
 
 router.get('/dartsGames/:identifier', getDartsGame, async (req, res) => {
-  res.send(res.game);
-})
+  res.json(res.game)
+});
+
 
 router.post('/dartsGames', async (req, res) => {
   const body = req.body;
@@ -91,7 +97,7 @@ router.post('/dartsGames', async (req, res) => {
     const newDartsGame = await dartsGame.save()
     res.json(newDartsGame)
   } catch (err) {
-    res.json({ message: err.message })
+    res.json({ error: err.message })
   }
 });
 

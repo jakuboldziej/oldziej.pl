@@ -10,7 +10,7 @@ import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './game logic/gameUtils';
 
 function GameSummary({ show, setShow }) {
-  const { game, setGame } = useContext(DartsGameContext);
+  const { game, updateGameState } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
 
   const handlePlayAgain = async () => {
@@ -78,7 +78,7 @@ function GameSummary({ show, setShow }) {
 
       gameDataMerged._id = gameData._id;
       gameDataMerged["gameCode"] = gameData.gameCode;
-      setGame(gameDataMerged);
+      updateGameState(gameDataMerged);
 
       socket.emit("playAgainButtonServer", JSON.stringify({
         oldGameCode: gameCopy.gameCode,
@@ -87,10 +87,9 @@ function GameSummary({ show, setShow }) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: gameDataMerged.gameCode
       }));
-
     } else {
       game.training = true;
-      setGame(gameDataMerged);
+      updateGameState(gameDataMerged);
     }
     setShow(false);
   }

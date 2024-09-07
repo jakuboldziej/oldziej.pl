@@ -1,10 +1,9 @@
-import { currentUser, game } from "../game";
 import { calculatePoints } from "../userUtils";
 
 export const doorsValueReverseX01 = 40;
 export const zeroValueReverseX01 = 20;
 
-export const handlePodiumReverseX01 = () => {
+export const handlePodiumReverseX01 = (game) => {
   const reverseUser = game.users.find((user) => user.displayName !== currentUser.displayName);
   reverseUser.place = 1;
   game.podium[1] = reverseUser.displayName;
@@ -20,7 +19,7 @@ export const handlePodiumReverseX01 = () => {
   }
 }
 
-export const handlePointsReverseX01 = () => {
+export const handlePointsReverseX01 = (currentUser) => {
   const { turns } = currentUser;
   const currentTurnValue = turns[currentUser.currentTurn];
 

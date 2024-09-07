@@ -1,8 +1,7 @@
 import { socket } from "@/lib/socketio";
-import { currentUser, game } from "../game";
-import { calculatePoints, setUsersState } from "../userUtils";
+import { calculatePoints } from "../userUtils";
 
-export const handlePodiumX01 = () => {
+export const handlePodiumX01 = (game, currentUser) => {
   currentUser.place = 1;
   game.podium[1] = currentUser.displayName;
   game.userWon = currentUser.displayName;
@@ -17,7 +16,7 @@ export const handlePodiumX01 = () => {
   }
 }
 
-export const handlePointsX01 = (setOverthrow) => {
+export const handlePointsX01 = (setOverthrow, game, currentUser) => {
   const { turns } = currentUser;
   const currentTurnValue = turns[currentUser.currentTurn];
 
@@ -33,7 +32,6 @@ export const handlePointsX01 = (setOverthrow) => {
     currentUser.turns = { 1: null, 2: null, 3: null };
     currentUser.throws["overthrows"] += 1;
     currentUser.currentThrows["overthrows"] += 1;
-    setUsersState();
 
     // Frontend effects
     setOverthrow(currentUser.displayName);
@@ -46,7 +44,7 @@ export const handlePointsX01 = (setOverthrow) => {
   }
 }
 
-export const handleNextLeg = (users) => {
+export const handleNextLeg = (users, game) => {
   const legCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
   if (legCheckout > currentUser.gameCheckout) currentUser.gameCheckout = legCheckout;
   currentUser.legs += 1;

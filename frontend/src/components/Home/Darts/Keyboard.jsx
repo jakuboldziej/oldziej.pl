@@ -5,11 +5,11 @@ import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import { socket } from "@/lib/socketio";
 
 function Keyboard({ props }) {
-  const { game, setGame } = useContext(DartsGameContext);
-  const { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = props;
+  const { game, handleRound, specialState } = useContext(DartsGameContext);
+  const { handleShow } = props;
 
-  const handleClick = (param) => {
-    handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow)
+  const handleClick = (value) => {
+    handleRound(value, handleShow);
   }
 
   const numbers = [];
@@ -21,13 +21,14 @@ function Keyboard({ props }) {
   }
 
   const handleQuit = async () => {
+    handleShow();
+
     if (!game.training) {
       game.active = false;
       socket.emit("updateLiveGamePreview", JSON.stringify(game));
       await deleteDartsGame(game._id);
     }
     localStorage.setItem('dartsGame', null);
-    handleShow();
   }
 
   const handleDisabledSpecial = (type) => {
@@ -42,30 +43,6 @@ function Keyboard({ props }) {
     }
     return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
   };
-
-  useEffect(() => {
-    const externalKeyboardInputClient = (data) => {
-      const inputData = JSON.parse(data);
-
-      if (typeof (inputData) === "number") {
-        handleClick(inputData);
-      } else {
-        if (inputData === "END") {
-          handleEndTraining();
-        } else if (inputData === "QUIT") {
-          handleQuit();
-        } else {
-          handleClick(inputData);
-        }
-      }
-    }
-
-    socket.on("externalKeyboardInputClient", externalKeyboardInputClient);
-
-    return () => {
-      socket.off("externalKeyboardInputClient", externalKeyboardInputClient);
-    }
-  }, []);
 
   return (
     <div className="keyboard">

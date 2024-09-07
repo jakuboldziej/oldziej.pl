@@ -33,7 +33,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [customStartPoints, setCustomStartPoints] = useState('');
   const [egt, setEgt] = useState(0);
 
-  const { setGame } = useContext(DartsGameContext);
+  const { updateGameState } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -208,7 +208,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       avgPointsPerTurn: "0.00",
       highestGameAvg: "0.00",
       highestGameTurnPoints: 0,
-      gameCheckout: 0
+      gameCheckout: 0,
+      temporary: user.temporary || false
     }));
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
@@ -245,13 +246,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
     if (training === true) {
       gameData.training = true;
-      setGame(gameData);
+      updateGameState(gameData);
     } else {
       const { record, ...gameWithoutRecord } = gameData;
       const game = await postDartsGame(gameWithoutRecord);
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
-      setGame(gameData);
+      gameData.training = false;
+      updateGameState(gameData);
     }
 
     navigate("game");

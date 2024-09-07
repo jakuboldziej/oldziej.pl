@@ -1,11 +1,3 @@
-import { currentUser, game, setUsers } from "./game";
-
-export const setUsersState = () => {
-  setUsers((prevUsers) => {
-    return prevUsers.map((prevUser, i) => game.users[i]);
-  });
-}
-
 const isNumericRegex = /^\d+$/;
 export const calculatePoints = (turnValue) => {
   if (!isNumericRegex.test(turnValue) && turnValue) {
@@ -19,13 +11,13 @@ export const calculatePoints = (turnValue) => {
   return turnValue ? parseInt(turnValue) : turnValue;
 }
 
-export const handleTurnsSum = () => {
+export const handleTurnsSum = (currentUser) => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
   if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestGameTurnPoints) currentUser.highestGameTurnPoints = currentUser.turnsSum;
 }
 
-export const handleAvgPointsPerTurn = (user) => {
+export const handleAvgPointsPerTurn = (user, game) => {
   const pointsThrown = game.startPoints - user.points;
   const dartsThrown = totalThrows(user);
   const avg = (pointsThrown / dartsThrown) * 3;
