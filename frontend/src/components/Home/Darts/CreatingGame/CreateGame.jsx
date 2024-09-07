@@ -232,7 +232,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       round: 1,
     }
 
-
     updatedUsers[0].turn = true;
     const usersCopy = lodash.cloneDeep(updatedUsers);
     const gameCopy = lodash.pick(gameData, ['round', 'turn']);
@@ -253,8 +252,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
       setGame(gameData);
-
-      socket.emit("updateLiveGamePreview", JSON.stringify(gameData));
     }
 
     navigate("game");

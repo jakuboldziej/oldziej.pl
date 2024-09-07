@@ -1,6 +1,6 @@
 import { deleteDartsGame } from "@/fetch";
 import { Button } from "@/components/ui/shadcn/button";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import { socket } from "@/lib/socketio";
 
@@ -8,12 +8,12 @@ function Keyboard({ props }) {
   const { game, setGame } = useContext(DartsGameContext);
   const { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow } = props;
 
-  const onclick = (param) => {
+  const handleClick = (param) => {
     handleRound(param, users, game, setGame, handleShow, setUsers, specialState, setSpecialState, setOverthrow)
   }
 
   const numbers = [];
-  for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => onclick(i)}>{i}</button>);
+  for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => handleClick(i)}>{i}</button>);
 
   const handleEndTraining = () => {
     game.podium[1] = game.turn;
@@ -43,24 +43,46 @@ function Keyboard({ props }) {
     return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
   };
 
+  useEffect(() => {
+    const externalKeyboardInputClient = (data) => {
+      const inputData = JSON.parse(data);
+
+      if (typeof (inputData) === "number") {
+        handleClick(inputData);
+      } else {
+        if (inputData === "END") {
+          handleEndTraining();
+        } else if (inputData === "QUIT") {
+          handleQuit();
+        } else {
+          handleClick(inputData);
+        }
+      }
+    }
+
+    socket.on("externalKeyboardInputClient", externalKeyboardInputClient);
+
+    return () => {
+      socket.off("externalKeyboardInputClient", externalKeyboardInputClient);
+    }
+  }, []);
+
   return (
-    <>
-      <div className="keyboard">
-        <span className="numbers">
-          {numbers}
-          <Button className="input number" disabled={specialState[1] === "TRIPLE"} onClick={() => onclick(25)}>25</Button>
-          <Button className="input number" disabled={specialState[0]} onClick={() => onclick(0)}>0</Button>
-        </span>
-        <span className="specials">
-          <Button className="input special" disabled={handleDisabledSpecial('DOORS')} onClick={() => onclick('DOORS')}>DOORS</Button>
-          <Button className="input special" disabled={handleDisabledSpecial('DOUBLE')} style={{ backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}` }} onClick={() => onclick('DOUBLE')}>DOUBLE</Button>
-          <Button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{ backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}` }} onClick={() => onclick('TRIPLE')}>TRIPLE</Button>
-          <Button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => onclick('BACK')}>BACK</Button>
-          {game.training && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: "#E55555" }} onClick={handleEndTraining}>END</Button>}
-          {game.record.length === 1 && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
-        </span>
-      </div>
-    </>
+    <div className="keyboard">
+      <span className="numbers">
+        {numbers}
+        <Button className="input number" disabled={specialState[1] === "TRIPLE"} onClick={() => handleClick(25)}>25</Button>
+        <Button className="input number" disabled={specialState[0]} onClick={() => handleClick(0)}>0</Button>
+      </span>
+      <span className="specials">
+        <Button className="input special" disabled={handleDisabledSpecial('DOORS')} onClick={() => handleClick('DOORS')}>DOORS</Button>
+        <Button className="input special" disabled={handleDisabledSpecial('DOUBLE')} style={{ backgroundColor: `${specialState[1] === 'DOUBLE' ? "#c4a100" : "#ffd100"}` }} onClick={() => handleClick('DOUBLE')}>DOUBLE</Button>
+        <Button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{ backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}` }} onClick={() => handleClick('TRIPLE')}>TRIPLE</Button>
+        <Button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => handleClick('BACK')}>BACK</Button>
+        {game.training && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: "#E55555" }} onClick={handleEndTraining}>END</Button>}
+        {game.record.length === 1 && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
+      </span>
+    </div>
   )
 }
 

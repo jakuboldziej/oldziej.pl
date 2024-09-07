@@ -77,8 +77,6 @@ app.locals.io = io;
 
 const { addingOnlineUser, scheduleUserOffline } = require('./socket.io/listeners');
 
-const liveGamesData = {};
-
 io.on('connection', (socket) => {
   // Listeners
 
@@ -99,16 +97,16 @@ io.on('connection', (socket) => {
     const joinData = JSON.parse(data);
 
     socket.join(`game-${joinData.gameCode}`);
+  });
 
-    if (liveGamesData[joinData.gameCode]) {
-      socket.emit("updateLiveGameClient", JSON.stringify(liveGamesData[joinData.gameCode]));
-    }
+  socket.on("leaveLiveGamePreview", (data) => {
+    const leaveData = JSON.parse(data);
+
+    socket.leave(`game-${leaveData.gameCode}`);
   });
 
   socket.on("joinLiveGameFromQrCode", (data) => {
     const joinData = JSON.parse(data);
-
-    const sendData = liveGamesData[joinData.gameCode] ? liveGamesData[joinData.gameCode] : joinData;
 
     io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
   });
@@ -116,11 +114,7 @@ io.on('connection', (socket) => {
   socket.on("updateLiveGamePreview", (data) => {
     const gameData = JSON.parse(data);
 
-    console.log(gameData)
-
-    liveGamesData[gameData.gameCode] = gameData;
-
-    io.to(`game-${gameData.gameCode}`).emit("updateLiveGameClient", JSON.stringify(gameData));
+    io.to(`game-${gameData.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(gameData));
   });
 
   // Live game preview events
@@ -129,9 +123,6 @@ io.on('connection', (socket) => {
     const playAgainData = JSON.parse(data);
     const oldGameCode = playAgainData.oldGameCode;
     const newGame = playAgainData.newGame;
-
-    delete liveGamesData[oldGameCode];
-    liveGamesData[newGame.gameCode] = newGame;
 
     io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
     io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
@@ -150,6 +141,14 @@ io.on('connection', (socket) => {
     io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
   });
 
+  // External Keyobard Inputs
+
+  socket.on("externalKeyboardInput", (data) => {
+    const { gameCode, input } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("externalKeyboardInputClient", JSON.stringify(input));
+  });
+
   // Handling Online Users
   socket.on("addingOnlineUser", (data) => {
     addingOnlineUser(data, socket.id, io);
@@ -158,13 +157,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     scheduleUserOffline(socket.id, io);
   });
-});
-
-// Deleting gameData on room-delete
-io.of("/").adapter.on("delete-room", (roomCode) => {
-  if (liveGamesData[roomCode.split("-")[1]]) {
-    delete liveGamesData[roomCode.split("-")[1]];
-  }
 });
 
 // Admin UI

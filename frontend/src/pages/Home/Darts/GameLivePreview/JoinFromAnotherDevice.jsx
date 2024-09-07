@@ -1,7 +1,6 @@
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { Button } from '@/components/ui/shadcn/button'
 import { Input } from '@/components/ui/shadcn/input'
-import { joinLiveGamePreview } from '@/fetch';
 import { socket } from '@/lib/socketio';
 import { Label } from '@radix-ui/react-label';
 import confetti from 'canvas-confetti';
@@ -19,11 +18,11 @@ function JoinFromAnotherDevice() {
   const handleJoinLiveGame = async (e) => {
     e.preventDefault();
 
-    const response = await joinLiveGamePreview(inputGameCode);
-    if (response.ok) {
+    const response = await getDartsGame(inputGameCode);
+    if (response) {
       socket.emit("joinLiveGameFromQrCode", JSON.stringify({
         socketId: socketId,
-        game: response.game
+        game: response
       }));
 
       setJoinedGame(true);

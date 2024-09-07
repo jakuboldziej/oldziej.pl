@@ -1,5 +1,5 @@
-import { useContext, useEffect, useRef, useState } from "react"
-import { DartsGameContext } from "@/context/Home/DartsGameContext"
+import { useContext, useEffect, useRef, useState } from "react";
+import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import Keyboard from "@/components/Home/Darts/Keyboard";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
@@ -14,6 +14,7 @@ import UserDataTable from "@/components/Home/Darts/UserDataTable";
 import CopyTextButton from "@/components/Home/CopyTextButton";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { Copy } from "lucide-react";
+import { socket } from "@/lib/socketio";
 
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
@@ -76,6 +77,13 @@ function DartsGame() {
 
   useEffect(() => {
     if (!game?.active) setShow(true);
+
+    if (!game) return;
+
+    socket.emit("joinLiveGamePreview", JSON.stringify({
+      gameCode: game.gameCode
+    }));
+    socket.emit("updateLiveGamePreview", JSON.stringify(game));
   }, []);
 
   const keyboardProps = { handleRound, users, handleShow, setUsers, specialState, setSpecialState, setOverthrow }

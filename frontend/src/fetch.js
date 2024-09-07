@@ -69,11 +69,10 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   return games;
 }
 
-export const joinLiveGamePreview = async (gameCode) => {
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsGames/join-live-game-preview/${gameCode}`, {
-    method: "POST",
-  });
-  return await response.json();
+export const getDartsGame = async (identifier) => {
+  const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsGames/${identifier}`);
+
+  return await gameResponse.json();;
 }
 
 // Users

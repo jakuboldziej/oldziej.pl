@@ -27,7 +27,7 @@ function GameLivePreviewPage() {
   useEffect(() => {
     socket.connect();
 
-    const updateLiveGameClient = (data) => {
+    const updateLiveGamePreviewClient = (data) => {
       const gameData = JSON.parse(data);
       setLiveGame(gameData);
     }
@@ -50,6 +50,8 @@ function GameLivePreviewPage() {
         gameCode: gameData.gameCode
       }));
 
+      setLiveGame(gameData);
+
       ShowNewToast("Live Game Preview", "Host clicked play again button and started a new game!")
     }
 
@@ -64,14 +66,14 @@ function GameLivePreviewPage() {
       }
     }
 
-    socket.on("updateLiveGameClient", updateLiveGameClient);
+    socket.on("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
     socket.on("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
     socket.on("playAgainButtonClient", playAgainButtonClient);
     socket.on("userOverthrowClient", handleOverthrowEffect);
     socket.on("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
 
     return () => {
-      socket.off("updateLiveGameClient", updateLiveGameClient);
+      socket.off("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
       socket.off("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
       socket.off("playAgainButtonClient", playAgainButtonClient);
       socket.off("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);

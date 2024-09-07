@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/shadcn/button';
 import { Input } from '@/components/ui/shadcn/input';
-import { joinLiveGamePreview } from '@/fetch';
-import React, { useContext, useEffect, useState } from 'react'
-import QRCode from 'react-qr-code'
+import { getDartsGame } from '@/fetch';
+import React, { useContext, useEffect, useState } from 'react';
+import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';
 import { socket } from '@/lib/socketio';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
@@ -21,14 +21,14 @@ function JoiningLiveGame({ props }) {
   const handleJoinLiveGame = async (e) => {
     e.preventDefault();
 
-    const response = await joinLiveGamePreview(inputGameCode);
-    if (response.ok) {
+    const response = await getDartsGame(inputGameCode);
+    if (response) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
-        gameCode: response.game.gameCode
+        gameCode: response.gameCode
       }));
 
-      setLiveGame(response.game);
-      ShowNewToast("Live Game Preview", `You joined live game preview hosted by ${response.game.created_by}!`);
+      setLiveGame(response);
+      ShowNewToast("Live Game Preview", `You joined live game preview hosted by ${response.created_by}!`);
     } else {
       ShowNewToast("Live Game Preview", "Game code is not valid.");
     }

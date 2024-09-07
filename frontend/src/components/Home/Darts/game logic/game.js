@@ -21,6 +21,7 @@ export const handleRound = (value, usersP, gameP, setGameP, handleShowP, setUser
   setUsers = setUsersP;
   setOverthrow = setOverthrowP;
   currentUser = users.find(user => user.turn);
+
   if (Number.isInteger(value)) {
     handleUsersState(value, specialState, setSpecialState);
   } else if (!Number.isInteger(value)) {
@@ -211,7 +212,9 @@ export const handleRecord = (action, backSummary = false) => {
   if (action === "save") {
     const currentUserCopy = lodash.cloneDeep(currentUser);
     const usersCopy = lodash.cloneDeep(game.users);
+
     currentUserCopy.turn = true;
+
     game.record.push({
       game: {
         round: game.round,
@@ -219,6 +222,7 @@ export const handleRecord = (action, backSummary = false) => {
       },
       users: [...usersCopy],
     });
+
   } else if (action === "back") {
     if (!backSummary) game.record.splice(-1);
     const restoredState = game.record[game.record.length - 1];
@@ -245,9 +249,9 @@ export const handleRecord = (action, backSummary = false) => {
 }
 
 export const setGameState = async (gameP) => {
-  setGame(gameP);
   socket.emit("updateLiveGamePreview", JSON.stringify(gameP));
   localStorage.setItem("dartsGame", JSON.stringify(gameP));
+  putDartsGame(gameP);
 }
 
 export { game, setUsers, currentUser };

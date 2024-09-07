@@ -24,7 +24,11 @@ const getDartsUser = async (req, res, next) => {
 const getDartsGame = async (req, res, next) => {
   let game;
   try {
-    game = await DartsGame.findById({ _id: req.params.id });
+    if (Types.ObjectId.isValid(req.params.identifier)) {
+      game = await DartsGame.findById({ _id: req.params.identifier });
+    } else {
+      game = await DartsGame.findOne({ gameCode: req.params.identifier });
+    }
     if (game == null) return res.status(404);
   } catch (err) {
     return res.status(500)
@@ -56,7 +60,7 @@ router.get('/dartsGames', async (req, res) => {
   }
 })
 
-router.get('/dartsGames/:id', getDartsGame, async (req, res) => {
+router.get('/dartsGames/:identifier', getDartsGame, async (req, res) => {
   res.send(res.game);
 })
 
@@ -91,7 +95,7 @@ router.post('/dartsGames', async (req, res) => {
   }
 });
 
-router.put("/dartsGames/:id", getDartsGame, async (req, res) => {
+router.put("/dartsGames/:identifier", getDartsGame, async (req, res) => {
   const { ...updateData } = req.body;
   try {
     const updatedGame = await DartsGame.findByIdAndUpdate(
@@ -108,7 +112,7 @@ router.put("/dartsGames/:id", getDartsGame, async (req, res) => {
   }
 });
 
-router.delete('/dartsGames/:id', getDartsGame, async (req, res) => {
+router.delete('/dartsGames/:identifier', getDartsGame, async (req, res) => {
   try {
     await DartsGame.deleteOne({ _id: res.game._id });
     res.json({ message: 'Game deleted successfully' });

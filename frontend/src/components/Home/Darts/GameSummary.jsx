@@ -84,7 +84,9 @@ function GameSummary({ show, setShow }) {
         oldGameCode: gameCopy.gameCode,
         newGame: gameDataMerged
       }));
-      socket.emit("updateLiveGamePreview", JSON.stringify(gameDataMerged));
+      socket.emit("joinLiveGamePreview", JSON.stringify({
+        gameCode: gameDataMerged.gameCode
+      }));
 
     } else {
       game.training = true;
