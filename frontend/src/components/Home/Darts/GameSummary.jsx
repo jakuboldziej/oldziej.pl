@@ -117,6 +117,22 @@ function GameSummary({ show, setShow }) {
     }
   }, [show]);
 
+  useEffect(() => {
+    const externalKeyboardPlayAgainClient = (data) => {
+      const gameCode = JSON.parse(data);
+
+      if (gameCode === game.gameCode) {
+        handlePlayAgain();
+      }
+    }
+
+    socket.on("externalKeyboardPlayAgainClient", externalKeyboardPlayAgainClient);
+
+    return () => {
+      socket.off("externalKeyboardPlayAgainClient", externalKeyboardPlayAgainClient);
+    }
+  }, [game]);
+
   return (
     <Dialog open={show}>
       <DialogContent className='game-summary-modal'>

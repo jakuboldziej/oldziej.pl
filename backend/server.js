@@ -141,12 +141,18 @@ io.on('connection', (socket) => {
     io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
   });
 
-  // External Keyobard Inputs
+  // Mobile App Inputs
 
   socket.on("externalKeyboardInput", (data) => {
     const { gameCode, input } = JSON.parse(data);
 
     io.to(`game-${gameCode}`).emit("externalKeyboardInputClient", JSON.stringify(input));
+  });
+
+  socket.on("externalKeyboardPlayAgain", (data) => {
+    const { gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("externalKeyboardPlayAgainClient", JSON.stringify(gameCode));
   });
 
   // Handling Online Users

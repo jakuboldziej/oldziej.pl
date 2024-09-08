@@ -261,29 +261,10 @@ export const DartsGameContextProvider = ({ children }) => {
     updateGameState(game);
   };
 
-  useEffect(() => {
-    const externalKeyboardInputClient = (data) => {
-      const inputData = JSON.parse(data);
-
-      if (inputData === "END") {
-        handleEndTraining();
-      } else if (inputData === "QUIT") {
-        handleQuit();
-      } else {
-        handleRound(inputData, handleShow);
-      }
-    }
-
-    socket.on("externalKeyboardInputClient", externalKeyboardInputClient);
-
-    return () => {
-      socket.off("externalKeyboardInputClient", externalKeyboardInputClient);
-    }
-  }, [game]);
-
   const contextParams = {
     game,
     setGame,
+    currentUser,
     handleRound,
     overthrow,
     setOverthrow,

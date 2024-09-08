@@ -5,7 +5,7 @@ import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import { socket } from "@/lib/socketio";
 
 function Keyboard({ props }) {
-  const { game, handleRound, specialState } = useContext(DartsGameContext);
+  const { game, handleRound, specialState, currentUser } = useContext(DartsGameContext);
   const { handleShow } = props;
 
   const handleClick = (value) => {
@@ -43,6 +43,26 @@ function Keyboard({ props }) {
     }
     return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
   };
+
+  useEffect(() => {
+    const externalKeyboardInputClient = (data) => {
+      const inputData = JSON.parse(data);
+
+      if (inputData === "END") {
+        handleEndTraining();
+      } else if (inputData === "QUIT") {
+        handleQuit();
+      } else {
+        handleClick(inputData);
+      }
+    }
+
+    socket.on("externalKeyboardInputClient", externalKeyboardInputClient);
+
+    return () => {
+      socket.off("externalKeyboardInputClient", externalKeyboardInputClient);
+    }
+  }, [game, specialState, currentUser]);
 
   return (
     <div className="keyboard">
