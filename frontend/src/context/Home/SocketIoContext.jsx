@@ -1,7 +1,7 @@
 import { socket } from '@/lib/socketio';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
-import { getAuthUser } from '@/fetch';
+import { getAuthUser } from '@/lib/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import Cookies from 'js-cookie';
 

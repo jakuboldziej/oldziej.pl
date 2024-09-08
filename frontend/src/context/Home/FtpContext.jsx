@@ -1,4 +1,4 @@
-import { getFiles, getFolder, getFolders, getFtpUser } from '@/fetch';
+import { getFiles, getFolder, getFolders, getFtpUser } from '@/lib/fetch';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 

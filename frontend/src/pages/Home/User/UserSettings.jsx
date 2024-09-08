@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/shadcn/button";
 import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import { AuthContext } from "@/context/Home/AuthContext";
-import { getAuthUser } from "@/fetch";
+import { getAuthUser } from "@/lib/fetch";
 import { useContext, useEffect, useState } from "react";
 
 function UserSettings() {

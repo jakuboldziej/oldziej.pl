@@ -5,7 +5,7 @@ import { downloadFolder, handleDataShown } from "./utils";
 import { useContext } from "react";
 import { FtpContext } from "@/context/Home/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { putFolder } from "@/fetch";
+import { putFolder } from "@/lib/fetch";
 
 function MyFolderCard(props) {
   const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders } = props;

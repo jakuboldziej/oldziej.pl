@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext, useEffect, useState } from "react";
-import { changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/fetch";
+import { changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/lib/fetch";
 import Loading from "../Loading";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router";

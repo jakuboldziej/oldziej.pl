@@ -4,7 +4,7 @@ import RedDot from "@/assets//images/icons/red_dot.png";
 import GreenDot from "@/assets//images/icons/green_dot.png";
 import { useLocation, useNavigate } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
-import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/fetch";
+import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";

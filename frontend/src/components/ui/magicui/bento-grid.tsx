@@ -4,7 +4,7 @@ import { ArrowRightIcon } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
 import { ReactNode } from "react";
 import { motion } from "framer-motion"
-import { getGamesPlayedPortfolio } from "@/fetch";
+import { getGamesPlayedPortfolio } from "@/lib/fetch";
 import NumberTicker from "./number-ticker";
 import { PortfolioContext } from "@/context/Portfolio/PortfolioContext";
 

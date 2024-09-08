@@ -1,7 +1,7 @@
 import { handlePodiumReverseX01, handlePointsReverseX01 } from '@/components/Home/Darts/game logic/game modes/Reverse X01';
 import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Home/Darts/game logic/game modes/X01';
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
-import { getDartsUser, putDartsGame, putDartsUser } from '@/fetch';
+import { getDartsUser, putDartsGame, putDartsUser } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import lodash from 'lodash';

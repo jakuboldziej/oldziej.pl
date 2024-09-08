@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Input } from '@/components/ui/shadcn/input';
 import { AuthContext } from '@/context/Home/AuthContext';
-import { acceptFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/fetch';
+import { acceptFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/lib/fetch';
 import { Copy, Loader2, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import RedDot from "@/assets/images/icons/red_dot.png";

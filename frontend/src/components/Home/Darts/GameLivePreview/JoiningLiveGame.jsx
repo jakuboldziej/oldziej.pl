@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/shadcn/button';
 import { Input } from '@/components/ui/shadcn/input';
-import { getDartsGame } from '@/fetch';
+import { getDartsGame } from '@/lib/fetch';
 import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';

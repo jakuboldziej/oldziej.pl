@@ -1,5 +1,5 @@
 import Loading from "@/components/Home/Loading";
-import { getAuthUser } from "@/fetch";
+import { getAuthUser } from "@/lib/fetch";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 

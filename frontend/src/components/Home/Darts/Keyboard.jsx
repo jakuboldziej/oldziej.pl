@@ -1,4 +1,4 @@
-import { deleteDartsGame } from "@/fetch";
+import { deleteDartsGame } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { useContext, useEffect } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";

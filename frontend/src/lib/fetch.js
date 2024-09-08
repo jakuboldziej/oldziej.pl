@@ -1,4 +1,4 @@
-import { calcStorageUsage } from "./components/Home/Cloud/utils";
+import { calcStorageUsage } from "../components/Home/Cloud/utils";
 
 export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 

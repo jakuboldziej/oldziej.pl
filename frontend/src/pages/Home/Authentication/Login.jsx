@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
-import { loginUser } from "@/fetch";
+import { loginUser } from "@/lib/fetch";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { useSearchParams } from "react-router-dom";
 

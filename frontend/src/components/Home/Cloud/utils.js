@@ -1,4 +1,4 @@
-import { deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/fetch";
+import { deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/lib/fetch";
 
 // Global
 

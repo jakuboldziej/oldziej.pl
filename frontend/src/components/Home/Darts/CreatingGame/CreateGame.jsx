@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getAuthUser, getDartsUser, getDartsUsers, postDartsGame } from "@/fetch";
+import { getAuthUser, getDartsUser, getDartsUsers, postDartsGame } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";

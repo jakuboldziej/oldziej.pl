@@ -1,7 +1,7 @@
 import { useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { getDartsGames, getDartsUser } from '@/fetch';
+import { getDartsGames, getDartsUser } from '@/lib/fetch';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { UserBarChart } from './UserBarChart';
 import Loading from '@/components/Home/Loading';

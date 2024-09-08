@@ -2,7 +2,7 @@ import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
-import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/fetch";
+import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";

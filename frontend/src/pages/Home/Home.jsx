@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { getFilesCreated, getFoldersCreated, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints, getStatisticsTop3DoorHitters, getStatisticsTop3Players, getStorageUsed } from "@/fetch";
+import { getFilesCreated, getFoldersCreated, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints, getStatisticsTop3DoorHitters, getStatisticsTop3Players, getStorageUsed } from "@/lib/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";

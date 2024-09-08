@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/fetch';
+import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/lib/fetch';
 import { Eye, EyeOff, Grip, Loader2, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { totalThrows } from '../Home/Darts/game logic/userUtils';

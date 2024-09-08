@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
-import { postDartsGame } from '@/fetch';
+import { postDartsGame } from '@/lib/fetch';
 import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './game logic/gameUtils';
