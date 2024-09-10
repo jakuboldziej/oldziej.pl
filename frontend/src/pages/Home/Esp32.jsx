@@ -1,3 +1,4 @@
+import Loading from '@/components/Home/Loading';
 import { Label } from '@/components/ui/shadcn/label'
 import { Switch } from '@/components/ui/shadcn/switch'
 import { socket } from '@/lib/socketio'
@@ -8,11 +9,11 @@ function Esp32() {
   const [LEDStatus, setLEDStatus] = useState(null);
 
   const handleLEDSwitch = (action) => {
-    socket.emit("ESP32_CONTROL_LED_SERVER", action);
+    socket.emit("ESP32_CONTROL_LED_SERVER", action === true ? 'on' : 'off');
   }
 
   const checkLEDStatus = () => {
-    socket.emit("ESP32_CHECK_LED_SERVER")
+    socket.emit("ESP32_CHECK_LED_SERVER");
   }
 
   useEffect(() => {
@@ -20,24 +21,16 @@ function Esp32() {
   }, []);
 
   useEffect(() => {
-    setSwitchStatus(LEDStatus === "on" ? true : false);
-  }, [LEDStatus]);
-
-  useEffect(() => {
-    if (!LEDStatus) return;
-
-    if (switchStatus === false && LEDStatus === 'off') return;
-    console.log(switchStatus, LEDStatus)
     handleLEDSwitch(switchStatus);
-  }, [switchStatus, LEDStatus]);
+  }, [switchStatus]);
 
   useEffect(() => {
     const esp32_led_status = (data) => {
       setLEDStatus(data);
+      setSwitchStatus(data === 'on');
     }
 
     socket.on('ESP32_LED_STATUS', esp32_led_status);
-
 
     return () => {
       socket.off('ESP32_LED_STATUS', esp32_led_status);
@@ -47,10 +40,15 @@ function Esp32() {
   return (
     <div className="esp32-page text-white w-full container_no_nav flex flex-col gap-10 items-center justify-center">
       <span className="text-2xl">Control ESP-32</span>
-      <div className='flex items-center gap-4'>
-        <Switch id="switch" checked={switchStatus} onCheckedChange={setSwitchStatus} />
-        <Label htmlFor='switch' className='text-xl'>LED {switchStatus ? 'ON' : 'OFF'}</Label>
-      </div>
+      {LEDStatus ? (
+        <div className='flex items-center gap-4'>
+          <Switch id="switch" checked={switchStatus} onCheckedChange={setSwitchStatus} />
+          <Label htmlFor='switch' className='text-xl'>LED {switchStatus ? 'ON' : 'OFF'}</Label>
+        </div>
+      ) : (
+        <Loading />
+      )
+      }
     </div>
   )
 }

@@ -143,7 +143,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
-    console.log(data)
     io.emit("ESP32_CONTROL_LED", data);
   });
 
