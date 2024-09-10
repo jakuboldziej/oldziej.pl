@@ -64,10 +64,16 @@ function NavBar() {
                     </span>
                     {!currentUser.verified && "(not verified)"}
                     {currentUser.displayName === "kubek" && (
-                      <Button variant="destructive" onClick={() => {
-                        navigate('/admin');
-                        handleSheetClose();
-                      }}>Admin</Button>
+                      <>
+                        <Button variant="destructive" onClick={() => {
+                          navigate('/admin');
+                          handleSheetClose();
+                        }}>Admin</Button>
+                        <Button variant="outline_white" onClick={() => {
+                          navigate('/esp32');
+                          handleSheetClose();
+                        }}>ESP-32</Button>
+                      </>
                     )}
                   </SheetTitle>
                 </SheetHeader>

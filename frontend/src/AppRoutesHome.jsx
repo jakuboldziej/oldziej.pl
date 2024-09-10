@@ -25,6 +25,7 @@ import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePrev
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
 import SuccessPage from './pages/Home/User/SuccessPage';
 import MergedAuth from './pages/Home/Authentication/MergedAuth';
+import Esp32 from './pages/Home/Esp32';
 
 function AppRoutesHome() {
   const { currentUser } = useContext(AuthContext);
@@ -84,6 +85,7 @@ function AppRoutesHome() {
         <Route path="/">
           <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="live" element={<Navigate to={`/darts/game/live`} replace />} />
+          <Route path="esp32" element={<Esp32 />} />
 
           <Route path="auth" element={<MergedAuth />} />
 
