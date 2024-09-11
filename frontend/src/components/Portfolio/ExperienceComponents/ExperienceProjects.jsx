@@ -4,6 +4,7 @@ import Cloud from "@/assets/images/Portfolio/ExperiencePage/cloud.webp"
 import Oldziej from "@/assets/images/Portfolio/ExperiencePage/oldziej.webp"
 import Hagapolska from "@/assets/images/Portfolio/ExperiencePage/hagapolska.webp"
 import Mmagusiak from "@/assets/images/Portfolio/ExperiencePage/mmagusiak.webp"
+import HomeApp from "@/assets/images/Portfolio/ExperiencePage/home-app.png"
 import ProjectCard from './ProjectCard'
 
 function ExperienceProjects() {
@@ -14,6 +15,7 @@ function ExperienceProjects() {
       <ProjectCard image={Oldziej} link='https://oldziej.pl' linkText="oldziej.pl" redirect="/projects/oldziej" />
       <ProjectCard image={Darts} link='https://home.oldziej.pl/darts' linkText="Darts Web App" redirect="/projects/darts" />
       <ProjectCard image={Cloud} link='https://home.oldziej.pl/cloud' linkText="Cloud Web App" redirect="/projects/cloud" />
+      {/* <ProjectCard image={HomeApp} link='https://home.oldziej.pl/' linkText="Home App" redirect="/projects/home-app" /> */}
     </div>
   )
 }

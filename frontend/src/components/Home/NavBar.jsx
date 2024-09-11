@@ -52,11 +52,17 @@ function NavBar() {
           <li className="ml-auto">
             <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline_white">
-                  {currentUser.displayName}
-                </Button>
+                {currentUser ? (
+                  <Button variant="outline_white">
+                    {currentUser.displayName}
+                  </Button>
+                ) : (
+                  <Button variant="outline_white" onClick={() => navigate("/auth")}>
+                    Login
+                  </Button>
+                )}
               </SheetTrigger>
-              <SheetContent>
+              {currentUser && <SheetContent>
                 <SheetHeader>
                   <SheetTitle className="flex items-center gap-5">
                     <span className="cursor-pointer hover:opacity-90 transition-opacity" onClick={() => navigate(`/user/${currentUser.displayName}`)}>
@@ -116,7 +122,7 @@ function NavBar() {
                 <div className="absolute right-2 bottom-2 text-white">
                   <Button variant="outline_red" onClick={logout}>Log Out</Button>
                 </div>
-              </SheetContent>
+              </SheetContent>}
             </Sheet>
           </li>
         </ul>

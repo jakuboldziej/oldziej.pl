@@ -60,14 +60,19 @@ function AppRoutesHome() {
 
   const OnlyVerifiedAccess = ({ children }) => {
     useEffect(() => {
+      if (!currentUser) return;
       if (currentUser.verified !== true) {
         navigate('/not-verified');
       }
     }, [currentUser]);
 
-    if (currentUser.verified !== true) return <LoadingScreen />;
+    if (currentUser && currentUser.verified !== true) return <LoadingScreen />;
 
-    return children;
+    return (
+      <ProtectedRoute>
+        {children}
+      </ProtectedRoute>
+    );
   }
 
   const LoadingScreen = () => {
@@ -80,10 +85,10 @@ function AppRoutesHome() {
 
   return (
     <>
-      {currentUser && !listOfNonNavbarComponents.includes(location.pathname) && <NavBar />}
+      {!listOfNonNavbarComponents.includes(location.pathname) && <NavBar />}
       <Routes>
         <Route path="/">
-          <Route index element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route index element={<Home />} />
           <Route path="live" element={<Navigate to={`/darts/game/live`} replace />} />
           <Route path="esp32" element={<Esp32 />} />
 

@@ -16,8 +16,8 @@ if (subdomain === "home") {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <ContextProvider>
-    {/* <React.StrictMode> */}
-    <App />
-    {/* </React.StrictMode> */}
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
   </ContextProvider>
 );
