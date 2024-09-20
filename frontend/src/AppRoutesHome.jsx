@@ -55,6 +55,7 @@ function AppRoutesHome() {
         navigate('/');
       }
     }, [currentUser]);
+
     return children;
   }
 
