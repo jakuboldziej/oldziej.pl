@@ -191,7 +191,8 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
       username: "admin",
       password: hashedPassword
     },
-    mode: environment
+    // mode: environment
+    mode: "development"
   });
 });
 
