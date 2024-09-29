@@ -39,8 +39,6 @@ function CloudPage() {
     uploaded: false,
     downloaded: false
   });
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [downloadProgress, setDownloadProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [changingDataName, setChangingFileName] = useState('');
 

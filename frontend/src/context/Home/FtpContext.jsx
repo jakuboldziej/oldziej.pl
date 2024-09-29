@@ -67,9 +67,9 @@ export const FtpContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (currentUser) {
-      handleActiveFolders(),
-        fetchFiles(),
-        fetchFolders()
+      handleActiveFolders();
+      fetchFiles();
+      fetchFolders();
     }
   }, [currentUser]);
 

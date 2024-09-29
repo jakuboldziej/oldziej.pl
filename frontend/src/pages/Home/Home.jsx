@@ -17,7 +17,32 @@ function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Get Statistics Data
+    const fetchData = async () => {
+      // Darts
+      const gamesPlayed = await getStatisticsDartsGames();
+      const overAllPoints = await getStatisticsOverAllPoints();
+      const doorHits = await getStatisticsDoorHits();
 
+      setDartsStatistics({
+        gamesPlayed: gamesPlayed,
+        overAllPoints: overAllPoints,
+        doorHits: doorHits
+      });
+
+      const filesCreated = await getFilesCreated();
+      const foldersCreated = await getFoldersCreated();
+      const storageUsed = await getStorageUsed();
+
+      setCloudStatistics({
+        filesCreated: filesCreated,
+        foldersCreated: foldersCreated,
+        storageUsed: storageUsed
+      });
+
+      setIsLoading(false);
+    }
+    fetchData();
 
     if (currentUser && currentUser?.verified === false) {
       ShowNewToast("Verify Email", "Verify your email to get full experience!");
