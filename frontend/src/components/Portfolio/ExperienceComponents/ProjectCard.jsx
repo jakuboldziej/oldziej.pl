@@ -10,8 +10,8 @@ function ProjectCard({ image, link, linkText, redirect }) {
 
   return (
     <Card className='w-[320px] h-[452px] bg-transparent'>
-      <div className={`h-[318px] flex items-center ${linkText === "hagapolska.pl" && "p-6"}`}>
-        <img src={image} alt='projectImg' className='pointer-events-none rounded-t-lg w-full' />
+      <div className={`h-[318px] flex items-center ${linkText === "hagapolska.pl" && "p-6"} aspect-square`}>
+        <img src={image} alt='projectImg' className='pointer-events-none rounded-t-lg w-full aspect-auto' />
       </div>
       <CardContent className='p-6'>
         <Link to={link} target='_blank' className='text-underline-hover'>{linkText}</Link>

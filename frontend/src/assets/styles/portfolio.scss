@@ -83,6 +83,20 @@ $lime: #b7eb34;
       cursor: pointer;
     }
   }
+
+  .current-pages-names {
+    .underlineTab {
+      position: absolute;
+      bottom: 0px;
+      left: 50%;
+      translate: -50%;
+      right: 0;
+      height: 2px;
+      width: 100%;
+      border-radius: 9999px;
+      background: #b7eb34;
+    }
+  }
 }
 
 // Footer

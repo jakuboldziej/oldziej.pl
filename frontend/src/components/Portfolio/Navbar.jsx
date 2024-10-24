@@ -7,10 +7,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import MenuToggle from './NavbarComponents/MenuToggle';
 import Navigation from './NavbarComponents/Navigation';
 import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProjects, isNotHome, isProjects = false }) {
   const { lang, langText } = useContext(PortfolioContext)
+
+  const location = useLocation();
 
   const [currentPagesNames, setCurrentPagesNames] = useState(handleCurrentPagesNames(createNumberArray(projectsRedirect ? 2 : currentPage), lang));
   const [highestPage, setHighestPage] = useState(projectsRedirect ? 2 : 1);
@@ -85,10 +87,18 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
         <div className='current-pages-names flex gap-2'>
           {currentPagesNames.map((name, i) => (
             <div key={name} className='flex items-center gap-2 h-[24px]'>
-              <div
+              <motion.div
                 onClick={(e) => handlePaginationClick(e, i)}
-                className={`fadein-anim font-bold cursor-pointer ${currentPage === i + 1 ? 'underline transition-all decoration-lime underline-offset-4' : 'no-underline'} text-white`}
-              >{name}</div>
+                className={`relative fadein-anim font-bold cursor-pointer text-white`}
+              >
+                {name}
+                {currentPage === i + 1 && (
+                  <motion.div
+                    className="underlineTab"
+                    layoutId="underlineTab"
+                  />
+                )}
+              </motion.div>
               {currentPagesNames.length > 1 && i !== currentPagesNames.length - 1 && <BreadcrumbSeparator className='[&>svg]:size-5' />}
               {currentPagesNames.length === 1 &&
                 <>
@@ -105,6 +115,7 @@ function Navbar({ currentPage, pagesRefs, projectsRedirect, setScrolledToProject
                   </TooltipProvider>
                 </>
               }
+
             </div>
           ))}
         </div>
