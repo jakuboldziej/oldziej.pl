@@ -25,17 +25,20 @@ function MyDialogs(props) {
   return (
     <>
       {/* Changing File Name */}
-      <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title={`Change ${dialogOpen.data?.type === "folder" ? "Folder" : "File"} Name`} footer={
-        <>
-          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
-          <Button onClick={() => handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file")} variant='outline_green'>Save</Button>
-        </>
-      }>
-        <span className='flex flex-col gap-2'>
-          {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
-          <Input placeholder={dialogOpen.data?.filename} value={changingDataName} onChange={(e) => setChangingFileName(e.target.value)} />
-        </span>
-      </MyDialog>
+      <form>
+
+        <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title={`Change ${dialogOpen.data?.type === "folder" ? "Folder" : "File"} Name`} footer={
+          <>
+            <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
+            <Button onClick={() => handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file")} variant='outline_green'>Save</Button>
+          </>
+        }>
+          <span className='flex flex-col gap-2'>
+            {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
+            <Input placeholder={dialogOpen.data?.filename} value={changingDataName} onChange={(e) => setChangingFileName(e.target.value)} />
+          </span>
+        </MyDialog>
+      </form>
 
       {/* Showing Data Info */}
       <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.data?.filename}`}>

@@ -33,7 +33,7 @@ function LeftNavBar() {
       </div>
 
       <Sheet>
-        <SheetTrigger className='fixed right-0 z-50 text-black w-10 h-10 bg-[#F3F0D2] sm:hidden rounded-full p-1' asChild>
+        <SheetTrigger className='fixed right-0 bottom-0 z-50 text-black w-10 h-10 bg-[#F3F0D2] sm:hidden rounded-full p-1' asChild>
           <Menu />
         </SheetTrigger>
         <SheetContent side='left'>

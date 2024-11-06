@@ -1,7 +1,7 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
-import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, Loader2 } from 'lucide-react';
+import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
@@ -321,18 +321,25 @@ function MyFiles() {
       <div className="cloud-wrapper text-white">
         <LeftNavBar />
         <div className="main my-files">
-          <div className="folders-path">
-            <Breadcrumb className="pt-[15px] pl-[15px] md:pt-[24px] md:pl-[24px]">
-              <BreadcrumbList>
-                {activeFolders && activeFolders.map((folder, i) => (
-                  <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
-                    <BreadcrumbLink className="text-base">{folder.name}</BreadcrumbLink>
-                    {folders.length > 1 && i !== activeFolders.length - 1 && <BreadcrumbSeparator />}
-                  </BreadcrumbItem>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
+          <div className="myfiles-navbar flex items-center justify-between p-[15px]">
+            <div className="folders-path">
+              <Breadcrumb>
+                <BreadcrumbList>
+                  {activeFolders && activeFolders.map((folder, i) => (
+                    <BreadcrumbItem key={folder._id} onClick={() => handleBreadcrumbClick(folder)} className="hover:cursor-pointer">
+                      <BreadcrumbLink className="text-base">{folder.name}</BreadcrumbLink>
+                      {folders.length > 1 && i !== activeFolders.length - 1 && <BreadcrumbSeparator />}
+                    </BreadcrumbItem>
+                  ))}
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <div className="flex gap-2">
+              <Button size="icon" className="rounded-full opacity-80"><List /></Button>
+              <Button size="icon" className="rounded-full"><LayoutGrid /></Button>
+            </div>
           </div>
+
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <div className="files-wrapper">
