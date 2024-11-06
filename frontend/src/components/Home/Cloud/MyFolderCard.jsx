@@ -49,7 +49,6 @@ function MyFolderCard(props) {
     const updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     updateDataShown(updatedData);
     setFolders(updatedFolders);
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
   }
 
   return (

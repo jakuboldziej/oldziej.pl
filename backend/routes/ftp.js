@@ -207,7 +207,9 @@ router.get('/files/download/:filename', async (req, res) => {
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
 
     res.set('Content-Type', file.contentType);
-    res.set('Content-Disposition', 'attachment; filename="' + req.params.filename + '"');
+
+    const encodedFilename = encodeURIComponent(req.params.filename);
+    res.set('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
 
     const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);

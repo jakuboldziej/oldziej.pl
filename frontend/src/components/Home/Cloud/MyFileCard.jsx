@@ -36,7 +36,6 @@ function MyFileCard(props) {
     const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
     updateDataShown(updatedData);
     setFiles(updatedFiles);
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   return (

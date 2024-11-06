@@ -9,39 +9,35 @@ export const FtpContextProvider = ({ children }) => {
 
   const [currentFolder, setCurrentFolder] = useState();
 
-  const [files, setFiles] = useState(() => {
-    // const storedFiles = localStorage.getItem('files');
-    // return storedFiles ? JSON.parse(storedFiles) : null;
-    return null;
-  });
+  const [files, setFiles] = useState(null);
 
-  const [folders, setFolders] = useState(() => {
-    // const storedFolders = localStorage.getItem('folders');
-    // return storedFolders ? JSON.parse(storedFolders) : null;
-    return null;
-  });
+  const [folders, setFolders] = useState();
 
   const [activeFolders, setActiveFolders] = useState([]);
 
   const fetchFiles = async () => {
     const response = await getFiles(currentUser.displayName);
     const filesR = response.files;
+
     if (filesR) {
-      setFiles(filesR);
-      localStorage.setItem('files', JSON.stringify(filesR));
+      const sortedFiles = filesR.slice().sort((a, b) => {
+        const firstData = new Date(a.uploadDate);
+        const secondData = new Date(b.uploadDate);
+        return secondData - firstData;
+      });
+
+      setFiles(sortedFiles);
+      return sortedFiles;
     } else {
-      localStorage.setItem('files', null);
     }
-  };
+  }
 
   const fetchFolders = async () => {
     const foldersR = await getFolders(currentUser.displayName);
 
     if (foldersR) {
       setFolders(foldersR);
-      localStorage.setItem('folders', JSON.stringify(foldersR));
     } else {
-      localStorage.setItem('folders', null);
     }
   }
 
@@ -50,8 +46,8 @@ export const FtpContextProvider = ({ children }) => {
 
     if (storedActiveFolders) {
       const parsedActiveFolders = JSON.parse(storedActiveFolders);
-
       setActiveFolders(parsedActiveFolders);
+
     } else {
       const ftpUser = await getFtpUser(currentUser.displayName);
       const mainUserFolder = await getFolder(ftpUser.main_folder);
@@ -66,11 +62,7 @@ export const FtpContextProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    if (currentUser) {
-      handleActiveFolders();
-      fetchFiles();
-      fetchFolders();
-    }
+    if (currentUser) handleActiveFolders();
   }, [currentUser]);
 
   const props = {

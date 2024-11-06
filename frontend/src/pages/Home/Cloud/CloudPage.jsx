@@ -24,7 +24,7 @@ import Loading from '@/components/Home/Loading'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
-  const { folders, setFolders, files, setFiles } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, fetchFolders, fetchFiles } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -74,12 +74,15 @@ function CloudPage() {
 
   const handleRecentFilesShown = (type, amount) => {
     let recentFilesAmount;
-    if (type === "scroll") recentFilesAmount = files.slice(0, 10 * currentPage);
-    else if (type === "filter") {
-      recentFilesAmount = files.slice(0, amount)
-    }
-    setRecentFiles(recentFilesAmount);
 
+    if (type === "scroll") {
+      recentFilesAmount = files.slice(0, 10 * currentPage);
+      if (recentFilesAmount.length !== recentFiles.length) setRecentFiles(recentFilesAmount);
+    }
+    else if (type === "filter") {
+      recentFilesAmount = files.slice(0, amount);
+      setRecentFiles(recentFilesAmount);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -244,6 +247,12 @@ function CloudPage() {
     localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
+  const firstFetch = async () => {
+    fetchFolders();
+    const fetchedFiles = await fetchFiles();
+    if (fetchedFiles) updateDataShown(fetchedFiles);
+  }
+
   useEffect(() => {
     if (files) handleRecentFilesShown("scroll")
   }, [currentPage]);
@@ -291,12 +300,6 @@ function CloudPage() {
   }, [recentFile]);
 
   useEffect(() => {
-    if (files) {
-      files.sort((a, b) => {
-        return new Date(b.uploadDate) - new Date(a.uploadDate);
-      })
-      setFiles(files);
-    }
     setFileTypes(handleFileTypes(files));
   }, [files]);
 
@@ -306,6 +309,10 @@ function CloudPage() {
       setRecentFolders(filteredFolders)
     }
   }, [folders]);
+
+  useEffect(() => {
+    if (currentUser) firstFetch();
+  }, []);
 
   const myDialogsProps = {
     dialogOpen,
