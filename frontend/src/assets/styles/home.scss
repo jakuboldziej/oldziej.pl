@@ -879,7 +879,7 @@ html {
           padding: 15px;
         }
 
-        .card {
+        .card-grid {
           width: 192px;
           height: 192px;
 
@@ -938,6 +938,11 @@ html {
           &:hover .dropdown-trigger {
             visibility: visible;
           }
+        }
+
+        .card-list {
+          width: 100%;
+          height: 50px;
         }
       }
     }

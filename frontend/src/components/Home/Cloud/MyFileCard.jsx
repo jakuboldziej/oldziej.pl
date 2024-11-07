@@ -8,7 +8,7 @@ import { useContext } from "react";
 import { FtpContext } from "@/context/Home/FtpContext";
 
 function MyFileCard(props) {
-  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered } = props;
+  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered, filesViewType } = props;
   const { files, setFiles } = useContext(FtpContext);
 
   const handleDownloadFile = (filename) => {
@@ -39,12 +39,16 @@ function MyFileCard(props) {
   }
 
   return (
-    <Card onDoubleClick={() => renderFile(file.filename)} className="card select-none relative flex justify-center items-center" title={file.filename}>
-      <CardContent>
-        {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText width={100} height={100} /> : (
-          handleFileTypes([file]).fileVideos.length > 0 ? <Video width={100} height={100} /> : (
-            handleFileTypes([file]).fileAudios.length > 0 ? <Mic width={100} height={100} /> : (
-              handleFileTypes([file]).fileImages.length > 0 ? <img className="card-background" src={`${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
+    <Card
+      onDoubleClick={() => renderFile(file.filename)}
+      className={`${filesViewType === "list" ? "card-list justify-start" : "card-grid justify-center"} select-none relative flex items-center cursor-pointer`}
+      title={file.filename}
+    >
+      <CardContent className={`flex ${filesViewType === "list" ? "flex-row p-0 items-center" : "flex-col"}`}>
+        {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
+          handleFileTypes([file]).fileVideos.length > 0 ? <Video className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
+            handleFileTypes([file]).fileAudios.length > 0 ? <Mic className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
+              handleFileTypes([file]).fileImages.length > 0 ? <img className={`card-background ${filesViewType === "list" && "h-12"}`} src={`${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
             )
           )
         )}
@@ -52,7 +56,7 @@ function MyFileCard(props) {
           {file.filename}
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger className="dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400">
+          <DropdownMenuTrigger className={`dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400 ${filesViewType === "list" && "hidden"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

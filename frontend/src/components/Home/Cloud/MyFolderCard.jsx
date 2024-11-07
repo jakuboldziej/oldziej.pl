@@ -8,7 +8,7 @@ import ShowNewToast from "../MyComponents/ShowNewToast";
 import { putFolder } from "@/lib/fetch";
 
 function MyFolderCard(props) {
-  const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders } = props;
+  const { folder, dataShown, handleOpeningDialog, isHovered, setIsHovered, updateDataShown, updateFoldersStorage, setDataShown, handleActiveFolders, filesViewType } = props;
   const { setCurrentFolder, folders, setFolders } = useContext(FtpContext);
 
   const handleDownloadFolder = (foldername) => {
@@ -52,14 +52,18 @@ function MyFolderCard(props) {
   }
 
   return (
-    <Card onDoubleClick={() => openFolder(folder)} key={folder._id} className="card select-none relative flex justify-center items-center" title={folder.filename}>
-      <CardContent>
-        <Folder width={100} height={100} />
+    <Card
+      onDoubleClick={() => openFolder(folder)}
+      className={`${filesViewType === "list" ? "card-list justify-start" : "card-grid justify-center"} select-none relative flex items-center cursor-pointer`}
+      title={folder.filename}
+    >
+      <CardContent className={`flex ${filesViewType === "list" ? "flex-row p-0 items-center" : "flex-col"}`}>
+        <Folder className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} />
         <div className="nameplate truncate ...">
           {folder.name}
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger className="dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400">
+          <DropdownMenuTrigger className={`dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400 ${filesViewType === "list" && "hidden"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

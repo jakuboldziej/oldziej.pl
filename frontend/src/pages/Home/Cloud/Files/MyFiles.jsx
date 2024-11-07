@@ -23,6 +23,7 @@ function MyFiles() {
 
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState(null);
+  const [filesViewType, setFilesViewType] = useState("grid");
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const [dialogOpen, setDialogOpen] = useState({
@@ -313,7 +314,8 @@ function MyFiles() {
     setIsHovered,
     dataShown,
     setDataShown,
-    handleActiveFolders
+    handleActiveFolders,
+    filesViewType
   }
 
   return (
@@ -335,15 +337,27 @@ function MyFiles() {
               </Breadcrumb>
             </div>
             <div className="flex gap-2">
-              <Button size="icon" className="rounded-full opacity-80"><List /></Button>
-              <Button size="icon" className="rounded-full"><LayoutGrid /></Button>
+              <Button
+                size="icon"
+                className={`rounded-full ${filesViewType === "list" && "opacity-80"}`}
+                onClick={() => setFilesViewType("list")}
+              >
+                <List />
+              </Button>
+              <Button
+                size="icon"
+                className={`rounded-full ${filesViewType === "grid" && "opacity-80"}`}
+                onClick={() => setFilesViewType("grid")}
+              >
+                <LayoutGrid />
+              </Button>
             </div>
           </div>
 
           <ContextMenu>
             <ContextMenuTrigger asChild>
               <div className="files-wrapper">
-                <div className="files">
+                <div className={`files flex-row flex-wrap`}>
                   {dataShown !== null ? (
                     dataShown.length > 0 ? (
                       dataShown.map((data) => (
