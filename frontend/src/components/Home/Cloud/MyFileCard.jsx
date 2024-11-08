@@ -48,10 +48,10 @@ function MyFileCard(props) {
     >
       <CardContent className={`flex ${filesViewType === "list" ? "flex-row p-0 items-center justify-between w-full" : "flex-col"}`}>
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-12 h-12">
-            {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText className={`ml-1 ${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
-              handleFileTypes([file]).fileVideos.length > 0 ? <Video className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
-                handleFileTypes([file]).fileAudios.length > 0 ? <Mic className={`${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} /> : (
+          <div className={`flex items-center justify-center ${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}2`}>
+            {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText className="ml-1 w-full h-full" /> : (
+              handleFileTypes([file]).fileVideos.length > 0 ? <Video className="ml-1 w-full h-full" /> : (
+                handleFileTypes([file]).fileAudios.length > 0 ? <Mic className="ml-1 w-full h-full" /> : (
                   handleFileTypes([file]).fileImages.length > 0 ? <img className={`card-background ${filesViewType === "list" && "h-12"}`} src={`${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
                 )
               )
@@ -61,10 +61,9 @@ function MyFileCard(props) {
           <span className="nameplate truncate ...">
             <span className='filename hover:cursor-pointer hover:underline' onClick={() => renderFile(file.filename)} title={file.filename}>{file.filename}</span>
           </span>
-
         </div>
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-4">
+          <div className={`hidden ${filesViewType === "list" ? "sm:flex" : "hidden"} items-center gap-4`}>
             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
             <span>{formatDataSize(file.length)}</span>
             <CopyTextButton

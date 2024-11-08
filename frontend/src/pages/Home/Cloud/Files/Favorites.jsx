@@ -1,8 +1,8 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
+import MyFileCard from "@/components/Home/Cloud/MyFileCard";
 import Loading from "@/components/Home/Loading";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import { FtpContext } from "@/context/Home/FtpContext";
-import { Loader2 } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 
 function FavoriteFiles() {
@@ -12,15 +12,15 @@ function FavoriteFiles() {
     files: 1,
     folders: 1,
   });
+  const [fileStatus, setFileStatus] = useState({
+    uploading: false,
+    downloading: false,
+    uploaded: false,
+    downloaded: false
+  });
 
-  const [favoriteFiles, setFavoriteFiles] = useState(() => {
-    const favFiles = files.filter((f) => f.favorite === true);
-    return favFiles.length > 0 ? favFiles : null;
-  });
-  const [favoriteFolders, setFavoriteFolders] = useState(() => {
-    const favFolders = folders.filter((f) => f.favorite === true);
-    return favFolders.length > 0 ? favFolders : null;
-  });
+  const [favoriteFiles, setFavoriteFiles] = useState([]);
+  const [favoriteFolders, setFavoriteFolders] = useState([]);
 
   const handleScroll = (event, type) => {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
@@ -34,6 +34,14 @@ function FavoriteFiles() {
   };
 
   useEffect(() => {
+    if (files) setFavoriteFiles(files.filter((f) => f.favorite === true));
+  }, [files]);
+
+  useEffect(() => {
+    if (folders) setFavoriteFolders(folders.filter((f) => f.favorite === true));
+  }, [folders]);
+
+  useEffect(() => {
     // if (files) handleRecentFilesShown("scroll")
   }, [currentPage]);
 
@@ -45,7 +53,7 @@ function FavoriteFiles() {
           <span className='text-3xl'>Files</span>
           <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
             <div className='files flex flex-col gap-4'>
-              {favoriteFiles !== null ? (
+              {files !== null ? (
                 favoriteFiles.length > 0 ? (
                   favoriteFiles.map((file) => (
                     // <MyFileCard key={file._id} {...cardProps} file={file} />
@@ -56,7 +64,7 @@ function FavoriteFiles() {
                 )
               ) : (
                 <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
-                  No Favorite Folders...
+                  No Favorite Files...
                 </div>
               )}
             </div>
