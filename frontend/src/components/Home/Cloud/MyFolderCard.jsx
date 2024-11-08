@@ -57,15 +57,17 @@ function MyFolderCard(props) {
       className={`${filesViewType === "list" ? "card-list justify-start" : "card-grid justify-center"} select-none relative flex items-center cursor-pointer`}
       title={folder.filename}
     >
-      <CardContent className={`flex ${filesViewType === "list" ? "flex-row p-0 items-center" : "flex-col"}`}>
-        <div className="flex items-center justify-center w-12 h-12">
-          <Folder className={`ml-1 ${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} />
+      <CardContent className={`flex ${filesViewType === "list" ? "flex-row p-0 items-center justify-between w-full" : "flex-col"}`}>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-12 h-12">
+            <Folder className={`ml-1 ${filesViewType === "list" ? "w-10 h-10" : "w-24 h-24"}`} />
+          </div>
+          <span className=" nameplate truncate ...">
+            <span className='filename hover:cursor-pointer hover:underline' onClick={() => openFolder(folder)} title={folder.name}>{folder.name}</span>
+          </span>
         </div>
-        <span className="pl-2 nameplate truncate ...">
-          <span className='filename hover:cursor-pointer hover:underline' onClick={() => openFolder(folder)} title={folder.name}>{folder.name}</span>
-        </span>
         <DropdownMenu>
-          <DropdownMenuTrigger className={`dropdown-trigger rounded-full bg-slate-700 hover:text-slate-400 ${filesViewType === "list" && "hidden"}`}>
+          <DropdownMenuTrigger className={`dropdown-trigger rounded-full hover:text-slate-400 ${filesViewType === "list" ? "mr-4" : "bg-slate-700"}`}>
             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis hover:cursor-pointer"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
