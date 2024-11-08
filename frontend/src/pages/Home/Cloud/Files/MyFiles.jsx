@@ -16,14 +16,17 @@ import { AuthContext } from "@/context/Home/AuthContext";
 import Loading from "@/components/Home/Loading";
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, fetchFolders, fetchFiles } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState(null);
-  const [filesViewType, setFilesViewType] = useState("grid");
+  const [filesViewType, setFilesViewType] = useState(() => {
+    const savedView = JSON.parse(localStorage.getItem("cloudSettings")).activeFilesView;
+    return savedView ? savedView : "list";
+  });
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const [dialogOpen, setDialogOpen] = useState({
@@ -159,7 +162,7 @@ function MyFiles() {
       }
       const updatedActiveFolders = [...activeFolders, parseFolder];
       setActiveFolders(updatedActiveFolders);
-      localStorage.setItem('activeFolders', JSON.stringify(updatedActiveFolders))
+      localStorage.setItem('cloudSettings', JSON.stringify({ 'activeFolders': updatedActiveFolders }));
     } else if (action === "backward" && currentFolder._id !== folder._id) {
       const indexToStop = activeFolders.indexOf(folder);
       const updatedActiveFolders = activeFolders.slice(0, indexToStop + 1);
@@ -167,8 +170,20 @@ function MyFiles() {
       const newCurrentFolder = folders.find((f) => f._id === folder._id);
       setCurrentFolder(newCurrentFolder);
       setActiveFolders(updatedActiveFolders);
-      localStorage.setItem('activeFolders', JSON.stringify(updatedActiveFolders))
+      localStorage.setItem('cloudSettings', JSON.stringify({ 'activeFolders': updatedActiveFolders }));
     }
+  }
+
+  const handleActiveFilesView = (type) => {
+    setFilesViewType(type);
+
+    let cloudSettings = JSON.parse(localStorage.getItem("cloudSettings"));
+    cloudSettings = {
+      ...cloudSettings,
+      "activeFilesView": type
+    }
+
+    localStorage.setItem("cloudSettings", JSON.stringify(cloudSettings));
   }
 
   const updateDataShown = async (updatedData) => {
@@ -286,8 +301,10 @@ function MyFiles() {
   }, [fileStatus]);
 
   useEffect(() => {
+    console.log(activeFolders)
     if (activeFolders.length > 0) {
       const getCurrentFolder = folders.find((f) => f._id === activeFolders[activeFolders.length - 1]._id);
+
       setCurrentFolder(getCurrentFolder);
       getDataShown(getCurrentFolder);
     }
@@ -340,14 +357,14 @@ function MyFiles() {
               <Button
                 size="icon"
                 className={`rounded-full ${filesViewType === "list" && "opacity-80"}`}
-                onClick={() => setFilesViewType("list")}
+                onClick={() => handleActiveFilesView("list")}
               >
                 <List />
               </Button>
               <Button
                 size="icon"
                 className={`rounded-full ${filesViewType === "grid" && "opacity-80"}`}
-                onClick={() => setFilesViewType("grid")}
+                onClick={() => handleActiveFilesView("grid")}
               >
                 <LayoutGrid />
               </Button>

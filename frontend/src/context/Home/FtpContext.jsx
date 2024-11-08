@@ -42,11 +42,9 @@ export const FtpContextProvider = ({ children }) => {
   }
 
   const handleActiveFolders = async () => {
-    const storedActiveFolders = localStorage.getItem('activeFolders');
-
+    const storedActiveFolders = JSON.parse(localStorage.getItem("cloudSettings")).activeFolders;
     if (storedActiveFolders) {
-      const parsedActiveFolders = JSON.parse(storedActiveFolders);
-      setActiveFolders(parsedActiveFolders);
+      setActiveFolders(storedActiveFolders);
 
     } else {
       const ftpUser = await getFtpUser(currentUser.displayName);
@@ -57,12 +55,18 @@ export const FtpContextProvider = ({ children }) => {
         name: mainUserFolder.name
       }
       setActiveFolders([parseFolder]);
-      localStorage.setItem('activeFolders', JSON.stringify([parseFolder]));
+      localStorage.setItem('cloudSettings', JSON.stringify({ 'activeFolders': [parseFolder] }));
     }
   }
 
+  const firstFetch = async () => {
+    await fetchFolders();
+    await fetchFiles();
+    handleActiveFolders();
+  }
+
   useEffect(() => {
-    if (currentUser) handleActiveFolders();
+    if (currentUser) firstFetch();
   }, [currentUser]);
 
   const props = {
