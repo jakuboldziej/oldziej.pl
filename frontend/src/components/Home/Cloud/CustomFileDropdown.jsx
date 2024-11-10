@@ -1,9 +1,56 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, Search, SquareArrowDown, Trash2, Files, FileSymlink, Link } from 'lucide-react';
-import { renderFile } from "@/components/Home/Cloud/utils";
+import { downloadFile, renderFile } from "@/components/Home/Cloud/utils";
+import { useContext } from 'react';
+import { FtpContext } from '@/context/Home/FtpContext';
+import { mongodbApiUrl, putFile } from '@/lib/fetch';
+import ShowNewToast from '../MyComponents/ShowNewToast';
 
-function CustomFileDropdown({ props }) {
-  const { filesViewType } = props;
+function CustomFileDropdown(props) {
+  const { file, dataShown, setFileStatus, handleOpeningDialog, updateDataShown, updateFilesStorage, isHovered, setIsHovered, filesViewType = "gird" } = props;
+  const { files, setFiles } = useContext(FtpContext);
+
+  const handleDownloadFile = (filename) => {
+    setFileStatus((prev) => ({ ...prev, downloading: filename }));
+    downloadFile(filename);
+    setFileStatus((prev) => ({ ...prev, downloading: false }));
+  }
+
+  const handleDeleteFile = async (file) => {
+    updateDataShown(dataShown.filter((f) => f._id !== file._id));
+    updateFilesStorage(file, "del");
+
+    ShowNewToast("File Update", `${file.filename} has been deleted.`);
+  }
+
+  const handleFavoriteFile = async (file) => {
+    setIsHovered((prev) => ({ ...prev, heart: false }))
+    file.favorite = !file.favorite;
+
+    if (file.favorite) ShowNewToast(`File ${file.filename}`, "Added to favorites.");
+    else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
+
+    const updatedFile = await putFile({ file });
+    const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
+    const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
+    updateDataShown(updatedData);
+    setFiles(updatedFiles);
+  }
+
+  const handleShareLink = () => {
+    navigator.clipboard.writeText(`${mongodbApiUrl}/ftp/files/render/${file.filename}`)
+      .then(() => {
+        ShowNewToast("Link Copied", "Link copied to clipboard");
+      })
+      .catch((error) => {
+        console.log("Failed to copy text:", error);
+      });
+  }
+
+  const handleShareFile = () => {
+
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={`dropdown-trigger rounded-full hover:text-slate-400 ${filesViewType === "list" ? "mr-4" : "bg-slate-700"}`}>

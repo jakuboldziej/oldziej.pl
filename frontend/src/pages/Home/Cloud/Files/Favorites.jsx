@@ -34,7 +34,9 @@ function FavoriteFiles() {
   };
 
   useEffect(() => {
-    if (files) setFavoriteFiles(files.filter((f) => f.favorite === true));
+    if (files && files.filter((f) => f.favorite === true).length !== 0) {
+      setFavoriteFiles(files.filter((f) => f.favorite === true));
+    }
   }, [files]);
 
   useEffect(() => {

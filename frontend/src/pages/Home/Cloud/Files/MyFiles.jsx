@@ -1,7 +1,7 @@
 import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
-import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List, Loader2 } from 'lucide-react';
+import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List } from 'lucide-react';
 import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
@@ -45,7 +45,7 @@ function MyFiles() {
     downloaded: false
   });
   const [creatingFolder, setCreatingFolder] = useState('');
-  const [changingDataName, setChangingFileName] = useState('');
+  const [changingDataName, setChangingDataName] = useState('');
 
   const fileRef = useRef();
 
@@ -78,7 +78,7 @@ function MyFiles() {
   const handleOpeningDialog = (data, action) => {
     if (action === "changeDataName") {
       setDialogOpen((prev) => ({ ...prev, changeDataName: true, data: data }));
-      setChangingFileName(data.filename);
+      setChangingDataName(data.type === "file" ? data.filename : data.name);
     } else if (action === "showInfo") {
       setDialogOpen((prev) => ({ ...prev, showInfo: true, data: data }));
     } else if (action === "createFolder") {
@@ -102,7 +102,7 @@ function MyFiles() {
       setFiles(updatedFiles);
       localStorage.setItem('files', JSON.stringify(updatedFiles));
       setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
-    } else {
+    } else if (type === "folder") {
       let folder = dialogOpen.data;
       if (changingDataName) folder.name = changingDataName;
 
@@ -299,7 +299,6 @@ function MyFiles() {
   }, [fileStatus]);
 
   useEffect(() => {
-    console.log(activeFolders)
     if (activeFolders.length > 0) {
       const getCurrentFolder = folders.find((f) => f._id === activeFolders[activeFolders.length - 1]._id);
 
@@ -314,7 +313,7 @@ function MyFiles() {
     handleUpdateData,
     handleCreateNewFolder,
     changingDataName,
-    setChangingFileName,
+    setChangingDataName,
     creatingFolder,
     setCreatingFolder
   }
@@ -323,14 +322,13 @@ function MyFiles() {
     setFileStatus,
     handleOpeningDialog,
     updateDataShown,
-    updateFoldersStorage,
     updateFilesStorage,
     isHovered,
     setIsHovered,
     dataShown,
     setDataShown,
-    handleActiveFolders,
-    filesViewType
+    filesViewType,
+    handleActiveFolders
   }
 
   return (

@@ -8,17 +8,17 @@ import { Input } from '@/components/ui/shadcn/input'
 import { FtpContext } from '@/context/Home/FtpContext'
 
 function MyDialogs(props) {
-  const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingFileName, creatingFolder, setCreatingFolder } = props;
+  const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingDataName, creatingFolder, setCreatingFolder } = props;
   const { activeFolders } = useContext(FtpContext);
 
-  const handleDataPath = (file) => {
-    if (file && dialogOpen.showInfo) {
+  const handleDataPath = (data) => {
+    if (data && dialogOpen.showInfo) {
       let path = "";
       activeFolders.map((folder) => {
         path = path + folder.name + " > "
       })
 
-      return path + file.filename;
+      return path + data.filename;
     }
   }
 
@@ -35,13 +35,13 @@ function MyDialogs(props) {
         }>
           <span className='flex flex-col gap-2'>
             {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
-            <Input placeholder={dialogOpen.data?.filename} value={changingDataName} onChange={(e) => setChangingFileName(e.target.value)} />
+            <Input placeholder={dialogOpen.data?.filename || dialogOpen.data?.name} value={changingDataName} onChange={(e) => setChangingDataName(e.target.value)} />
           </span>
         </MyDialog>
       </form>
 
       {/* Showing Data Info */}
-      <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.data?.filename}`}>
+      <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.data?.type === "file" ? dialogOpen.data?.filename : dialogOpen.data?.name}`}>
         <Card>
           <CardHeader>
             Path:
