@@ -159,7 +159,7 @@ router.delete('/files/:id', async (req, res) => {
 
     if (file) {
       bucket.delete(file._id);
-      await FtpFile.deleteOne({ fileId: req.params.id })
+      await FtpFile.findOneAndDelete({ fileId: req.params.id })
       res.json({ ok: true })
     }
     else {
@@ -289,7 +289,29 @@ router.put('/folders/:id', async (req, res) => {
 // delete folder
 router.delete('/folders/:id', async (req, res) => {
   try {
-    await FtpFolder.deleteOne({ _id: req.params.id });
+    const fetchedFolder = await FtpFolder.findOneAndDelete({ _id: req.params.id });
+
+    fetchedFolder.files.map(async (fileId) => {
+      let fetchedFile = await FtpFile.findOne({ fileId: fileId });
+
+      fetchedFile.folders = fetchedFile.folders.filter((folderId) => folderId !== req.params.id);
+
+      if (fetchedFile.folders.length === 0) {
+        const objectId = new Types.ObjectId(fetchedFile.fileId);
+        const file = (await bucket.find({ _id: objectId }).toArray())[0];
+
+        if (file) {
+          bucket.delete(file._id);
+          await FtpFile.findOneAndDelete({ fileId: fetchedFile.fileId })
+        }
+      }
+      else {
+        await FtpFile.findOneAndUpdate({ fileId: fileId }, {
+          folders: fetchedFile.folders
+        });
+      }
+    })
+
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -331,7 +353,7 @@ router.get('/users/:displayName', async (req, res) => {
 
 router.delete('/users/:displayName', async (req, res) => {
   try {
-    await FtpUser.deleteOne({ displayName: req.params.displayName });
+    await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ message: err.message });

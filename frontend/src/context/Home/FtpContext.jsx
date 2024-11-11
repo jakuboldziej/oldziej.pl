@@ -8,12 +8,15 @@ export const FtpContextProvider = ({ children }) => {
   const { currentUser } = useContext(AuthContext);
 
   const [currentFolder, setCurrentFolder] = useState();
-
-  const [files, setFiles] = useState(null);
-
-  const [folders, setFolders] = useState();
-
+  const [files, setFiles] = useState([]);
+  const [folders, setFolders] = useState([]);
   const [activeFolders, setActiveFolders] = useState([]);
+
+  const [loadingData, setLoadingData] = useState({
+    files: true,
+    folders: true
+  });
+  const [refreshData, setRefreshData] = useState(false);
 
   const fetchFiles = async () => {
     const response = await getFiles(currentUser.displayName);
@@ -29,23 +32,20 @@ export const FtpContextProvider = ({ children }) => {
       setFiles(sortedFiles);
       return sortedFiles;
     } else {
+      setFiles(filesR);
     }
   }
 
   const fetchFolders = async () => {
     const foldersR = await getFolders(currentUser.displayName);
 
-    if (foldersR) {
-      setFolders(foldersR);
-    } else {
-    }
+    setFolders(foldersR);
   }
 
   const handleActiveFolders = async () => {
-    const storedActiveFolders = JSON.parse(localStorage.getItem("cloudSettings")).activeFolders;
+    const storedActiveFolders = JSON.parse(localStorage.getItem("cloudSettings"))?.activeFolders;
     if (storedActiveFolders) {
       setActiveFolders(storedActiveFolders);
-
     } else {
       const ftpUser = await getFtpUser(currentUser.displayName);
       const mainUserFolder = await getFolder(ftpUser.main_folder);
@@ -69,6 +69,27 @@ export const FtpContextProvider = ({ children }) => {
     if (currentUser) firstFetch();
   }, [currentUser]);
 
+  useEffect(() => {
+    if (refreshData) {
+      firstFetch();
+      setRefreshData(false);
+    }
+  }, [refreshData]);
+
+  useEffect(() => {
+    if (files) {
+      if (files.length === 0) setLoadingData((prev) => ({ ...prev, files: true }));
+      else setLoadingData((prev) => ({ ...prev, files: false }));
+    } else setLoadingData((prev) => ({ ...prev, files: false }));
+  }, [files]);
+
+  useEffect(() => {
+    if (folders) {
+      if (!folders) setLoadingData((prev) => ({ ...prev, folders: true }));
+      else setLoadingData((prev) => ({ ...prev, folders: false }));
+    } else setLoadingData((prev) => ({ ...prev, folders: false }));
+  }, [folders]);
+
   const props = {
     files,
     setFiles,
@@ -80,6 +101,8 @@ export const FtpContextProvider = ({ children }) => {
     setActiveFolders,
     currentFolder,
     setCurrentFolder,
+    loadingData,
+    setRefreshData
   }
 
   return (

@@ -16,7 +16,7 @@ import { AuthContext } from "@/context/Home/AuthContext";
 import Loading from "@/components/Home/Loading";
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, fetchFolders, fetchFiles } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -24,7 +24,7 @@ function MyFiles() {
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState(null);
   const [filesViewType, setFilesViewType] = useState(() => {
-    const savedView = JSON.parse(localStorage.getItem("cloudSettings")).activeFilesView;
+    const savedView = JSON.parse(localStorage.getItem("cloudSettings"))?.activeFilesView;
     return savedView ? savedView : "list";
   });
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -100,7 +100,6 @@ function MyFiles() {
       updateDataShown(updatedData);
       const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
       setFiles(updatedFiles);
-      localStorage.setItem('files', JSON.stringify(updatedFiles));
       setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
     } else if (type === "folder") {
       let folder = dialogOpen.data;
@@ -115,7 +114,6 @@ function MyFiles() {
       updateDataShown(updatedData);
       const updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
       setFolders(updatedFolders);
-      localStorage.setItem('folders', JSON.stringify(updatedFolders));
       setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
     }
   }
@@ -213,11 +211,9 @@ function MyFiles() {
     }
 
     setFolders(updatedFolders)
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
     updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
     setFiles(updatedFiles)
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   const updateFoldersStorage = async (folder, action) => {
@@ -235,7 +231,6 @@ function MyFiles() {
       } else {
         const { updatedCurrentFolder } = await deleteFolderFromFolder(currentFolder, folder);
 
-        await deleteFolder(folder._id);
         updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
         updatedFolders = updatedFolders.map((f) => f._id === updatedCurrentFolder._id ? updatedCurrentFolder : f);
         updatedFolders = updatedFolders.filter((f) => f._id !== folder._id);
@@ -246,7 +241,6 @@ function MyFiles() {
     }
 
     setFolders(updatedFolders);
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
   }
 
   const getDataShown = async (folder) => {

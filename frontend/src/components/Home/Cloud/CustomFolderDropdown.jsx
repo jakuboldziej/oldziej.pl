@@ -4,11 +4,11 @@ import { useContext } from "react";
 import { FtpContext } from "@/context/Home/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { putFolder } from "@/lib/fetch";
-import { deleteAllDataFromFolderRecursively } from './utils';
+import { deleteFolderFromFolder } from './utils';
 
 function CustomFolderDropdown(props) {
   const { folder, dataShown, isHovered, setIsHovered, updateDataShown, filesViewType = "grid", openFolder, handleOpeningDialog } = props;
-  const { folders, setFolders } = useContext(FtpContext);
+  const { folders, setFolders, currentFolder, setRefreshData } = useContext(FtpContext);
 
   const handleFavoriteFolder = async (folder) => {
     setIsHovered((prev) => ({ ...prev, heart: false }))
@@ -25,11 +25,13 @@ function CustomFolderDropdown(props) {
   }
 
   const handleDeleteFolder = async (folder) => {
-    await deleteAllDataFromFolderRecursively(folder);
+    await deleteFolderFromFolder(currentFolder, folder);
 
-    // updateDataShown(dataShown.filter((f) => f._id !== folder._id));
+    updateDataShown(dataShown.filter((f) => f._id !== folder._id));
+    setFolders((prevFolders) => prevFolders.filter((f) => f._id !== folder._id));
 
-    ShowNewToast("Folder Update", `${folder.filename} has been deleted.`);
+    ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
+    setRefreshData(true);
   }
 
   return (

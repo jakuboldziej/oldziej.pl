@@ -24,7 +24,7 @@ import CustomFileDropdown from '@/components/Home/Cloud/CustomFileDropdown'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
-  const { folders, setFolders, files, setFiles } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, loadingData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -138,7 +138,6 @@ function CloudPage() {
       updatedFolders = [...updatedFolders, updatedFolder];
 
       setFolders(updatedFolders);
-      localStorage.setItem('folders', JSON.stringify(updatedFolders));
 
       setDialogOpen((prev) => ({ ...prev, createFolder: false }));
       setCreatingFolder('');
@@ -178,7 +177,6 @@ function CloudPage() {
 
     updateDataShown(updatedFiles);
     setFiles(updatedFiles);
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
     setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
   }
 
@@ -214,11 +212,8 @@ function CloudPage() {
     }
 
     setFolders(updatedFolders)
-    localStorage.setItem('folders', JSON.stringify(updatedFolders));
-
     updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
     setFiles(updatedFiles)
-    localStorage.setItem('files', JSON.stringify(updatedFiles));
   }
 
   useEffect(() => {
@@ -371,7 +366,7 @@ function CloudPage() {
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea className='scroll-area' onScroll={handleScroll}>
                 <div className='files flex flex-col gap-4'>
-                  {files ? (
+                  {loadingData.files === false ? (
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>
@@ -393,12 +388,12 @@ function CloudPage() {
                           </div>
                         </div>))
                     ) : (
-                      <Loading />
+                      <div className='flex flex-col items-center gap-2 justify-center w-100 pt-3'>
+                        No Files...
+                      </div>
                     )
                   ) : (
-                    <div className='flex flex-col items-center gap-2 justify-center w-100 pt-3'>
-                      No Files...
-                    </div>
+                    <Loading />
                   )}
                 </div>
               </ScrollArea>

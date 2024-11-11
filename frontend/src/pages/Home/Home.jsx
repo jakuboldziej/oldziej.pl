@@ -101,7 +101,7 @@ function Home() {
                 </div>
                 <div className="text-center">
                   <span>Users created</span>
-                  <span className="font-bold">{cloudStatistics.storageUsed}</span>
+                  <span className="font-bold">{cloudStatistics.storageUsed || "0 Bytes"}</span>
                   <span>of files</span>
                 </div>
               </>

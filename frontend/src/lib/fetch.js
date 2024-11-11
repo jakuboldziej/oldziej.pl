@@ -228,13 +228,6 @@ export const deleteFile = async (id) => {
   return await response.json();
 }
 
-export const deleteFolder = async (id) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
-    method: "DELETE"
-  })
-  return await response.json();
-}
-
 export const putFile = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${data.file._id}`, {
     method: "PUT",
@@ -292,6 +285,13 @@ export const getFolder = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`);
   const data = await response.json();
   return data.folder;
+}
+
+export const deleteFolder = async (id) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
+    method: "DELETE"
+  })
+  return await response.json();
 }
 
 export const putFolder = async (data) => {

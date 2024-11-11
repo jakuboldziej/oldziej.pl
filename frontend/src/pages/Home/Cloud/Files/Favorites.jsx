@@ -6,17 +6,11 @@ import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useState } from "react";
 
 function FavoriteFiles() {
-  const { folders, files } = useContext(FtpContext);
+  const { folders, files, loadingData } = useContext(FtpContext);
 
   const [currentPage, setCurrentPage] = useState({
     files: 1,
     folders: 1,
-  });
-  const [fileStatus, setFileStatus] = useState({
-    uploading: false,
-    downloading: false,
-    uploaded: false,
-    downloaded: false
   });
 
   const [favoriteFiles, setFavoriteFiles] = useState([]);
@@ -34,9 +28,10 @@ function FavoriteFiles() {
   };
 
   useEffect(() => {
-    if (files && files.filter((f) => f.favorite === true).length !== 0) {
-      setFavoriteFiles(files.filter((f) => f.favorite === true));
-    }
+    if (files) {
+      if (files.filter((f) => f.favorite === true).length !== 0) setFavoriteFiles(files.filter((f) => f.favorite === true));
+      else setFavoriteFiles([]);
+    } else setFavoriteFiles([]);
   }, [files]);
 
   useEffect(() => {
@@ -55,19 +50,19 @@ function FavoriteFiles() {
           <span className='text-3xl'>Files</span>
           <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
             <div className='files flex flex-col gap-4'>
-              {files !== null ? (
+              {loadingData.files === false ? (
                 favoriteFiles.length > 0 ? (
                   favoriteFiles.map((file) => (
                     // <MyFileCard key={file._id} {...cardProps} file={file} />
                     <span key={file._id}>{file.filename}</span>
                   ))
                 ) : (
-                  <Loading />
+                  <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                    No Favorite Files...
+                  </div>
                 )
               ) : (
-                <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
-                  No Favorite Files...
-                </div>
+                <Loading />
               )}
             </div>
           </ScrollArea>
@@ -76,19 +71,19 @@ function FavoriteFiles() {
           <span className='text-3xl'>Folders</span>
           <ScrollArea className='scroll-area' onScroll={(e) => handleScroll(e, "folders")}>
             <div className='folders flex flex-col gap-4'>
-              {favoriteFolders !== null ? (
+              {loadingData.folders === false ? (
                 favoriteFolders.length > 0 ? (
                   favoriteFolders.map((folder) => (
                     // <MyFolderCard key={folder._id} {...cardProps} folder={folder} />
                     <span key={folder._id}>{folder.name}</span>
                   ))
                 ) : (
-                  <Loading />
+                  <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                    No Favorite Folders...
+                  </div>
                 )
               ) : (
-                <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
-                  No Favorite Folders...
-                </div>
+                <Loading />
               )}
             </div>
           </ScrollArea>

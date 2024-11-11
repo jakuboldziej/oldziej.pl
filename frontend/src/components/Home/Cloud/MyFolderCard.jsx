@@ -1,13 +1,15 @@
 import { Card, CardContent } from "@/components/ui/shadcn/card";
 import { Folder } from 'lucide-react';
 import { handleDataShown } from "./utils";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { FtpContext } from "@/context/Home/FtpContext";
 import CustomFolderDropdown from "./CustomFolderDropdown";
 
 function MyFolderCard(props) {
   const { folder, setDataShown, handleActiveFolders, filesViewType } = props;
   const { setCurrentFolder } = useContext(FtpContext);
+
+  const clickTimeoutRef = useRef(null);
 
   const openFolder = async (folder) => {
     handleActiveFolders(folder, "forward");
@@ -17,11 +19,22 @@ function MyFolderCard(props) {
     setCurrentFolder(folder);
   }
 
+  const handleSingleClick = () => {
+    clickTimeoutRef.current = setTimeout(() => {
+      openFolder(folder);
+    }, 0);
+  };
+
+  const handleDoubleClick = () => {
+    clearTimeout(clickTimeoutRef.current);
+    openFolder(folder);
+  };
+
   const dropdownProps = { ...props, openFolder };
 
   return (
     <Card
-      onDoubleClick={() => openFolder(folder)}
+      onDoubleClick={handleDoubleClick}
       className={`${filesViewType === "list" ? "card-list justify-start" : "card-grid justify-center"} select-none relative flex items-center cursor-pointer`}
       title={folder.filename}
     >
@@ -31,7 +44,7 @@ function MyFolderCard(props) {
             <Folder className="ml-1 w-full h-full" />
           </div>
           <span className=" nameplate truncate ...">
-            <span className={`foldername ${filesViewType === "list" && "hover:cursor-pointer hover:underline"}`} onClick={() => openFolder(folder)} title={folder.name}>{folder.name}</span>
+            <span className={`foldername z-50 ${filesViewType === "list" && "hover:cursor-pointer hover:underline"}`} onClick={handleSingleClick} title={folder.name}>{folder.name}</span>
           </span>
         </div>
 

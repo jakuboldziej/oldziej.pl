@@ -138,12 +138,6 @@ export const deleteFolderFromFolder = async (folder1, folder2) => {
   return { updatedCurrentFolder: folder1, updatedFolder: folder2 };
 }
 
-export const deleteAllDataFromFolderRecursively = async (folder) => {
-  const fetchedFolder = await getFolder(folder._id);
-  console.log(fetchedFolder);
-
-}
-
 export const handleDataShown = async (folder) => {
   const filePromises = folder.files.map(async (fileId) => {
     return await getFile(fileId);
