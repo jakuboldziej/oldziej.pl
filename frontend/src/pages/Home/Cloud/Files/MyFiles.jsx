@@ -2,7 +2,7 @@ import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List } from 'lucide-react';
-import { deleteFile, deleteFolder, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
+import { deleteFile, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
@@ -14,9 +14,10 @@ import MyFileCard from "@/components/Home/Cloud/MyFileCard";
 import MyFolderCard from "@/components/Home/Cloud/MyFolderCard";
 import { AuthContext } from "@/context/Home/AuthContext";
 import Loading from "@/components/Home/Loading";
+import { useDropzone } from 'react-dropzone';
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, setRefreshData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -49,31 +50,28 @@ function MyFiles() {
 
   const fileRef = useRef();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (file) => {
     setFileStatus((prev) => ({ ...prev, uploading: true }));
     setElapsedTime(0);
 
     try {
-      let file = event.target.files[0];
-      if (files) file = handleSameFilename(file, files);
-
+      file = handleSameFilename(file, files);
       const ftpUser = await getFtpUser(currentUser.displayName);
 
       const formData = new FormData();
-      formData.append('file', file)
-      formData.append('userDisplayName', ftpUser.displayName)
-      formData.append('lastModified', file.lastModified)
-      formData.append('folder', currentFolder._id);
+      formData.append('file', file);
+      formData.append('userDisplayName', ftpUser.displayName);
+      formData.append('lastModified', file.lastModified);
+      formData.append('folder', ftpUser.main_folder);
 
       const response = await uploadFile(formData);
       setRecentFile(response.file);
-    } catch (err) {
-      ShowNewToast("Error uploading file", err, "Warning")
+    } catch (error) {
+      ShowNewToast("Error uploading file", error, "warning");
     } finally {
-      event.target.value = "";
       setFileStatus((prev) => ({ ...prev, uploading: false, uploaded: true }));
     }
-  }
+  };
 
   const handleOpeningDialog = (data, action) => {
     if (action === "changeDataName") {
@@ -83,6 +81,8 @@ function MyFiles() {
       setDialogOpen((prev) => ({ ...prev, showInfo: true, data: data }));
     } else if (action === "createFolder") {
       setDialogOpen((prev) => ({ ...prev, createFolder: true }));
+    } else if (action === "deleteData") {
+      setDialogOpen((prev) => ({ ...prev, deleteData: true, data: data }));
     }
   }
 
@@ -116,6 +116,25 @@ function MyFiles() {
       setFolders(updatedFolders);
       setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
     }
+  }
+
+  const handleDeleteData = async (data) => {
+    if (data.type === "folder") {
+      await deleteFolderFromFolder(currentFolder, data);
+
+      updateDataShown(dataShown.filter((f) => f._id !== data._id));
+      setFolders((prevFolders) => prevFolders.filter((f) => f._id !== data._id));
+
+      ShowNewToast("Folder Update", `${data.name} has been deleted.`);
+      setRefreshData(true);
+    } else if (data.type === "file") {
+      updateDataShown(dataShown.filter((f) => f._id !== data._id));
+      updateFilesStorage(data, "del");
+
+      ShowNewToast("File Update", `${data.filename} has been deleted.`);
+    }
+
+    setDialogOpen((prev) => ({ ...prev, deleteData: false }));
   }
 
   const handleCreateNewFolder = async () => {
@@ -309,7 +328,8 @@ function MyFiles() {
     changingDataName,
     setChangingDataName,
     creatingFolder,
-    setCreatingFolder
+    setCreatingFolder,
+    handleDeleteData
   }
 
   const cardProps = {
@@ -324,6 +344,17 @@ function MyFiles() {
     filesViewType,
     handleActiveFolders
   }
+
+  const onDrop = (acceptedFiles) => {
+    if (acceptedFiles.length > 0) {
+      handleSubmit(acceptedFiles[0]);
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+  });
 
   return (
     <>
@@ -363,8 +394,15 @@ function MyFiles() {
 
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <div className="files-wrapper">
-                <div className={`files flex-row flex-wrap`}>
+              <div
+                {...getRootProps()}
+                className={`files-wrapper ${isDragActive && "border-dashed border-2 border-indigo-500"}`}
+              >
+                <span className={`drag-drop-info text-3xl absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-100 ${isDragActive ? "block" : "hidden"}`}>
+                  Drop files here...
+                </span>
+
+                <div className={`files flex-row flex-wrap ${isDragActive && "opacity-50"}`}>
                   {dataShown !== null ? (
                     dataShown.length > 0 ? (
                       dataShown.map((data) => (
@@ -378,7 +416,7 @@ function MyFiles() {
                       <Loading />
                     )
                   ) : (
-                    <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center'>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center">
                       No Files...
                       <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
                       Or Right click here
@@ -407,7 +445,7 @@ function MyFiles() {
         </div>
       </div>
 
-      <input onChangeCapture={(e) => handleSubmit(e)} ref={fileRef} id="inputfile" name="inputfile" type="file" className="w-[0.1px] h-[0.1px] opacity-0 absolute" />
+      <input {...getInputProps()} ref={fileRef} id="inputfile" name="inputfile" type="file" className="w-[0.1px] h-[0.1px] opacity-0 absolute" />
 
       <MyDialogs {...myDialogsProps} />
     </>

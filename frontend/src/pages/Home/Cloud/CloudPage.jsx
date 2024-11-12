@@ -1,5 +1,4 @@
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/shadcn/form'
-import { Input } from '@/components/ui/shadcn/input'
 import { Label } from '@/components/ui/shadcn/label'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -10,7 +9,7 @@ import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
 import { Progress } from '@/components/ui/shadcn/progress'
-import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, downloadFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder } from '@/components/Home/Cloud/utils'
+import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder, deleteFolderFromFolder } from '@/components/Home/Cloud/utils'
 import { FileText, FileUp, Images, Mic, Plus, Share2, Video, Folder } from 'lucide-react'
 import LeftNavBar from '@/components/Home/Cloud/LeftNavBar'
 import { FtpContext } from '@/context/Home/FtpContext'
@@ -21,10 +20,11 @@ import { AuthContext } from '@/context/Home/AuthContext'
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip'
 import Loading from '@/components/Home/Loading'
 import CustomFileDropdown from '@/components/Home/Cloud/CustomFileDropdown'
+import { useDropzone } from 'react-dropzone'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
-  const { folders, setFolders, files, setFiles, loadingData } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, loadingData, setRefreshData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -48,7 +48,8 @@ function CloudPage() {
     data: null,
     changeDataName: false,
     showInfo: false,
-    createFolder: false
+    createFolder: false,
+    deleteData: false
   });
   const [isHovered, setIsHovered] = useState({
     heart: false
@@ -62,8 +63,6 @@ function CloudPage() {
   const form = useForm({
     resolver: zodResolver(formSchema),
   });
-
-  const fileRef = form.register("file");
 
   const handleScroll = (event) => {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
@@ -85,28 +84,25 @@ function CloudPage() {
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (file) => {
     setFileStatus((prev) => ({ ...prev, uploading: true }));
     setElapsedTime(0);
 
     try {
-      let file = event.target.files[0];
       file = handleSameFilename(file, files);
-
       const ftpUser = await getFtpUser(currentUser.displayName);
 
       const formData = new FormData();
-      formData.append('file', file)
-      formData.append('userDisplayName', ftpUser.displayName)
-      formData.append('lastModified', file.lastModified)
+      formData.append('file', file);
+      formData.append('userDisplayName', ftpUser.displayName);
+      formData.append('lastModified', file.lastModified);
       formData.append('folder', ftpUser.main_folder);
 
       const response = await uploadFile(formData);
       setRecentFile(response.file);
     } catch (error) {
-      ShowNewToast("Error uploading file", error, "warning")
+      ShowNewToast("Error uploading file", error, "warning");
     } finally {
-      event.target.value = ""
       setFileStatus((prev) => ({ ...prev, uploading: false, uploaded: true }));
     }
   };
@@ -162,6 +158,8 @@ function CloudPage() {
       setDialogOpen((prev) => ({ ...prev, showInfo: true, data: data }));
     } else if (action === "createFolder") {
       setDialogOpen((prev) => ({ ...prev, createFolder: true }));
+    } else if (action === "deleteData") {
+      setDialogOpen((prev) => ({ ...prev, deleteData: true, data: data }));
     }
   }
 
@@ -178,6 +176,25 @@ function CloudPage() {
     updateDataShown(updatedFiles);
     setFiles(updatedFiles);
     setDialogOpen((prev) => ({ ...prev, changeDataName: false }));
+  }
+
+  const handleDeleteData = async (data) => {
+    if (data.type === "folder") {
+      await deleteFolderFromFolder(currentFolder, data);
+
+      updateDataShown(recentFiles.filter((f) => f._id !== data._id));
+      setFolders((prevFolders) => prevFolders.filter((f) => f._id !== data._id));
+
+      ShowNewToast("Folder Update", `${data.name} has been deleted.`);
+      setRefreshData(true);
+    } else if (data.type === "file") {
+      updateDataShown(recentFiles.filter((f) => f._id !== data._id));
+      updateFilesStorage(data, "del");
+
+      ShowNewToast("File Update", `${data.filename} has been deleted.`);
+    }
+
+    setDialogOpen((prev) => ({ ...prev, deleteData: false }));
   }
 
   const updateDataShown = async (updatedFiles) => {
@@ -283,7 +300,8 @@ function CloudPage() {
     changingDataName,
     setChangingDataName,
     handleCreateNewFolder,
-    setCreatingFolder
+    setCreatingFolder,
+    handleDeleteData
   }
 
   const dropdownProps = {
@@ -295,6 +313,17 @@ function CloudPage() {
     setIsHovered,
     dataShown: recentFiles,
   }
+
+  const onDrop = (acceptedFiles) => {
+    if (acceptedFiles.length > 0) {
+      handleSubmit(acceptedFiles[0]);
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+  });
 
   return (
     <>
@@ -409,12 +438,17 @@ function CloudPage() {
                     render={({ field }) => (
                       <FormItem className='mini-wrapper'>
                         <FormControl>
-                          <div className='mini-wrapper bg-slate-600 hover:bg-slate-500 transition duration-75 rounded-2xl'>
+                          <div
+                            {...getRootProps()}
+                            className={`mini-wrapper bg-slate-600 hover:bg-slate-500 transition duration-75 rounded-2xl ${isDragActive && 'border-dashed border-2 border-indigo-500'}`}
+                          >
+                            <input {...getInputProps()} />
                             <Label className='label hover:cursor-pointer rounded-2xl' htmlFor="picture">
                               <FileUp className='w-[120px] h-[120px]' />
-                              <span className='text-2xl'>Add new files</span>
+                              <span className="text-2xl">
+                                {isDragActive ? 'Drop files here' : 'Add new files'}
+                              </span>
                             </Label>
-                            <Input onChangeCapture={(e) => handleSubmit(e)} className='inputfile' id="picture" type="file" {...fileRef} />
                           </div>
                         </FormControl>
                         <FormMessage />

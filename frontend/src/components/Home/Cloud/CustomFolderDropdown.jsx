@@ -24,16 +24,6 @@ function CustomFolderDropdown(props) {
     setFolders(updatedFolders);
   }
 
-  const handleDeleteFolder = async (folder) => {
-    await deleteFolderFromFolder(currentFolder, folder);
-
-    updateDataShown(dataShown.filter((f) => f._id !== folder._id));
-    setFolders((prevFolders) => prevFolders.filter((f) => f._id !== folder._id));
-
-    ShowNewToast("Folder Update", `${folder.name} has been deleted.`);
-    setRefreshData(true);
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={`dropdown-trigger rounded-full hover:text-slate-400 ${filesViewType === "list" ? "mr-4" : "bg-slate-700"}`}>
@@ -75,7 +65,7 @@ function CustomFolderDropdown(props) {
         <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
         <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleDeleteFolder(folder)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleOpeningDialog(folder, "deleteData")} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

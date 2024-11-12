@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/shadcn/input'
 import { FtpContext } from '@/context/Home/FtpContext'
 
 function MyDialogs(props) {
-  const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingDataName, creatingFolder, setCreatingFolder } = props;
+  const { dialogOpen, setDialogOpen, handleUpdateData, handleCreateNewFolder, changingDataName, setChangingDataName, creatingFolder, setCreatingFolder, handleDeleteData } = props;
   const { activeFolders } = useContext(FtpContext);
 
   const handleDataPath = (data) => {
@@ -24,21 +24,18 @@ function MyDialogs(props) {
 
   return (
     <>
-      {/* Changing File Name */}
-      <form>
-
-        <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title={`Change ${dialogOpen.data?.type === "folder" ? "Folder" : "File"} Name`} footer={
-          <>
-            <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
-            <Button onClick={() => handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file")} variant='outline_green'>Save</Button>
-          </>
-        }>
-          <span className='flex flex-col gap-2'>
-            {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
-            <Input placeholder={dialogOpen.data?.filename || dialogOpen.data?.name} value={changingDataName} onChange={(e) => setChangingDataName(e.target.value)} />
-          </span>
-        </MyDialog>
-      </form>
+      {/* Changing Data Name */}
+      <MyDialog dialogOpen={dialogOpen.changeDataName} setDialogOpen={setDialogOpen} title={`Change ${dialogOpen.data?.type === "folder" ? "Folder" : "File"} Name`} footer={
+        <>
+          <Button onClick={() => setDialogOpen((prev) => ({ ...prev, changeDataName: false }))} variant='secondary'>Cancel</Button>
+          <Button onClick={() => handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file")} variant='outline_green'>Save</Button>
+        </>
+      }>
+        <span className='flex flex-col gap-2'>
+          {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
+          <Input placeholder={dialogOpen.data?.filename || dialogOpen.data?.name} value={changingDataName} onChange={(e) => setChangingDataName(e.target.value)} />
+        </span>
+      </MyDialog>
 
       {/* Showing Data Info */}
       <MyDialog dialogOpen={dialogOpen.showInfo} setDialogOpen={setDialogOpen} title={`${dialogOpen.data?.type === "file" ? dialogOpen.data?.filename : dialogOpen.data?.name}`}>
@@ -72,7 +69,21 @@ function MyDialogs(props) {
           <Button onClick={handleCreateNewFolder} variant='outline_green'>Create</Button>
         </>
       }>
-        <Input tabIndex={0} autoFocus required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
+        <Input tabIndex={0} required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
+      </MyDialog>
+
+      {/* Deleting Data */}
+      <MyDialog dialogOpen={dialogOpen.deleteData} setDialogOpen={setDialogOpen} title={`Delete: ${dialogOpen.data?.type === "file" ? dialogOpen.data?.filename : dialogOpen.data?.name}`}
+        footer={
+          <>
+            <Button onClick={() => setDialogOpen((prev) => ({ ...prev, deleteData: false }))} variant='secondary'>Cancel</Button>
+            <Button onClick={() => handleDeleteData(dialogOpen.data)} variant='outline_red'>Delete</Button>
+          </>
+        }
+      >
+        <div className='text-center'>
+          <Label>Are you sure you want to delete this {dialogOpen.data?.type}?</Label>
+        </div>
       </MyDialog>
     </>
   )

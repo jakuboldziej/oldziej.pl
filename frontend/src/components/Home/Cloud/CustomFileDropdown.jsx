@@ -92,7 +92,7 @@ function CustomFileDropdown(props) {
         <DropdownMenuItem disabled className='gap-2'><Move />Move...</DropdownMenuItem>
         <DropdownMenuItem disabled className='gap-2'><Files />Copy</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleDeleteFile(file)} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleOpeningDialog(file, "deleteData")} className='gap-2'><Trash2 />Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

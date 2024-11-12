@@ -78,13 +78,13 @@ export const handleFileTypes = (files) => {
     files.map((file) => {
       const splitted = file.filename.split(".")
       const ext = splitted[splitted.length - 1]
-      if (images.includes(ext)) {
+      if (images.includes(ext.toLowerCase())) {
         fileTypes.fileImages.push(file);
-      } else if (documents.includes(ext)) {
+      } else if (documents.includes(ext.toLowerCase())) {
         fileTypes.fileDocuments.push(file);
-      } else if (videos.includes(ext)) {
+      } else if (videos.includes(ext.toLowerCase())) {
         fileTypes.fileVideos.push(file);
-      } else if (audio.includes(ext)) {
+      } else if (audio.includes(ext.toLowerCase())) {
         fileTypes.fileAudios.push(file);
       }
     })

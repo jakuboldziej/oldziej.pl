@@ -13,8 +13,8 @@ function MyDialog({ children, dialogOpen, setDialogOpen, title, footer }) {
       <DialogContent>
         <DialogHeader className="text-white">
           <DialogTitle className='flex justify-center text-2xl'>{title}</DialogTitle>
-          <DialogClose>
-            <X className="absolute right-2 top-2" />
+          <DialogClose className="z-50">
+            <X className="absolute right-2 top-2 z-50" />
           </DialogClose>
         </DialogHeader>
         <div className="text-white">
