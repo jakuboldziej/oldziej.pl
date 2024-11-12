@@ -10,8 +10,12 @@ import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './game logic/gameUtils';
 
 function GameSummary({ show, setShow }) {
-  const { game, updateGameState } = useContext(DartsGameContext);
+  const { game, updateGameState, handleRound } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
+
+  function handleShow() {
+    setShow(true);
+  }
 
   const handlePlayAgain = async () => {
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
@@ -94,12 +98,22 @@ function GameSummary({ show, setShow }) {
     setShow(false);
   }
 
-  const handleSummaryBackButton = () => {
-
+  const handleDisabledBack = () => {
+    if (game.podium[1] === null) return true;
   }
 
-  const handleDisabledBack = () => {
-    return true;
+  const handleSummaryBackButton = () => {
+    game.active = true;
+    game.podium = {
+      1: null,
+      2: null,
+      3: null
+    };
+    game.userWon = "";
+    game.finished_at = null;
+    handleRound("BACK", handleShow);
+
+    setShow(false);
   }
 
   const handleBackToDarts = () => {

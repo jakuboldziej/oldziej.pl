@@ -3,12 +3,10 @@ import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Ho
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
 import { getDartsUser, putDartsGame, putDartsUser } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
-import { createContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 import lodash from 'lodash';
 
 export const DartsGameContext = createContext();
-
-let counter = 1;
 
 export const DartsGameContextProvider = ({ children }) => {
   const [game, setGame] = useState(() => {
