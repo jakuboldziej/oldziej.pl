@@ -2,7 +2,7 @@ import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List } from 'lucide-react';
-import { deleteFile, getFile, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
+import { deleteFile, getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
@@ -15,15 +15,18 @@ import MyFolderCard from "@/components/Home/Cloud/MyFolderCard";
 import { AuthContext } from "@/context/Home/AuthContext";
 import Loading from "@/components/Home/Loading";
 import { useDropzone } from 'react-dropzone';
+import { useSearchParams } from "react-router-dom";
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, setRefreshData } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, setRefreshData, loadingData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const navigate = useNavigate();
 
   const [recentFile, setRecentFile] = useState(null);
-  const [dataShown, setDataShown] = useState(null);
+  const [dataShown, setDataShown] = useState([]);
   const [filesViewType, setFilesViewType] = useState(() => {
     const savedView = JSON.parse(localStorage.getItem("cloudSettings"))?.activeFilesView;
     return savedView ? savedView : "list";
@@ -267,6 +270,14 @@ function MyFiles() {
     setDataShown(updatedDataShown);
   }
 
+  const openFolder = async (folder) => {
+    handleActiveFolders(folder, "forward");
+
+    const updatedDataShown = await handleDataShown(folder);
+    setDataShown(updatedDataShown);
+    setCurrentFolder(folder);
+  }
+
   useEffect(() => {
     const handleNewFile = async () => {
       const fileRes = await getFile(recentFile._id);
@@ -320,6 +331,21 @@ function MyFiles() {
     }
   }, [activeFolders]);
 
+
+  useEffect(() => {
+    const openFolderFromURL = async () => {
+      const searchParamsFolder = await getFolder(searchParams.get("folder"));
+
+      if (currentFolder._id !== searchParamsFolder._id) await openFolder(searchParamsFolder);
+
+      searchParams.delete("folder");
+      setSearchParams(searchParams);
+    }
+
+    if (searchParams.get("folder") && currentFolder) openFolderFromURL();
+  }, [searchParams, currentFolder]);
+
+
   const myDialogsProps = {
     dialogOpen,
     setDialogOpen,
@@ -342,7 +368,8 @@ function MyFiles() {
     dataShown,
     setDataShown,
     filesViewType,
-    handleActiveFolders
+    handleActiveFolders,
+    openFolder
   }
 
   const onDrop = (acceptedFiles) => {
@@ -355,6 +382,8 @@ function MyFiles() {
     onDrop,
     multiple: false,
   });
+
+  console.log(dataShown)
 
   return (
     <>
@@ -403,7 +432,7 @@ function MyFiles() {
                 </span>
 
                 <div className={`files flex-row flex-wrap ${isDragActive && "opacity-50"}`}>
-                  {dataShown !== null ? (
+                  {loadingData.files === false && loadingData.folders === false && dataShown ? (
                     dataShown.length > 0 ? (
                       dataShown.map((data) => (
                         data.type == "file" ? (
@@ -413,14 +442,14 @@ function MyFiles() {
                         )
                       ))
                     ) : (
-                      <Loading />
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center">
+                        No Files...
+                        <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
+                        Or Right click here
+                      </div>
                     )
                   ) : (
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center">
-                      No Files...
-                      <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
-                      Or Right click here
-                    </div>
+                    <Loading />
                   )}
                 </div>
               </div>

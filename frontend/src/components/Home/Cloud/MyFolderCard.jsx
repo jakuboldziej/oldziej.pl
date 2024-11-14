@@ -1,23 +1,11 @@
 import { Card, CardContent } from "@/components/ui/shadcn/card";
 import { Folder } from 'lucide-react';
-import { handleDataShown } from "./utils";
-import { useContext, useRef } from "react";
-import { FtpContext } from "@/context/Home/FtpContext";
+import { useRef } from "react";
 import CustomFolderDropdown from "./CustomFolderDropdown";
 
 function MyFolderCard(props) {
-  const { folder, setDataShown, handleActiveFolders, filesViewType } = props;
-  const { setCurrentFolder } = useContext(FtpContext);
-
+  const { folder, filesViewType, openFolder } = props;
   const clickTimeoutRef = useRef(null);
-
-  const openFolder = async (folder) => {
-    handleActiveFolders(folder, "forward");
-
-    const updatedDataShown = await handleDataShown(folder);
-    setDataShown(updatedDataShown);
-    setCurrentFolder(folder);
-  }
 
   const handleSingleClick = () => {
     clickTimeoutRef.current = setTimeout(() => {

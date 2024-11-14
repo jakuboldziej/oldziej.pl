@@ -16,13 +16,6 @@ function CustomFileDropdown(props) {
     setFileStatus((prev) => ({ ...prev, downloading: false }));
   }
 
-  const handleDeleteFile = async (file) => {
-    updateDataShown(dataShown.filter((f) => f._id !== file._id));
-    updateFilesStorage(file, "del");
-
-    ShowNewToast("File Update", `${file.filename} has been deleted.`);
-  }
-
   const handleFavoriteFile = async (file) => {
     setIsHovered((prev) => ({ ...prev, heart: false }))
     file.favorite = !file.favorite;
