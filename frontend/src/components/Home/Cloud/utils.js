@@ -158,5 +158,5 @@ export const handleDataShown = async (folder) => {
   });
 
   const updatedData = [...currentFolderFolders, ...ftpFiles];
-  return updatedData.length > 0 ? updatedData : null;
+  return updatedData;
 }

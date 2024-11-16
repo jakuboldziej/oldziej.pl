@@ -6,10 +6,10 @@ import { getAuthUsers, handleDeleteAuthUser, putAuthUser } from '@/lib/fetch';
 import { Copy, Grip, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import CopyTextButton from '../Home/CopyTextButton';
-import MyTooltip from '../Home/MyComponents/MyTooltip';
+import CopyTextButton from '../../Home/CopyTextButton';
+import MyTooltip from '../../Home/MyComponents/MyTooltip';
 import { socket } from '@/lib/socketio';
-import Loading from '../Home/Loading';
+import Loading from '../../Home/Loading';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;

@@ -1,5 +1,5 @@
-import AuthUsersTable from '@/components/Admin/AuthUsersTable';
-import DartsUsersTable from '@/components/Admin/DartsUsersTable';
+import AuthUsersTable from '@/components/Admin/Auth/AuthUsersTable';
+import DartsUsersTable from '@/components/Admin/Darts/DartsUsersTable';
 import { Button } from '@/components/ui/shadcn/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
@@ -10,18 +10,29 @@ function Admin() {
   document.title = "Oldziej | Admin";
   const { onlineFriends } = useContext(SocketIoContext);
 
-  const [currentPage, setCurrentPage] = useState(() => {
-    const storedCurrentPage = localStorage.getItem('currentAdminPage');
-    return storedCurrentPage ? JSON.parse(storedCurrentPage) : "auth-users";
-  });
+  const [currentPage, setCurrentPage] = useState("");
+  const [currentTable, setCurrentTable] = useState("");
   const [refreshingData, setRefreshingData] = useState(false);
 
-  const handlePaginationChange = (page) => {
-    if (page !== currentPage) {
-      setCurrentPage(page);
-      localStorage.setItem('currentAdminPage', JSON.stringify(page));
+  const handlePaginationChange = (data) => {
+    const pages = ["auth", "darts", "cloud"];
+    const tables = ["users", "games", "files", "folders"];
+
+    if (pages.includes(data)) {
+      setCurrentPage(data);
+      localStorage.setItem("currentAdminPage", data)
+      setCurrentTable("users");
+    }
+    else if (tables.includes(data)) {
+      setCurrentTable(data);
     }
   }
+
+  useEffect(() => {
+    const currentAdminPage = localStorage.getItem("currentAdminPage");
+
+    if (currentAdminPage) setCurrentPage(currentAdminPage);
+  }, []);
 
   useEffect(() => {
     setRefreshingData(true);
@@ -34,32 +45,77 @@ function Admin() {
 
   return (
     <div className='admin relative'>
-      <div className='refresh absolute right-8'>
-        <Button onClick={() => setRefreshingData(true)} variant="ghost" size="icon" className="justify-center"><RotateCcw /></Button>
-      </div>
-      <div className='users flex flex-col gap-5'>
+      <div className='admin-nav flex'>
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationLink onClick={() => handlePaginationChange("auth-users")} isActive={currentPage === "auth-users"}>Auth Users</PaginationLink>
+              <PaginationLink onClick={() => handlePaginationChange("auth")} isActive={currentPage === "auth"}>Auth</PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink onClick={() => handlePaginationChange("darts-users")} isActive={currentPage === "darts-users"}>Darts Users</PaginationLink>
+              <PaginationLink onClick={() => handlePaginationChange("darts")} isActive={currentPage === "darts"}>Darts</PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink onClick={() => handlePaginationChange("cloud-users")} isActive={currentPage === "cloud-users"}>Cloud Users</PaginationLink>
+              <PaginationLink onClick={() => handlePaginationChange("cloud")} isActive={currentPage === "cloud"}>Cloud</PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
-        {currentPage === "auth-users" ? (
-          <AuthUsersTable props={tableProps} />
-        ) : (
-          currentPage === "darts-users" ? (
-            <DartsUsersTable props={tableProps} />
-          ) : (
-            <span className='text-center text-2xl'>No data</span>
-          )
+
+        <div className='refresh absolute right-8'>
+          <Button onClick={() => setRefreshingData(true)} variant="ghost" size="icon" className="justify-center"><RotateCcw /></Button>
+        </div>
+      </div>
+
+      <div className='tables mt-8'>
+        {currentPage === "auth" && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         )}
+        {currentPage === "darts" && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("games")} isActive={currentTable === "games"}>Games</PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+        {currentPage === "cloud" && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("files")} isActive={currentTable === "files"}>Files</PaginationLink>
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLink onClick={() => handlePaginationChange("folders")} isActive={currentTable === "folders"}>Folders</PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+
+        <div className='auth-table flex flex-col gap-5'>
+          {currentPage === "auth" && (
+            currentTable === "users" && (
+              <AuthUsersTable props={tableProps} />
+            )
+          )}
+
+          {currentPage === "darts" && (
+            currentTable === "users" && (
+              <DartsUsersTable props={tableProps} />
+            )
+          )}
+        </div>
       </div>
     </div>
   )

@@ -27,6 +27,7 @@ function MyFiles() {
 
   const [recentFile, setRecentFile] = useState(null);
   const [dataShown, setDataShown] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [filesViewType, setFilesViewType] = useState(() => {
     const savedView = JSON.parse(localStorage.getItem("cloudSettings"))?.activeFilesView;
     return savedView ? savedView : "list";
@@ -205,7 +206,7 @@ function MyFiles() {
   }
 
   const updateDataShown = async (updatedData) => {
-    setDataShown(updatedData.length > 0 ? updatedData : null);
+    setDataShown(updatedData);
   }
 
   const updateFilesStorage = async (file, action) => {
@@ -234,7 +235,6 @@ function MyFiles() {
 
     setFolders(updatedFolders)
 
-    updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
     setFiles(updatedFiles)
   }
 
@@ -268,6 +268,7 @@ function MyFiles() {
   const getDataShown = async (folder) => {
     const updatedDataShown = await handleDataShown(folder);
     setDataShown(updatedDataShown);
+    setDataLoaded(true);
   }
 
   const openFolder = async (folder) => {
@@ -331,7 +332,6 @@ function MyFiles() {
     }
   }, [activeFolders]);
 
-
   useEffect(() => {
     const openFolderFromURL = async () => {
       const searchParamsFolder = await getFolder(searchParams.get("folder"));
@@ -344,7 +344,6 @@ function MyFiles() {
 
     if (searchParams.get("folder") && currentFolder) openFolderFromURL();
   }, [searchParams, currentFolder]);
-
 
   const myDialogsProps = {
     dialogOpen,
@@ -382,8 +381,6 @@ function MyFiles() {
     onDrop,
     multiple: false,
   });
-
-  console.log(dataShown)
 
   return (
     <>
@@ -432,7 +429,7 @@ function MyFiles() {
                 </span>
 
                 <div className={`files flex-row flex-wrap ${isDragActive && "opacity-50"}`}>
-                  {loadingData.files === false && loadingData.folders === false && dataShown ? (
+                  {dataLoaded === true ? (
                     dataShown.length > 0 ? (
                       dataShown.map((data) => (
                         data.type == "file" ? (
@@ -444,7 +441,7 @@ function MyFiles() {
                     ) : (
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 justify-center">
                         No Files...
-                        <Button variant="outline_red" onClick={() => navigate("/ftp/files/upload")}>Upload Files</Button>
+                        <Button variant="outline_red" onClick={() => navigate("/cloud/files/upload")}>Upload Files</Button>
                         Or Right click here
                       </div>
                     )
