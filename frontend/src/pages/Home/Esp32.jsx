@@ -38,7 +38,7 @@ function Esp32() {
   }, []);
 
   return (
-    <div className="esp32-page text-white w-full container_no_nav flex flex-col gap-10 items-center justify-center">
+    <div className="esp32-page text-white w-full container-no-nav flex flex-col gap-10 items-center justify-center">
       <span className="text-2xl">Control ESP-32</span>
       {LEDStatus ? (
         <div className='flex items-center gap-4'>

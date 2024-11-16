@@ -4,26 +4,30 @@ import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext, useEffect, useState } from "react";
-import { changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/lib/fetch";
+import { changeDisplaynameUser, changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/lib/fetch";
 import Loading from "../Loading";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router";
 import { AuthContext } from "@/context/Home/AuthContext";
+import Cookies from "js-cookie";
 
 function SettingsDialog({ props }) {
-  const { dialogOpen, setDialogOpen, dialogData, authUser } = props;
+  const { dialogOpen, setDialogOpen, dialogData, authUser, setAuthUser } = props;
 
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [err, setErr] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  const [newUsernameInput, setNewUsernameInput] = useState('');
+  const [repeatNewUsernameInput, setRepeatNewUsernameInput] = useState('');
+
   const [newEmailInput, setNewEmailInput] = useState('');
   const [repeatNewEmailInput, setRepeatNewEmailInput] = useState('');
 
   const [currentPasswordInput, setCurrentPasswordInput] = useState('');
   const [newPasswordInput, setNewPasswordInput] = useState('');
-  const [newRepeatPasswordInput, setNewRepeatPasswordInput] = useState('');
+  const [repeatNewPasswordInput, setRepeatNewPasswordInput] = useState('');
 
   const navigate = useNavigate();
   const signOut = useSignOut();
@@ -40,7 +44,37 @@ function SettingsDialog({ props }) {
   const handleSubmitDialogDataChange = async () => {
     setSubmitLoading(true);
 
-    if (dialogData.emailOpened) {
+    if (dialogData.usernameOpened) {
+      if (newUsernameInput !== repeatNewUsernameInput) {
+        setSubmitLoading(false);
+        return setErr("Your usernames doesn't match!");
+      }
+
+      const randomNumber = Math.floor(Math.random() * 900) + 100;
+      const friendsCode = newUsernameInput + randomNumber;
+
+      const response = await changeDisplaynameUser({
+        oldDisplayName: authUser.displayName,
+        newDisplayName: newUsernameInput,
+        friendsCode: friendsCode
+      });
+
+      if (response?.error) {
+        setSubmitLoading(false);
+        return setErr(response.error);
+      }
+
+      setAuthUser((prev) => ({ ...prev, displayName: newUsernameInput }))
+      setCurrentUser((prev) => ({ ...prev, displayName: newUsernameInput }))
+
+      let userCookie = JSON.parse(Cookies.get('_auth_state'));
+      userCookie.displayName = newUsernameInput;
+      const domain = import.meta.env.MODE === "development" ? ".home.localhost" : ".home.oldziej.pl";
+      Cookies.set("_auth_state", JSON.stringify(userCookie), { domain });
+
+      setSubmitLoading(false);
+      ShowNewToast("Settings Changed", "Your username was changed successfully.", "success");
+    } else if (dialogData.emailOpened) {
       if (newEmailInput !== repeatNewEmailInput) {
         setSubmitLoading(false);
         return setErr("Your emails doesn't match!");
@@ -58,10 +92,10 @@ function SettingsDialog({ props }) {
       setSubmitLoading(false);
       ShowNewToast("Settings Changed", "We've sent verification email on your current email address.");
     } else if (dialogData.passwordOpened) {
-      if (currentPasswordInput === newPasswordInput || currentPasswordInput === newRepeatPasswordInput) {
+      if (currentPasswordInput === newPasswordInput || currentPasswordInput === repeatNewPasswordInput) {
         setSubmitLoading(false);
         return setErr("Your new password must be different then your current password!");
-      } else if (newPasswordInput !== newRepeatPasswordInput) {
+      } else if (newPasswordInput !== repeatNewPasswordInput) {
         setSubmitLoading(false);
         return setErr("Your passwords doesn't match!");
       } else if (newPasswordInput.length < 6) {
@@ -100,11 +134,15 @@ function SettingsDialog({ props }) {
   const handleCloseDialog = () => {
     setErr("");
 
+    setNewUsernameInput("");
+    setRepeatNewUsernameInput("");
+
     setNewEmailInput("");
     setRepeatNewEmailInput("");
+
     setCurrentPasswordInput("");
     setNewPasswordInput("");
-    setNewRepeatPasswordInput("");
+    setRepeatNewPasswordInput("");
 
     setDialogOpen(false);
   }
@@ -126,6 +164,22 @@ function SettingsDialog({ props }) {
         </DialogHeader>
         <form onSubmit={handleDialogSubmit}>
           <div className='text-white flex flex-col gap-5'>
+            {dialogData.usernameOpened && (
+              <>
+                <div>
+                  <Label htmlFor="current-username">Current Username</Label>
+                  <Input id="current-username" type="username" value={authUser.displayName} readOnly required />
+                </div>
+                <div>
+                  <Label htmlFor="new-username">New Username</Label>
+                  <Input id="new-username" type="username" autoComplete="false" autoFocus required value={newUsernameInput} onChange={(e) => setNewUsernameInput(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="repeat-new-username">Repeat New Username</Label>
+                  <Input id="repeat-new-username" type="username" autoComplete="false" required value={repeatNewUsernameInput} onChange={(e) => setRepeatNewUsernameInput(e.target.value)} />
+                </div>
+              </>
+            )}
             {dialogData.emailOpened && (
               <>
                 <div>
@@ -154,7 +208,7 @@ function SettingsDialog({ props }) {
                 </div>
                 <div>
                   <Label htmlFor="repeat-new-password">Repeat New Password</Label>
-                  <Input id="repeat-new-password" type="password" autoComplete="false" autoCorrect="false" required value={newRepeatPasswordInput} onChange={(e) => setNewRepeatPasswordInput(e.target.value)} />
+                  <Input id="repeat-new-password" type="password" autoComplete="false" autoCorrect="false" required value={repeatNewPasswordInput} onChange={(e) => setRepeatNewPasswordInput(e.target.value)} />
                 </div>
               </>
             )}

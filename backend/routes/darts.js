@@ -163,11 +163,10 @@ router.delete('/dartsUsers/:displayName', async (req, res) => {
 });
 
 router.put("/dartsUsers/:identifier", getDartsUser, async (req, res) => {
-  const { displayName, ...updateData } = req.body;
   try {
     const updatedUser = await DartsUser.findByIdAndUpdate(
       res.user._id,
-      updateData,
+      req.body,
       { new: true }
     );
 

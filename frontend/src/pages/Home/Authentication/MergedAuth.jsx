@@ -18,7 +18,7 @@ function MergedAuth() {
   }, [currentUser, navigate]);
 
   return (
-    <div className='text-white container_no_nav flex items-center justify-center'>
+    <div className='text-white container-no-nav flex items-center justify-center'>
       <Tabs defaultValue="account" className="w-[450px]">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="account">Login</TabsTrigger>

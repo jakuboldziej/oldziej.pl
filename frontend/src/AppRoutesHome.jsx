@@ -51,7 +51,7 @@ function AppRoutesHome() {
 
   const AdminRequireAuth = ({ children }) => {
     useEffect(() => {
-      if (!currentUser || currentUser.displayName !== "kubek") {
+      if (!currentUser || currentUser.role !== "admin") {
         navigate('/');
       }
     }, [currentUser]);

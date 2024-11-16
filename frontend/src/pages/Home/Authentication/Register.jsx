@@ -64,12 +64,12 @@ function Register() {
       await sendVerificationEmail({
         userEmail: email
       });
-      await postDartsUser({
+      const newUser = await postDartsUser({
         displayName: displayName,
       });
       const folderRes = await postFolder({
         name: "Cloud drive",
-        owner: displayName
+        ownerId: newUser._id
       });
       await postFtpUser({
         displayName: displayName,
@@ -79,6 +79,7 @@ function Register() {
 
       const randomNumber = Math.floor(Math.random() * 900) + 100;
       const friendsCode = displayName + randomNumber;
+
       const userRes = await registerUser({
         email,
         displayName,

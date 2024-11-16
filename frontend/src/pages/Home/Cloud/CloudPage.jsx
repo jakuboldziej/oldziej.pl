@@ -24,7 +24,7 @@ import { useDropzone } from 'react-dropzone'
 
 function CloudPage() {
   document.title = "Oldziej | Cloud";
-  const { folders, setFolders, files, setFiles, loadingData, setRefreshData } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, setRefreshData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -32,6 +32,7 @@ function CloudPage() {
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentFile, setRecentFile] = useState(null);
   const [recentFolders, setRecentFolders] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [fileTypes, setFileTypes] = useState(() => handleFileTypes(files));
   const [fileStatus, setFileStatus] = useState({
     uploading: false,
@@ -94,7 +95,7 @@ function CloudPage() {
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('userDisplayName', ftpUser.displayName);
+      formData.append('userId', ftpUser._id);
       formData.append('lastModified', file.lastModified);
       formData.append('folder', ftpUser.main_folder);
 
@@ -112,9 +113,12 @@ function CloudPage() {
       ShowNewToast("Error creating folder", "Please specify a folder name", "Warning");
     } else {
       const folderName = creatingFolder;
+
+      const ftpUser = await getFtpUser(currentUser.displayName);
+
       const data = {
         name: folderName,
-        owner: currentUser.displayName
+        ownerId: ftpUser._id
       }
       const folderRes = await postFolder(data);
       if (recentFolders) {
@@ -125,7 +129,6 @@ function CloudPage() {
         setRecentFolders([folderRes])
       }
 
-      const ftpUser = await getFtpUser(currentUser.displayName);
       const mainUserFolder = folders.find((f) => f._id === ftpUser.main_folder);
       let updatedFolders = [...folders];
       const { updatedCurrentFolder, updatedFolder } = await addFolderToFolder(mainUserFolder, folderRes);
@@ -141,13 +144,8 @@ function CloudPage() {
     }
   }
 
-  const openFolder = async (folder) => {
-    navigate("files")
-    // handleActiveFolders(folder, "forward");
-
-    // const updatedDataShown = await handleDataShown(folder);
-    // setDataShown(updatedDataShown);
-    // setCurrentFolder(folder);
+  const openFolder = async (folderId) => {
+    navigate(`files?folder=${folderId}`)
   }
 
   const handleOpeningDialog = (data, action) => {
@@ -199,6 +197,7 @@ function CloudPage() {
 
   const updateDataShown = async (updatedFiles) => {
     setRecentFiles(updatedFiles.slice(0, 10 * currentPage));
+    setDataLoaded(true);
   }
 
   const updateFilesStorage = async (file, action) => {
@@ -221,15 +220,16 @@ function CloudPage() {
       file.folders.map(async (folderId) => {
         let folderObj = updatedFolders.find((f) => f._id === folderId);
         const { updatedFolder } = await deleteFileFromFolder(folderObj, file);
+
         folderObj = updatedFolder
       });
 
       updatedFiles = files.filter((f) => f._id !== file._id);
+
       await deleteFile(file._id);
     }
 
     setFolders(updatedFolders)
-    updatedFiles = updatedFiles.length > 0 ? updatedFiles : null;
     setFiles(updatedFiles)
   }
 
@@ -377,7 +377,7 @@ function CloudPage() {
               <span className='text-3xl'>Folders</span>
               <div className='cards flex gap-5 flex-wrap'>
                 {recentFolders && recentFolders.map((folder) => (
-                  <Card key={folder._id} className='folder rounded-xl' onClick={() => openFolder(folder)}>
+                  <Card key={folder._id} className='folder rounded-xl' onClick={() => openFolder(folder._id)}>
                     <CardHeader>
                       <CardTitle><Folder /></CardTitle>
                     </CardHeader>
@@ -395,7 +395,7 @@ function CloudPage() {
               <span className='text-3xl'>Recent Files ({recentFiles.length})</span>
               <ScrollArea className='scroll-area' onScroll={handleScroll}>
                 <div className='files flex flex-col gap-4'>
-                  {loadingData.files === false ? (
+                  {dataLoaded === true ? (
                     recentFiles.length > 0 ? (
                       recentFiles.map((file) => (
                         <div key={file.filename} className='flex recent-file items-center justify-between bg-slate-700 hover:bg-slate-500 transition duration-75 rounded-lg p-5'>

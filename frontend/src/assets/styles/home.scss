@@ -948,6 +948,38 @@ html {
     }
   }
 
+  .main.shared {}
+
+  .main.upload-files {
+    form {
+      position: relative;
+      width: 50%;
+      height: $containerHeight;
+
+      .mini-wrapper {
+        height: 100%;
+      }
+
+      .inputfile {
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        overflow: hidden;
+        position: absolute;
+        z-index: -1;
+      }
+
+      .label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        height: 100%;
+      }
+    }
+  }
+
   .main.favorites {
     height: $containerHeight;
 

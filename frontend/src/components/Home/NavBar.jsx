@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/shadcn/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { Contact, Settings, Target } from "lucide-react";
 import { Badge } from "../ui/shadcn/badge";
@@ -19,6 +19,7 @@ function NavBar() {
     signOut();
     navigate('/auth');
     setCurrentUser(null);
+    setSheetOpen(false);
     localStorage.clear();
   }
 
@@ -69,7 +70,7 @@ function NavBar() {
                       {currentUser.displayName}
                     </span>
                     {!currentUser.verified && "(not verified)"}
-                    {currentUser.displayName === "kubek" && (
+                    {currentUser.role === "admin" && (
                       <>
                         <Button variant="destructive" onClick={() => {
                           navigate('/admin');

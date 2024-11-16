@@ -26,12 +26,12 @@ const storage = new GridFsStorage({
         if (err) {
           return reject(err);
         }
-        const userDisplayName = req.query.userDisplayName;
+        const userId = req.query.userId;
         const fileInfo = {
           filename: file.originalname,
           bucketName: 'uploads',
           metadata: {
-            owner: userDisplayName,
+            ownerId: userId,
             originalFileName: file.originalname
           },
         };
@@ -42,30 +42,42 @@ const storage = new GridFsStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 1000000000 } });
 
-// get ftpFiles
-const mergeFtpFile = async (file) => {
-  const ftpFileQ = await FtpFile.findOne({ fileId: file._id });
-  file.favorite = ftpFileQ.favorite;
-  file.lastModified = ftpFileQ.lastModified;
-  file.folders = ftpFileQ.folders;
-  file.type = ftpFileQ.type;
-  return file;
-}
 // merging Files
-const mergeFtpFiles = async (files) => {
-  const ftpFiles = await FtpFile.find();
+const mergeFtpFile = async (ftpFile) => {
+  const file = (await bucket.find({ _id: new Types.ObjectId(ftpFile.fileId) }).toArray())[0];
 
-  files.map(file => {
-    const ftpFileQ = ftpFiles.find(f => f.fileId === file._id.toString())
-    if (ftpFileQ) {
-      file.favorite = ftpFileQ.favorite;
-      file.lastModified = ftpFileQ.lastModified;
-      file.folders = ftpFileQ.folders;
-      file.type = ftpFileQ.type;
-    }
-  })
-  return files;
+  if (!file) console.log("Error fetching file")
+
+  const updatedFile = {
+    ...ftpFile._doc,
+    uploadDate: file.uploadDate,
+    filename: file.filename,
+    length: file.length,
+    metadata: file.metadata
+  }
+
+  return updatedFile;
 }
+
+const mergeFtpFiles = async (ftpFiles) => {
+  const updatedFiles = await Promise.all(
+    ftpFiles.map(async (file) => {
+      const ftpFileQ = (await bucket.find({ _id: new Types.ObjectId(file.fileId) }).toArray())[0];
+      if (ftpFileQ) {
+        return {
+          ...file._doc,
+          uploadDate: ftpFileQ.uploadDate,
+          filename: ftpFileQ.filename,
+          length: ftpFileQ.length,
+          metadata: ftpFileQ.metadata
+        };
+      }
+      return file;
+    })
+  );
+
+  return updatedFiles;
+};
 
 const getFtpUser = async (req, res, next) => {
   let user;
@@ -91,17 +103,17 @@ router.post('/upload', upload.single('file'), (req, res) => {
 router.post('/files', async (req, res) => {
   const newFtpFile = new FtpFile({
     fileId: req.body.fileId,
-    owner: req.body.owner,
+    ownerId: req.body.ownerId,
     favorite: req.body.favorite,
     lastModified: req.body.lastModified,
     folders: req.body.folders
   });
+  await newFtpFile.save();
 
   try {
-    const newFile = await newFtpFile.save()
-    let file = (await bucket.find({ _id: new Types.ObjectId(newFile.fileId) }).toArray())[0];
-    file = await mergeFtpFile(file);
-    res.json({ file: file })
+    const ftpFile = await FtpFile.findOne({ _id: newFtpFile._id });
+    const mergedFile = await mergeFtpFile(ftpFile);
+    res.json({ file: mergedFile });
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
@@ -110,16 +122,31 @@ router.post('/files', async (req, res) => {
 // get multiple files
 router.get('/files', async (req, res) => {
   try {
-    let filter = {};
-    if (req.query.user) filter["metadata.owner"] = req.query.user;
-    let files = await bucket.find(filter).toArray();
+    const ftpFiles = await FtpFile.find({ ownerId: req.query.userId });
 
-    if (!files || files.length === 0) {
-      return res.json({ files: null })
+    if (!ftpFiles || ftpFiles.length === 0) {
+      return res.json({ files: [] })
     } else {
-      files = await mergeFtpFiles(files);
-      res.json({ files })
+      const mergedFiles = await mergeFtpFiles(ftpFiles);
+      res.json({ files: mergedFiles })
     }
+  } catch (err) {
+    res.json({ err: err.message })
+  }
+})
+
+// get one file
+router.get('/files/:id', async (req, res) => {
+  try {
+    const ftpFile = await FtpFile.findOne({ _id: req.params.id });
+
+    const mergedFile = await mergeFtpFile(ftpFile);
+
+    if (!mergedFile || mergedFile.length === 0) {
+      return res.status(404).json({ err: 'No file.' })
+    }
+
+    res.json({ file: mergedFile })
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -128,14 +155,15 @@ router.get('/files', async (req, res) => {
 // update file
 router.put('/files/:id', async (req, res) => {
   try {
-    const objectId = new Types.ObjectId(req.params.id);
     const newName = req.body.newFileName;
 
     const updateFile = req.body.data.file;
-    await FtpFile.updateOne({ fileId: req.params.id }, {
+    const updatedFtpFile = await FtpFile.findOneAndUpdate({ _id: req.params.id }, {
       favorite: updateFile.favorite,
       folders: updateFile.folders
     })
+
+    const objectId = new Types.ObjectId(updatedFtpFile.fileId);
 
     if (newName) {
       const lastDotIndex = newName.lastIndexOf('.');
@@ -144,7 +172,6 @@ router.put('/files/:id', async (req, res) => {
       await bucket.rename(objectId, `${name}.${ext}`);
       updateFile.filename = `${name}.${ext}`;
     }
-
     res.json({ file: updateFile });
   } catch (err) {
     res.json({ err: err.message });
@@ -154,33 +181,19 @@ router.put('/files/:id', async (req, res) => {
 // delete file
 router.delete('/files/:id', async (req, res) => {
   try {
-    const objectId = new Types.ObjectId(req.params.id)
-    const file = (await bucket.find({ _id: objectId }).toArray())[0];
+    const ftpFile = await FtpFile.findOne({ _id: req.params.id });
+
+    const file = (await bucket.find({ _id: new Types.ObjectId(ftpFile.fileId) }).toArray())[0];
 
     if (file) {
       bucket.delete(file._id);
-      await FtpFile.findOneAndDelete({ fileId: req.params.id })
+      await FtpFile.findOneAndDelete({ _id: req.params.id })
+
       res.json({ ok: true })
     }
     else {
       res.json({ ok: false })
     };
-
-  } catch (err) {
-    res.json({ err: err.message })
-  }
-})
-
-// get one file
-router.get('/files/:id', async (req, res) => {
-  try {
-    let file = (await bucket.find({ _id: new Types.ObjectId(req.params.id) }).toArray())[0];
-    file = await mergeFtpFile(file);
-
-    if (!file || file.length === 0) {
-      return res.status(404).json({ err: 'No file.' })
-    }
-    res.json({ file })
 
   } catch (err) {
     res.json({ err: err.message })
@@ -224,7 +237,7 @@ router.get('/files/download/:filename', async (req, res) => {
 router.get('/folders', async (req, res) => {
   try {
     let filter = {};
-    if (req.query.user) filter["owner"] = req.query.user;
+    if (req.query.userId) filter["ownerId"] = req.query.userId;
     if (req.query.folderName) filter["name"] = req.query.folderName;
     let folders = await FtpFolder.find(filter);
 
@@ -257,7 +270,7 @@ router.get('/folders/:id', async (req, res) => {
 router.post('/folders', async (req, res) => {
   const ftpFolder = new FtpFolder({
     name: req.body.name,
-    owner: req.body.owner,
+    ownerId: req.body.ownerId,
   });
   try {
     const newFtpFolder = await ftpFolder.save();
@@ -361,11 +374,10 @@ router.delete('/users/:displayName', async (req, res) => {
 });
 
 router.put("/users/:displayName", getFtpUser, async (req, res) => {
-  const { displayName, ...updateData } = req.body;
   try {
     const updatedUser = await FtpUser.findByIdAndUpdate(
       res.user._id,
-      updateData,
+      req.body,
       { new: true }
     );
     if (!updatedUser) {

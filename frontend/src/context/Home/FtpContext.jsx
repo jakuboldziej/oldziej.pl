@@ -18,8 +18,8 @@ export const FtpContextProvider = ({ children }) => {
   });
   const [refreshData, setRefreshData] = useState(false);
 
-  const fetchFiles = async () => {
-    const response = await getFiles(currentUser.displayName);
+  const fetchFiles = async (fetchFtpUser) => {
+    const response = await getFiles(fetchFtpUser._id);
     const filesR = response.files;
 
     if (filesR) {
@@ -36,8 +36,8 @@ export const FtpContextProvider = ({ children }) => {
     }
   }
 
-  const fetchFolders = async () => {
-    const foldersR = await getFolders(currentUser.displayName);
+  const fetchFolders = async (fetchFtpUser) => {
+    const foldersR = await getFolders(fetchFtpUser._id);
 
     setFolders(foldersR);
   }
@@ -60,8 +60,9 @@ export const FtpContextProvider = ({ children }) => {
   }
 
   const firstFetch = async () => {
-    await fetchFolders();
-    await fetchFiles();
+    const fetchFtpUser = await getFtpUser(currentUser.displayName);
+    await fetchFolders(fetchFtpUser);
+    await fetchFiles(fetchFtpUser);
     handleActiveFolders();
   }
 
@@ -78,9 +79,8 @@ export const FtpContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (files) {
-      if (files.length === 0) setLoadingData((prev) => ({ ...prev, files: true }));
-      else setLoadingData((prev) => ({ ...prev, files: false }));
-    } else setLoadingData((prev) => ({ ...prev, files: false }));
+      setLoadingData((prev) => ({ ...prev, files: false }));
+    } else setLoadingData((prev) => ({ ...prev, files: true }));
   }, [files]);
 
   useEffect(() => {

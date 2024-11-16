@@ -174,12 +174,12 @@ export const putFtpUser = async (userData) => {
 
 // Files
 
-export const getFiles = async (userDisplayName = null) => {
+export const getFiles = async (userId = null) => {
   let url = `${mongodbApiUrl}/ftp/files`;
 
   const queryParams = [];
-  if (userDisplayName) {
-    queryParams.push(`user=${userDisplayName}`)
+  if (userId) {
+    queryParams.push(`userId=${userId}`)
   }
 
   if (queryParams.length > 0) {
@@ -198,17 +198,17 @@ export const getFile = async (id) => {
 }
 
 export const uploadFile = async (data) => {
-  const uploadResponse = await fetch(`${mongodbApiUrl}/ftp/upload?userDisplayName=${data.get("userDisplayName")}`, {
+  const uploadResponse = await fetch(`${mongodbApiUrl}/ftp/upload?userId=${data.get("userId")}`, {
     method: "POST",
     body: data,
   });
-  const uploadFile = await uploadResponse.json();
+  const uploadedFile = await uploadResponse.json();
 
   const ftpFileRes = await fetch(`${mongodbApiUrl}/ftp/files`, {
     method: "POST",
     body: JSON.stringify({
-      fileId: uploadFile.file.id,
-      owner: uploadFile.file.metadata.owner,
+      fileId: uploadedFile.file.id,
+      ownerId: uploadedFile.file.metadata.ownerId,
       favorite: false,
       lastModified: data.get("lastModified"),
     }),
@@ -250,7 +250,7 @@ export const postFolder = async (data) => {
     method: "POST",
     body: JSON.stringify({
       name: data.name,
-      owner: data.owner,
+      ownerId: data.ownerId,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -261,12 +261,12 @@ export const postFolder = async (data) => {
   return folderRes.folder;
 }
 
-export const getFolders = async (userDisplayName = null, folderName = null) => {
+export const getFolders = async (userId = null, folderName = null) => {
   let url = `${mongodbApiUrl}/ftp/folders`;
 
   const queryParams = [];
-  if (userDisplayName) {
-    queryParams.push(`user=${userDisplayName}`)
+  if (userId) {
+    queryParams.push(`userId=${userId}`)
   }
   if (folderName) {
     queryParams.push(`folderName=${folderName}`)
@@ -383,10 +383,13 @@ export const registerUser = async (userData) => {
 
 export const handleDeleteAuthUser = async (selectedUser) => {
   const ftpUser = await getFtpUser(selectedUser.displayName);
-  await deleteFolder(ftpUser.main_folder);
+
+  if (ftpUser) {
+    await deleteFolder(ftpUser.main_folder);
+    await deleteFtpUser(selectedUser.displayName);
+  }
 
   await deleteDartsUser(selectedUser.displayName);
-  await deleteFtpUser(selectedUser.displayName);
 
   const authUsers = await getAuthUsers();
 
@@ -406,6 +409,46 @@ export const handleDeleteAuthUser = async (selectedUser) => {
   await Promise.all(friendRemovalPromises);
 
   await deleteAuthUser(selectedUser.displayName);
+}
+
+export const changeDisplaynameUser = async (userData) => {
+  try {
+    await fetch(`${mongodbApiUrl}/auth/users/${userData.oldDisplayName}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        displayName: userData.newDisplayName,
+        friendsCode: userData.friendsCode
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    await fetch(`${mongodbApiUrl}/ftp/users/${userData.oldDisplayName}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        displayName: userData.newDisplayName
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.oldDisplayName}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        displayName: userData.newDisplayName
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    return { error: e };
+  } finally {
+    return true;
+  }
 }
 
 // Password

@@ -85,10 +85,13 @@ export const DartsGameContextProvider = ({ children }) => {
         turns[currentUser.currentTurn] = `T${value}`;
       }
     }
+
     let stop = false;
     if (game.gameMode === "X01") stop = handlePointsX01(setOverthrow, game, currentUser);
     if (game.gameMode === "Reverse X01") stop = handlePointsReverseX01(currentUser);
+
     handleAvgPointsPerTurn(currentUser, game);
+
     if (stop) {
       const endGame = handleGameEnd();
 

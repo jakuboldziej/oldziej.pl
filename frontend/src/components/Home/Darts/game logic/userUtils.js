@@ -21,6 +21,7 @@ export const handleAvgPointsPerTurn = (user, game) => {
   const pointsThrown = game.startPoints - user.points;
   const dartsThrown = totalThrows(user);
   const avg = (pointsThrown / dartsThrown) * 3;
+
   user.avgPointsPerTurn = (avg).toFixed(2);
   if (isNaN(avg)) user.avgPointsPerTurn = 0;
 

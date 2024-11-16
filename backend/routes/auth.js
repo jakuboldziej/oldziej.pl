@@ -53,14 +53,12 @@ router.get('/users/check-existing-mail/:email', async (req, res) => {
 });
 
 router.put("/users/:displayName", getAuthUser, async (req, res) => {
-  const { displayName, ...updateData } = req.body;
   try {
     const updatedUser = await User.findByIdAndUpdate(
       res.user._id,
-      updateData,
+      req.body,
       { new: true }
     );
-
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -356,6 +354,7 @@ router.post("/login", (req, res) => {
         message: "Login Successful",
         token,
         verified: user.verified,
+        role: user.role,
         friendsRequestsReceived: user.friendsRequests.received.length,
       });
     }).catch(() => {

@@ -38,6 +38,10 @@ const UserSchema = new mongoose.Schema({
   online: {
     type: Boolean,
     default: false
+  },
+  role: {
+    type: String,
+    default: "user"
   }
 })
 

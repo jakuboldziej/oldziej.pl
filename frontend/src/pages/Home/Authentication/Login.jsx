@@ -49,12 +49,14 @@ function Login() {
       userState: {
         displayName: displayName,
         verified: response.verified,
+        role: response.role
       },
     });
 
     setCurrentUser({
       displayName: displayName,
       verified: response.verified,
+      role: response.role
     });
 
     if (searchParams.get("returnUrl")) {

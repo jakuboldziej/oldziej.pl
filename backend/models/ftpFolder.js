@@ -7,7 +7,7 @@ const FtpFolderSchema = new mongoose.Schema({
     required: true,
     unique: false
   },
-  owner: {
+  ownerId: {
     type: String,
     required: true,
     unique: false

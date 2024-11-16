@@ -18,7 +18,7 @@ import { useDropzone } from 'react-dropzone';
 import { useSearchParams } from "react-router-dom";
 
 function MyFiles() {
-  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, setRefreshData, loadingData } = useContext(FtpContext);
+  const { folders, setFolders, files, setFiles, activeFolders, setActiveFolders, currentFolder, setCurrentFolder, setRefreshData } = useContext(FtpContext);
   const { currentUser } = useContext(AuthContext);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -64,11 +64,12 @@ function MyFiles() {
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('userDisplayName', ftpUser.displayName);
+      formData.append('userId', ftpUser._id);
       formData.append('lastModified', file.lastModified);
       formData.append('folder', ftpUser.main_folder);
 
       const response = await uploadFile(formData);
+
       setRecentFile(response.file);
     } catch (error) {
       ShowNewToast("Error uploading file", error, "warning");
@@ -146,9 +147,12 @@ function MyFiles() {
       ShowNewToast("Error creating folder", "Please specify a folder name", "Warning");
     } else {
       const folderName = creatingFolder;
+
+      const ftpUser = await getFtpUser(currentUser.displayName);
+
       const data = {
         name: folderName,
-        owner: currentUser.displayName
+        ownerId: ftpUser._id
       }
       const folderRes = await postFolder(data);
       if (dataShown) {

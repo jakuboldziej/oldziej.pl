@@ -15,8 +15,9 @@ function UserSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogData, setDialogData] = useState({
-    emailOpened: false,
+    usernameOpened: false,
     passwordOpened: false,
+    emailOpened: false,
     deleteProfile: false,
     title: ""
   });
@@ -27,20 +28,23 @@ function UserSettings() {
   }
 
   const handleChangeButton = (type) => {
-    if (type === "email") {
+    if (type === "username") {
+      setDialogData((prev) => ({
+        ...prev,
+        usernameOpened: true,
+        title: "Change username"
+      }));
+    }
+    else if (type === "email") {
       setDialogData((prev) => ({
         ...prev,
         emailOpened: true,
-        passwordOpened: false,
-        deleteProfile: false,
         title: "Change email"
       }));
     } else if (type === "password") {
       setDialogData((prev) => ({
         ...prev,
         passwordOpened: true,
-        emailOpened: false,
-        deleteProfile: false,
         title: "Change password"
       }));
     }
@@ -59,6 +63,18 @@ function UserSettings() {
   }
 
   useEffect(() => {
+    if (dialogOpen === false) {
+      setDialogData({
+        usernameOpened: false,
+        passwordOpened: false,
+        emailOpened: false,
+        deleteProfile: false,
+        title: ""
+      })
+    }
+  }, [dialogOpen]);
+
+  useEffect(() => {
     const fetchAuthUser = async () => {
       const fetchedAuthUser = await getAuthUser(currentUser.displayName);
 
@@ -74,7 +90,9 @@ function UserSettings() {
     dialogOpen,
     setDialogOpen,
     dialogData,
+    setDialogData,
     authUser,
+    setAuthUser,
   }
 
   if (isLoading) {
@@ -87,6 +105,13 @@ function UserSettings() {
         <div className='settings text-white flex flex-col gap-10'>
           <span className="text-5xl p-12">Settings {!handleVerifiedUser() && <span>(Verify your email)</span>}</span>
           <div className="forms px-12 flex flex-col gap-10">
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="username">Username</Label>
+              <div className="flex w-full max-w-sm items-center space-x-2">
+                <Input type="username" id="username" defaultValue={authUser.displayName} readOnly />
+                <Button disabled={!handleVerifiedUser()} onClick={() => handleChangeButton("username")}>Change</Button>
+              </div>
+            </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
               <Label htmlFor="email">Email</Label>
               <div className="flex w-full max-w-sm items-center space-x-2">
@@ -106,6 +131,7 @@ function UserSettings() {
             </div>
           </div>
         </div>
+
         <SettingsDialog props={dialogProps} />
       </>
     )

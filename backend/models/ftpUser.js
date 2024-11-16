@@ -7,11 +7,6 @@ const FtpUserSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
   main_folder: {
     type: String,
     required: true,
@@ -25,6 +20,7 @@ FtpUserSchema.post('findOneAndDelete', async function (doc) {
   let url = `${backendDomain}/api/ftp/files?user=${doc.displayName}`;
   const response = await fetch(url);
   const fetchedUserFiles = await response.json();
+  console.log(doc.displayName)
 
   fetchedUserFiles.map(async (file) => {
     await fetch(`${backendDomain}/api/ftp/files/${file._id}`, {
