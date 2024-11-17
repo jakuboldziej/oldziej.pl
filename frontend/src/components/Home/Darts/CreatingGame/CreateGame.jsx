@@ -211,8 +211,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       gameCheckout: 0,
       temporary: user.temporary || false
     }));
+
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
+
     const gameData = {
       created_at: Date.now(),
       created_by: currentUser.displayName,

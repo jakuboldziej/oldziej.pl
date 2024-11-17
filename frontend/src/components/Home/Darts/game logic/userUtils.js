@@ -33,5 +33,4 @@ export const totalThrows = (user, cr = true) => {
     return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - user.currentThrows["overthrows"];
   else
     return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"];
-
 }
