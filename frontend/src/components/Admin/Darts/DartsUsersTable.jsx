@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/shadcn/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteDartsUser, getDartsUsers, putDartsUser } from '@/lib/fetch';
-import { Eye, EyeOff, Grip, Loader2, Trash, X } from 'lucide-react';
+import { getDartsUsers, putDartsUser } from '@/lib/fetch';
+import { Eye, EyeOff, Grip } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { totalThrows } from '../../Home/Darts/game logic/userUtils';
 import Loading from '../../Home/Loading';
@@ -13,19 +12,6 @@ function DartsUsersTable({ props }) {
 
   const [dartsUsers, setDartsUsers] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-
-  const handleDialogOpen = (user) => {
-    setDialogOpen(true);
-    setSelectedUser(user);
-  }
-
-  const handleDeleteUser = async () => {
-    await deleteDartsUser(selectedUser.displayName);
-    setDialogOpen(false);
-    setDartsUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
-  }
 
   const handleVisibleUser = async (user) => {
     user.visible = !user.visible;
@@ -50,7 +36,7 @@ function DartsUsersTable({ props }) {
     }
   }
 
-  const fetchAuthUsers = async () => {
+  const fetchDartsUsers = async () => {
     try {
       const fetchedDartsUsers = await getDartsUsers();
       setDartsUsers(fetchedDartsUsers);
@@ -62,15 +48,11 @@ function DartsUsersTable({ props }) {
   }
 
   useEffect(() => {
-    if (refreshingData) {
-      fetchAuthUsers();
+    if (refreshingData === true || dartsUsers === null) {
+      fetchDartsUsers();
       setRefreshingData(false);
     }
-  }, [refreshingData]);
-
-  useEffect(() => {
-    fetchAuthUsers();
-  }, []);
+  }, [refreshingData, dartsUsers]);
 
   return (
     <>
@@ -118,7 +100,6 @@ function DartsUsersTable({ props }) {
                         {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
                         {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -127,23 +108,6 @@ function DartsUsersTable({ props }) {
           </TableBody>
         </Table>
       )}
-      <Dialog open={dialogOpen}>
-        <DialogContent>
-          <DialogHeader className="text-white">
-            <DialogTitle className='flex justify-center text-2xl'>Delete {selectedUser?.displayName}</DialogTitle>
-            <DialogClose onClick={() => setDialogOpen(false)}>
-              <X className="absolute right-2 top-2" />
-            </DialogClose>
-            <DialogDescription>
-              Are you sure you want to delete {selectedUser?.displayName} with Darts and Cloud account?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="text-white">
-            <Button variant='outline_red' onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_green' onClick={handleDeleteUser}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

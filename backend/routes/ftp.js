@@ -357,7 +357,7 @@ router.post('/users', async (req, res) => {
 
 router.get('/users/:displayName', async (req, res) => {
   try {
-    const user = await FtpUser.findOne({ displayName: req.params.displayName })
+    const user = await FtpUser.findOne({ displayName: req.params.displayName });
     res.json(user)
   } catch (err) {
     res.json({ message: err.message })
@@ -401,10 +401,30 @@ router.get('/statistics/filesCreated', async (req, res) => {
   }
 });
 
+router.get('/statistics/filesCreated/:userId', async (req, res) => {
+  try {
+    const userFilesCount = await FtpFile.countDocuments({ ownerId: req.params.userId });
+
+    res.json(userFilesCount);
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
 router.get('/statistics/foldersCreated', async (req, res) => {
   try {
     const folders = await FtpFolder.find({ name: { $ne: "Cloud drive" } });
     res.json(folders.length)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/foldersCreated/:userId', async (req, res) => {
+  try {
+    const userFoldersCount = await FtpFolder.countDocuments({ ownerId: req.params.userId });
+
+    res.json(userFoldersCount);
   } catch (err) {
     res.json({ message: err.message })
   }

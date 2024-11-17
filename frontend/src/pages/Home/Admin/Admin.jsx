@@ -1,4 +1,6 @@
 import AuthUsersTable from '@/components/Admin/Auth/AuthUsersTable';
+import CloudUsersTable from '@/components/Admin/Cloud/CloudUsersTable';
+import DartsGamesTable from '@/components/Admin/Darts/DartsGamesTable';
 import DartsUsersTable from '@/components/Admin/Darts/DartsUsersTable';
 import { Button } from '@/components/ui/shadcn/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
@@ -11,7 +13,7 @@ function Admin() {
   const { onlineFriends } = useContext(SocketIoContext);
 
   const [currentPage, setCurrentPage] = useState("");
-  const [currentTable, setCurrentTable] = useState("");
+  const [currentTable, setCurrentTable] = useState("users");
   const [refreshingData, setRefreshingData] = useState(false);
 
   const handlePaginationChange = (data) => {
@@ -32,6 +34,7 @@ function Admin() {
     const currentAdminPage = localStorage.getItem("currentAdminPage");
 
     if (currentAdminPage) setCurrentPage(currentAdminPage);
+    else setCurrentPage("auth");
   }, []);
 
   useEffect(() => {
@@ -65,45 +68,47 @@ function Admin() {
         </div>
       </div>
 
-      <div className='tables mt-8'>
-        {currentPage === "auth" && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
-        {currentPage === "darts" && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("games")} isActive={currentTable === "games"}>Games</PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
-        {currentPage === "cloud" && (
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("files")} isActive={currentTable === "files"}>Files</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={() => handlePaginationChange("folders")} isActive={currentTable === "folders"}>Folders</PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
+      <div className='section mt-8 flex flex-col gap-8'>
+        <div className='pagination'>
+          {currentPage === "auth" && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+          {currentPage === "darts" && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("games")} isActive={currentTable === "games"}>Games</PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+          {currentPage === "cloud" && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("users")} isActive={currentTable === "users"}>Users</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("files")} isActive={currentTable === "files"}>Files</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("folders")} isActive={currentTable === "folders"}>Folders</PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </div>
 
-        <div className='auth-table flex flex-col gap-5'>
+        <div className='tables'>
           {currentPage === "auth" && (
             currentTable === "users" && (
               <AuthUsersTable props={tableProps} />
@@ -111,8 +116,19 @@ function Admin() {
           )}
 
           {currentPage === "darts" && (
+            <>
+              {currentTable === "users" && (
+                <DartsUsersTable props={tableProps} />
+              )}
+              {currentTable === "games" && (
+                <DartsGamesTable props={tableProps} />
+              )}
+            </>
+          )}
+
+          {currentPage === "cloud" && (
             currentTable === "users" && (
-              <DartsUsersTable props={tableProps} />
+              <CloudUsersTable props={tableProps} />
             )
           )}
         </div>

@@ -634,7 +634,7 @@ export const getStatisticsTop3Players = async () => {
 
 export const getStatisticsTop3DoorHitters = async () => {
   const response = await fetch(`${mongodbApiUrl}/darts/statistics/top3doorhitters`);
-  return await response.json()
+  return await response.json();
 }
 
 // Cloud
@@ -644,8 +644,18 @@ export const getFilesCreated = async () => {
   return await response.json();
 }
 
+export const getStatisticsUsersFilesCreated = async (userId) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/statistics/filesCreated/${userId}`);
+  return await response.json();
+}
+
 export const getFoldersCreated = async () => {
   const response = await fetch(`${mongodbApiUrl}/ftp/statistics/foldersCreated`);
+  return await response.json();
+}
+
+export const getStatisticsUsersFoldersCreated = async (userId) => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/statistics/foldersCreated/${userId}`);
   return await response.json();
 }
 

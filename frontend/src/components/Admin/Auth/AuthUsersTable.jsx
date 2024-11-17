@@ -54,15 +54,11 @@ function AuthUsersTable({ props }) {
   }
 
   useEffect(() => {
-    if (refreshingData) {
+    if (refreshingData === true || authUsers === null) {
       fetchAuthUsers();
       setRefreshingData(false);
     }
-  }, [refreshingData]);
-
-  useEffect(() => {
-    fetchAuthUsers();
-  }, []);
+  }, [refreshingData, authUsers]);
 
   return (
     <>
@@ -78,6 +74,7 @@ function AuthUsersTable({ props }) {
               <TableHead>Friends Code</TableHead>
               <TableHead>Online</TableHead>
               <TableHead>Verified</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead className='text-right'>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -99,6 +96,7 @@ function AuthUsersTable({ props }) {
                 </TableCell>
                 <TableCell>{user.online ? "Yes" : "No"}</TableCell>
                 <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
+                <TableCell>{user.role}</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
