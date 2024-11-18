@@ -1,4 +1,6 @@
 import AuthUsersTable from '@/components/Admin/Auth/AuthUsersTable';
+import CloudFilesTable from '@/components/Admin/Cloud/CloudFilesTable';
+import CloudFoldersTable from '@/components/Admin/Cloud/CloudFoldersTable';
 import CloudUsersTable from '@/components/Admin/Cloud/CloudUsersTable';
 import DartsGamesTable from '@/components/Admin/Darts/DartsGamesTable';
 import DartsUsersTable from '@/components/Admin/Darts/DartsUsersTable';
@@ -127,9 +129,17 @@ function Admin() {
           )}
 
           {currentPage === "cloud" && (
-            currentTable === "users" && (
-              <CloudUsersTable props={tableProps} />
-            )
+            <>
+              {currentTable === "users" && (
+                <CloudUsersTable props={tableProps} />
+              )}
+              {currentTable === "files" && (
+                <CloudFilesTable props={tableProps} />
+              )}
+              {currentTable === "folders" && (
+                <CloudFoldersTable props={tableProps} />
+              )}
+            </>
           )}
         </div>
       </div>

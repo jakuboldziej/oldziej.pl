@@ -15,6 +15,7 @@ function CloudUsersTable({ props }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCloudUsers = async () => {
+    console.log("fetching")
     try {
       const resUsers = await getFtpUsers();
 

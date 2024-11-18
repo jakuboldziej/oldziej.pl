@@ -20,7 +20,7 @@ export const FtpContextProvider = ({ children }) => {
 
   const fetchFiles = async (fetchFtpUser) => {
     const response = await getFiles(fetchFtpUser._id);
-    const filesR = response.files;
+    const filesR = response;
 
     if (filesR) {
       const sortedFiles = filesR.slice().sort((a, b) => {

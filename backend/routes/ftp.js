@@ -122,7 +122,9 @@ router.post('/files', async (req, res) => {
 // get multiple files
 router.get('/files', async (req, res) => {
   try {
-    const ftpFiles = await FtpFile.find({ ownerId: req.query.userId });
+    let filter = {};
+    if (req.query.userId) filter.ownerId = req.query.userId;
+    const ftpFiles = await FtpFile.find(filter);
 
     if (!ftpFiles || ftpFiles.length === 0) {
       return res.json({ files: [] })
@@ -355,10 +357,16 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:displayName', async (req, res) => {
+router.get('/users/:identifier', async (req, res) => {
   try {
-    const user = await FtpUser.findOne({ displayName: req.params.displayName });
-    res.json(user)
+    const identifier = req.params.identifier;
+    if (Types.ObjectId.isValid(identifier)) {
+      const ftpUser = await FtpUser.findOne({ _id: identifier });
+      res.json(ftpUser);
+    } else {
+      const ftpUser = await FtpUser.findOne({ displayName: identifier });
+      res.json(ftpUser);
+    }
   } catch (err) {
     res.json({ message: err.message })
   }

@@ -141,8 +141,8 @@ export const postFtpUser = async (userData) => {
   });
 }
 
-export const getFtpUser = async (uDisplayName) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${uDisplayName}`);
+export const getFtpUser = async (identifier) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${identifier}`);
   const user = await userResponse.json();
   return user;
 }
@@ -188,7 +188,7 @@ export const getFiles = async (userId = null) => {
 
   const response = await fetch(url);
   const data = await response.json();
-  return data;
+  return data.files;
 }
 
 export const getFile = async (id) => {
@@ -661,7 +661,7 @@ export const getStatisticsUsersFoldersCreated = async (userId) => {
 
 export const getStorageUsed = async () => {
   const response = await getFiles();
-  return calcStorageUsage(response.files).bytes;
+  return calcStorageUsage(response).bytes;
 }
 
 // Get gamesPlayed for portfolio
