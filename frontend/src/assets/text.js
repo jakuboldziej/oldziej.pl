@@ -8,7 +8,7 @@ export const textData = {
       "projects": "Projekty"
     },
     "landingPage": {
-      "desc": "Jestem freelance full-stack developerem, specjalizującym się w automatyzacji procesów w celu optymalizacji wydajności. Tworzę kompleksowe rozwiązania, łącząc frontend i backend, aby dostarczać efektywne i skalowalne aplikacje.",
+      "desc": "Jestem full-stack software developerem, specjalizującym się w automatyzacji procesów w celu optymalizacji wydajności. Tworzę kompleksowe rozwiązania, łącząc frontend i backend, aby dostarczać efektywne i skalowalne aplikacje.",
     },
     "experience": {
       "button": "Projekty",
@@ -42,7 +42,7 @@ export const textData = {
       "projects": "Projects"
     },
     "landingPage": {
-      "desc": "I am a freelance full-stack developer specializing in process automation to optimize performance. I create comprehensive solutions, combining frontend and backend to deliver efficient and scalable applications.",
+      "desc": "I am a full-stack software developer specializing in process automation to optimize performance. I create comprehensive solutions, combining frontend and backend to deliver efficient and scalable applications.",
     },
     "experience": {
       "button": "Projects",
