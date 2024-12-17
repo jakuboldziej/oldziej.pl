@@ -48,12 +48,13 @@ const BentoCard = ({
   target: string;
   cta: string;
 }) => {
-  const [gamesPlayed, setGamesPlayed] = useState(0);
+  const [gamesPlayed, setGamesPlayed] = useState(null);
   const { lang } = useContext(PortfolioContext);
 
   useEffect(() => {
     const fetchGamesPlayed = async () => {
-      setGamesPlayed(await getGamesPlayedPortfolio());
+      const fetchedGames = await getGamesPlayedPortfolio();
+      setGamesPlayed(fetchedGames);
     }
 
     fetchGamesPlayed();
@@ -82,11 +83,15 @@ const BentoCard = ({
             <>
               {lang === "pl" ? (
                 <span>
-                  W międzyczasie gram w darta, w 2023 roku stworzyłem aplikację internetową do darta i od tego czasu zagrałem <NumberTicker delay={0.18} value={gamesPlayed || 0} /> gier.
+                  W międzyczasie gram w darta, w 2023 roku stworzyłem aplikację internetową do darta i od tego czasu zagrałem
+                  <span> {gamesPlayed ? <NumberTicker delay={0.18} value={gamesPlayed} /> : 0} </span>
+                  gier.
                 </span>
               ) : (
                 <span>
-                  In the meantime I play darts, in 2023 I've created a web app for darts and since then I played <NumberTicker delay={0.18} value={gamesPlayed || 0} /> games.
+                  In the meantime I play darts, in 2023 I've created a web app for darts and since then I played
+                  <span> {gamesPlayed ? <NumberTicker delay={0.18} value={gamesPlayed} /> : 0} </span>
+                  games.
                 </span>
               )}
             </>

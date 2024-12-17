@@ -1,6 +1,8 @@
-const dotenv = require('dotenv');
-const path = require('path');
 const bcrypt = require("bcrypt");
+
+const helmet = require("helmet");
+const xssClean = require("xss-clean");
+const mongoSanitize = require("express-mongo-sanitize");
 
 require('dotenv').config()
 
@@ -17,16 +19,27 @@ const { Server } = require("socket.io")
 const { instrument } = require("@socket.io/admin-ui");
 
 const environment = process.env.NODE_ENV || 'production';
-
-app.use(express.static(path.join(__dirname, '../frontend', 'dist')));
+const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
+const portfolioDomain = environment === "production" ? process.env.PORTFOLIO_DOMAIN : process.env.PORTFOLIO_DOMAIN_LOCAL;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json())
 
+app.use(helmet());
+app.use(xssClean());
+app.use(mongoSanitize());
+
+const allowedOrigins = [domain, portfolioDomain];
+
 app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
   res.setHeader("Content-Security-Policy", "upgrade-insecure-requests");
-  res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   next();
@@ -43,7 +56,6 @@ ftpConn.once('open', () => console.log('Connected to Ftp Database'));
 
 module.exports = { dartsConn, ftpConn, mongoURIFTP };
 
-
 const dartsRouter = require('./routes/darts')
 app.use('/api/darts', dartsRouter);
 
@@ -56,11 +68,6 @@ app.use('/api/ftp', ftpRouter);
 const emailsRouter = require('./routes/emails');
 app.use('/api/emails', emailsRouter);
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend', 'dist', 'index.html'));
-});
-
-const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
 const server = createServer(app);
 const io = new Server(server, {
   cors: {

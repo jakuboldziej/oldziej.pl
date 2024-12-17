@@ -614,6 +614,7 @@ export const userDeletedAccountEmail = async (data) => {
 
 export const getStatisticsDartsGames = async () => {
   const response = await fetch(`${mongodbApiUrl}/darts/statistics/dartsGames`);
+
   return await response.json()
 }
 
