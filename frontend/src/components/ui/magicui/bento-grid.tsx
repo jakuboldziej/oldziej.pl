@@ -82,11 +82,11 @@ const BentoCard = ({
             <>
               {lang === "pl" ? (
                 <span>
-                  W międzyczasie gram w darta, w 2023 roku stworzyłem aplikację internetową do darta i od tego czasu zagrałem <NumberTicker delay={0.18} value={gamesPlayed} /> gier.
+                  W międzyczasie gram w darta, w 2023 roku stworzyłem aplikację internetową do darta i od tego czasu zagrałem <NumberTicker delay={0.18} value={gamesPlayed || 0} /> gier.
                 </span>
               ) : (
                 <span>
-                  In the meantime I play darts, in 2023 I've created a web app for darts and since then I played <NumberTicker delay={0.18} value={gamesPlayed} /> games.
+                  In the meantime I play darts, in 2023 I've created a web app for darts and since then I played <NumberTicker delay={0.18} value={gamesPlayed || 0} /> games.
                 </span>
               )}
             </>
