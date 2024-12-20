@@ -3,6 +3,8 @@ import Navbar from '@/components/Portfolio/Navbar'
 import { useParams } from 'react-router';
 import ImgMmagusiak from "@/assets/images/Portfolio/ProjectsImages/mmagusiak.png"
 import ImgMmagusiakMobile from "@/assets/images/Portfolio/ProjectsImages/mmagusiak_mobile.png"
+import ImgPromaxSport from "@/assets/images/Portfolio/ProjectsImages/promaxsport.png"
+import ImgPromaxSportMobile from "@/assets/images/Portfolio/ProjectsImages/promaxsport_mobile.png"
 import ImgHagaPolska from "@/assets/images/Portfolio/ProjectsImages/hagapolska.png"
 import ImgHagaPolskaMobile from "@/assets/images/Portfolio/ProjectsImages/hagapolska_mobile.png"
 import ImgDarts from "@/assets/images/Portfolio/ProjectsImages/darts.png"
@@ -17,7 +19,7 @@ import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
-import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiResend, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
+import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiGoogleanalytics, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiResend, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
 import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
@@ -33,7 +35,18 @@ function Project() {
   const [techStackIcons, setTechStackIcons] = useState([]);
 
   useEffect(() => {
-    if (projectName === "mmagusiak") {
+    if (projectName === "promaxsport") {
+      setMainImage(isMobile ? ImgPromaxSportMobile : ImgPromaxSport);
+      setMainLink({ text: "promaxsport.pl", href: 'https://promaxsport.pl' });
+      setDesignedBy('Jakub Ołdziejewski')
+      setTechStackIcons([
+        <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
+        <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
+        <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
+        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
+        <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
+      ]);
+    } else if (projectName === "mmagusiak") {
       setMainImage(isMobile ? ImgMmagusiakMobile : ImgMmagusiak);
       setMainLink({ text: "www.mmagusiak.com", href: 'https://www.mmagusiak.com' });
       setDesignedBy('Mateusz Magusiak')
@@ -43,6 +56,7 @@ function Project() {
         <SiBootstrap key={'#7952B3'} width={46} height={46} fill='#7952B3' />,
         <SiSanity key={'#F03E2F'} width={46} height={46} fill='#F03E2F' />,
         <SiFirebase key={'#DD2C00'} width={46} height={46} fill='#DD2C00' />,
+        <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
       ]);
     } else if (projectName === "hagapolska") {
       setMainImage(isMobile ? ImgHagaPolskaMobile : ImgHagaPolska);
@@ -101,6 +115,7 @@ function Project() {
         <img key={'magicui'} title='magicui' alt='magicui' src={MagicUiIcon} width={46} height={46} />,
         <SiSimpleicons key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
         <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
+        <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
       ]);
     }
   }, [projectName]);
