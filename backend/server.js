@@ -26,11 +26,32 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json())
 
-app.use(helmet());
+const allowedOrigins = [domain, portfolioDomain];
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", ...allowedOrigins],
+    },
+  },
+  crossOriginEmbedderPolicy: true,
+  crossOriginOpenerPolicy: true,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  dnsPrefetchControl: true,
+  frameguard: { action: "deny" },
+  hidePoweredBy: true,
+  hsts: true,
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  xssFilter: true,
+}));
 app.use(xssClean());
 app.use(mongoSanitize());
-
-const allowedOrigins = [domain, portfolioDomain];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
