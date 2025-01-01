@@ -29,7 +29,7 @@
     "pm2": "^5.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-email": "^2.1.6",
+    "react-email": "^3.0.4",
     "resend": "^3.5.0",
     "socket.io": "^4.7.5",
     "xss-clean": "^0.1.4"
