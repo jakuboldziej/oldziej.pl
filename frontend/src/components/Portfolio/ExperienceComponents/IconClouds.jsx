@@ -8,10 +8,8 @@ const programmingLanguages = [
   "python",
   "html5",
   "css3",
-  "csharp",
   "cplusplus",
   "php",
-  "java",
 ];
 
 const frameworks = [
@@ -31,12 +29,12 @@ const frameworks = [
   "npm",
   "shadcnui",
   "auth0",
-  "chartdotjs"
+  "chartdotjs",
+  "svelte"
 ];
 
 const services = [
   "mongodb",
-  "oracle",
   "firebase",
   "figma",
   "github",
@@ -49,7 +47,8 @@ const services = [
   "vercel",
   "netlify",
   "trello",
-  "digitalocean"
+  "digitalocean",
+  "openjdk"
 ]
 
 function IconClouds() {
