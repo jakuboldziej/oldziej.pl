@@ -60,7 +60,6 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
-  res.setHeader("Content-Security-Policy", "upgrade-insecure-requests");
   res.setHeader("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   next();
