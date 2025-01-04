@@ -1,10 +1,10 @@
 import { toast } from "sonner";
+import DOMPurify from 'dompurify';
 
 function ShowNewToast(title, description, type = "info") {
-  const renderHTML = (html) => ({ __html: html });
-
+  console.log(description)
   toast(title, {
-    description: <div dangerouslySetInnerHTML={renderHTML(description)} />,
+    description: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description) }} />,
     action: {
       label: "Close",
       onClick: () => { },

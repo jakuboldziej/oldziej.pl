@@ -166,7 +166,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       "throws": {
         "normal": 0,
         "doubles": 0,
-        "tripes": 0,
+        "triples": 0,
         "overthrows": 0,
         "doors": 0
       },
@@ -351,7 +351,13 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
                 <span>Add Users</span>
-                <Button className="transition-opacity" disabled={selectGameMode.includes("Reverse X01") && usersPlaying.length === 2} variant="outline_white" onClick={() => setShowAddUser(true)}>+ Add user</Button>
+                <Button
+                  className="transition-opacity"
+                  disabled={selectGameMode.includes("Reverse X01") && usersPlaying.length === 2}
+                  variant="outline_white"
+                  onClick={() => setShowAddUser(true)}>
+                  + Add user
+                </Button>
               </CardHeader>
               <hr />
               <CardContent className="card-content p-0">

@@ -1,4 +1,4 @@
-import { handlePodiumReverseX01, handlePointsReverseX01 } from '@/components/Home/Darts/game logic/game modes/Reverse X01';
+import { doorsValueReverseX01, handlePodiumReverseX01, handlePointsReverseX01, zeroValueReverseX01 } from '@/components/Home/Darts/game logic/game modes/Reverse X01';
 import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Home/Darts/game logic/game modes/X01';
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
 import { getDartsUser, putDartsGame, putDartsUser } from '@/lib/fetch';
@@ -25,20 +25,22 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const updateGameState = async (gameP) => {
     const gameCopy = { ...gameP };
+    console.log(gameCopy)
 
     setGame(gameCopy);
-    if (game?.training) return;
+
+    if (gameCopy?.training) return;
 
     socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
     localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
     const { record, userWon, ...restGameData } = gameCopy;
+    console.log(restGameData)
     await putDartsGame(restGameData);
   }
 
   const handleRound = (value, handleShowP) => {
     handleShow = handleShowP;
-
     if (Number.isInteger(value)) {
       handleUsersState(value);
     } else if (!Number.isInteger(value)) {
@@ -144,12 +146,10 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const handleSpecialValue = async (value) => {
     if (value === "DOORS") {
-      currentUser.throws["doors"] += 1;
-      currentUser.currentThrows["doors"] += 1;
       if (game.gameMode === "Reverse X01") {
         handleUsersState(doorsValueReverseX01);
       } else {
-        handleUsersState(0);
+        handleUsersState("DOORS");
       }
     } else if (value === "BACK") {
       handleRecord("back", false);
@@ -196,8 +196,16 @@ export const DartsGameContextProvider = ({ children }) => {
       handlePoints(specialState[1], value);
       setSpecialState([false, ""]);
     } else {
-      if (setSpecialState !== "DOORS") currentUser.throws["normal"] += 1;
-      if (setSpecialState !== "DOORS") currentUser.currentThrows["normal"] += 1;
+      if (value === "DOORS") {
+        currentUser.turns[currentUser.currentTurn] = 0;
+        currentUser.throws["doors"] += 1;
+        currentUser.currentThrows["doors"] += 1;
+        value = 0;
+      }
+      else {
+        currentUser.throws["normal"] += 1;
+        currentUser.currentThrows["normal"] += 1;
+      }
       if (game.gameMode === "Reverse X01" && value === 0) {
         currentUser.turns[currentUser.currentTurn] = zeroValueReverseX01;
       } else {

@@ -65,9 +65,9 @@ app.use((req, res, next) => {
   next();
 });
 
-const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@188.122.23.154/darts`
+const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@192.168.1.109/darts`
 const dartsConn = mongoose.createConnection(mongoURIDarts);
-const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@188.122.23.154/ftp`
+const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@192.168.1.109/ftp`
 const ftpConn = mongoose.createConnection(mongoURIFTP);
 
 dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
