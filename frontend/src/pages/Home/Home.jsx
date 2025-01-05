@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { getFilesCreated, getFoldersCreated, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints, getStorageUsed } from "@/lib/fetch";
+import { getFilesCreated, getFoldersCreated, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints, getStatisticsStorageUsed } from "@/lib/fetch";
 import { Card, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/Home/AuthContext";
@@ -34,7 +34,7 @@ function Home() {
 
       const filesCreated = await getFilesCreated();
       const foldersCreated = await getFoldersCreated();
-      const storageUsed = await getStorageUsed();
+      const storageUsed = await getStatisticsStorageUsed();
 
       setCloudStatistics({
         filesCreated: filesCreated,
@@ -95,7 +95,7 @@ function Home() {
             ) : (
               <div className="flex justify-center flex-wrap gap-10">
                 <div className="text-center">
-                  <span>Users created</span>
+                  <span>Users uploaded</span>
                   <span className="font-bold">{cloudStatistics.filesCreated}</span>
                   <span>files</span>
                 </div>

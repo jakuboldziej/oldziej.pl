@@ -8,6 +8,7 @@ const { mongoURIFTP, ftpConn } = require("../server");
 const FtpUser = require("../models/ftpUser");
 const FtpFile = require("../models/ftpFile");
 const FtpFolder = require("../models/ftpFolder");
+const authenticateUser = require("../middleware/auth");
 
 let bucket;
 
@@ -40,13 +41,14 @@ const storage = new GridFsStorage({
     });
   }
 });
+
 const upload = multer({ storage, limits: { fileSize: 1000000000 } });
 
 // merging Files
 const mergeFtpFile = async (ftpFile) => {
   const file = (await bucket.find({ _id: new Types.ObjectId(ftpFile.fileId) }).toArray())[0];
 
-  if (!file) console.log("Error fetching file")
+  if (!file) console.error('Error fetching file');
 
   const updatedFile = {
     ...ftpFile._doc,
@@ -95,12 +97,12 @@ const getFtpUser = async (req, res, next) => {
 // Files
 
 // upload file
-router.post('/upload', upload.single('file'), (req, res) => {
+router.post('/upload', authenticateUser, upload.single('file'), (req, res) => {
   res.json({ file: req.file })
 })
 
 // create fileObject
-router.post('/files', async (req, res) => {
+router.post('/files', authenticateUser, async (req, res) => {
   const newFtpFile = new FtpFile({
     fileId: req.body.fileId,
     ownerId: req.body.ownerId,
@@ -120,7 +122,7 @@ router.post('/files', async (req, res) => {
 })
 
 // get multiple files
-router.get('/files', async (req, res) => {
+router.get('/files', authenticateUser, async (req, res) => {
   try {
     let filter = {};
     if (req.query.userId) filter.ownerId = req.query.userId;
@@ -138,7 +140,7 @@ router.get('/files', async (req, res) => {
 })
 
 // get one file
-router.get('/files/:id', async (req, res) => {
+router.get('/files/:id', authenticateUser, async (req, res) => {
   try {
     const ftpFile = await FtpFile.findOne({ _id: req.params.id });
 
@@ -155,7 +157,7 @@ router.get('/files/:id', async (req, res) => {
 })
 
 // update file
-router.put('/files/:id', async (req, res) => {
+router.put('/files/:id', authenticateUser, async (req, res) => {
   try {
     const newName = req.body.newFileName;
 
@@ -181,7 +183,7 @@ router.put('/files/:id', async (req, res) => {
 });
 
 // delete file
-router.delete('/files/:id', async (req, res) => {
+router.delete('/files/:id', authenticateUser, async (req, res) => {
   try {
     const ftpFile = await FtpFile.findOne({ _id: req.params.id });
 
@@ -203,7 +205,7 @@ router.delete('/files/:id', async (req, res) => {
 })
 
 // render file
-router.get('/files/render/:filename', async (req, res) => {
+router.get('/files/render/:filename', authenticateUser, async (req, res) => {
   try {
     let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
     if (!file || file.length === 0) return res.redirect('https://home.oldziej.pl/ftp');
@@ -216,7 +218,7 @@ router.get('/files/render/:filename', async (req, res) => {
 })
 
 // download file
-router.get('/files/download/:filename', async (req, res) => {
+router.get('/files/download/:filename', authenticateUser, async (req, res) => {
   try {
     let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
     if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
@@ -236,7 +238,7 @@ router.get('/files/download/:filename', async (req, res) => {
 // Folders
 
 // get folders
-router.get('/folders', async (req, res) => {
+router.get('/folders', authenticateUser, async (req, res) => {
   try {
     let filter = {};
     if (req.query.userId) filter["ownerId"] = req.query.userId;
@@ -254,7 +256,7 @@ router.get('/folders', async (req, res) => {
 })
 
 // get one folder
-router.get('/folders/:id', async (req, res) => {
+router.get('/folders/:id', authenticateUser, async (req, res) => {
   try {
     let folder = await FtpFolder.findOne({ _id: req.params.id });
 
@@ -269,7 +271,7 @@ router.get('/folders/:id', async (req, res) => {
 })
 
 // create folder
-router.post('/folders', async (req, res) => {
+router.post('/folders', authenticateUser, async (req, res) => {
   const ftpFolder = new FtpFolder({
     name: req.body.name,
     ownerId: req.body.ownerId,
@@ -284,7 +286,7 @@ router.post('/folders', async (req, res) => {
 })
 
 // update folder
-router.put('/folders/:id', async (req, res) => {
+router.put('/folders/:id', authenticateUser, async (req, res) => {
   try {
     const updateFolder = req.body.data.folder;
     await FtpFolder.updateOne({ _id: req.params.id }, {
@@ -302,7 +304,7 @@ router.put('/folders/:id', async (req, res) => {
 });
 
 // delete folder
-router.delete('/folders/:id', async (req, res) => {
+router.delete('/folders/:id', authenticateUser, async (req, res) => {
   try {
     const fetchedFolder = await FtpFolder.findOneAndDelete({ _id: req.params.id });
 
@@ -334,7 +336,7 @@ router.delete('/folders/:id', async (req, res) => {
 })
 
 // Users
-router.get('/users', async (req, res) => {
+router.get('/users', authenticateUser, async (req, res) => {
   try {
     const users = await FtpUser.find()
     res.json(users)
@@ -343,7 +345,7 @@ router.get('/users', async (req, res) => {
   }
 })
 
-router.post('/users', async (req, res) => {
+router.post('/users', authenticateUser, async (req, res) => {
   const user = new FtpUser({
     displayName: req.body.displayName,
     email: req.body.email,
@@ -357,7 +359,7 @@ router.post('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:identifier', async (req, res) => {
+router.get('/users/:identifier', authenticateUser, async (req, res) => {
   try {
     const identifier = req.params.identifier;
     if (Types.ObjectId.isValid(identifier)) {
@@ -372,7 +374,7 @@ router.get('/users/:identifier', async (req, res) => {
   }
 });
 
-router.delete('/users/:displayName', async (req, res) => {
+router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
     await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
     res.json({ ok: true });
@@ -381,7 +383,7 @@ router.delete('/users/:displayName', async (req, res) => {
   }
 });
 
-router.put("/users/:displayName", getFtpUser, async (req, res) => {
+router.put("/users/:displayName", authenticateUser, getFtpUser, async (req, res) => {
   try {
     const updatedUser = await FtpUser.findByIdAndUpdate(
       res.user._id,
@@ -435,6 +437,20 @@ router.get('/statistics/foldersCreated/:userId', async (req, res) => {
     res.json(userFoldersCount);
   } catch (err) {
     res.json({ message: err.message })
+  }
+});
+
+router.get('/statistics/storageUsed/', async (req, res) => {
+  try {
+    const filesCollection = ftpConn.db.collection('uploads.files');
+
+    const aggregateTotalStorage = await filesCollection.aggregate([
+      { $group: { _id: null, totalStorage: { $sum: '$length' } } }
+    ]).toArray();
+
+    res.json(aggregateTotalStorage[0].totalStorage);
+  } catch (err) {
+    res.json({ err: err.message })
   }
 });
 

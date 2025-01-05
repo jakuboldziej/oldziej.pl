@@ -1,73 +1,106 @@
-const { changeDbUserOnlineStatus } = require('./utils');
+const { io } = require('../server');
+const { addingOnlineUser, scheduleUserOffline } = require('./utils');
 
-// Handling Online Users
+io.on('connection', (socket) => {
+  // Listeners
 
-let onlineUsers = [];
-let disconnectTimeouts = {};
+  // Admin Listeners
 
-const addingOnlineUser = (data, socketId, io) => {
-  const emit = JSON.parse(data);
+  socket.on("verifyEmailAdmin", (data) => {
+    const verifyData = JSON.parse(data);
 
-  const existingUser = onlineUsers.find((user) => user._id === emit.user._id);
-
-  if (!existingUser) {
-    onlineUsers.push({ ...emit.user, socketId });
-    changeDbUserOnlineStatus(emit.user._id, true);
-
-    io.emit('onlineUsersListener', JSON.stringify({
-      updatedOnlineUsers: onlineUsers,
-      updatedUser: {
-        _id: emit.user._id,
-        displayName: emit.user.displayName
-      },
-      isUserOnline: true
+    io.emit("verifyEmail", JSON.stringify({
+      userDisplayName: verifyData.userDisplayName,
+      verified: verifyData.verified
     }));
-  } else {
-    existingUser.socketId = socketId;
-  }
+  });
 
-  // Clearing the Timeout
-  if (disconnectTimeouts[emit.user._id]) {
-    clearTimeout(disconnectTimeouts[emit.user._id]);
-    delete disconnectTimeouts[emit.user._id];
-  }
-}
+  // Live game
 
-const scheduleUserOffline = (socketId, io) => {
-  const delay = 30000;
+  socket.on("joinLiveGamePreview", (data) => {
+    const joinData = JSON.parse(data);
 
-  const user = onlineUsers.find((user) => user.socketId === socketId);
+    socket.join(`game-${joinData.gameCode}`);
+  });
 
-  if (user) {
-    disconnectTimeouts[user._id] = setTimeout(() => {
-      const onlineUsersData = removeUserOnDisconnect(user._id);
+  socket.on("leaveLiveGamePreview", (data) => {
+    const leaveData = JSON.parse(data);
 
-      io.emit('onlineUsersListener', JSON.stringify({
-        updatedOnlineUsers: onlineUsersData.onlineUsers,
-        updatedUser: onlineUsersData.updatedUser,
-        isUserOnline: false
-      }));
-    }, delay);
-  }
-}
+    socket.leave(`game-${leaveData.gameCode}`);
+  });
 
-const removeUserOnDisconnect = (userId) => {
-  const user = onlineUsers.find((user) => user._id === userId);
+  socket.on("joinLiveGameFromQrCode", (data) => {
+    const joinData = JSON.parse(data);
 
-  if (user) {
-    const index = onlineUsers.indexOf(user);
-    onlineUsers.splice(index, 1);
-    changeDbUserOnlineStatus(user._id, false);
+    io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
+  });
 
-    return { onlineUsers, updatedUser: { _id: user._id, displayName: user.displayName } };
-  } else {
-    return { onlineUsers, updatedUser: null };
-  }
-}
+  socket.on("updateLiveGamePreview", (data) => {
+    const gameData = JSON.parse(data);
 
+    io.to(`game-${gameData.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(gameData));
+  });
 
-module.exports = {
-  addingOnlineUser,
-  removeUserOnDisconnect,
-  scheduleUserOffline,
-};
+  // Live game preview events
+
+  socket.on("playAgainButtonServer", (data) => {
+    const playAgainData = JSON.parse(data);
+    const oldGameCode = playAgainData.oldGameCode;
+    const newGame = playAgainData.newGame;
+
+    io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
+    io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
+  });
+
+  socket.on("userOverthrow", (data) => {
+    const { userDisplayName, gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
+  });
+
+  socket.on("hostDisconnectedFromGame", (data) => {
+    const { gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
+    io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
+  });
+
+  socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
+    io.emit("ESP32_CONTROL_LED", data);
+  });
+
+  socket.on("ESP32_CHECK_LED_SERVER", () => {
+    io.emit("ESP32_CHECK_LED");
+  });
+
+  socket.on("ESP32_LED_STATUS_SERVER", (data) => {
+    io.emit("ESP32_LED_STATUS", data);
+  });
+
+  // Mobile App Inputs
+
+  socket.on("externalKeyboardInput", (data) => {
+    const { gameCode, input } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("externalKeyboardInputClient", JSON.stringify(input));
+  });
+
+  socket.on("externalKeyboardPlayAgain", (data) => {
+    const { gameCode } = JSON.parse(data);
+
+    io.to(`game-${gameCode}`).emit("externalKeyboardPlayAgainClient", JSON.stringify(gameCode));
+  });
+
+  // Handling Online Users
+  socket.on("addingOnlineUser", (data) => {
+    addingOnlineUser(data, socket.id, io);
+  });
+
+  socket.on('disconnect', () => {
+    scheduleUserOffline(socket.id, io);
+  });
+
+  socket.on('connection_error', (err) => {
+    console.error(err)
+  });
+});

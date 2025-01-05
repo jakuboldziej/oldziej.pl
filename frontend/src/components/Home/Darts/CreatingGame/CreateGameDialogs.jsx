@@ -6,7 +6,6 @@ function CreateGameDialogs({ props }) {
   const {
     customStartPoints,
     setCustomStartPoints,
-    selectStartPoints,
     setSelectStartPoints,
     showCustomPoints,
     setShowCustomPoints,

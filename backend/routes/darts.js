@@ -3,6 +3,7 @@ const router = express.Router()
 const DartsGame = require('../models/dartsGame')
 const DartsUser = require('../models/dartsUser')
 const { Types } = require("mongoose")
+const authenticateUser = require("../middleware/auth")
 
 const getDartsUser = async (req, res, next) => {
   let user;
@@ -13,7 +14,7 @@ const getDartsUser = async (req, res, next) => {
     } else {
       user = await DartsUser.findOne({ displayName: identifier });
     }
-    if (user == null) return res.status(404).json({ message: "User not found." });
+    if (user == null) return res.json({ message: "User not found." });
 
     res.user = user;
   } catch (err) {
@@ -51,7 +52,7 @@ const generateUniqueGameCode = async () => {
 }
 
 // Darts Games
-router.get('/dartsGames', async (req, res) => {
+router.get('/dartsGames', authenticateUser, async (req, res) => {
   try {
     let filter = {};
     const userDisplayName = req.query.user
@@ -65,12 +66,12 @@ router.get('/dartsGames', async (req, res) => {
   }
 })
 
-router.get('/dartsGames/:identifier', getDartsGame, async (req, res) => {
+router.get('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
   res.json(res.game)
 });
 
 
-router.post('/dartsGames', async (req, res) => {
+router.post('/dartsGames', authenticateUser, async (req, res) => {
   const body = req.body;
 
   const dartsGame = new DartsGame({
@@ -101,7 +102,7 @@ router.post('/dartsGames', async (req, res) => {
   }
 });
 
-router.put("/dartsGames/:identifier", getDartsGame, async (req, res) => {
+router.put("/dartsGames/:identifier", authenticateUser, getDartsGame, async (req, res) => {
   const { ...updateData } = req.body;
   try {
     const updatedGame = await DartsGame.findByIdAndUpdate(
@@ -118,7 +119,7 @@ router.put("/dartsGames/:identifier", getDartsGame, async (req, res) => {
   }
 });
 
-router.delete('/dartsGames/:identifier', getDartsGame, async (req, res) => {
+router.delete('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
   try {
     await DartsGame.deleteOne({ _id: res.game._id });
     res.json({ message: 'Game deleted successfully' });
@@ -140,7 +141,7 @@ router.post("/dartsGames/join-live-game-preview/:gameCode", async (req, res) => 
 });
 
 // Darts Users
-router.get('/dartsUsers', async (req, res) => {
+router.get('/dartsUsers', authenticateUser, async (req, res) => {
   try {
     const dartsUsers = await DartsUser.find()
     res.json(dartsUsers)
@@ -149,20 +150,11 @@ router.get('/dartsUsers', async (req, res) => {
   }
 })
 
-router.get('/dartsUsers/:identifier', getDartsUser, async (req, res) => {
+router.get('/dartsUsers/:identifier', authenticateUser, getDartsUser, async (req, res) => {
   res.send(res.user);
 });
 
-router.delete('/dartsUsers/:displayName', async (req, res) => {
-  try {
-    await DartsUser.deleteOne({ displayName: req.params.displayName });
-    res.json({ ok: true });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-router.put("/dartsUsers/:identifier", getDartsUser, async (req, res) => {
+router.put("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (req, res) => {
   try {
     const updatedUser = await DartsUser.findByIdAndUpdate(
       res.user._id,
@@ -180,7 +172,16 @@ router.put("/dartsUsers/:identifier", getDartsUser, async (req, res) => {
   }
 });
 
-router.post('/dartsUsers', async (req, res) => {
+router.delete('/dartsUsers/:displayName', authenticateUser, async (req, res) => {
+  try {
+    await DartsUser.deleteOne({ displayName: req.params.displayName });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.post('/dartsUsers', authenticateUser, async (req, res) => {
   const body = req.body;
   const dartsUser = new DartsUser({
     displayName: body.displayName,

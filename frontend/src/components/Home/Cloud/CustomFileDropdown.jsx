@@ -36,7 +36,7 @@ function CustomFileDropdown(props) {
         ShowNewToast("Link Copied", "Link copied to clipboard");
       })
       .catch((error) => {
-        console.log("Failed to copy text:", error);
+        console.error("Failed to copy text:", error);
       });
   }
 

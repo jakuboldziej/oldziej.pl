@@ -39,7 +39,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 2; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
+  for (let i = 1; i <= 1; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
@@ -146,8 +146,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     setSelectStartPoints(customStartPoints);
   }
 
-  const handleAddingNewUser = (e) => {
+  const handleAddingNewUser = async (e) => {
     e.preventDefault();
+
+    const existingUser = await getDartsUser(newUser);
+    if (existingUser && !existingUser.message) return ShowNewToast("Error adding user", "This user exists, you can't add it.");
+
+    const userInList = usersPlaying.find(userPlaying => userPlaying.displayName === newUser);
+    if (userInList) return ShowNewToast("Error adding user", "This user is playing.");
 
     const tempUser = {
       "temporary": true,
@@ -216,7 +222,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
 
     const gameData = {
-      created_at: Date.now(),
       created_by: currentUser.displayName,
       users: updatedUsers,
       podiums: usersPodium,

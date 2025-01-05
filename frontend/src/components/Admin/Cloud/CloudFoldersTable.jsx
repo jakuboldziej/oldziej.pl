@@ -31,7 +31,6 @@ function CloudFoldersTable({ props }) {
   const fetchFolders = async () => {
     try {
       const fetchedFolders = await getFolders();
-      console.log(fetchedFolders[0])
       const foldersWithOwners = await Promise.all(
         fetchedFolders.map(async (folder) => {
           const owner = await getFtpUser(folder.ownerId);
@@ -46,7 +45,7 @@ function CloudFoldersTable({ props }) {
       setFolders(foldersWithOwners);
       setIsLoading(false);
     } catch (err) {
-      console.log('Error fetching', err);
+      console.error('Error fetching', err);
       setIsLoading(false);
     }
   }

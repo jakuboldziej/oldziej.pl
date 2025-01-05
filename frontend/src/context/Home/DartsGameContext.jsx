@@ -25,7 +25,6 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const updateGameState = async (gameP) => {
     const gameCopy = { ...gameP };
-    console.log(gameCopy)
 
     setGame(gameCopy);
 
@@ -35,7 +34,6 @@ export const DartsGameContextProvider = ({ children }) => {
     localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
     const { record, userWon, ...restGameData } = gameCopy;
-    console.log(restGameData)
     await putDartsGame(restGameData);
   }
 
@@ -103,37 +101,37 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const handleDartsData = async () => {
-    if (!game.training) {
-      game.users.map(async (user) => {
-        if (user.temporary || user.verified === false) return;
+    game.users.map(async (user) => {
+      if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
 
-        const dartUser = await getDartsUser(user.displayName);
+      if (user.temporary || user.verified === false) return;
+      if (game.training) return
 
-        if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
-        if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
-        if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
+      const dartUser = await getDartsUser(user.displayName);
 
-        dartUser.throws["doors"] += user.throws["doors"];
-        dartUser.throws["doubles"] += user.throws["doubles"];
-        dartUser.throws["triples"] += user.throws["triples"];
-        dartUser.throws["normal"] += user.throws["normal"];
+      if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
+      if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
+      if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
 
-        if (game.gameMode === "X01") {
-          dartUser.throws["overthrows"] += user.throws["overthrows"];
-          dartUser.overAllPoints += user.allGainedPoints;
-          currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+      dartUser.throws["doors"] += user.throws["doors"];
+      dartUser.throws["doubles"] += user.throws["doubles"];
+      dartUser.throws["triples"] += user.throws["triples"];
+      dartUser.throws["normal"] += user.throws["normal"];
 
-          if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
-          if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
-          if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
-          if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
-        }
+      if (game.gameMode === "X01") {
+        dartUser.throws["overthrows"] += user.throws["overthrows"];
+        dartUser.overAllPoints += user.allGainedPoints;
+        currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
-        dartUser.gamesPlayed += 1;
+        if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
+        if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
+        if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
+      }
 
-        await putDartsUser(dartUser);
-      });
-    }
+      dartUser.gamesPlayed += 1;
+
+      await putDartsUser(dartUser);
+    });
 
     game.podium = {
       1: game.podium[1],

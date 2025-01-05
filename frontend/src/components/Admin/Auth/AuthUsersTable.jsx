@@ -48,7 +48,7 @@ function AuthUsersTable({ props }) {
       setAuthUsers(resUsers);
       setIsLoading(false);
     } catch (err) {
-      console.log('Error fetching', err);
+      console.error('Error fetching', err);
       setIsLoading(false);
     }
   }

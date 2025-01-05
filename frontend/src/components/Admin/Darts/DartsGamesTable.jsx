@@ -34,7 +34,7 @@ function DartsGamesTable({ props }) {
       setDartsGames(fetchedDartsGames);
       setIsLoading(false);
     } catch (err) {
-      console.log('Error fetching', err);
+      console.error('Error fetching', err);
       setIsLoading(false);
     }
   }

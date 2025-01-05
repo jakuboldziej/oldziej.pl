@@ -73,7 +73,7 @@ function GameSummary({ show, setShow }) {
         users: usersCopy
       }],
     }
-    const gameDataMerged = { ...gameCopy, ...gameData }
+    const gameDataMerged = { ...gameCopy, ...gameData };
 
     if (!previousSettings.training) {
       game.training = false;

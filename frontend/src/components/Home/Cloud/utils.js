@@ -2,12 +2,18 @@ import { deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } f
 
 // Global
 
-export const calcStorageUsage = (files) => {
-  if (!files) return ['0 Bytes', 0];
+export const calcStorageUsage = (files, bytes) => {
+  if (!files && !bytes) return ['0 Bytes', 0];
+
   let storageBytesSum = 0;
-  files.map(file => {
-    storageBytesSum += file.length;
-  });
+
+  if (bytes) {
+    storageBytesSum = bytes;
+  } else {
+    files.map(file => {
+      storageBytesSum += file.length;
+    });
+  }
 
   const totalStorageFromGBToBytes = 100 * 1024 * 1024 * 1024;
   const percentage = (storageBytesSum / totalStorageFromGBToBytes) * 100;

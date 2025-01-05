@@ -4,6 +4,8 @@ const User = require('../models/user')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
+const authenticateUser = require("../middleware/auth");
+const { io } = require("../server");
 
 const getAuthUser = async (req, res, next) => {
   let user;
@@ -19,7 +21,7 @@ const getAuthUser = async (req, res, next) => {
 }
 
 // Users
-router.get('/users', async (req, res) => {
+router.get('/users', authenticateUser, async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 })
     res.json(users)
@@ -28,7 +30,7 @@ router.get('/users', async (req, res) => {
   }
 });
 
-router.get('/users/:identifier', async (req, res) => {
+router.get('/users/:identifier', authenticateUser, async (req, res) => {
   try {
     const identifier = req.params.identifier;
     if (Types.ObjectId.isValid(identifier)) {
@@ -43,7 +45,7 @@ router.get('/users/:identifier', async (req, res) => {
   }
 });
 
-router.get('/users/check-existing-mail/:email', async (req, res) => {
+router.get('/users/check-existing-mail/:email', authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email }, { password: 0 })
     res.json(user)
@@ -69,7 +71,7 @@ router.put("/users/:displayName", getAuthUser, async (req, res) => {
   }
 });
 
-router.delete('/users/:displayName', async (req, res) => {
+router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
     await User.deleteOne({ displayName: req.params.displayName });
     res.json({ ok: true });
@@ -80,7 +82,7 @@ router.delete('/users/:displayName', async (req, res) => {
 
 // Friends
 
-router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', async (req, res) => {
+router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', authenticateUser, async (req, res) => {
   try {
     const currentUser = await User.findOne({ displayName: req.params.currentUserDisplayName }, { password: 0 });
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === userDisplayName);
@@ -92,10 +94,8 @@ router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', a
   }
 });
 
-router.post('/users/send-friends-request/', async (req, res) => {
+router.post('/users/send-friends-request/', authenticateUser, async (req, res) => {
   try {
-    const io = req.app.locals.io;
-
     const userFriendCode = req.body.userFriendCode;
 
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
@@ -154,10 +154,8 @@ router.post('/users/send-friends-request/', async (req, res) => {
   }
 });
 
-router.post('/users/accept-friends-request/', async (req, res) => {
+router.post('/users/accept-friends-request/', authenticateUser, async (req, res) => {
   try {
-    const io = req.app.locals.io;
-
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
     const userId = user._id.toString();
@@ -207,7 +205,7 @@ router.post('/users/accept-friends-request/', async (req, res) => {
   }
 });
 
-router.post('/users/decline-friends-request/', async (req, res) => {
+router.post('/users/decline-friends-request/', authenticateUser, async (req, res) => {
   try {
     const io = req.app.locals.io;
 
@@ -251,7 +249,7 @@ router.post('/users/decline-friends-request/', async (req, res) => {
   }
 });
 
-router.post('/users/remove-friend/', async (req, res) => {
+router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
   try {
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
@@ -306,8 +304,8 @@ router.post("/register", (req, res) => {
           userId: result._id,
           userEmail: result.email,
         },
-        "RANDOM-TOKEN",
-        { expiresIn: "24h" }
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
       );
 
       res.status(201).send({
@@ -346,8 +344,8 @@ router.post("/login", (req, res) => {
           userId: user._id,
           userEmail: user.email,
         },
-        "RANDOM-TOKEN",
-        { expiresIn: "24h" }
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
       );
 
       res.status(200).send({
@@ -369,7 +367,7 @@ router.post("/login", (req, res) => {
   });
 });
 
-router.put("/change-password", async (req, res) => {
+router.put("/change-password", authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ displayName: req.body.displayName });
     if (!user) return res.status(404).send({ message: "User not found." });

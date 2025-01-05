@@ -7,6 +7,8 @@ import NewUserRegistered from '../emails/Admin/NewUserRegistered';
 import UserDeletedAccount from '../emails/Admin/UserDeletedAccount';
 import ChangeEmail from '../emails/ChangeEmail';
 import VerifyEmail from '../emails/VerifyEmail';
+import authenticateUser from '../middleware/auth';
+import { io } from '../server';
 
 const environment = process.env.NODE_ENV || "production";
 
@@ -33,8 +35,6 @@ router.post("/send-verify-email", async (req, res) => {
 
 router.get("/verify-email", async (req, res) => {
   try {
-    const io = req.app.locals.io;
-
     const userEmail = req.query.userEmail;
     const user = await User.findOne({ email: userEmail }, { password: 0 });
 
@@ -59,7 +59,7 @@ router.get("/verify-email", async (req, res) => {
 
 // Changing Email
 
-router.put("/send-change-email", async (req, res) => {
+router.put("/send-change-email", authenticateUser, async (req, res) => {
   const { userEmail, newUserEmail } = req.body;
 
   const existingUser = await User.findOne({ email: newUserEmail });

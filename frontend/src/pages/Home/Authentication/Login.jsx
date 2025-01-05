@@ -9,7 +9,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
-import { Loader2 } from "lucide-react";
 import Loading from "@/components/Home/Loading";
 
 function Login() {
@@ -40,6 +39,7 @@ function Login() {
       setIsLoading(false);
       return;
     }
+
 
     signIn({
       auth: {

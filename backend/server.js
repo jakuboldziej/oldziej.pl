@@ -50,6 +50,7 @@ app.use(helmet({
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   xssFilter: true,
 }));
+
 app.use(xssClean());
 app.use(mongoSanitize());
 
@@ -60,33 +61,11 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
+  res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PUT");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
   next();
 });
-
-const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@192.168.1.109/darts`
-const dartsConn = mongoose.createConnection(mongoURIDarts);
-const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@192.168.1.109/ftp`
-const ftpConn = mongoose.createConnection(mongoURIFTP);
-
-dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
-dartsConn.once('open', () => console.log('Connected to Darts Database'));
-ftpConn.once('open', () => console.log('Connected to Ftp Database'));
-
-module.exports = { dartsConn, ftpConn, mongoURIFTP };
-
-const dartsRouter = require('./routes/darts')
-app.use('/api/darts', dartsRouter);
-
-const usersRouter = require('./routes/auth');
-app.use('/api/auth', usersRouter);
-
-const ftpRouter = require('./routes/ftp');
-app.use('/api/ftp', ftpRouter);
-
-const emailsRouter = require('./routes/emails');
-app.use('/api/emails', emailsRouter);
 
 const server = createServer(app);
 const io = new Server(server, {
@@ -101,113 +80,30 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
-app.locals.io = io;
+const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/darts`
+const dartsConn = mongoose.createConnection(mongoURIDarts);
+const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/ftp`
+const ftpConn = mongoose.createConnection(mongoURIFTP);
 
-const { addingOnlineUser, scheduleUserOffline } = require('./socket.io/listeners');
+dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
+dartsConn.once('open', () => console.log('Connected to Darts Database'));
+ftpConn.once('open', () => console.log('Connected to Ftp Database'));
 
-io.on('connection', (socket) => {
-  // Listeners
+module.exports = { dartsConn, ftpConn, mongoURIFTP, io };
 
-  // Admin Listeners
+require("./socket.io/listeners");
 
-  socket.on("verifyEmailAdmin", (data) => {
-    const verifyData = JSON.parse(data);
+const dartsRouter = require('./routes/darts')
+app.use('/api/darts', dartsRouter);
 
-    io.emit("verifyEmail", JSON.stringify({
-      userDisplayName: verifyData.userDisplayName,
-      verified: verifyData.verified
-    }));
-  });
+const usersRouter = require('./routes/auth');
+app.use('/api/auth', usersRouter);
 
-  // Live game
+const ftpRouter = require('./routes/ftp');
+app.use('/api/ftp', ftpRouter);
 
-  socket.on("joinLiveGamePreview", (data) => {
-    const joinData = JSON.parse(data);
-
-    socket.join(`game-${joinData.gameCode}`);
-  });
-
-  socket.on("leaveLiveGamePreview", (data) => {
-    const leaveData = JSON.parse(data);
-
-    socket.leave(`game-${leaveData.gameCode}`);
-  });
-
-  socket.on("joinLiveGameFromQrCode", (data) => {
-    const joinData = JSON.parse(data);
-
-    io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
-  });
-
-  socket.on("updateLiveGamePreview", (data) => {
-    const gameData = JSON.parse(data);
-
-    io.to(`game-${gameData.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(gameData));
-  });
-
-  // Live game preview events
-
-  socket.on("playAgainButtonServer", (data) => {
-    const playAgainData = JSON.parse(data);
-    const oldGameCode = playAgainData.oldGameCode;
-    const newGame = playAgainData.newGame;
-
-    io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
-    io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
-  });
-
-  socket.on("userOverthrow", (data) => {
-    const { userDisplayName, gameCode } = JSON.parse(data);
-
-    io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
-  });
-
-  socket.on("hostDisconnectedFromGame", (data) => {
-    const { gameCode } = JSON.parse(data);
-
-    io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
-    io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
-  });
-
-  socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
-    io.emit("ESP32_CONTROL_LED", data);
-  });
-
-  socket.on("ESP32_CHECK_LED_SERVER", () => {
-    io.emit("ESP32_CHECK_LED");
-  });
-
-  socket.on("ESP32_LED_STATUS_SERVER", (data) => {
-    io.emit("ESP32_LED_STATUS", data);
-  });
-
-  // Mobile App Inputs
-
-  socket.on("externalKeyboardInput", (data) => {
-    const { gameCode, input } = JSON.parse(data);
-
-    io.to(`game-${gameCode}`).emit("externalKeyboardInputClient", JSON.stringify(input));
-  });
-
-  socket.on("externalKeyboardPlayAgain", (data) => {
-    const { gameCode } = JSON.parse(data);
-
-    io.to(`game-${gameCode}`).emit("externalKeyboardPlayAgainClient", JSON.stringify(gameCode));
-  });
-
-  // Handling Online Users
-  socket.on("addingOnlineUser", (data) => {
-    addingOnlineUser(data, socket.id, io);
-  });
-
-  socket.on('disconnect', () => {
-    scheduleUserOffline(socket.id, io);
-  });
-
-  socket.on('connection_error', (err) => {
-    console.log(err)
-  });
-});
+const emailsRouter = require('./routes/emails');
+app.use('/api/emails', emailsRouter);
 
 // Admin UI
 

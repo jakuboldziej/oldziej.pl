@@ -1,4 +1,5 @@
-import { calcStorageUsage } from "../components/Home/Cloud/utils";
+import { calcStorageUsage } from "@/components/Home/Cloud/utils";
+import Cookies from "js-cookie";
 
 export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 
@@ -26,6 +27,7 @@ export const postDartsGame = async (gameData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
   return await response.json();
@@ -39,6 +41,7 @@ export const putDartsGame = async (gameData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 }
@@ -46,6 +49,9 @@ export const putDartsGame = async (gameData) => {
 export const deleteDartsGame = async (gameId) => {
   await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameId}`, {
     method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
   });
 }
 
@@ -64,13 +70,22 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
     url += `?${queryParams.join('&')}`;
   }
 
-  const gamesResponse = await fetch(url);
+  const gamesResponse = await fetch(url, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  }
+  );
   const games = await gamesResponse.json();
   return games;
 }
 
 export const getDartsGame = async (identifier) => {
-  const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsGames/${identifier}`);
+  const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsGames/${identifier}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
 
   return await gameResponse.json();;
 }
@@ -78,13 +93,21 @@ export const getDartsGame = async (identifier) => {
 // Users
 
 export const getDartsUsers = async () => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
   const users = await usersResponse.json();
   return users;
 }
 
 export const getDartsUser = async (identifier) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`);
+  const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
   const user = await userResponse.json();
   return user;
 }
@@ -97,6 +120,7 @@ export const putDartsUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 
@@ -105,7 +129,10 @@ export const putDartsUser = async (userData) => {
 
 export const deleteDartsUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
   })
   return await response.json();
 }
@@ -118,6 +145,7 @@ export const postDartsUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
   return await response.json();
@@ -126,6 +154,26 @@ export const postDartsUser = async (userData) => {
 // Cloud
 
 // Users
+
+export const getFtpUsers = async () => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  const users = await usersResponse.json();
+  return users;
+}
+
+export const getFtpUser = async (identifier) => {
+  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${identifier}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  const user = await userResponse.json();
+  return user;
+}
 
 export const postFtpUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/ftp/users`, {
@@ -137,25 +185,17 @@ export const postFtpUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 }
 
-export const getFtpUser = async (identifier) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${identifier}`);
-  const user = await userResponse.json();
-  return user;
-}
-
-export const getFtpUsers = async () => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`);
-  const users = await usersResponse.json();
-  return users;
-}
-
 export const deleteFtpUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/users/${displayName}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
   })
   return await response.json();
 }
@@ -168,6 +208,7 @@ export const putFtpUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 }
@@ -186,13 +227,21 @@ export const getFiles = async (userId = null) => {
     url += `?${queryParams.join('&')}`;
   }
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const data = await response.json();
   return data.files;
 }
 
 export const getFile = async (id) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`);
+  const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const data = await response.json();
   return data.file;
 }
@@ -214,6 +263,7 @@ export const uploadFile = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 
@@ -223,8 +273,11 @@ export const uploadFile = async (data) => {
 
 export const deleteFile = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
-    method: "DELETE"
-  })
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   return await response.json();
 }
 
@@ -237,6 +290,7 @@ export const putFile = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
   const fileRes = await response.json();
@@ -254,6 +308,7 @@ export const postFolder = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
 
@@ -276,20 +331,31 @@ export const getFolders = async (userId = null, folderName = null) => {
     url += `?${queryParams.join('&')}`;
   }
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const data = await response.json();
   return data.folders;
 }
 
 export const getFolder = async (id) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`);
+  const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const data = await response.json();
   return data.folder;
 }
 
 export const deleteFolder = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
   })
   return await response.json();
 }
@@ -302,6 +368,7 @@ export const putFolder = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
   const folderRes = await response.json();
@@ -313,19 +380,31 @@ export const putFolder = async (data) => {
 // Users
 
 export const getAuthUsers = async () => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const users = await usersResponse.json();
   return users;
 }
 
 export const getAuthUser = async (identifier) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const user = await usersResponse.json();
   return user;
 }
 
 export const checkIfUserWithEmailExists = async (email) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const user = await usersResponse.json();
   return user;
 }
@@ -338,13 +417,17 @@ export const putAuthUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 }
 
 export const deleteAuthUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
   })
   return await response.json();
 }
@@ -421,6 +504,7 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
+        "Authorization": Cookies.get("_auth")
       },
     });
 
@@ -431,6 +515,7 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
+        "Authorization": Cookies.get("_auth")
       },
     });
 
@@ -441,10 +526,11 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
+        "Authorization": Cookies.get("_auth")
       },
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return { error: e };
   } finally {
     return true;
@@ -463,6 +549,7 @@ export const changePassword = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 
@@ -472,7 +559,11 @@ export const changePassword = async (data) => {
 // Friends
 
 export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName, userDisplayName) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-if-friends/${currentUserDisplayName}/${userDisplayName}`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-if-friends/${currentUserDisplayName}/${userDisplayName}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
   const user = await usersResponse.json();
   return user;
 }
@@ -489,6 +580,7 @@ export const sendFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
 
@@ -507,6 +599,7 @@ export const acceptFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
 
@@ -525,6 +618,7 @@ export const declineFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   })
 
@@ -543,6 +637,7 @@ export const removeFriend = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 
@@ -574,6 +669,7 @@ export const sendChangeEmail = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
     },
   });
 
@@ -660,9 +756,11 @@ export const getStatisticsUsersFoldersCreated = async (userId) => {
   return await response.json();
 }
 
-export const getStorageUsed = async () => {
-  const response = await getFiles();
-  return calcStorageUsage(response).bytes;
+export const getStatisticsStorageUsed = async () => {
+  const response = await fetch(`${mongodbApiUrl}/ftp/statistics/storageUsed`);
+  const responseInBytes = await response.json();
+
+  return calcStorageUsage(null, responseInBytes).bytes;
 }
 
 // Get gamesPlayed for portfolio
