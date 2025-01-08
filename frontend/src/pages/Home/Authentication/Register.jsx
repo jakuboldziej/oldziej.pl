@@ -86,11 +86,6 @@ function Register() {
         },
       });
 
-      setCurrentUser({
-        displayName: displayName,
-        verified: userRes.verified,
-      });
-
       const newUser = await postDartsUser({
         displayName: displayName,
       });
@@ -102,6 +97,11 @@ function Register() {
         displayName: displayName,
         email: email,
         main_folder: folderRes._id
+      });
+
+      setCurrentUser({
+        displayName: displayName,
+        verified: userRes.verified,
       });
 
       navigate("/", { replace: true });

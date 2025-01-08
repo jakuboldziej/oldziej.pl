@@ -345,20 +345,6 @@ router.get('/users', authenticateUser, async (req, res) => {
   }
 })
 
-router.post('/users', authenticateUser, async (req, res) => {
-  const user = new FtpUser({
-    displayName: req.body.displayName,
-    email: req.body.email,
-    main_folder: req.body.main_folder
-  })
-  try {
-    const newUser = await user.save()
-    res.json(newUser)
-  } catch (err) {
-    res.status(400).json({ message: err.message })
-  }
-});
-
 router.get('/users/:identifier', authenticateUser, async (req, res) => {
   try {
     const identifier = req.params.identifier;
@@ -371,6 +357,20 @@ router.get('/users/:identifier', authenticateUser, async (req, res) => {
     }
   } catch (err) {
     res.json({ message: err.message })
+  }
+});
+
+router.post('/users', authenticateUser, async (req, res) => {
+  const user = new FtpUser({
+    displayName: req.body.displayName,
+    email: req.body.email,
+    main_folder: req.body.main_folder
+  })
+  try {
+    const newUser = await user.save()
+    res.json(newUser)
+  } catch (err) {
+    res.status(400).json({ message: err.message })
   }
 });
 

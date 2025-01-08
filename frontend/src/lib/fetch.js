@@ -337,7 +337,7 @@ export const getFolders = async (userId = null, folderName = null) => {
     },
   });
   const data = await response.json();
-  return data.folders;
+  return data;
 }
 
 export const getFolder = async (id) => {
