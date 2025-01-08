@@ -390,21 +390,13 @@ export const getAuthUsers = async () => {
 }
 
 export const getAuthUser = async (identifier) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`, {
-    headers: {
-      "Authorization": Cookies.get("_auth")
-    },
-  });
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`);
   const user = await usersResponse.json();
   return user;
 }
 
 export const checkIfUserWithEmailExists = async (email) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`, {
-    headers: {
-      "Authorization": Cookies.get("_auth")
-    },
-  });
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`);
   const user = await usersResponse.json();
   return user;
 }

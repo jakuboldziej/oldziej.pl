@@ -64,18 +64,6 @@ function Register() {
       await sendVerificationEmail({
         userEmail: email
       });
-      const newUser = await postDartsUser({
-        displayName: displayName,
-      });
-      const folderRes = await postFolder({
-        name: "Cloud drive",
-        ownerId: newUser._id
-      });
-      await postFtpUser({
-        displayName: displayName,
-        email: email,
-        main_folder: folderRes._id
-      });
 
       const randomNumber = Math.floor(Math.random() * 900) + 100;
       const friendsCode = displayName + randomNumber;
@@ -101,6 +89,19 @@ function Register() {
       setCurrentUser({
         displayName: displayName,
         verified: userRes.verified,
+      });
+
+      const newUser = await postDartsUser({
+        displayName: displayName,
+      });
+      const folderRes = await postFolder({
+        name: "Cloud drive",
+        ownerId: newUser._id
+      });
+      await postFtpUser({
+        displayName: displayName,
+        email: email,
+        main_folder: folderRes._id
       });
 
       navigate("/", { replace: true });

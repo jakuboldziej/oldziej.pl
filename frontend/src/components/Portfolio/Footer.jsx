@@ -9,7 +9,7 @@ function Footer() {
       <div className='portfolio-footer w-full flex flex-row items-center justify-around'>
         <div className='contact flex flex-col  gap-4'>
           <span className='opacity-80 sm:text-4xl'>{langText.footer?.contact}</span>
-          <a href='mailto:jakub.oldziej@wp.pl' target='_blank' className='sm:text-2xl hover:opacity-80'>jakub.oldziej@wp.pl</a>
+          <a href='mailto:kontakt@oldziej.pl' target='_blank' className='sm:text-2xl hover:opacity-80'>kontakt@oldziej.pl</a>
         </div>
         <div className='social-media flex flex-col sm:text-4xl gap-4'>
           <span className='opacity-80'>Social Media</span>

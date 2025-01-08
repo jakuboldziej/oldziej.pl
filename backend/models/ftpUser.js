@@ -18,14 +18,24 @@ const backendDomain = environment === "production" ? process.env.BACKEND_DOMAIN 
 
 FtpUserSchema.post('findOneAndDelete', async function (doc) {
   let url = `${backendDomain}/api/ftp/files?user=${doc.displayName}`;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${process.env.JWT_SECRET}`
+    },
+  });
   const fetchedUserFiles = await response.json();
 
-  fetchedUserFiles.map(async (file) => {
-    await fetch(`${backendDomain}/api/ftp/files/${file._id}`, {
-      method: "DELETE"
-    });
-  })
+  console.log(process.env.JWT_SECRET)
+  console.log("mid", fetchedUserFiles)
+  // fetchedUserFiles.map(async (file) => {
+  //   await fetch(`${backendDomain}/api/ftp/files/${file._id}`, {
+  //     method: "DELETE",
+  //     headers: {
+  //       "Authorization": `Bearer ${process.env.JWT_SECRET}`
+  //     },
+  //   });
+  // })
 });
 
 module.exports = ftpConn.model('FtpUser', FtpUserSchema)

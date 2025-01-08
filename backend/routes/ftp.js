@@ -376,7 +376,8 @@ router.get('/users/:identifier', authenticateUser, async (req, res) => {
 
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
-    await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
+    const response = await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
+
     res.json({ ok: true });
   } catch (err) {
     res.status(400).json({ message: err.message });

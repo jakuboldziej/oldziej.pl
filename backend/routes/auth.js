@@ -30,7 +30,7 @@ router.get('/users', authenticateUser, async (req, res) => {
   }
 });
 
-router.get('/users/:identifier', authenticateUser, async (req, res) => {
+router.get('/users/:identifier', async (req, res) => {
   try {
     const identifier = req.params.identifier;
     if (Types.ObjectId.isValid(identifier)) {
@@ -45,7 +45,7 @@ router.get('/users/:identifier', authenticateUser, async (req, res) => {
   }
 });
 
-router.get('/users/check-existing-mail/:email', authenticateUser, async (req, res) => {
+router.get('/users/check-existing-mail/:email', async (req, res) => {
   try {
     const user = await User.findOne({ email: req.params.email }, { password: 0 })
     res.json(user)

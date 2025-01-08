@@ -109,7 +109,13 @@ function UserSettings() {
               <Label htmlFor="username">Username</Label>
               <div className="flex w-full max-w-sm items-center space-x-2">
                 <Input type="username" id="username" defaultValue={authUser.displayName} readOnly />
-                <Button disabled={!handleVerifiedUser()} onClick={() => handleChangeButton("username")} disabled>Change</Button>
+                <Button
+                  // disabled={!handleVerifiedUser()}
+                  disabled
+                  onClick={() => handleChangeButton("username")}
+                >
+                  Change
+                </Button>
               </div>
             </div>
             <div className="grid w-full max-w-sm items-center gap-1.5">
