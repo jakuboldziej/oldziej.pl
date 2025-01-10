@@ -39,8 +39,7 @@ export const FtpContextProvider = ({ children }) => {
   const fetchFolders = async (pFtpUser) => {
     const foldersR = await getFolders(pFtpUser._id);
 
-    console.log(foldersR)
-    setFolders(foldersR);
+    setFolders(foldersR.folders);
   }
 
   const handleActiveFolders = async () => {
@@ -62,8 +61,6 @@ export const FtpContextProvider = ({ children }) => {
 
   const firstFetch = async () => {
     const fetchedFtpUser = await getFtpUser(currentUser.displayName);
-    console.log(currentUser)
-    console.log(fetchedFtpUser)
     await fetchFolders(fetchedFtpUser);
     await fetchFiles(fetchedFtpUser);
     handleActiveFolders();
