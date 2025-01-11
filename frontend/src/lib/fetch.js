@@ -1,7 +1,7 @@
 import { calcStorageUsage } from "@/components/Home/Cloud/utils";
 import Cookies from "js-cookie";
 
-export const mongodbApiUrl = import.meta.env.MODE !== "development" ? "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
+export const mongodbApiUrl = import.meta.env.MODE === "development" ? "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 
 // Darts
 
