@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/shadcn/card";
 import { FileText, Mic, Video, Share2 } from 'lucide-react';
 import { formatDataSize, handleFileTypes } from "@/components/Home/Cloud/utils";
-import { renderFile } from "@/lib/fetch";
+import { mongodbApiUrl, renderFile } from "@/lib/fetch";
 import CopyTextButton from "../CopyTextButton";
 import MyTooltip from "../MyComponents/MyTooltip";
 import CustomFileDropdown from "./CustomFileDropdown";
@@ -23,7 +23,7 @@ function MyFileCard(props) {
             {handleFileTypes([file]).fileDocuments.length > 0 ? <FileText className="ml-1 w-full h-full" /> : (
               handleFileTypes([file]).fileVideos.length > 0 ? <Video className="ml-1 w-full h-full" /> : (
                 handleFileTypes([file]).fileAudios.length > 0 ? <Mic className="ml-1 w-full h-full" /> : (
-                  handleFileTypes([file]).fileImages.length > 0 ? <img className={`card-background ${filesViewType === "list" && "h-12"}`} src={`/api/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
+                  handleFileTypes([file]).fileImages.length > 0 ? <img className={`card-background ${filesViewType === "list" && "h-12"}`} src={`${mongodbApiUrl}/ftp/files/render/${encodeURI(file.filename.trim())}`} /> : null
                 )
               )
             )}
@@ -38,7 +38,7 @@ function MyFileCard(props) {
             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
             <span>{formatDataSize(file.length)}</span>
             <CopyTextButton
-              textToCopy={`/api/ftp/files/render/${file.filename}`}
+              textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
               toastTitle="Link Copied"
               toastDesc="Link copied to clipboard"
             >

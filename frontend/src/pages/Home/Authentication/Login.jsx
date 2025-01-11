@@ -34,12 +34,12 @@ function Login() {
       displayName,
       password
     });
+
     if (!response.token) {
       setErr(response.message)
       setIsLoading(false);
       return;
     }
-
 
     signIn({
       auth: {

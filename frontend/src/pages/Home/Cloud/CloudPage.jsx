@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, postFolder, putFile, renderFile, uploadFile } from '@/lib/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFolder, putFile, renderFile, uploadFile } from '@/lib/fetch'
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
@@ -404,7 +404,7 @@ function CloudPage() {
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatDataSize(file.length)}</span>
                             <CopyTextButton
-                              textToCopy={`/api/ftp/files/render/${file.filename}`}
+                              textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
                               toastTitle="Link Copied"
                               toastDesc="Link copied to clipboard"
                             >

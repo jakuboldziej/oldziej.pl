@@ -1,4 +1,4 @@
-import { deleteFolder, getFile, getFolder, putFile, putFolder } from "@/lib/fetch";
+import { deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/lib/fetch";
 
 // Global
 
@@ -100,7 +100,7 @@ export const handleFileTypes = (files) => {
 }
 
 export const downloadFolder = (filename) => {
-  window.location.href = `/api/ftp/files/download/${filename}`;
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}`;
 }
 
 // Folders

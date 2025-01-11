@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, Search, SquareArrowDown, Trash2, Files, FileSymlink, Link } from 'lucide-react';
 import { useContext } from 'react';
 import { FtpContext } from '@/context/Home/FtpContext';
-import { putFile, renderFile, downloadFile } from '@/lib/fetch';
+import { putFile, renderFile, downloadFile, mongodbApiUrl } from '@/lib/fetch';
 import ShowNewToast from '../MyComponents/ShowNewToast';
 
 function CustomFileDropdown(props) {
@@ -30,7 +30,7 @@ function CustomFileDropdown(props) {
   }
 
   const handleShareLink = () => {
-    navigator.clipboard.writeText(`/api/ftp/files/render/${file.filename}`)
+    navigator.clipboard.writeText(`${mongodbApiUrl}/ftp/files/render/${file.filename}`)
       .then(() => {
         ShowNewToast("Link Copied", "Link copied to clipboard");
       })
