@@ -33,7 +33,12 @@ function MyDialogs(props) {
       }>
         <span className='flex flex-col gap-2'>
           {dialogOpen.data?.type === "file" && <Label>Original name: {dialogOpen.data?.metadata.originalFileName}</Label>}
-          <Input placeholder={dialogOpen.data?.filename || dialogOpen.data?.name} value={changingDataName} onChange={(e) => setChangingDataName(e.target.value)} />
+          <Input
+            placeholder={dialogOpen.data?.filename || dialogOpen.data?.name}
+            value={changingDataName}
+            onChange={(e) => setChangingDataName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleUpdateData(dialogOpen.data?.type === "folder" ? "folder" : "file") }}
+          />
         </span>
       </MyDialog>
 
@@ -69,7 +74,14 @@ function MyDialogs(props) {
           <Button onClick={handleCreateNewFolder} variant='outline_green'>Create</Button>
         </>
       }>
-        <Input tabIndex={0} required placeholder="Folder Name" value={creatingFolder} onChange={(e) => setCreatingFolder(e.target.value)} />
+        <Input
+          tabIndex={0}
+          required
+          placeholder="Folder Name"
+          value={creatingFolder}
+          onChange={(e) => setCreatingFolder(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleCreateNewFolder() }}
+        />
       </MyDialog>
 
       {/* Deleting Data */}

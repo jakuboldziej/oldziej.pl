@@ -65,18 +65,6 @@ io.on('connection', (socket) => {
     io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
   });
 
-  socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
-    io.emit("ESP32_CONTROL_LED", data);
-  });
-
-  socket.on("ESP32_CHECK_LED_SERVER", () => {
-    io.emit("ESP32_CHECK_LED");
-  });
-
-  socket.on("ESP32_LED_STATUS_SERVER", (data) => {
-    io.emit("ESP32_LED_STATUS", data);
-  });
-
   // Mobile App Inputs
 
   socket.on("externalKeyboardInput", (data) => {
@@ -92,8 +80,23 @@ io.on('connection', (socket) => {
   });
 
   // Handling Online Users
+
   socket.on("addingOnlineUser", (data) => {
     addingOnlineUser(data, socket.id, io);
+  });
+
+  // ESP 32
+
+  socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
+    io.emit("ESP32_CONTROL_LED", data);
+  });
+
+  socket.on("ESP32_CHECK_LED_SERVER", () => {
+    io.emit("ESP32_CHECK_LED");
+  });
+
+  socket.on("ESP32_LED_STATUS_SERVER", (data) => {
+    io.emit("ESP32_LED_STATUS", data);
   });
 
   socket.on('disconnect', () => {
