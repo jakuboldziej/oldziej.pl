@@ -250,6 +250,9 @@ export const uploadFile = async (data) => {
   const uploadResponse = await fetch(`${mongodbApiUrl}/ftp/upload?userId=${data.get("userId")}`, {
     method: "POST",
     body: data,
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
   });
   const uploadedFile = await uploadResponse.json();
 
