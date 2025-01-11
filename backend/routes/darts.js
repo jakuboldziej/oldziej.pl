@@ -52,6 +52,7 @@ const generateUniqueGameCode = async () => {
 }
 
 // Darts Games
+
 router.get('/dartsGames', authenticateUser, async (req, res) => {
   try {
     let filter = {};
@@ -128,19 +129,8 @@ router.delete('/dartsGames/:identifier', authenticateUser, getDartsGame, async (
   }
 })
 
-router.post("/dartsGames/join-live-game-preview/:gameCode", async (req, res) => {
-  const { gameCode } = req.params;
-  try {
-    const game = await DartsGame.findOne({ gameCode: gameCode });
-
-    if (game) return res.json({ ok: true, game: game })
-    else return res.json({ ok: false })
-  } catch (err) {
-    return res.json({ message: err.message });
-  }
-});
-
 // Darts Users
+
 router.get('/dartsUsers', authenticateUser, async (req, res) => {
   try {
     const dartsUsers = await DartsUser.find()
@@ -198,6 +188,20 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
     res.json(newDartsUser)
   } catch (err) {
     res.status(400).json({ message: err.message })
+  }
+});
+
+// Utils
+
+router.post('/game/join/:gameCode', async (req, res) => {
+  try {
+    const gameCode = req.params.gameCode;
+
+    const game = await DartsGame.findOne({ gameCode: gameCode });
+
+    return res.json(game)
+  } catch (err) {
+    return res.json({ message: err.message });
   }
 });
 

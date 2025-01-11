@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/shadcn/button';
 import { Input } from '@/components/ui/shadcn/input';
-import { getDartsGame } from '@/lib/fetch';
+import { getDartsGame, joinDartsGame } from '@/lib/fetch';
 import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';
@@ -21,7 +21,8 @@ function JoiningLiveGame({ props }) {
   const handleJoinLiveGame = async (e) => {
     e.preventDefault();
 
-    const response = await getDartsGame(inputGameCode);
+    const response = await joinDartsGame(inputGameCode);
+
     if (response) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: response.gameCode

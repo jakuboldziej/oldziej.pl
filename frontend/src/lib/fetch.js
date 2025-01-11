@@ -87,7 +87,7 @@ export const getDartsGame = async (identifier) => {
     }
   });
 
-  return await gameResponse.json();;
+  return await gameResponse.json();
 }
 
 // Users
@@ -149,6 +149,16 @@ export const postDartsUser = async (userData) => {
     },
   });
   return await response.json();
+}
+
+// Utils
+
+export const joinDartsGame = async (gameCode) => {
+  const gameResponse = await fetch(`${mongodbApiUrl}/darts/game/join/${gameCode}`, {
+    method: "POST"
+  });
+
+  return await gameResponse.json();
 }
 
 // Cloud
@@ -771,6 +781,7 @@ export const getStatisticsStorageUsed = async () => {
 // Get gamesPlayed for portfolio
 export const getGamesPlayedPortfolio = async () => {
   const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/portfolio/kubek`);
+
   const res = await userResponse.json();
   return res.gamesPlayed;
 }
