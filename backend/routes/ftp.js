@@ -210,12 +210,14 @@ router.get('/files/render/:filename', authenticateUser, async (req, res) => {
     let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
     if (!file || file.length === 0) return res.redirect('https://home.oldziej.pl/ftp');
 
+    res.setHeader('Content-Type', file.contentType);
+
     const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
   }
-})
+});
 
 // download file
 router.get('/files/download/:filename', authenticateUser, async (req, res) => {

@@ -4,12 +4,12 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFolder, putFile, uploadFile } from '@/lib/fetch'
+import { deleteFile, getFile, getFtpUser, postFolder, putFile, renderFile, uploadFile } from '@/lib/fetch'
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
 import { Progress } from '@/components/ui/shadcn/progress'
-import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, renderFile, deleteFileFromFolder, addFileToFolder, addFolderToFolder, deleteFolderFromFolder } from '@/components/Home/Cloud/utils'
+import { handleFileTypes, formatElapsedTime, formatDataSize, handleSameFilename, calcStorageUsage, deleteFileFromFolder, addFileToFolder, addFolderToFolder, deleteFolderFromFolder } from '@/components/Home/Cloud/utils'
 import { FileText, FileUp, Images, Mic, Plus, Share2, Video, Folder } from 'lucide-react'
 import LeftNavBar from '@/components/Home/Cloud/LeftNavBar'
 import { FtpContext } from '@/context/Home/FtpContext'
@@ -404,7 +404,7 @@ function CloudPage() {
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatDataSize(file.length)}</span>
                             <CopyTextButton
-                              textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
+                              textToCopy={`/api/ftp/files/render/${file.filename}`}
                               toastTitle="Link Copied"
                               toastDesc="Link copied to clipboard"
                             >
