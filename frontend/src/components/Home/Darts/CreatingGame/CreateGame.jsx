@@ -223,6 +223,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
     const gameData = {
       created_by: currentUser.displayName,
+      created_at: Date.now(),
       users: updatedUsers,
       podiums: usersPodium,
       podium: {

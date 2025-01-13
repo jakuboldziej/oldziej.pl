@@ -91,7 +91,8 @@ function Register() {
       });
       const folderRes = await postFolder({
         name: "Cloud drive",
-        ownerId: newUser._id
+        ownerId: newUser._id,
+        uploadDate: Date.now()
       });
       await postFtpUser({
         displayName: displayName,

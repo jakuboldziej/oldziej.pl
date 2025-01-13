@@ -152,8 +152,10 @@ function MyFiles() {
 
       const data = {
         name: folderName,
-        ownerId: ftpUser._id
+        ownerId: ftpUser._id,
+        uploadDate: Date.now()
       }
+
       const folderRes = await postFolder(data);
       if (dataShown) {
         const updatedDataShown = [folderRes, ...dataShown];

@@ -35,7 +35,6 @@ const FtpFolderSchema = new mongoose.Schema({
   uploadDate: {
     type: Date,
     required: true,
-    default: Date.now()
   },
   type: {
     type: String,

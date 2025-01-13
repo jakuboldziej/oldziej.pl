@@ -118,8 +118,10 @@ function CloudPage() {
 
       const data = {
         name: folderName,
-        ownerId: ftpUser._id
+        ownerId: ftpUser._id,
+        uploadDate: Date.now()
       }
+
       const folderRes = await postFolder(data);
       if (recentFolders) {
         const updatedrecentFolders = [folderRes, ...recentFolders];
