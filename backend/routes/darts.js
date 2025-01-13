@@ -71,7 +71,6 @@ router.get('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req
   res.json(res.game)
 });
 
-
 router.post('/dartsGames', authenticateUser, async (req, res) => {
   const body = req.body;
 

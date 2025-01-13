@@ -102,7 +102,7 @@ function GameSummary({ show, setShow }) {
     if (game.podium[1] === null) return true;
   }
 
-  const handleSummaryBackButton = () => {
+  const handleSummaryBackButton = async () => {
     game.active = true;
     game.podium = {
       1: null,
@@ -111,6 +111,7 @@ function GameSummary({ show, setShow }) {
     };
     game.userWon = "";
     game.finished_at = null;
+
     handleRound("BACK", handleShow);
 
     setShow(false);

@@ -16,6 +16,8 @@ export const DartsGameContextProvider = ({ children }) => {
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
 
+  const [dartsUsersBeforeBack, setDartsUsersBeforeBack] = useState([]);
+
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
     return game.users.find(user => user.turn);
@@ -39,6 +41,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const handleRound = (value, handleShowP) => {
     handleShow = handleShowP;
+
     if (Number.isInteger(value)) {
       handleUsersState(value);
     } else if (!Number.isInteger(value)) {
@@ -58,14 +61,14 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const handleGameEnd = () => {
     if (game.legs === 1) {
-      handleRecord("save", false);
+      handleRecord("save");
       handlePodium();
       return true;
     } else {
       const endGame = handleNextLeg(game.users, game);
 
       if (endGame) {
-        handleRecord("save", false);
+        handleRecord("save");
         handlePodium();
         return true;
       } else {
@@ -101,37 +104,40 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const handleDartsData = async () => {
-    game.users.map(async (user) => {
-      if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
+    await Promise.all(
+      game.users.map(async (user) => {
+        if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
 
-      if (user.temporary || user.verified === false) return;
-      if (game.training) return
+        if (user.temporary || user.verified === false) return;
+        if (game.training) return
 
-      const dartUser = await getDartsUser(user.displayName);
+        const dartUser = await getDartsUser(user.displayName);
+        setDartsUsersBeforeBack((prev) => ([...prev, JSON.parse(JSON.stringify(dartUser))]));
 
-      if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
-      if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
-      if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
+        if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
+        if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
+        if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
 
-      dartUser.throws["doors"] += user.throws["doors"];
-      dartUser.throws["doubles"] += user.throws["doubles"];
-      dartUser.throws["triples"] += user.throws["triples"];
-      dartUser.throws["normal"] += user.throws["normal"];
+        dartUser.throws["doors"] += user.throws["doors"];
+        dartUser.throws["doubles"] += user.throws["doubles"];
+        dartUser.throws["triples"] += user.throws["triples"];
+        dartUser.throws["normal"] += user.throws["normal"];
 
-      if (game.gameMode === "X01") {
-        dartUser.throws["overthrows"] += user.throws["overthrows"];
-        dartUser.overAllPoints += user.allGainedPoints;
-        currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+        if (game.gameMode === "X01") {
+          dartUser.throws["overthrows"] += user.throws["overthrows"];
+          dartUser.overAllPoints += user.allGainedPoints;
+          currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
-        if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
-        if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
-        if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
-      }
+          if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
+          if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
+          if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
+        }
 
-      dartUser.gamesPlayed += 1;
+        dartUser.gamesPlayed += 1;
 
-      await putDartsUser(dartUser);
-    });
+        await putDartsUser(dartUser);
+      })
+    );
 
     game.podium = {
       1: game.podium[1],
@@ -150,7 +156,7 @@ export const DartsGameContextProvider = ({ children }) => {
         handleUsersState("DOORS");
       }
     } else if (value === "BACK") {
-      handleRecord("back", false);
+      handleRecord("back");
     } else if (value === "DOUBLE" || value === "TRIPLE") {
       specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
     }
@@ -227,10 +233,10 @@ export const DartsGameContextProvider = ({ children }) => {
       currentUser.currentTurn += 1;
     }
 
-    handleRecord("save", false);
+    handleRecord("save");
   };
 
-  const handleRecord = (action, backSummary = false) => {
+  const handleRecord = (action) => {
     if (!game.active) return;
     if (action === "save") {
       const usersCopy = lodash.cloneDeep(game.users);
@@ -244,7 +250,8 @@ export const DartsGameContextProvider = ({ children }) => {
       });
 
     } else if (action === "back") {
-      if (!backSummary) game.record.splice(-1);
+      game.record.splice(-1);
+
       const restoredState = game.record[game.record.length - 1];
 
       if (restoredState) {
@@ -262,11 +269,22 @@ export const DartsGameContextProvider = ({ children }) => {
 
         game.round = restoredState.game.round;
         game.turn = restoredState.game.turn;
+
+        if (dartsUsersBeforeBack.length > 0) {
+          restoreUsersSummaryBack();
+          setDartsUsersBeforeBack([]);
+        }
       }
     }
 
     updateGameState(game);
   };
+
+  const restoreUsersSummaryBack = async () => {
+    dartsUsersBeforeBack.map(async (user) => {
+      await putDartsUser(user);
+    });
+  }
 
   const contextParams = {
     game,

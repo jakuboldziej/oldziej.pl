@@ -312,7 +312,6 @@ html {
           text-decoration: none;
           overflow: visible;
 
-
           &:nth-child(3n + 1) {
             background-color: $red;
             color: white;
@@ -321,7 +320,6 @@ html {
           &:nth-child(3n + 2) {
             background-color: $green;
             color: black;
-
           }
 
           &:nth-child(3n + 3) {
@@ -351,7 +349,7 @@ html {
 
             &:first-child {
               flex-direction: row;
-              width: 65px;
+              width: 70px;
             }
           }
         }

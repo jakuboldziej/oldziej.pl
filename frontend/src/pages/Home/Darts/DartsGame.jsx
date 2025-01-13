@@ -155,6 +155,7 @@ function DartsGame() {
         )}
         <Keyboard props={keyboardProps} />
       </div>
+
       <GameSummary show={show} setShow={setShow} />
     </div>
   )
