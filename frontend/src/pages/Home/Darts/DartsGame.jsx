@@ -28,7 +28,7 @@ function DartsGame() {
   if (!game) {
     return (
       <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
-        <span className="text-4xl">You are not currently in a game.</span>
+        <span className="text-4xl text-center">You are not currently in a game.</span>
         <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New One</Link>
       </div>
     )

@@ -29,11 +29,11 @@ export const DartsGameContextProvider = ({ children }) => {
     const gameCopy = { ...gameP };
 
     setGame(gameCopy);
+    localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
     if (gameCopy?.training) return;
 
     socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
-    localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
     const { record, userWon, ...restGameData } = gameCopy;
     await putDartsGame(restGameData);

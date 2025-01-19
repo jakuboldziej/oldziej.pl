@@ -219,6 +219,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }));
 
     if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
+    if (usersPlaying.length === 1 && training === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
     if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
 
     const gameData = {
@@ -257,7 +258,9 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       updateGameState(gameData);
     } else {
       const { record, ...gameWithoutRecord } = gameData;
+
       const game = await postDartsGame(gameWithoutRecord);
+
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
       gameData.training = false;
