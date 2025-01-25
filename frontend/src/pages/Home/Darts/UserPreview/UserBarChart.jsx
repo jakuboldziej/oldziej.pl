@@ -81,6 +81,7 @@ export function UserBarChart({ dartUser }) {
             triples: dartsGameUser.throws["triples"],
             overthrows: dartsGameUser.throws["overthrows"],
             doors: dartsGameUser.throws["doors"],
+            gameCode: game.gameCode
           };
         }
       }).filter((game) => game !== undefined);
@@ -117,7 +118,7 @@ export function UserBarChart({ dartUser }) {
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
+                dataKey="gameCode"
                 tickMargin={8}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
