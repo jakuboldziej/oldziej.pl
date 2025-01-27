@@ -9,7 +9,7 @@ const FtpUserSchema = new mongoose.Schema({
   },
   main_folder: {
     type: String,
-    required: true,
+    required: false,
   }
 });
 

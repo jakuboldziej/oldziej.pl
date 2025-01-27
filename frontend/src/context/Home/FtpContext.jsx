@@ -38,12 +38,12 @@ export const FtpContextProvider = ({ children }) => {
 
   const fetchFolders = async (pFtpUser) => {
     const foldersR = await getFolders(pFtpUser._id);
-
     setFolders(foldersR.folders);
   }
 
   const handleActiveFolders = async () => {
     const storedActiveFolders = JSON.parse(localStorage.getItem("cloudSettings"))?.activeFolders;
+
     if (storedActiveFolders) {
       setActiveFolders(storedActiveFolders);
     } else {
@@ -61,6 +61,7 @@ export const FtpContextProvider = ({ children }) => {
 
   const firstFetch = async () => {
     const fetchedFtpUser = await getFtpUser(currentUser.displayName);
+
     await fetchFolders(fetchedFtpUser);
     await fetchFiles(fetchedFtpUser);
     handleActiveFolders();

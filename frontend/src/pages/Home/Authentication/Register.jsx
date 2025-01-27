@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, registerUser, sendVerificationEmail } from "@/lib/fetch";
+import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, putFtpUser, registerUser, sendVerificationEmail } from "@/lib/fetch";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
 
@@ -8,7 +8,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
-import { Loader2 } from "lucide-react";
 import Loading from "@/components/Home/Loading";
 
 function Register() {
@@ -48,22 +47,18 @@ function Register() {
 
     setIsLoading(true);
 
-    const existingUser = await getAuthUser(displayName);
-    const existingUserWithEmail = await checkIfUserWithEmailExists(email);
+    try {
+      const existingUser = await getAuthUser(displayName);
+      const existingUserWithEmail = await checkIfUserWithEmailExists(email);
 
-    if (existingUser) {
-      setErr("User with that username already exists")
-      setIsLoading(false);
-      return;
-    }
-    else if (existingUserWithEmail) {
-      setErr("User with that email already exists")
-      setIsLoading(false);
-      return;
-    } else {
-      await sendVerificationEmail({
+      if (existingUser) throw new Error("User with that username already exists");
+      if (existingUserWithEmail) throw new Error("User with that email already exists");
+
+      const verificationEmail = await sendVerificationEmail({
         userEmail: email
       });
+
+      if (verificationEmail.name && verificationEmail.statusCode) throw new Error(verificationEmail.message);
 
       const randomNumber = Math.floor(Math.random() * 900) + 100;
       const friendsCode = displayName + randomNumber;
@@ -86,17 +81,23 @@ function Register() {
         },
       });
 
-      const newUser = await postDartsUser({
+      await postDartsUser({
         displayName: displayName,
       });
-      const folderRes = await postFolder({
-        name: "Cloud drive",
-        ownerId: newUser._id,
-        uploadDate: Date.now()
-      });
-      await postFtpUser({
+
+      const ftpUserRes = await postFtpUser({
         displayName: displayName,
         email: email,
+      });
+
+      const folderRes = await postFolder({
+        name: "Cloud drive",
+        ownerId: ftpUserRes._id,
+        uploadDate: Date.now()
+      });
+
+      await putFtpUser({
+        displayName: ftpUserRes.displayName,
         main_folder: folderRes._id
       });
 
@@ -111,6 +112,10 @@ function Register() {
       await newUserRegisteredEmail({
         newUserDisplayName: displayName
       });
+    } catch (err) {
+      setErr(err.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 

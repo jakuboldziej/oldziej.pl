@@ -310,10 +310,10 @@ router.post("/register", (req, res) => {
 
       res.status(201).send({
         message: "User Created Successfully",
-        result,
         verified: user.verified,
         friendsRequestsReceived: user.friendsRequests.received.length,
-        token
+        token,
+        _id: user._id
       });
     }).catch((error) => {
       res.status(500).send({

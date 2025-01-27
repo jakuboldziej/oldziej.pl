@@ -3,8 +3,7 @@ const { Resend } = require("resend");
 const router = express.Router();
 const User = require("../models/user");
 
-import NewUserRegistered from '../emails/Admin/NewUserRegistered';
-import UserDeletedAccount from '../emails/Admin/UserDeletedAccount';
+import AdminEmail from '../emails/AdminEmail';
 import ChangeEmail from '../emails/ChangeEmail';
 import VerifyEmail from '../emails/VerifyEmail';
 import authenticateUser from '../middleware/auth';
@@ -27,10 +26,10 @@ router.post("/send-verify-email", async (req, res) => {
   });
 
   if (error) {
-    return res.status(400).json({ error });
+    return res.status(400).json(error);
   }
 
-  res.status(200).json({ data });
+  res.status(200).json(data);
 });
 
 router.get("/verify-email", async (req, res) => {
@@ -114,7 +113,7 @@ router.post("/new-user-registered", async (req, res) => {
       from: "oldziej.pl <noreply@oldziej.pl>",
       to: adminEmail,
       subject: `[Admin] - New User Registered: ${newUser.displayName}`,
-      react: NewUserRegistered({ newUser })
+      react: AdminEmail({ message: `New user is registered: ${newUser.displayName}` })
     });
 
     if (error) {
@@ -137,7 +136,7 @@ router.post("/user-deleted-account", async (req, res) => {
       from: "oldziej.pl <noreply@oldziej.pl>",
       to: adminEmail,
       subject: `[Admin] - User Deleted Account: ${deletedUser.displayName}`,
-      react: UserDeletedAccount({ deletedUser })
+      react: AdminEmail({ message: `User deleted his account: ${deletedUser.displayName}` })
     });
 
     if (error) {

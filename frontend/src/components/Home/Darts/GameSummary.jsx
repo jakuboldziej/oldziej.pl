@@ -50,8 +50,10 @@ function GameSummary({ show, setShow }) {
 
       return user;
     });
+
     game.users = updatedUsers.sort(() => Math.random() - 0.5);
     game.users[0].turn = true;
+
     const usersCopy = lodash.cloneDeep(game.users);
     const gameCopy = lodash.cloneDeep(game);
     const gameData = {
@@ -88,6 +90,7 @@ function GameSummary({ show, setShow }) {
         oldGameCode: gameCopy.gameCode,
         newGame: gameDataMerged
       }));
+
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: gameDataMerged.gameCode
       }));
@@ -95,6 +98,7 @@ function GameSummary({ show, setShow }) {
       game.training = true;
       updateGameState(gameDataMerged);
     }
+
     setShow(false);
   }
 

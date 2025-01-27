@@ -186,7 +186,7 @@ export const getFtpUser = async (identifier) => {
 }
 
 export const postFtpUser = async (userData) => {
-  await fetch(`${mongodbApiUrl}/ftp/users`, {
+  const response = await fetch(`${mongodbApiUrl}/ftp/users`, {
     method: "POST",
     body: JSON.stringify({
       displayName: userData.displayName,
@@ -198,6 +198,8 @@ export const postFtpUser = async (userData) => {
       "Authorization": Cookies.get("_auth")
     },
   });
+
+  return await response.json();
 }
 
 export const deleteFtpUser = async (displayName) => {
@@ -318,6 +320,7 @@ export const postFolder = async (data) => {
     body: JSON.stringify({
       name: data.name,
       ownerId: data.ownerId,
+      uploadDate: data.uploadDate
     }),
     headers: {
       "Content-Type": "application/json",
@@ -325,8 +328,7 @@ export const postFolder = async (data) => {
     },
   })
 
-  const folderRes = await response.json();
-  return folderRes.folder;
+  return await response.json();
 }
 
 export const getFolders = async (userId = null, folderName = null) => {
@@ -349,8 +351,8 @@ export const getFolders = async (userId = null, folderName = null) => {
       "Authorization": Cookies.get("_auth")
     },
   });
-  const data = await response.json();
-  return data;
+
+  return await response.json();
 }
 
 export const getFolder = async (id) => {

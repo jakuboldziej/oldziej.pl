@@ -86,7 +86,7 @@ const getFtpUser = async (req, res, next) => {
   try {
     const { displayName } = req.params;
     user = await FtpUser.findOne({ displayName });
-    if (user == null) return res.status(404);
+    if (user == null) return res.status(404).json({ message: "User not found." });
   } catch (err) {
     return res.json({ message: err.message })
   }
@@ -247,11 +247,7 @@ router.get('/folders', authenticateUser, async (req, res) => {
     if (req.query.folderName) filter["name"] = req.query.folderName;
     let folders = await FtpFolder.find(filter);
 
-    if (!folders || folders.length === 0) {
-      return res.json({ folders: null })
-    } else {
-      res.json({ folders })
-    }
+    res.json({ folders })
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -262,11 +258,7 @@ router.get('/folders/:id', authenticateUser, async (req, res) => {
   try {
     let folder = await FtpFolder.findOne({ _id: req.params.id });
 
-    if (!folder || folder.length === 0) {
-      return res.json({ folder: null })
-    } else {
-      res.json({ folder })
-    }
+    res.json({ folder })
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -277,11 +269,13 @@ router.post('/folders', authenticateUser, async (req, res) => {
   const ftpFolder = new FtpFolder({
     name: req.body.name,
     ownerId: req.body.ownerId,
+    uploadDate: req.body.uploadDate
   });
+
   try {
     const newFtpFolder = await ftpFolder.save();
 
-    res.json({ folder: newFtpFolder })
+    res.json(newFtpFolder)
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
@@ -367,7 +361,8 @@ router.post('/users', authenticateUser, async (req, res) => {
     displayName: req.body.displayName,
     email: req.body.email,
     main_folder: req.body.main_folder
-  })
+  });
+
   try {
     const newUser = await user.save()
     res.json(newUser)

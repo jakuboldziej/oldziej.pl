@@ -331,10 +331,9 @@ function MyFiles() {
 
   useEffect(() => {
     if (activeFolders.length > 0) {
-      const getCurrentFolder = folders.find((f) => f._id === activeFolders[activeFolders.length - 1]._id);
-
-      setCurrentFolder(getCurrentFolder);
-      getDataShown(getCurrentFolder);
+      const findCurrentFolder = folders.find((f) => f._id === activeFolders[activeFolders.length - 1]._id);
+      setCurrentFolder(findCurrentFolder);
+      getDataShown(findCurrentFolder);
     }
   }, [activeFolders]);
 

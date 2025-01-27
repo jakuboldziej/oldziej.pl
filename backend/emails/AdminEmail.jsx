@@ -3,7 +3,7 @@ import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Link, Section 
 
 require('dotenv').config();
 
-const NewUserRegistered = ({ newUser }) => {
+const AdminEmail = ({ message }) => {
   const environment = process.env.NODE_ENV || "production";
   const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
 
@@ -25,7 +25,7 @@ const NewUserRegistered = ({ newUser }) => {
           <Section className="bg-white text-xl p-12 mx-auto text-center">
             <Heading className="text-sm text-slate-500"><Link href="https://oldziej.pl">oldziej.pl</Link></Heading>
             <Heading className="leading-relaxed font-bold my-6">New User Registered</Heading>
-            <Text className="text-xl">New user is registered: {newUser?.displayName}</Text>
+            <Text className="text-xl">{message}</Text>
             <Text className="text-xl">Go to admin:</Text>
             <Button
               className="rounded-md text-white p-4 bg-[#00b524] mt-6"
@@ -43,5 +43,5 @@ const NewUserRegistered = ({ newUser }) => {
     </Html>
   );
 }
-export default NewUserRegistered;
+export default AdminEmail;
 
