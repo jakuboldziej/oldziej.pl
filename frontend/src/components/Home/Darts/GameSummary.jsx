@@ -27,6 +27,7 @@ function GameSummary({ show, setShow }) {
       normal: 0,
       overthrows: 0,
     }
+
     const updatedUsers = game.users.map((user) => {
       user.points = game.startPoints;
       user.allGainedPoints = 0;
@@ -51,7 +52,8 @@ function GameSummary({ show, setShow }) {
       return user;
     });
 
-    game.users = updatedUsers.sort(() => Math.random() - 0.5);
+    // game.users = updatedUsers.sort(() => Math.random() - 0.5);
+    game.users = updatedUsers.reverse();
     game.users[0].turn = true;
 
     const usersCopy = lodash.cloneDeep(game.users);
