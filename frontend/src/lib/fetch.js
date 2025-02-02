@@ -449,38 +449,6 @@ export const deleteAuthUser = async (displayName) => {
   return await response.json();
 }
 
-export const loginUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/auth/login`, {
-    method: "POST",
-    body: JSON.stringify({
-      displayName: userData.displayName,
-      password: userData.password,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  return await response.json();
-};
-
-export const registerUser = async (userData) => {
-  const response = await fetch(`${mongodbApiUrl}/auth/register`, {
-    method: "POST",
-    body: JSON.stringify({
-      email: userData.email,
-      displayName: userData.displayName,
-      password: userData.password,
-      friendsCode: userData.friendsCode
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-
-  return await response.json();
-}
-
 export const handleDeleteAuthUser = async (selectedUser) => {
   const ftpUser = await getFtpUser(selectedUser.displayName);
 
@@ -654,6 +622,51 @@ export const removeFriend = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+// Auth
+
+export const loginUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify({
+      displayName: userData.displayName,
+      password: userData.password,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  return await response.json();
+};
+
+export const registerUser = async (userData) => {
+  const response = await fetch(`${mongodbApiUrl}/auth/register`, {
+    method: "POST",
+    body: JSON.stringify({
+      email: userData.email,
+      displayName: userData.displayName,
+      password: userData.password,
+      friendsCode: userData.friendsCode
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  return await response.json();
+}
+
+export const checkSession = async () => {
+  const response = await fetch(`${mongodbApiUrl}/auth/check-session`, {
+    method: "POST",
+    headers: {
       "Authorization": Cookies.get("_auth")
     },
   });

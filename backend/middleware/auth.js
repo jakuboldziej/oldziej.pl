@@ -12,6 +12,7 @@ const authenticateUser = async (req, res, next) => {
 
   try {
     const token = authHeader ? authHeader : authQuery;
+
     if (token.split(" ")[0] === "Bearer") {
       if (token.split(" ")[1] === process.env.JWT_SECRET) return next();
     }

@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
 const authenticateUser = require("../middleware/auth");
 const { io } = require("../server");
+require('dotenv').config();
 
 const getAuthUser = async (req, res, next) => {
   let user;
@@ -21,6 +22,7 @@ const getAuthUser = async (req, res, next) => {
 }
 
 // Users
+
 router.get('/users', authenticateUser, async (req, res) => {
   try {
     const users = await User.find({}, { password: 0 })
@@ -390,6 +392,23 @@ router.put("/change-password", authenticateUser, async (req, res) => {
     res.status(200).send({ message: "Password changed successfully" });
   } catch (error) {
     res.status(500).send({ error: "Error changing password" });
+  }
+});
+
+router.post("/check-session", async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).send({ message: "Not authorized." });
+  }
+
+  try {
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
+    console.log(decoded)
+
+    res.json(decoded);
+  } catch (err) {
+    res.status(403).send({ message: "User not authenticated." });
   }
 });
 
