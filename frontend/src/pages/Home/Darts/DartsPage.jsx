@@ -2,14 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import RedDot from "@/assets//images/icons/red_dot.png";
 import GreenDot from "@/assets//images/icons/green_dot.png";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
-import { Contact, Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { Link } from "react-router-dom";
 import Loading from "@/components/Home/Loading";
@@ -18,7 +17,6 @@ function DartsPage() {
   document.title = "Oldziej | Darts";
   const { currentUser } = useContext(AuthContext);
 
-  const navigate = useNavigate();
   const location = useLocation();
 
   const [drawerOpen, setDrawerOpen] = useState(false);

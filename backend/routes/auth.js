@@ -403,11 +403,16 @@ router.post("/check-session", async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
-    console.log(decoded)
+    jwt.verify(authHeader, process.env.JWT_SECRET);
 
-    res.json(decoded);
+    res.json({ ok: true });
   } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).send({ message: "Token expired" });
+    }
+    if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(403).send({ message: "Invalid token" });
+    }
     res.status(403).send({ message: "User not authenticated." });
   }
 });

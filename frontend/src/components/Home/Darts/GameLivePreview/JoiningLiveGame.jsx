@@ -6,10 +6,12 @@ import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';
 import { socket } from '@/lib/socketio';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 function JoiningLiveGame({ props }) {
   const { setLiveGame } = props;
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { isServerConnected } = useContext(SocketIoContext);
 
@@ -18,10 +20,16 @@ function JoiningLiveGame({ props }) {
   const [inputGameCode, setInputGameCode] = useState('');
   const [qrCodeLink, setQrCodeLink] = useState('');
 
-  const handleJoinLiveGame = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await joinDartsGame(inputGameCode);
+    await handleJoinLiveGame(inputGameCode);
+  }
+
+  const handleJoinLiveGame = async (gameCode = null) => {
+    if (!gameCode) return ShowNewToast("Live Game Preview", "Game code is missing.")
+
+    const response = await joinDartsGame(gameCode);
 
     if (response) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
@@ -36,6 +44,17 @@ function JoiningLiveGame({ props }) {
   }
 
   useEffect(() => {
+    const gameCode = searchParams.get("gameCode")
+
+    if (!gameCode) return;
+
+    handleJoinLiveGame(gameCode);
+
+    searchParams.delete("gameCode");
+    setSearchParams(searchParams);
+  }, [searchParams]);
+
+  useEffect(() => {
     setQrCodeLink(`${origin}/darts/game/join-game-from-qrcode?socketId=${socket.id}`);
   }, [isServerConnected]);
 
@@ -43,7 +62,7 @@ function JoiningLiveGame({ props }) {
     <div className='joininig-live-game text-white flex flex-col items-center justify-center gap-5 h-screen w-full p-2'>
       <div className='flex flex-col items-center gap-5'>
         <span className='text-center text-3xl'>Join the live game by entering the game code here</span>
-        <form onSubmit={handleJoinLiveGame} className="flex w-fit items-center space-x-2">
+        <form onSubmit={handleSubmit} className="flex w-fit items-center space-x-2">
           <Input autoFocus required type='number' placeholder='1234' value={inputGameCode} onChange={(e) => setInputGameCode(e.target.value)} />
           <Button type="submit">Join</Button>
         </form>
