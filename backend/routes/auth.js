@@ -6,7 +6,13 @@ const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
 const authenticateUser = require("../middleware/auth");
 const { io } = require("../server");
+const { createRateLimiter } = require("../middleware/rateLimiters");
+
 require('dotenv').config();
+
+const loginLimiter = createRateLimiter(5, 15 * 60 * 1000, "Too many login attempts. Try again later.");
+const registerLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many registration attempts. Try again later.");
+const changePasswordLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many change password attempts. Try again later.");
 
 const getAuthUser = async (req, res, next) => {
   let user;
@@ -291,7 +297,7 @@ router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
 
 // Auth
 
-router.post("/register", (req, res) => {
+router.post("/register", registerLimiter, (req, res) => {
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({
       email: req.body.email,
@@ -331,7 +337,7 @@ router.post("/register", (req, res) => {
   });
 });
 
-router.post("/login", (req, res) => {
+router.post("/login", loginLimiter, (req, res) => {
   User.findOne({ displayName: req.body.displayName }).then((user) => {
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
@@ -369,7 +375,7 @@ router.post("/login", (req, res) => {
   });
 });
 
-router.put("/change-password", authenticateUser, async (req, res) => {
+router.put("/change-password", changePasswordLimiter, authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ displayName: req.body.displayName });
     if (!user) return res.status(404).send({ message: "User not found." });
