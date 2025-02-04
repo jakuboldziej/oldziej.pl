@@ -12,8 +12,8 @@ export const HomeContextProviders = ({ children }) => {
         <SocketIoContextProvider>
           <DartsGameContextProvider>
             <FtpContextProvider>
-              <Toaster />
               {children}
+              <Toaster />
             </FtpContextProvider>
           </DartsGameContextProvider>
         </SocketIoContextProvider>

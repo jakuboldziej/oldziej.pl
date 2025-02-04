@@ -129,10 +129,11 @@ router.get('/files', authenticateUser, async (req, res) => {
     const ftpFiles = await FtpFile.find(filter);
 
     if (!ftpFiles || ftpFiles.length === 0) {
-      return res.json({ files: [] })
+      return res.json([]);
     } else {
       const mergedFiles = await mergeFtpFiles(ftpFiles);
-      res.json({ files: mergedFiles })
+
+      res.json(mergedFiles);
     }
   } catch (err) {
     res.json({ err: err.message })
@@ -150,7 +151,7 @@ router.get('/files/:id', authenticateUser, async (req, res) => {
       return res.status(404).json({ err: 'No file.' })
     }
 
-    res.json({ file: mergedFile })
+    res.json(mergedFile);
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -176,7 +177,7 @@ router.put('/files/:id', authenticateUser, async (req, res) => {
       await bucket.rename(objectId, `${name}.${ext}`);
       updateFile.filename = `${name}.${ext}`;
     }
-    res.json({ file: updateFile });
+    res.json(updateFile);
   } catch (err) {
     res.json({ err: err.message });
   }
@@ -247,7 +248,7 @@ router.get('/folders', authenticateUser, async (req, res) => {
     if (req.query.folderName) filter["name"] = req.query.folderName;
     let folders = await FtpFolder.find(filter);
 
-    res.json({ folders })
+    res.json(folders);
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -258,7 +259,7 @@ router.get('/folders/:id', authenticateUser, async (req, res) => {
   try {
     let folder = await FtpFolder.findOne({ _id: req.params.id });
 
-    res.json({ folder })
+    res.json(folder);
   } catch (err) {
     res.json({ err: err.message })
   }
@@ -293,7 +294,7 @@ router.put('/folders/:id', authenticateUser, async (req, res) => {
       favorite: updateFolder.favorite
     })
 
-    res.json({ folder: updateFolder });
+    res.json(updateFolder);
   } catch (err) {
     res.json({ err: err.message });
   }

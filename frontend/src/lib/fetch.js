@@ -244,8 +244,8 @@ export const getFiles = async (userId = null) => {
       "Authorization": Cookies.get("_auth")
     },
   });
-  const data = await response.json();
-  return data.files;
+
+  return await response.json();
 }
 
 export const getFile = async (id) => {
@@ -254,8 +254,8 @@ export const getFile = async (id) => {
       "Authorization": Cookies.get("_auth")
     },
   });
-  const data = await response.json();
-  return data.file;
+
+  return await response.json();
 }
 
 export const uploadFile = async (data) => {
@@ -282,8 +282,7 @@ export const uploadFile = async (data) => {
     },
   });
 
-  const ftpFile = await ftpFileRes.json();
-  return ftpFile;
+  return await ftpFileRes.json();
 }
 
 export const deleteFile = async (id) => {
@@ -308,8 +307,8 @@ export const putFile = async (data) => {
       "Authorization": Cookies.get("_auth")
     },
   })
-  const fileRes = await response.json();
-  return fileRes.file;
+
+  return await response.json();
 }
 
 // Folders
@@ -361,8 +360,8 @@ export const getFolder = async (id) => {
       "Authorization": Cookies.get("_auth")
     },
   });
-  const data = await response.json();
-  return data.folder;
+
+  return await response.json();
 }
 
 export const deleteFolder = async (id) => {
@@ -386,8 +385,7 @@ export const putFolder = async (data) => {
       "Authorization": Cookies.get("_auth")
     },
   })
-  const folderRes = await response.json();
-  return folderRes.folder;
+  return await response.json();
 }
 
 // Utils

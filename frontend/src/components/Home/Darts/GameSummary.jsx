@@ -79,7 +79,7 @@ function GameSummary({ show, setShow }) {
     }
     const gameDataMerged = { ...gameCopy, ...gameData };
 
-    if (!previousSettings.training) {
+    if (previousSettings && previousSettings.training === false) {
       game.training = false;
       const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
       const gameData = await postDartsGame(gameWithoutRecordAndUserWon);

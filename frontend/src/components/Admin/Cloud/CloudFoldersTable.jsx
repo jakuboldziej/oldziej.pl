@@ -42,7 +42,7 @@ function CloudFoldersTable({ props }) {
         })
       );
 
-      setFolders(foldersWithOwners);
+      setFolders(foldersWithOwners.reverse());
       setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);

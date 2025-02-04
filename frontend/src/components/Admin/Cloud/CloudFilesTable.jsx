@@ -42,7 +42,7 @@ function CloudFilesTable({ props }) {
         })
       );
 
-      setFiles(filesWithOwners);
+      setFiles(filesWithOwners.reverse());
       setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);

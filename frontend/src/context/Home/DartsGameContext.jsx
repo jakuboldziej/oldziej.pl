@@ -5,6 +5,7 @@ import { getDartsUser, putDartsGame, putDartsUser } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
 import { createContext, useMemo, useState } from 'react';
 import lodash from 'lodash';
+import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 
 export const DartsGameContext = createContext();
 
@@ -137,6 +138,7 @@ export const DartsGameContextProvider = ({ children }) => {
       if (game.training) return
 
       const dartUser = usersBeforeBack.find((us) => us.displayName === user.displayName);
+      const userOriginalData = JSON.parse(JSON.stringify(dartUser))
 
       if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
       if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
@@ -159,8 +161,11 @@ export const DartsGameContextProvider = ({ children }) => {
 
       dartUser.gamesPlayed += 1;
 
-      await putDartsUser(dartUser);
-    })
+      const updatedDartsUser = await putDartsUser(dartUser);
+
+      if (userOriginalData === updatedDartsUser)
+        ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`)
+    });
   }
 
   const handleSpecialValue = async (value) => {

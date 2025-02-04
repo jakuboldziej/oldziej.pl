@@ -120,6 +120,7 @@ function AuthUsersTable({ props }) {
           </TableBody>
         </Table>
       )}
+
       <Dialog open={dialogOpen}>
         <DialogContent>
           <DialogHeader className="text-white">
