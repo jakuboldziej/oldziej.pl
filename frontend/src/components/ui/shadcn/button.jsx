@@ -18,6 +18,8 @@ const buttonVariants = cva(
           "text-[#E00000] border hover:text-black dark:border-[#E00000] dark:hover:bg-[#E00000] dark:hover:text-white",
         outline_green:
           "text-green border hover:text-black dark:border-green dark:hover:bg-green dark:hover:text-white",
+        outline_blue:
+          "text-blue-500 border hover:text-black border-blue-500 dark:hover:bg-blue-500 dark:hover:text-white",
         outline_lime:
           "text-lime border hover:text-black dark:border-lime dark:hover:bg-lime dark:hover:text-black",
         outline:

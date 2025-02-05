@@ -10,9 +10,9 @@ function App() {
   let AppRoutes;
 
   if (subdomain === "home") {
-    AppRoutes = AppRoutesHome
+    AppRoutes = AppRoutesHome;
   } else {
-    AppRoutes = AppRoutesPortfolio
+    AppRoutes = AppRoutesPortfolio;
   }
 
   return (

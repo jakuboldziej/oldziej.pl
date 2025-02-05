@@ -28,7 +28,7 @@ function LandingPage({ landingPageRef }) {
           {langText.landingPage &&
             <TypingAnimation
               className={`${lang === "en" ? 'w-[40.5rem] min-h-[288px]' : 'w-[42rem] min-h-[336px]'}  px-[4vw] sm:px-0 text-3xl sm:text-4xl sm:leading-[3rem]`}
-              duration={60}
+              duration={55}
               text={langText.landingPage.desc} />
           }
         </motion.div>
