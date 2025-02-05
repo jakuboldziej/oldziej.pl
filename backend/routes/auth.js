@@ -62,7 +62,7 @@ router.get('/users/check-existing-mail/:email', async (req, res) => {
   }
 });
 
-router.put("/users/:displayName", getAuthUser, async (req, res) => {
+router.patch("/users/:displayName", getAuthUser, async (req, res) => {
   try {
     const updatedUser = await User.findByIdAndUpdate(
       res.user._id,
@@ -375,7 +375,7 @@ router.post("/login", loginLimiter, (req, res) => {
   });
 });
 
-router.put("/change-password", changePasswordLimiter, authenticateUser, async (req, res) => {
+router.patch("/change-password", changePasswordLimiter, authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ displayName: req.body.displayName });
     if (!user) return res.status(404).send({ message: "User not found." });

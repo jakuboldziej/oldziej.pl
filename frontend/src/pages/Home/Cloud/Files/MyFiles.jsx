@@ -2,7 +2,7 @@ import LeftNavBar from "@/components/Home/Cloud/LeftNavBar";
 import { FtpContext } from "@/context/Home/FtpContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { ArrowDownNarrowWide, FilePlus, FileUp, FolderPlus, FolderUp, LayoutGrid, List } from 'lucide-react';
-import { deleteFile, getFile, getFolder, getFtpUser, postFolder, putFile, putFolder, uploadFile } from "@/lib/fetch";
+import { deleteFile, getFile, getFolder, getFtpUser, postFolder, patchFile, patchFolder, uploadFile } from "@/lib/fetch";
 import { addFileToFolder, addFolderToFolder, deleteFileFromFolder, deleteFolderFromFolder, formatElapsedTime, handleDataShown, handleSameFilename } from "@/components/Home/Cloud/utils";
 import { Button } from "@/components/ui/shadcn/button";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
@@ -99,7 +99,7 @@ function MyFiles() {
         file: file,
         newFileName: newFileName
       }
-      const updatedFile = await putFile(data);
+      const updatedFile = await patchFile(data);
 
       const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
       updateDataShown(updatedData);
@@ -113,7 +113,7 @@ function MyFiles() {
       const data = {
         folder: folder
       }
-      const updatedFolder = await putFolder(data);
+      const updatedFolder = await patchFolder(data);
 
       const updatedData = dataShown.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
       updateDataShown(updatedData);

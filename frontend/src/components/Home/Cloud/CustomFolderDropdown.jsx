@@ -3,7 +3,7 @@ import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, SquareA
 import { useContext } from "react";
 import { FtpContext } from "@/context/Home/FtpContext";
 import ShowNewToast from "../MyComponents/ShowNewToast";
-import { putFolder } from "@/lib/fetch";
+import { patchFolder } from "@/lib/fetch";
 import { deleteFolderFromFolder } from './utils';
 
 function CustomFolderDropdown(props) {
@@ -17,7 +17,7 @@ function CustomFolderDropdown(props) {
     if (folder.favorite) ShowNewToast(`Folder ${folder.name}`, "Added to favorites.");
     else ShowNewToast(`Folder ${folder.name}`, "Removed from favorites.");
 
-    const updatedFolder = await putFolder({ folder });
+    const updatedFolder = await patchFolder({ folder });
     const updatedData = dataShown.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     const updatedFolders = folders.map((f) => f._id === updatedFolder._id ? updatedFolder : f);
     updateDataShown(updatedData);

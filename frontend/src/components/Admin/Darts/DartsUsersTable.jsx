@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/shadcn/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { getDartsUsers, putDartsUser } from '@/lib/fetch';
+import { getDartsUsers, patchDartsUser } from '@/lib/fetch';
 import { Eye, EyeOff, Grip, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { totalThrows } from '../../Home/Darts/game logic/userUtils';
@@ -25,7 +25,7 @@ function DartsUsersTable({ props }) {
     user.visible = !user.visible;
     const updatedUser = user;
     setDartsUsers((prev) => prev.map((dUser) => dUser.displayName === user.displayName ? user : dUser));
-    await putDartsUser(updatedUser);
+    await patchDartsUser(updatedUser);
 
     const gameSettings = JSON.parse(localStorage.getItem("gameSettings"));
 
@@ -46,7 +46,7 @@ function DartsUsersTable({ props }) {
 
   const handleResetUsersData = async () => {
     try {
-      const updatedUser = await putDartsUser({
+      const updatedUser = await patchDartsUser({
         ...selectedUser,
         gamesPlayed: 0,
         highestCheckout: 0,

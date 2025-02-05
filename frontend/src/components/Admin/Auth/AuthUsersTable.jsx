@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { getAuthUsers, handleDeleteAuthUser, putAuthUser } from '@/lib/fetch';
+import { getAuthUsers, handleDeleteAuthUser, patchAuthUser } from '@/lib/fetch';
 import { Copy, Grip, ShieldCheck, ShieldOff, Trash, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -33,7 +33,7 @@ function AuthUsersTable({ props }) {
 
   const handleVerified = async (user) => {
     user.verified = !user.verified;
-    await putAuthUser(user);
+    await patchAuthUser(user);
     setAuthUsers((prev) => prev.map((aUser) => aUser.displayName === user.displayName ? user : aUser));
 
     socket.emit("verifyEmailAdmin", JSON.stringify({

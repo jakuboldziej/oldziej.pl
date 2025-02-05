@@ -30,12 +30,13 @@ export const postDartsGame = async (gameData) => {
       "Authorization": Cookies.get("_auth")
     },
   });
+
   return await response.json();
 }
 
-export const putDartsGame = async (gameData) => {
-  await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameData._id}`, {
-    method: "PUT",
+export const patchDartsGame = async (gameData) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameData._id}`, {
+    method: "PATCH",
     body: JSON.stringify({
       ...gameData
     }),
@@ -44,6 +45,8 @@ export const putDartsGame = async (gameData) => {
       "Authorization": Cookies.get("_auth")
     },
   });
+
+  return await response.json();
 }
 
 export const deleteDartsGame = async (gameId) => {
@@ -112,9 +115,9 @@ export const getDartsUser = async (identifier) => {
   return user;
 }
 
-export const putDartsUser = async (userData) => {
+export const patchDartsUser = async (userData) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.displayName}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       ...userData
     }),
@@ -212,9 +215,9 @@ export const deleteFtpUser = async (displayName) => {
   return await response.json();
 }
 
-export const putFtpUser = async (userData) => {
+export const patchFtpUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/ftp/users/${userData.displayName}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       ...userData
     }),
@@ -295,9 +298,9 @@ export const deleteFile = async (id) => {
   return await response.json();
 }
 
-export const putFile = async (data) => {
+export const patchFile = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${data.file._id}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       data: data,
       newFileName: data?.newFileName || null
@@ -374,9 +377,9 @@ export const deleteFolder = async (id) => {
   return await response.json();
 }
 
-export const putFolder = async (data) => {
+export const patchFolder = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders/${data.folder._id}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       data: data,
     }),
@@ -424,9 +427,9 @@ export const checkIfUserWithEmailExists = async (email) => {
   return user;
 }
 
-export const putAuthUser = async (userData) => {
+export const patchAuthUser = async (userData) => {
   await fetch(`${mongodbApiUrl}/auth/users/${userData.displayName}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       ...userData
     }),
@@ -480,7 +483,7 @@ export const handleDeleteAuthUser = async (selectedUser) => {
 export const changeDisplaynameUser = async (userData) => {
   try {
     await fetch(`${mongodbApiUrl}/auth/users/${userData.oldDisplayName}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({
         displayName: userData.newDisplayName,
         friendsCode: userData.friendsCode
@@ -492,7 +495,7 @@ export const changeDisplaynameUser = async (userData) => {
     });
 
     await fetch(`${mongodbApiUrl}/ftp/users/${userData.oldDisplayName}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({
         displayName: userData.newDisplayName
       }),
@@ -503,7 +506,7 @@ export const changeDisplaynameUser = async (userData) => {
     });
 
     await fetch(`${mongodbApiUrl}/darts/dartsUsers/${userData.oldDisplayName}`, {
-      method: "PUT",
+      method: "PATCH",
       body: JSON.stringify({
         displayName: userData.newDisplayName
       }),
@@ -524,7 +527,7 @@ export const changeDisplaynameUser = async (userData) => {
 
 export const changePassword = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/auth/change-password`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       displayName: data.displayName,
       currentPassword: data.currentPassword,
@@ -690,7 +693,7 @@ export const sendVerificationEmail = async (data) => {
 
 export const sendChangeEmail = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/emails/send-change-email`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({
       userEmail: data.userEmail,
       newUserEmail: data.newUserEmail

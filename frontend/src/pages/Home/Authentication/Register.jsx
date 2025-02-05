@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, putFtpUser, registerUser, sendVerificationEmail } from "@/lib/fetch";
+import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, patchFtpUser, registerUser, sendVerificationEmail } from "@/lib/fetch";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
 
@@ -96,7 +96,7 @@ function Register() {
         uploadDate: Date.now()
       });
 
-      await putFtpUser({
+      await patchFtpUser({
         displayName: ftpUserRes.displayName,
         main_folder: folderRes._id
       });

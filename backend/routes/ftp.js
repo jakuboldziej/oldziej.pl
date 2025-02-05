@@ -158,7 +158,7 @@ router.get('/files/:id', authenticateUser, async (req, res) => {
 })
 
 // update file
-router.put('/files/:id', authenticateUser, async (req, res) => {
+router.patch('/files/:id', authenticateUser, async (req, res) => {
   try {
     const newName = req.body.newFileName;
 
@@ -283,7 +283,7 @@ router.post('/folders', authenticateUser, async (req, res) => {
 })
 
 // update folder
-router.put('/folders/:id', authenticateUser, async (req, res) => {
+router.patch('/folders/:id', authenticateUser, async (req, res) => {
   try {
     const updateFolder = req.body.data.folder;
     await FtpFolder.updateOne({ _id: req.params.id }, {
@@ -382,7 +382,7 @@ router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   }
 });
 
-router.put("/users/:displayName", authenticateUser, getFtpUser, async (req, res) => {
+router.patch("/users/:displayName", authenticateUser, getFtpUser, async (req, res) => {
   try {
     const updatedUser = await FtpUser.findByIdAndUpdate(
       res.user._id,

@@ -1,7 +1,7 @@
 import { doorsValueReverseX01, handlePodiumReverseX01, handlePointsReverseX01, zeroValueReverseX01 } from '@/components/Home/Darts/game logic/game modes/Reverse X01';
 import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Home/Darts/game logic/game modes/X01';
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
-import { getDartsUser, putDartsGame, putDartsUser } from '@/lib/fetch';
+import { getDartsUser, patchDartsGame, patchDartsUser } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
 import { createContext, useMemo, useState } from 'react';
 import lodash from 'lodash';
@@ -27,17 +27,22 @@ export const DartsGameContextProvider = ({ children }) => {
   let handleShow;
 
   const updateGameState = async (gameP) => {
-    const gameCopy = { ...gameP };
+    try {
+      const gameCopy = { ...gameP };
 
-    setGame(gameCopy);
-    localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
+      setGame(gameCopy);
+      localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
-    if (gameCopy?.training) return;
+      if (gameCopy?.training) return;
 
-    socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
+      socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
 
-    const { record, userWon, ...restGameData } = gameCopy;
-    await putDartsGame(restGameData);
+      const { record, userWon, ...restGameData } = gameCopy;
+      await patchDartsGame(restGameData);
+    } catch (err) {
+      console.error("Error updating game", err);
+      ShowNewToast("Error updating game", err, "error");
+    }
   }
 
   const handleRound = (value, handleShowP) => {
@@ -161,7 +166,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
       dartUser.gamesPlayed += 1;
 
-      const updatedDartsUser = await putDartsUser(dartUser);
+      const updatedDartsUser = await patchDartsUser(dartUser);
 
       if (userOriginalData === updatedDartsUser)
         ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`)
@@ -301,7 +306,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const restoreUsersSummaryBack = async () => {
     dartsUsersBeforeBack.map(async (user) => {
-      await putDartsUser(user);
+      await patchDartsUser(user);
     });
   }
 

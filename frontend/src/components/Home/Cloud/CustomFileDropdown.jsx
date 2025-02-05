@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal
 import { FileArchive, FileDown, Heart, HeartOff, Info, Move, PencilLine, Search, SquareArrowDown, Trash2, Files, FileSymlink, Link } from 'lucide-react';
 import { useContext } from 'react';
 import { FtpContext } from '@/context/Home/FtpContext';
-import { putFile, renderFile, downloadFile, mongodbApiUrl } from '@/lib/fetch';
+import { patchFile, renderFile, downloadFile, mongodbApiUrl } from '@/lib/fetch';
 import ShowNewToast from '../MyComponents/ShowNewToast';
 
 function CustomFileDropdown(props) {
@@ -22,7 +22,7 @@ function CustomFileDropdown(props) {
     if (file.favorite) ShowNewToast(`File ${file.filename}`, "Added to favorites.");
     else ShowNewToast(`File ${file.filename}`, "Removed from favorites.");
 
-    const updatedFile = await putFile({ file });
+    const updatedFile = await patchFile({ file });
     const updatedData = dataShown.map((f) => f._id === updatedFile._id ? updatedFile : f);
     const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
     updateDataShown(updatedData);

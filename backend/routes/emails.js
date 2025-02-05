@@ -58,7 +58,7 @@ router.get("/verify-email", async (req, res) => {
 
 // Changing Email
 
-router.put("/send-change-email", authenticateUser, async (req, res) => {
+router.patch("/send-change-email", authenticateUser, async (req, res) => {
   const { userEmail, newUserEmail } = req.body;
 
   const existingUser = await User.findOne({ email: newUserEmail });

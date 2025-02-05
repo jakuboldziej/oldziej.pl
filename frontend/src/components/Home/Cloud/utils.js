@@ -1,4 +1,4 @@
-import { deleteFolder, getFile, getFolder, mongodbApiUrl, putFile, putFolder } from "@/lib/fetch";
+import { deleteFolder, getFile, getFolder, mongodbApiUrl, patchFile, patchFolder } from "@/lib/fetch";
 
 // Global
 
@@ -108,14 +108,14 @@ export const downloadFolder = (filename) => {
 export const addFileToFolder = async (folder, file) => {
   folder.files.unshift(file._id);
   file.folders.unshift(folder._id);
-  await putFolder({ folder: folder });
-  await putFile({ file: file });
+  await patchFolder({ folder: folder });
+  await patchFile({ file: file });
   return { updatedFolder: folder, updatedFile: file };
 }
 
 export const addFolderToFolder = async (folder1, folder2) => {
   folder1.folders.unshift(folder2._id);
-  await putFolder({ folder: folder1 });
+  await patchFolder({ folder: folder1 });
   return { updatedCurrentFolder: folder1, updatedFolder: folder2 };
 }
 
@@ -123,8 +123,8 @@ export const deleteFileFromFolder = async (folder, file) => {
   folder.files = folder.files.filter((fileId) => fileId !== file._id);
   file.folders = file.folders.filter((folderId) => folderId !== folder._id);
 
-  await putFolder({ folder: folder });
-  await putFile({ file: file });
+  await patchFolder({ folder: folder });
+  await patchFile({ file: file });
   return { updatedFolder: folder, updatedFile: file };
 }
 
@@ -132,7 +132,7 @@ export const deleteFolderFromFolder = async (folder1, folder2) => {
   folder1.folders = folder1.folders.filter((folderId) => folderId !== folder2._id);
 
   await deleteFolder(folder2._id);
-  await putFolder({ folder: folder1 });
+  await patchFolder({ folder: folder1 });
   return { updatedCurrentFolder: folder1, updatedFolder: folder2 };
 }
 

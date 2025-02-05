@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useContext, useEffect, useState } from 'react'
-import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFolder, putFile, renderFile, uploadFile } from '@/lib/fetch'
+import { deleteFile, getFile, getFtpUser, mongodbApiUrl, postFolder, patchFile, renderFile, uploadFile } from '@/lib/fetch'
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card'
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area'
@@ -170,7 +170,7 @@ function CloudPage() {
       file: file,
       newFileName: newFileName
     }
-    const updatedFile = await putFile(data);
+    const updatedFile = await patchFile(data);
     const updatedFiles = files.map((f) => f._id === updatedFile._id ? updatedFile : f);
 
     updateDataShown(updatedFiles);

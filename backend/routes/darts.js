@@ -102,7 +102,7 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
   }
 });
 
-router.put("/dartsGames/:identifier", authenticateUser, getDartsGame, async (req, res) => {
+router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (req, res) => {
   const { ...updateData } = req.body;
   try {
     const updatedGame = await DartsGame.findByIdAndUpdate(
@@ -143,7 +143,7 @@ router.get('/dartsUsers/:identifier', authenticateUser, getDartsUser, async (req
   res.send(res.user);
 });
 
-router.put("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (req, res) => {
+router.patch("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (req, res) => {
   try {
     const updatedUser = await DartsUser.findByIdAndUpdate(
       res.user._id,
