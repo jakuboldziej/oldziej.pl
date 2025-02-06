@@ -7,6 +7,7 @@ const authenticateUser = require("../middleware/auth")
 
 const getDartsUser = async (req, res, next) => {
   let user;
+
   try {
     const identifier = req.params.identifier;
     if (Types.ObjectId.isValid(identifier)) {
@@ -45,6 +46,7 @@ const getDartsGame = async (req, res, next) => {
 
 const generateUniqueGameCode = async () => {
   let gameCode;
+
   do {
     gameCode = Math.floor(1000 + Math.random() * 9000);
   } while (await DartsGame.findOne({ gameCode: gameCode.toString() }));
@@ -74,27 +76,28 @@ router.get('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req
 router.post('/dartsGames', authenticateUser, async (req, res) => {
   const body = req.body;
 
-  const dartsGame = new DartsGame({
-    created_by: body.created_by,
-    created_at: body.created_at,
-    users: body.users,
-    podiums: body.podiums,
-    podium: {
-      1: null,
-      2: null,
-      3: null
-    },
-    turn: body.turn,
-    active: true,
-    gameMode: body.gameMode,
-    startPoints: body.startPoints,
-    checkOut: body.checkOut,
-    sets: body.sets,
-    legs: body.legs,
-    round: 1,
-    gameCode: await generateUniqueGameCode()
-  });
   try {
+    const dartsGame = new DartsGame({
+      created_by: body.created_by,
+      created_at: body.created_at,
+      users: body.users,
+      podiums: body.podiums,
+      podium: {
+        1: null,
+        2: null,
+        3: null
+      },
+      turn: body.turn,
+      active: true,
+      gameMode: body.gameMode,
+      startPoints: body.startPoints,
+      checkOut: body.checkOut,
+      sets: body.sets,
+      legs: body.legs,
+      round: 1,
+      gameCode: await generateUniqueGameCode()
+    });
+
     const newDartsGame = await dartsGame.save()
     res.json(newDartsGame)
   } catch (err) {
@@ -104,6 +107,7 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
 
 router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (req, res) => {
   const { ...updateData } = req.body;
+
   try {
     const updatedGame = await DartsGame.findByIdAndUpdate(
       res.game._id,
@@ -172,17 +176,19 @@ router.delete('/dartsUsers/:displayName', authenticateUser, async (req, res) => 
 
 router.post('/dartsUsers', authenticateUser, async (req, res) => {
   const body = req.body;
-  const dartsUser = new DartsUser({
-    displayName: body.displayName,
-    gamesPlayed: body.gamesPlayed,
-    podiums: body.podiums,
-    overAllPoints: body.overAllPoints,
-    highestEndingAvg: body.highestEndingAvg,
-    highestCheckout: body.highestCheckout,
-    highestTurnPoints: body.highestTurnPoints,
-    throws: body.throws,
-  })
+
   try {
+    const dartsUser = new DartsUser({
+      displayName: body.displayName,
+      gamesPlayed: body.gamesPlayed,
+      podiums: body.podiums,
+      overAllPoints: body.overAllPoints,
+      highestEndingAvg: body.highestEndingAvg,
+      highestCheckout: body.highestCheckout,
+      highestTurnPoints: body.highestTurnPoints,
+      throws: body.throws,
+    });
+
     const newDartsUser = await dartsUser.save()
     res.json(newDartsUser)
   } catch (err) {

@@ -16,20 +16,24 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Veryfing Email
 
 router.post("/send-verify-email", async (req, res) => {
-  const { userEmail } = req.body;
+  try {
+    const { userEmail } = req.body;
 
-  const { data, error } = await resend.emails.send({
-    from: "oldziej.pl <noreply@oldziej.pl>",
-    to: userEmail,
-    subject: "Email Verification",
-    react: VerifyEmail({ userEmail: userEmail })
-  });
+    const { data, error } = await resend.emails.send({
+      from: "oldziej.pl <noreply@oldziej.pl>",
+      to: userEmail,
+      subject: "Email Verification",
+      react: VerifyEmail({ userEmail: userEmail })
+    });
 
-  if (error) {
-    return res.status(400).json(error);
+    if (error) {
+      return res.status(400).json(error);
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.json({ err: err.message });
   }
-
-  res.status(200).json(data);
 });
 
 router.get("/verify-email", async (req, res) => {
@@ -59,24 +63,29 @@ router.get("/verify-email", async (req, res) => {
 // Changing Email
 
 router.patch("/send-change-email", authenticateUser, async (req, res) => {
-  const { userEmail, newUserEmail } = req.body;
+  try {
 
-  const existingUser = await User.findOne({ email: newUserEmail });
+    const { userEmail, newUserEmail } = req.body;
 
-  if (existingUser) return res.json({ error: "User with that email already exists!" });
+    const existingUser = await User.findOne({ email: newUserEmail });
 
-  const { data, error } = await resend.emails.send({
-    from: "oldziej.pl <noreply@oldziej.pl>",
-    to: userEmail,
-    subject: "Change Your Email",
-    react: ChangeEmail({ userEmail, newUserEmail })
-  });
+    if (existingUser) return res.json({ error: "User with that email already exists!" });
 
-  if (error) {
-    return res.status(400).json({ error });
+    const { data, error } = await resend.emails.send({
+      from: "oldziej.pl <noreply@oldziej.pl>",
+      to: userEmail,
+      subject: "Change Your Email",
+      react: ChangeEmail({ userEmail, newUserEmail })
+    });
+
+    if (error) {
+      return res.status(400).json({ error });
+    }
+
+    res.status(200).json({ data });
+  } catch (err) {
+    res.json({ err: err.message });
   }
-
-  res.status(200).json({ data });
 });
 
 router.get("/change-email", async (req, res) => {

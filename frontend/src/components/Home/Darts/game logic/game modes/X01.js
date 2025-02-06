@@ -25,6 +25,8 @@ export const handlePointsX01 = (setOverthrow, game, currentUser) => {
   const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
 
   if (currentUser.points < 0) {
+    currentUser.allGainedPoints -= currentUser.turnsSum;
+
     currentUser.points = initialPoints;
     currentUser.turnsSum = 0;
     currentUser.currentTurn = 3;

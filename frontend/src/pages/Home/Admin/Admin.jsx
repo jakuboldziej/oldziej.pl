@@ -3,7 +3,8 @@ import CloudFilesTable from '@/components/Admin/Cloud/CloudFilesTable';
 import CloudFoldersTable from '@/components/Admin/Cloud/CloudFoldersTable';
 import CloudUsersTable from '@/components/Admin/Cloud/CloudUsersTable';
 import DartsGamesTable from '@/components/Admin/Darts/DartsGamesTable';
-import DartsUsersTable from '@/components/Admin/Darts/DartsUsersTable';
+import { DartsUsersContextProvider } from '@/components/Admin/Darts/DartsUsers/DartsUsersContext';
+import DartsUsersTable from '@/components/Admin/Darts/DartsUsers/DartsUsersView';
 import { Button } from '@/components/ui/shadcn/button';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/shadcn/pagination';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
@@ -120,7 +121,9 @@ function Admin() {
           {currentPage === "darts" && (
             <>
               {currentTable === "users" && (
-                <DartsUsersTable props={tableProps} />
+                <DartsUsersContextProvider>
+                  <DartsUsersTable props={tableProps} />
+                </DartsUsersContextProvider>
               )}
               {currentTable === "games" && (
                 <DartsGamesTable props={tableProps} />

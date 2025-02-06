@@ -14,7 +14,6 @@ export const calculatePoints = (turnValue) => {
 export const handleTurnsSum = (currentUser) => {
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   currentUser.turnsSum += currentTurn;
-  console.log(currentUser.currentTurn, currentUser.turnsSum, currentUser.highestGameTurnPoints)
   if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestGameTurnPoints) currentUser.highestGameTurnPoints = currentUser.turnsSum;
 }
 

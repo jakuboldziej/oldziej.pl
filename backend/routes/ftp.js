@@ -103,16 +103,17 @@ router.post('/upload', authenticateUser, upload.single('file'), (req, res) => {
 
 // create fileObject
 router.post('/files', authenticateUser, async (req, res) => {
-  const newFtpFile = new FtpFile({
-    fileId: req.body.fileId,
-    ownerId: req.body.ownerId,
-    favorite: req.body.favorite,
-    lastModified: req.body.lastModified,
-    folders: req.body.folders
-  });
-  await newFtpFile.save();
-
   try {
+    const newFtpFile = new FtpFile({
+      fileId: req.body.fileId,
+      ownerId: req.body.ownerId,
+      favorite: req.body.favorite,
+      lastModified: req.body.lastModified,
+      folders: req.body.folders
+    });
+
+    await newFtpFile.save();
+
     const ftpFile = await FtpFile.findOne({ _id: newFtpFile._id });
     const mergedFile = await mergeFtpFile(ftpFile);
     res.json({ file: mergedFile });
@@ -358,13 +359,13 @@ router.get('/users/:identifier', authenticateUser, async (req, res) => {
 });
 
 router.post('/users', authenticateUser, async (req, res) => {
-  const user = new FtpUser({
-    displayName: req.body.displayName,
-    email: req.body.email,
-    main_folder: req.body.main_folder
-  });
-
   try {
+    const user = new FtpUser({
+      displayName: req.body.displayName,
+      email: req.body.email,
+      main_folder: req.body.main_folder
+    });
+
     const newUser = await user.save()
     res.json(newUser)
   } catch (err) {
@@ -374,7 +375,7 @@ router.post('/users', authenticateUser, async (req, res) => {
 
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
-    const response = await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
+    await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
 
     res.json({ ok: true });
   } catch (err) {
