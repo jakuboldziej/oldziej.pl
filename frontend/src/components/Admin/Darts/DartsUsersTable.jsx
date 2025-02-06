@@ -245,11 +245,11 @@ function DartsUsersTable({ props }) {
                   <span>Are you sure you want to sync {selectedUser?.displayName}'s darts data?</span>
                   {modalDesc ? (
                     <span className='flex flex-col gap-1'>
-                      <span>gamesPlayed: {modalDesc.gamesPlayed}</span>
-                      <span>highestCheckout: {modalDesc.highestCheckout}</span>
-                      <span>highestEndingAvg: {modalDesc.highestEndingAvg}</span>
-                      <span>highestTurnPoints: {modalDesc.highestTurnPoints}</span>
-                      <span>overAllPoints: {modalDesc.overAllPoints}</span>
+                      <span>gamesPlayed: {selectedUser.gamesPlayed} ={'>'} {modalDesc.gamesPlayed} </span>
+                      <span>highestCheckout: {selectedUser.highestCheckout} ={'>'} {modalDesc.highestCheckout}</span>
+                      <span>highestEndingAvg: {selectedUser.highestEndingAvg} ={'>'} {modalDesc.highestEndingAvg}</span>
+                      <span>highestTurnPoints: {selectedUser.highestTurnPoints} ={'>'} {modalDesc.highestTurnPoints}</span>
+                      <span>overAllPoints: {selectedUser.overAllPoints} ={'>'} {modalDesc.overAllPoints}</span>
                       {/* <span>throws: {modalDesc.throws}</span> */}
                     </span>
                   ) : (

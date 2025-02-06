@@ -143,7 +143,7 @@ export const DartsGameContextProvider = ({ children }) => {
       if (game.training) return
 
       const dartUser = usersBeforeBack.find((us) => us.displayName === user.displayName);
-      const userOriginalData = JSON.parse(JSON.stringify(dartUser))
+      const userOriginalData = JSON.parse(JSON.stringify(dartUser));
 
       if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
       if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
@@ -168,8 +168,8 @@ export const DartsGameContextProvider = ({ children }) => {
 
       const updatedDartsUser = await patchDartsUser(dartUser);
 
-      if (userOriginalData === updatedDartsUser)
-        ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`)
+      if (JSON.stringify(userOriginalData) === JSON.stringify(updatedDartsUser))
+        ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`);
     });
   }
 
