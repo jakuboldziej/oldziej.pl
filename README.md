@@ -27,7 +27,7 @@ I created an Android app for darts and cloud services using React Native: [HomeA
 - [Resend](https://resend.com/)
 - [Lucide React](https://lucide.dev/guide/packages/lucide-react)
 
-## Installing locally
+## Installing Locally
 
 Running my application can be problematic without specific environment variables.
 
