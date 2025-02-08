@@ -48,7 +48,10 @@ const services = [
   "netlify",
   "trello",
   "digitalocean",
-  "openjdk"
+  "openjdk",
+  "jira",
+  "confluence",
+  "gitlab"
 ]
 
 function IconClouds() {
