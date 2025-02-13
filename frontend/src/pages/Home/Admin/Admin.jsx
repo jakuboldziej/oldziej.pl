@@ -10,6 +10,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { RotateCcw } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
+import Esp32 from '../Esp32';
 
 function Admin() {
   document.title = "Oldziej | Admin";
@@ -20,7 +21,7 @@ function Admin() {
   const [refreshingData, setRefreshingData] = useState(false);
 
   const handlePaginationChange = (data) => {
-    const pages = ["auth", "darts", "cloud"];
+    const pages = ["auth", "darts", "cloud", "esp32"];
     const tables = ["users", "games", "files", "folders"];
 
     if (pages.includes(data)) {
@@ -62,6 +63,9 @@ function Admin() {
             </PaginationItem>
             <PaginationItem>
               <PaginationLink onClick={() => handlePaginationChange("cloud")} isActive={currentPage === "cloud"}>Cloud</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink onClick={() => handlePaginationChange("esp32")} isActive={currentPage === "esp32"}>ESP32</PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
@@ -108,6 +112,9 @@ function Admin() {
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
+          )}
+          {currentPage === "esp32" && (
+            <Esp32 />
           )}
         </div>
 

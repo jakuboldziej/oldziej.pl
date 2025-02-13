@@ -107,6 +107,9 @@ app.use('/api/ftp', ftpRouter);
 const emailsRouter = require('./routes/emails');
 app.use('/api/emails', emailsRouter);
 
+const esp32Router = require('./routes/esp32');
+app.use('/api/esp32', esp32Router);
+
 // Admin UI
 
 bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {

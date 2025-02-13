@@ -85,19 +85,7 @@ io.on('connection', (socket) => {
     addingOnlineUser(data, socket.id, io);
   });
 
-  // ESP 32
-
-  socket.on("ESP32_CONTROL_LED_SERVER", (data) => {
-    io.emit("ESP32_CONTROL_LED", data);
-  });
-
-  socket.on("ESP32_CHECK_LED_SERVER", () => {
-    io.emit("ESP32_CHECK_LED");
-  });
-
-  socket.on("ESP32_LED_STATUS_SERVER", (data) => {
-    io.emit("ESP32_LED_STATUS", data);
-  });
+  // Connections
 
   socket.on('disconnect', () => {
     scheduleUserOffline(socket.id, io);

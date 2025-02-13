@@ -1,6 +1,6 @@
-const express = require("express")
-const router = express.Router()
-const User = require('../models/user')
+const express = require("express");
+const router = express.Router();
+const User = require('../models/user');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
@@ -34,7 +34,7 @@ router.get('/users', authenticateUser, async (req, res) => {
     const users = await User.find({}, { password: 0 })
     res.json(users)
   } catch (err) {
-    res.json({ message: err.message })
+    res.json({ message: err.message });
   }
 });
 

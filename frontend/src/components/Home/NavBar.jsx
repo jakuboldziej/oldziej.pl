@@ -75,10 +75,6 @@ function NavBar() {
                             navigate('/admin');
                             handleSheetClose();
                           }}>Admin</Button>
-                          <Button variant="outline_white" onClick={() => {
-                            navigate('/esp32');
-                            handleSheetClose();
-                          }}>ESP-32</Button>
                         </>
                       )}
                     </SheetTitle>
