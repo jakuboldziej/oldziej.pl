@@ -29,12 +29,13 @@ function DartsGamesTable({ props }) {
   }
 
   const fetchDartsGames = async () => {
+    setIsLoading(true);
     try {
       const fetchedDartsGames = await getDartsGames();
       setDartsGames(fetchedDartsGames);
-      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);
+    } finally {
       setIsLoading(false);
     }
   }

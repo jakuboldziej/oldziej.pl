@@ -735,6 +735,31 @@ export const userDeletedAccountEmail = async (data) => {
   return await response.json();
 }
 
+// ESP32
+
+export const getESP32State = async () => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/json-state`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
+export const patchESP32State = async (data) => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/change-state`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
 // Statistics
 
 // Darts

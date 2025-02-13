@@ -12,9 +12,8 @@ const getWLEDstate = async (req, res) => {
     const responseData = await response.json();
 
     return responseData;
-
   } catch (err) {
-    res.json({ message: err.message });
+    return { message: err.message };
   }
 }
 
@@ -35,19 +34,30 @@ router.get("/json-state", authenticateUser, async (req, res) => {
   res.json(WLEDstate);
 });
 
-router.get("/toggle", authenticateUser, async (req, res) => {
+router.patch("/change-state", authenticateUser, async (req, res) => {
   try {
-    let toggleState;
+    const stateOn = req.body.on;
+    const stateBri = req.body.bri;
 
-    const WLEDstate = await getWLEDstate();
-    if (WLEDstate.on === true) toggleState = false;
-    else toggleState = true;
+    let patchData = {
+      "v": true,
+    }
+
+    if (stateOn && stateOn === "toggle") {
+      const WLEDstate = await getWLEDstate();
+      if (WLEDstate.on === true) patchData.on = false;
+      else patchData.on = true;
+    } else if (stateOn !== undefined) {
+      patchData.on = stateOn;
+    }
+
+    if (stateBri) {
+      patchData.bri = stateBri;
+    }
 
     const response = await fetch(`${wledDomain}/json/state`, {
       method: "POST",
-      body: JSON.stringify({
-        on: toggleState
-      }),
+      body: JSON.stringify(patchData),
     });
     const responseData = await response.json();
 
@@ -55,6 +65,8 @@ router.get("/toggle", authenticateUser, async (req, res) => {
   } catch (err) {
     res.json({ message: err.message });
   }
-})
+});
+
+router.post("/")
 
 module.exports = router

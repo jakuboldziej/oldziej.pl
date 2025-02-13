@@ -29,6 +29,7 @@ function CloudFilesTable({ props }) {
   }
 
   const fetchFiles = async () => {
+    setIsLoading(true);
     try {
       const fetchedFiles = await getFiles();
       const filesWithOwners = await Promise.all(
@@ -43,9 +44,9 @@ function CloudFilesTable({ props }) {
       );
 
       setFiles(filesWithOwners.reverse());
-      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);
+    } finally {
       setIsLoading(false);
     }
   }

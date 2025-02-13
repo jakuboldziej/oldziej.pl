@@ -15,6 +15,7 @@ function CloudUsersTable({ props }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCloudUsers = async () => {
+    setIsLoading(true);
     try {
       const resUsers = await getFtpUsers();
 
@@ -30,9 +31,9 @@ function CloudUsersTable({ props }) {
       }));
 
       setCloudUsers(updatedUsers);
-      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);
+    } finally {
       setIsLoading(false);
     }
   }

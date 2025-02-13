@@ -43,12 +43,13 @@ function AuthUsersTable({ props }) {
   }
 
   const fetchAuthUsers = async () => {
+    setIsLoading(true);
     try {
       const resUsers = await getAuthUsers();
       setAuthUsers(resUsers);
-      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);
+    } finally {
       setIsLoading(false);
     }
   }

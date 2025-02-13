@@ -29,6 +29,7 @@ function CloudFoldersTable({ props }) {
   }
 
   const fetchFolders = async () => {
+    setIsLoading(true);
     try {
       const fetchedFolders = await getFolders();
       const foldersWithOwners = await Promise.all(
@@ -43,9 +44,9 @@ function CloudFoldersTable({ props }) {
       );
 
       setFolders(foldersWithOwners.reverse());
-      setIsLoading(false);
     } catch (err) {
       console.error('Error fetching', err);
+    } finally {
       setIsLoading(false);
     }
   }

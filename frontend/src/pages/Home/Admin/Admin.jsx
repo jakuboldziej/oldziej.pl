@@ -42,10 +42,11 @@ function Admin() {
   }, []);
 
   useEffect(() => {
+    if (!onlineFriends || onlineFriends.length === 0) return;
     setRefreshingData(true);
   }, [onlineFriends]);
 
-  const tableProps = {
+  const componentProps = {
     refreshingData,
     setRefreshingData
   }
@@ -114,14 +115,14 @@ function Admin() {
             </Pagination>
           )}
           {currentPage === "esp32" && (
-            <Esp32 />
+            <Esp32 {...componentProps} />
           )}
         </div>
 
         <div className='tables'>
           {currentPage === "auth" && (
             currentTable === "users" && (
-              <AuthUsersTable props={tableProps} />
+              <AuthUsersTable props={componentProps} />
             )
           )}
 
@@ -129,11 +130,11 @@ function Admin() {
             <>
               {currentTable === "users" && (
                 <DartsUsersContextProvider>
-                  <DartsUsersTable props={tableProps} />
+                  <DartsUsersTable props={componentProps} />
                 </DartsUsersContextProvider>
               )}
               {currentTable === "games" && (
-                <DartsGamesTable props={tableProps} />
+                <DartsGamesTable props={componentProps} />
               )}
             </>
           )}
@@ -141,13 +142,13 @@ function Admin() {
           {currentPage === "cloud" && (
             <>
               {currentTable === "users" && (
-                <CloudUsersTable props={tableProps} />
+                <CloudUsersTable props={componentProps} />
               )}
               {currentTable === "files" && (
-                <CloudFilesTable props={tableProps} />
+                <CloudFilesTable props={componentProps} />
               )}
               {currentTable === "folders" && (
-                <CloudFoldersTable props={tableProps} />
+                <CloudFoldersTable props={componentProps} />
               )}
             </>
           )}
