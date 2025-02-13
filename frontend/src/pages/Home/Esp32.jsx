@@ -1,26 +1,34 @@
 import Loading from '@/components/Home/Loading';
-import { Label } from '@/components/ui/shadcn/label'
 import { Slider } from '@/components/ui/shadcn/slider';
-import { Switch } from '@/components/ui/shadcn/switch'
+import { Switch } from '@/components/ui/shadcn/switch';
 import { getESP32State, patchESP32State } from '@/lib/fetch';
 import { Power, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { RgbaColorPicker } from 'react-colorful';
 
 function Esp32(props) {
   const { refreshingData, setRefreshingData } = props;
 
   const [ESPState, setESPState] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sliderValue, setSliderValue] = useState(0);
+  const [colorValue, setColorValue] = useState({ r: 255, g: 255, b: 255, a: 1 });
 
   const handleESP32StateChange = async (change, value) => {
     try {
       if (change === "on") {
         const response = await patchESP32State({ on: "toggle" });
         setESPState((prev) => ({ ...prev, on: response.on }));
-      }
-      else if (change === "bri") {
+      } else if (change === "bri") {
         const response = await patchESP32State({ bri: value });
-        setESPState((prev) => ({ ...prev, bri: response.bri }))
+        setESPState((prev) => ({ ...prev, bri: response.bri }));
+      } else if (change === "color") {
+        let { r, g, b, a } = value;
+        r *= a;
+        g *= a;
+        b *= a;
+        await patchESP32State({ color: { r, g, b } });
+        setESPState((prev) => ({ ...prev, seg: [{ col: [[r, g, b]] }] }));
       }
     } catch (err) {
       console.error(err);
@@ -31,7 +39,15 @@ function Esp32(props) {
     setLoading(true);
     try {
       const response = await getESP32State();
-      console.log(response);
+
+      const responseColors = {
+        r: response.seg[0].col[0][0],
+        g: response.seg[0].col[0][1],
+        b: response.seg[0].col[0][2]
+      }
+      setColorValue({ ...responseColors, a: 1 });
+
+      setSliderValue(response.bri);
       setESPState(response);
     } catch (err) {
       console.error(err);
@@ -49,7 +65,7 @@ function Esp32(props) {
 
   return (
     <div className="esp32-page flex flex-col items-center gap-10">
-      <span className="text-4xl">WLED</span>
+      <span className="text-4xl flex gap-4 items-center">WLED</span>
       {loading ? (
         <Loading />
       ) : (
@@ -65,21 +81,33 @@ function Esp32(props) {
               />
             </div>
 
-            <div className='flex flex-col h-[100px] items-center justify-between'>
+            <div className={`flex flex-col h-[100px] w-[157px] items-center justify-between ${!ESPState.on && "opacity-50"}`}>
               <Sun size={50} />
-              <Slider
-                defaultValue={[ESPState.bri]}
-                min={1}
-                max={255}
-                step={1}
-                className={`w-[120px] p-2 ${!ESPState.on && "opacity-50"}`}
-                onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
-                disabled={!ESPState.on}
+              <div className='flex justify-between w-full'>
+                <Slider
+                  defaultValue={[ESPState.bri]}
+                  min={1}
+                  max={255}
+                  step={1}
+                  className={`w-[120px] p-2 `}
+                  onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
+                  onValueChange={(value) => setSliderValue(value[0])}
+                  disabled={!ESPState.on}
+                />
+                <span>{sliderValue}</span>
+              </div>
+            </div>
+            <div>
+              <RgbaColorPicker
+                color={colorValue}
+                onChange={setColorValue}
+                onMouseUp={() => handleESP32StateChange("color", colorValue)}
               />
             </div>
           </div>
         )
-      )}
+      )
+      }
     </div >
   )
 }
