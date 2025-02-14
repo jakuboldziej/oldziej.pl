@@ -54,6 +54,7 @@ function Esp32(props) {
   const handleWLEDState = async () => {
     try {
       const response = await getESP32State();
+      if (response.message) throw new Error(response.message);
 
       const responseColors = {
         r: response.seg[0].col[0][0],
@@ -65,6 +66,7 @@ function Esp32(props) {
       setSliderValue(response.bri);
       setESP32State(response);
     } catch (err) {
+      setESP32State(err);
       console.error(err);
     }
   }
@@ -115,7 +117,7 @@ function Esp32(props) {
       {loading ? (
         <Loading />
       ) : (
-        ESP32State?.message === "fetch failed" ? (
+        ESP32State.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
           <div className='flex w-full'>
