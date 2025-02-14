@@ -115,7 +115,7 @@ function Esp32(props) {
       {loading ? (
         <Loading />
       ) : (
-        ESP32State.message === "fetch failed" ? (
+        ESP32State?.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
           <div className='flex w-full'>

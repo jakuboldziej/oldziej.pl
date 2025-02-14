@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/shadcn/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "@/context/Home/AuthContext";
@@ -78,6 +78,7 @@ function NavBar() {
                         </>
                       )}
                     </SheetTitle>
+                    <SheetDescription className="hidden">Offcanvas navbar</SheetDescription>
                   </SheetHeader>
                   <div className="py-5 text-white flex flex-col gap-5 w-fit">
                     <Button className="relative w-fit" disabled={!currentUser.verified} onClick={() => {
