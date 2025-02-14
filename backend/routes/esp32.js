@@ -34,11 +34,34 @@ router.get("/json-state", authenticateUser, async (req, res) => {
   res.json(WLEDstate);
 });
 
+router.get("/json-effects", authenticateUser, async (req, res) => {
+  try {
+    const response = await fetch(`${wledDomain}/json/effects`);
+    const responseData = await response.json();
+
+    res.json(responseData);
+  } catch (err) {
+    res.json({ message: err.message });
+  }
+});
+
+router.get("/json-palettes", authenticateUser, async (req, res) => {
+  try {
+    const response = await fetch(`${wledDomain}/json/palettes`);
+    const responseData = await response.json();
+
+    res.json(responseData);
+  } catch (err) {
+    res.json({ message: err.message });
+  }
+});
+
 router.patch("/change-state", authenticateUser, async (req, res) => {
   try {
     const stateOn = req.body.on;
     const stateBri = req.body.bri;
     const stateColor = req.body.color;
+    const stateEffect = req.body.effect;
 
     let patchData = {
       "v": true,
@@ -56,6 +79,18 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
 
     if (stateColor) {
       patchData.seg = [{ col: [[stateColor.r, stateColor.g, stateColor.b]] }]
+    }
+
+    if (stateEffect) {
+      patchData.seg = [
+        ...patchData.seg,
+        {
+          fx: stateEffect.fx,
+          sx: stateEffect.sx,
+          ix: stateEffect.ix,
+          pal: stateEffect.pal
+        }
+      ]
     }
 
     const response = await fetch(`${wledDomain}/json/state`, {

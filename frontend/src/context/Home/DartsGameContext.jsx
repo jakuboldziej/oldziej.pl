@@ -6,6 +6,7 @@ import { socket } from '@/lib/socketio';
 import { createContext, useMemo, useState } from 'react';
 import lodash from 'lodash';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
+import { handleWLEDThrowDoors } from '@/components/Home/Darts/game logic/wledController';
 
 export const DartsGameContext = createContext();
 
@@ -175,6 +176,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const handleSpecialValue = async (value) => {
     if (value === "DOORS") {
+      handleWLEDThrowDoors()
       if (game.gameMode === "Reverse X01") {
         handleUsersState(doorsValueReverseX01);
       } else {

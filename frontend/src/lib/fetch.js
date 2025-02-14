@@ -748,6 +748,39 @@ export const getESP32State = async () => {
   return await response.json();
 }
 
+export const getESP32Info = async () => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/json-info`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
+export const getESP32Effects = async () => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/json-effects`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
+export const getESP32Palettes = async () => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/json-palettes`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
 export const patchESP32State = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/esp32/change-state`, {
     method: "PATCH",

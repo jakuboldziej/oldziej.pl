@@ -1,16 +1,21 @@
+import Esp32ComboBox from '@/components/Home/Esp32/Esp32ComboBox';
 import Loading from '@/components/Home/Loading';
 import { Slider } from '@/components/ui/shadcn/slider';
 import { Switch } from '@/components/ui/shadcn/switch';
-import { getESP32State, patchESP32State } from '@/lib/fetch';
-import { Power, Sun } from 'lucide-react';
+import { getESP32Effects, getESP32Info, getESP32State, patchESP32State } from '@/lib/fetch';
+import { Power, Sparkles, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
 function Esp32(props) {
   const { refreshingData, setRefreshingData } = props;
 
-  const [ESPState, setESPState] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [ESP32State, setESP32State] = useState(null);
+  const [ESP32Info, setESP32Info] = useState(null);
+  const [ESP32Effects, setESP32Effects] = useState(null);
+
   const [sliderValue, setSliderValue] = useState(0);
   const [colorValue, setColorValue] = useState({ r: 255, g: 255, b: 255, a: 1 });
 
@@ -18,25 +23,24 @@ function Esp32(props) {
     try {
       if (change === "on") {
         const response = await patchESP32State({ on: "toggle" });
-        setESPState((prev) => ({ ...prev, on: response.on }));
+        setESP32State((prev) => ({ ...prev, on: response.on }));
       } else if (change === "bri") {
         const response = await patchESP32State({ bri: value });
-        setESPState((prev) => ({ ...prev, bri: response.bri }));
+        setESP32State((prev) => ({ ...prev, bri: response.bri }));
       } else if (change === "color") {
         let { r, g, b, a } = value;
         r *= a;
         g *= a;
         b *= a;
         await patchESP32State({ color: { r, g, b } });
-        setESPState((prev) => ({ ...prev, seg: [{ col: [[r, g, b]] }] }));
+        setESP32State((prev) => ({ ...prev, seg: [{ col: [[r, g, b]] }] }));
       }
     } catch (err) {
       console.error(err);
     }
   }
 
-  const checkWLEDState = async () => {
-    setLoading(true);
+  const handleWLEDState = async () => {
     try {
       const response = await getESP32State();
 
@@ -48,66 +52,142 @@ function Esp32(props) {
       setColorValue({ ...responseColors, a: 1 });
 
       setSliderValue(response.bri);
-      setESPState(response);
+      setESP32State(response);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
+    }
+  }
+
+  const handleWLEDInfo = async () => {
+    try {
+      const response = await getESP32Info();
+
+      setESP32Info(response);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  const handleWLEDEffects = async () => {
+    try {
+      const response = await getESP32Effects();
+
+      setESP32Effects(response);
+    } catch (err) {
+      console.error(err);
     }
   }
 
   useEffect(() => {
-    if (refreshingData === true || ESPState === null) {
-      checkWLEDState();
-      setRefreshingData(false);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        await handleWLEDState();
+        await handleWLEDInfo();
+        await handleWLEDEffects();
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setRefreshingData(false);
+      }
+    };
+
+    if (refreshingData === true || ESP32State === null || ESP32Info === null) {
+      fetchData();
     }
-  }, [refreshingData, ESPState]);
+  }, [refreshingData, ESP32State, ESP32Info]);
 
   return (
     <div className="esp32-page flex flex-col items-center gap-10">
-      <span className="text-4xl flex gap-4 items-center">WLED</span>
+      <span className="text-5xl flex gap-4 items-center">WLED</span>
       {loading ? (
         <Loading />
       ) : (
-        ESPState.message === "fetch failed" ? (
+
+        ESP32State.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
-          <div className='flex gap-20'>
-            <div className='flex flex-col h-[100px] items-center justify-between'>
-              <Power size={50} />
-              <Switch
-                checked={ESPState.on}
-                onCheckedChange={() => handleESP32StateChange("on")}
-              />
-            </div>
-
-            <div className={`flex flex-col h-[100px] w-[157px] items-center justify-between ${!ESPState.on && "opacity-50"}`}>
-              <Sun size={50} />
-              <div className='flex justify-between w-full'>
-                <Slider
-                  defaultValue={[ESPState.bri]}
-                  min={1}
-                  max={255}
-                  step={1}
-                  className={`w-[120px] p-2 `}
-                  onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
-                  onValueChange={(value) => setSliderValue(value[0])}
-                  disabled={!ESPState.on}
+          <div className='flex w-full'>
+            <div className='flex gap-20 px-20 flex-wrap w-1/2 justify-center'>
+              <div className='h-[100px] flex flex-col items-center justify-between'>
+                <Power size={50} />
+                <Switch
+                  checked={ESP32State.on}
+                  onCheckedChange={() => handleESP32StateChange("on")}
                 />
-                <span>{sliderValue}</span>
+              </div>
+
+              <div className={`h-[100px] flex flex-col w-[157px] items-center justify-between ${!ESP32State.on && "opacity-50"}`}>
+                <Sun size={50} />
+                <div className='flex justify-between w-full'>
+                  <Slider
+                    defaultValue={[ESP32State.bri]}
+                    min={1}
+                    max={255}
+                    step={1}
+                    className={`w-[120px] p-2 `}
+                    onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
+                    onValueChange={(value) => setSliderValue(value[0])}
+                    disabled={!ESP32State.on}
+                  />
+                  <span>{sliderValue}</span>
+                </div>
+              </div>
+              <div className='h-[110px] flex flex-col items-center justify-between'>
+                <Sparkles size={50} />
+                <Esp32ComboBox data={ESP32Effects} defaultValue={ESP32State.seg[0].fx} />
+              </div>
+              <div>
+                <RgbaColorPicker
+                  color={colorValue}
+                  onChange={setColorValue}
+                  onMouseUp={() => handleESP32StateChange("color", colorValue)}
+                  disabled
+                />
               </div>
             </div>
-            <div>
-              <RgbaColorPicker
-                color={colorValue}
-                onChange={setColorValue}
-                onMouseUp={() => handleESP32StateChange("color", colorValue)}
-              />
+
+            <div className='flex flex-col gap-10 items-center border-l-2 w-1/2 px-20 '>
+              <span className='text-4xl'>INFO</span>
+
+              <div className='flex gap-10 flex-wrap justify-center'>
+                <div className='h-[100px] flex flex-col items-center justify-between'>
+                  <span className='text-3xl'>MAC</span>
+                  <span className='text-xl'>{ESP32Info.mac}</span>
+                </div>
+                <div className='h-[100px] flex flex-col items-center justify-between'>
+                  <span className='text-3xl'>IP</span>
+                  <span className='text-xl'>{ESP32Info.ip}</span>
+                </div>
+                <div className='h-[100px] flex flex-col items-center justify-between'>
+                  <span className='text-3xl'>Uptime</span>
+                  <span className='text-xl'>{new Date(ESP32Info.uptime * 1000).toISOString().slice(11, 19)}</span>
+                </div>
+              </div>
+
+              <div className='flex flex-col items-center gap-10 w-full'>
+                <span className='text-4xl'>WIFI</span>
+
+                <div className='flex gap-10 flex-wrap justify-center'>
+                  <div className='h-[100px] flex flex-col items-center justify-between'>
+                    <span className='text-3xl'>BSSID</span>
+                    <span className='text-xl'>{ESP32Info.wifi.bssid}</span>
+                  </div>
+                  <div className='h-[100px] flex flex-col items-center justify-between'>
+                    <span className='text-3xl'>RSSI</span>
+                    <span className='text-xl'>{ESP32Info.wifi.rssi} dBm</span>
+                  </div>
+                  <div className='h-[100px] flex flex-col items-center justify-between'>
+                    <span className='text-3xl'>Signal</span>
+                    <span className='text-xl'>{ESP32Info.wifi.signal} %</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )
-      )
-      }
+      )}
     </div >
   )
 }
