@@ -65,6 +65,7 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
 
     let patchData = {
       "v": true,
+      seg: []
     }
 
     if (stateOn && stateOn === "toggle") {
@@ -78,19 +79,20 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
     if (stateBri) { patchData.bri = stateBri; }
 
     if (stateColor) {
-      patchData.seg = [{ col: [[stateColor.r, stateColor.g, stateColor.b]] }]
+      patchData.seg[0] = {
+        ...patchData.seg[0],
+        col: [[stateColor.r, stateColor.g, stateColor.b]]
+      };
     }
 
     if (stateEffect) {
-      patchData.seg = [
-        ...patchData.seg,
-        {
-          fx: stateEffect.fx,
-          sx: stateEffect.sx,
-          ix: stateEffect.ix,
-          pal: stateEffect.pal
-        }
-      ]
+      patchData.seg[0] = {
+        ...patchData.seg[0],
+        fx: stateEffect.fx,
+        sx: stateEffect.sx,
+        ix: stateEffect.ix,
+        pal: stateEffect.pal
+      };
     }
 
     const response = await fetch(`${wledDomain}/json/state`, {

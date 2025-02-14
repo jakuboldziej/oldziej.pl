@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -17,9 +17,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/shadcn/popover"
 
-const Esp32ComboBox = ({ data, defaultValue }) => {
+const Esp32ComboBox = (props) => {
+  const { data, defaultValue, handleESP32StateChange, type } = props;
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(""); // TODO: setdefaultvalue
+  const [value, setValue] = useState(data[defaultValue]);
+
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    if (isMounted.current) {
+      handleESP32StateChange(type, value);
+    } else {
+      isMounted.current = true;
+    }
+  }, [value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,11 +58,11 @@ const Esp32ComboBox = ({ data, defaultValue }) => {
                   key={index}
                   value={dataValue}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    if (currentValue !== value) setValue(currentValue);
+                    setOpen(false);
                   }}
                 >
-                  {dataValue}
+                  {`${index} - ${dataValue}`}
                   <Check
                     className={cn(
                       "ml-auto",

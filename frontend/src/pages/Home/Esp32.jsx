@@ -34,6 +34,17 @@ function Esp32(props) {
         b *= a;
         await patchESP32State({ color: { r, g, b } });
         setESP32State((prev) => ({ ...prev, seg: [{ col: [[r, g, b]] }] }));
+      } else if (change === "effect") {
+        const foundEffect = ESP32Effects.findIndex((eff) => value === eff);
+
+        await patchESP32State({
+          effect: {
+            fx: foundEffect,
+            sx: 128,
+            ix: 128,
+            pal: 0
+          }
+        });
       }
     } catch (err) {
       console.error(err);
@@ -93,10 +104,10 @@ function Esp32(props) {
       }
     };
 
-    if (refreshingData === true || ESP32State === null || ESP32Info === null) {
+    if (refreshingData === true || ESP32State === null) {
       fetchData();
     }
-  }, [refreshingData, ESP32State, ESP32Info]);
+  }, [refreshingData]);
 
   return (
     <div className="esp32-page flex flex-col items-center gap-10">
@@ -104,41 +115,51 @@ function Esp32(props) {
       {loading ? (
         <Loading />
       ) : (
-
         ESP32State.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
           <div className='flex w-full'>
-            <div className='flex gap-20 px-20 flex-wrap w-1/2 justify-center'>
-              <div className='h-[100px] flex flex-col items-center justify-between'>
-                <Power size={50} />
-                <Switch
-                  checked={ESP32State.on}
-                  onCheckedChange={() => handleESP32StateChange("on")}
-                />
-              </div>
-
-              <div className={`h-[100px] flex flex-col w-[157px] items-center justify-between ${!ESP32State.on && "opacity-50"}`}>
-                <Sun size={50} />
-                <div className='flex justify-between w-full'>
-                  <Slider
-                    defaultValue={[ESP32State.bri]}
-                    min={1}
-                    max={255}
-                    step={1}
-                    className={`w-[120px] p-2 `}
-                    onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
-                    onValueChange={(value) => setSliderValue(value[0])}
-                    disabled={!ESP32State.on}
+            <div className='flex flex-col gap-20 px-20 flex-wrap w-1/2 justify-center'>
+              <div className='flex flex-wrap justify-center gap-20'>
+                <div className='h-[100px] flex flex-col items-center justify-between'>
+                  <Power size={50} />
+                  <Switch
+                    checked={ESP32State.on}
+                    onCheckedChange={() => handleESP32StateChange("on")}
                   />
-                  <span>{sliderValue}</span>
+                </div>
+                <div className={`h-[100px] flex flex-col w-[157px] items-center justify-between ${!ESP32State.on && "opacity-50"}`}>
+                  <Sun size={50} />
+                  <div className='flex justify-between w-full'>
+                    <Slider
+                      defaultValue={[ESP32State.bri]}
+                      min={1}
+                      max={255}
+                      step={1}
+                      className={`w-[120px] p-2 `}
+                      onValueCommit={(value) => handleESP32StateChange("bri", value[0])}
+                      onValueChange={(value) => setSliderValue(value[0])}
+                      disabled={!ESP32State.on}
+                    />
+                    <span>{sliderValue}</span>
+                  </div>
                 </div>
               </div>
-              <div className='h-[110px] flex flex-col items-center justify-between'>
-                <Sparkles size={50} />
-                <Esp32ComboBox data={ESP32Effects} defaultValue={ESP32State.seg[0].fx} />
+
+              <div className='flex flex-wrap justify-center gap-20'>
+                <div className='h-[110px] flex flex-col items-center justify-between'>
+                  <Sparkles size={50} />
+                  <Esp32ComboBox
+                    data={ESP32Effects}
+                    defaultValue={ESP32State.seg[0].fx}
+                    handleESP32StateChange={handleESP32StateChange}
+                    type="effect"
+                    refreshingData={refreshingData}
+                  />
+                </div>
               </div>
-              <div>
+
+              <div className='flex justify-center'>
                 <RgbaColorPicker
                   color={colorValue}
                   onChange={setColorValue}

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from 'react';
 import { DartsGameContext } from '@/context/Home/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/shadcn/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { postDartsGame } from '@/lib/fetch';
 import lodash from 'lodash';
@@ -105,7 +105,7 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleDisabledBack = () => {
-    if (game.podium[1] === null) return true;
+    if (game.podium[1] === null || game.record.length === 1) return true;
   }
 
   const handleSummaryBackButton = async () => {
@@ -158,6 +158,7 @@ function GameSummary({ show, setShow }) {
     <Dialog open={show}>
       <DialogContent className='game-summary-modal'>
         <DialogTitle className='text-center text-2xl'>Game Summary</DialogTitle>
+        <DialogDescription className='text-center hidden'>Summary of the game results and statistics.</DialogDescription>
         <hr />
         <div className='text-white summary flex flex-col items-center'>
           {game.podium[1] !== null ? (

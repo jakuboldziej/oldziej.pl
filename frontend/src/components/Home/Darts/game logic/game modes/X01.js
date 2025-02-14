@@ -1,5 +1,6 @@
 import { socket } from "@/lib/socketio";
 import { calculatePoints } from "../userUtils";
+import { handleWLEDOverthrow } from "../wledController";
 
 export const handlePodiumX01 = (game, currentUser) => {
   currentUser.place = 1;
@@ -34,7 +35,8 @@ export const handlePointsX01 = (setOverthrow, game, currentUser) => {
     currentUser.throws["overthrows"] += 1;
     currentUser.currentThrows["overthrows"] += 1;
 
-    // Frontend effects
+    // Effects
+    handleWLEDOverthrow();
     setOverthrow(currentUser.displayName);
     socket.emit("userOverthrow", JSON.stringify({
       userDisplayName: currentUser.displayName,
