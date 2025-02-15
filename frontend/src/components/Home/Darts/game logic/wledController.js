@@ -1,4 +1,6 @@
-import { getESP32State, patchESP32State } from "@/lib/fetch"
+import { getESP32State, patchESP32State } from "@/lib/fetch";
+
+let timeoutId = null;
 
 export const handleWLEDEffectSolid = async () => {
   try {
@@ -19,7 +21,7 @@ export const handleWLEDEffectSolid = async () => {
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 export const handleWLEDGameEnd = async () => {
   try {
@@ -38,7 +40,8 @@ export const handleWLEDGameEnd = async () => {
 
     await patchESP32State(data);
 
-    setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
       const data = {
         color: { r: 255, g: 215, b: 0 },
         effect: {
@@ -54,7 +57,7 @@ export const handleWLEDGameEnd = async () => {
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 export const handleWLEDThrowDoors = async () => {
   try {
@@ -73,13 +76,14 @@ export const handleWLEDThrowDoors = async () => {
 
     await patchESP32State(data);
 
-    setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
       await handleWLEDEffectSolid();
     }, 1500);
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 export const handleWLEDThrowT20 = async () => {
   try {
@@ -97,13 +101,14 @@ export const handleWLEDThrowT20 = async () => {
 
     await patchESP32State(data);
 
-    setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
       await handleWLEDEffectSolid();
     }, 1500);
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 export const handleWLEDThrow180 = async () => {
   try {
@@ -112,22 +117,23 @@ export const handleWLEDThrow180 = async () => {
 
     const data = {
       effect: {
-        fx: 99,
+        fx: 63,
         sx: 128,
-        ix: 128,
+        ix: 0,
         pal: 0
       }
     };
 
     await patchESP32State(data);
 
-    setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
       await handleWLEDEffectSolid();
     }, 10000);
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 export const handleWLEDOverthrow = async () => {
   try {
@@ -146,10 +152,11 @@ export const handleWLEDOverthrow = async () => {
 
     await patchESP32State(data);
 
-    setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
       await handleWLEDEffectSolid();
     }, 1000);
   } catch (err) {
     console.error(err);
   }
-}
+};
