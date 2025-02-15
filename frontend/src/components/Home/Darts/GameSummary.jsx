@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
-import { postDartsGame } from '@/lib/fetch';
+import { getESP32Availability, postDartsGame, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
 import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './game logic/gameUtils';
+import { handleWLEDEffectSolid } from './game logic/wledController';
 
 function GameSummary({ show, setShow }) {
   const { game, updateGameState, handleRound } = useContext(DartsGameContext);
@@ -96,6 +97,9 @@ function GameSummary({ show, setShow }) {
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: gameDataMerged.gameCode
       }));
+
+      const responseWLED = await getESP32Availability(gameCopy.gameCode);
+      if (responseWLED.available === true) await postESP32JoinGame(gameData.gameCode);
     } else {
       game.training = true;
       updateGameState(gameDataMerged);
@@ -121,14 +125,23 @@ function GameSummary({ show, setShow }) {
     handleRound("BACK", handleShow);
 
     setShow(false);
+
+    const responseWLED = await getESP32Availability(game.gameCode);
+    if (responseWLED.available === true) await handleWLEDEffectSolid();
   }
 
-  const handleBackToDarts = () => {
-    socket.emit("hostDisconnectedFromGame", JSON.stringify({
-      gameCode: game.gameCode
-    }));
+  const handleBackToDarts = async () => {
+    try {
+      socket.emit("hostDisconnectedFromGame", JSON.stringify({
+        gameCode: game.gameCode
+      }));
 
-    localStorage.setItem("dartsGame", null);
+      localStorage.setItem("dartsGame", null);
+
+      await postESP32LeaveGame(game.gameCode);
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   useEffect(() => {

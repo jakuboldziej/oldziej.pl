@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/shadcn/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/shadcn/dialog";
 import { Input } from "@/components/ui/shadcn/input";
+import { DialogDescription } from "@radix-ui/react-dialog";
+import { useEffect } from "react";
 
 function CreateGameDialogs({ props }) {
   const {
@@ -33,11 +35,12 @@ function CreateGameDialogs({ props }) {
 
   return (
     <>
-      <Dialog open={showCustomPoints}>
+      <Dialog open={showCustomPoints} onOpenChange={setShowCustomPoints}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className='text-center text-2xl'>Set Custom Points</DialogTitle>
           </DialogHeader>
+          <DialogDescription className="hidden">Set Custom Points</DialogDescription>
           <form onSubmit={handleCustomStartPoints}>
             <div className='text-white'>
               <Input
@@ -51,21 +54,25 @@ function CreateGameDialogs({ props }) {
               />
             </div>
             <DialogFooter className="pt-6">
-              <Button onClick={() => handleCancelCustomStartPoints()} type="button" variant="secondary">
+              <Button
+                onClick={handleCancelCustomStartPoints}
+                type="button"
+                variant="secondary"
+              >
                 Close
               </Button>
               <Button disabled={customStartPoints <= 0} type="submit">Save changes</Button>
             </DialogFooter>
           </form>
-
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showAddUser}>
+      <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className='text-center text-2xl'>Add New Temporary User</DialogTitle>
           </DialogHeader>
+          <DialogDescription className="hidden">Add New Temporary User</DialogDescription>
           <form onSubmit={handleAddingNewUser}>
             <div className='text-white'>
               <Input
@@ -77,7 +84,11 @@ function CreateGameDialogs({ props }) {
               />
             </div>
             <DialogFooter className="pt-6">
-              <Button onClick={() => setShowAddUser(false)} type="button" variant="secondary">
+              <Button
+                onClick={() => setShowAddUser(false)}
+                type="button"
+                variant="secondary"
+              >
                 Close
               </Button>
               <Button disabled={newUser.trim() === ""} type="submit">Save changes</Button>

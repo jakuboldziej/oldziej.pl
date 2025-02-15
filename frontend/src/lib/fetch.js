@@ -5,7 +5,7 @@ export const mongodbApiUrl = import.meta.env.MODE === "development" ? "/api" : i
 
 // Darts
 
-// Games
+// Darts - Games
 
 export const postDartsGame = async (gameData) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
@@ -93,7 +93,7 @@ export const getDartsGame = async (identifier) => {
   return await gameResponse.json();
 }
 
-// Users
+// Darts - Users
 
 export const getDartsUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
@@ -154,7 +154,7 @@ export const postDartsUser = async (userData) => {
   return await response.json();
 }
 
-// Utils
+// Darts - Utils
 
 export const joinDartsGame = async (gameCode) => {
   const gameResponse = await fetch(`${mongodbApiUrl}/darts/game/join/${gameCode}`, {
@@ -166,7 +166,7 @@ export const joinDartsGame = async (gameCode) => {
 
 // Cloud
 
-// Users
+// Cloud - Users
 
 export const getFtpUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`, {
@@ -228,7 +228,7 @@ export const patchFtpUser = async (userData) => {
   });
 }
 
-// Files
+// Cloud - Files
 
 export const getFiles = async (userId = null) => {
   let url = `${mongodbApiUrl}/ftp/files`;
@@ -314,7 +314,7 @@ export const patchFile = async (data) => {
   return await response.json();
 }
 
-// Folders
+// Cloud - Folders
 
 export const postFolder = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders`, {
@@ -391,7 +391,7 @@ export const patchFolder = async (data) => {
   return await response.json();
 }
 
-// Utils
+// Cloud - Utils
 
 export const renderFile = async (filename) => {
   window.open(`${mongodbApiUrl}/ftp/files/render/${filename}?token=${Cookies.get("_auth")}`);
@@ -403,7 +403,7 @@ export const downloadFile = (filename) => {
 
 // Auth
 
-// Users
+// Auth - Users
 
 export const getAuthUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`, {
@@ -523,7 +523,7 @@ export const changeDisplaynameUser = async (userData) => {
   }
 }
 
-// Password
+// Auth - Password
 
 export const changePassword = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/auth/change-password`, {
@@ -630,7 +630,7 @@ export const removeFriend = async (data) => {
   return await response.json();
 }
 
-// Auth
+// Authentication
 
 export const loginUser = async (userData) => {
   const response = await fetch(`${mongodbApiUrl}/auth/login`, {
@@ -793,9 +793,46 @@ export const patchESP32State = async (data) => {
   return await response.json();
 }
 
+// ESP32 - Darts game
+
+export const getESP32Availability = async (gameCode) => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/check-availability/${gameCode}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
+export const postESP32JoinGame = async (gameCode) => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/join-game/${gameCode}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const postESP32LeaveGame = async (gameCode) => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/leave-game/${gameCode}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
 // Statistics
 
-// Darts
+// Statistics - Darts
 
 export const getStatisticsDartsGames = async () => {
   const response = await fetch(`${mongodbApiUrl}/darts/statistics/dartsGames`);
@@ -823,7 +860,7 @@ export const getStatisticsTop3DoorHitters = async () => {
   return await response.json();
 }
 
-// Cloud
+// Statistics - Cloud
 
 export const getFilesCreated = async () => {
   const response = await fetch(`${mongodbApiUrl}/ftp/statistics/filesCreated`);

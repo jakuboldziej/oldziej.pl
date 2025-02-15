@@ -10,6 +10,7 @@ import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router";
 import { AuthContext } from "@/context/Home/AuthContext";
 import Cookies from "js-cookie";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 function SettingsDialog({ props }) {
   const { dialogOpen, setDialogOpen, dialogData, authUser, setAuthUser } = props;
@@ -162,6 +163,7 @@ function SettingsDialog({ props }) {
         <DialogHeader>
           <DialogTitle className='text-center text-2xl'>{dialogData.title}</DialogTitle>
         </DialogHeader>
+        <DialogDescription className="hidden">User settings</DialogDescription>
         <form onSubmit={handleDialogSubmit}>
           <div className='text-white flex flex-col gap-5'>
             {dialogData.usernameOpened && (

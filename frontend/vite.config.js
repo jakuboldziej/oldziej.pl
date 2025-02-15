@@ -9,6 +9,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+          silenceDeprecations: ["legacy-js-api"],
+        }
+      }
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

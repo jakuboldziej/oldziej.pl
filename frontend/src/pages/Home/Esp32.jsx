@@ -120,8 +120,8 @@ function Esp32(props) {
         ESP32State.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
-          <div className='flex w-full'>
-            <div className='flex flex-col gap-20 px-20 flex-wrap w-1/2 justify-center'>
+          <div className='flex w-full flex-col md:flex-row gap-20 md:gap-0'>
+            <div className='flex flex-col gap-20 md:px-20 flex-wrap w-full md:w-1/2 justify-center'>
               <div className='flex flex-wrap justify-center gap-20'>
                 <div className='h-[100px] flex flex-col items-center justify-between'>
                   <Power size={50} />
@@ -171,8 +171,10 @@ function Esp32(props) {
               </div>
             </div>
 
-            <div className='flex flex-col gap-10 items-center border-l-2 w-1/2 px-20 '>
-              <span className='text-4xl'>INFO</span>
+            <div className='flex flex-col gap-10 items-center md:border-l-2 w-full md:w-1/2 md:px-20'>
+              <span className='text-4xl text-center'>
+                INFO - <a className='text-blue-500 hover:underline' target="_blank" href={`http://${ESP32Info.ip}`}>Dashboard</a>
+              </span>
 
               <div className='flex gap-10 flex-wrap justify-center'>
                 <div className='h-[100px] flex flex-col items-center justify-between'>

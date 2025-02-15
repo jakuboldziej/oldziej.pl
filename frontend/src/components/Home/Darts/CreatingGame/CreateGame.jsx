@@ -2,9 +2,9 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getAuthUser, getDartsUser, getDartsUsers, postDartsGame } from "@/lib/fetch";
+import { getAuthUser, getDartsUser, getESP32Availability, patchESP32State, postDartsGame, postESP32JoinGame } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/shadcn/select";
 import { Checkbox } from "@/components/ui/shadcn/checkbox";
@@ -12,14 +12,16 @@ import ShowNewToast from "../../MyComponents/ShowNewToast";
 
 import { AuthContext } from "@/context/Home/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
-import { Trash2 } from "lucide-react";
-import { socket } from "@/lib/socketio";
+import { Lightbulb, LightbulbOff, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/shadcn/switch";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
   const [randomizePlayers, setRandomizePlayers] = useState(true);
+  const [WLEDon, setWLEDon] = useState(false);
+  const [WLEDAvailable, setWLEDAvailable] = useState(false);
   const [twoPlayersGamemode, setTwoPlayersGamemode] = useState(false);
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
@@ -85,8 +87,21 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       }
     }
 
+    const checkWLEDAvailability = async () => {
+      const checkState = await getESP32Availability();
+      if (checkState.available) {
+        setWLEDon(true);
+        setWLEDAvailable(true);
+      }
+      else {
+        setWLEDon(false);
+        setWLEDAvailable(false);
+      }
+    }
+
     if (drawerOpen) {
       getData();
+      checkWLEDAvailability();
       if (currentUser.verified === false) ShowNewToast("Verify Email", "Your data won't be saved because you're not verified!");
     }
   }, [drawerOpen]);
@@ -124,7 +139,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
   }
 
+  const safeCustomStartPoints = customStartPoints && customStartPoints !== "0" ? customStartPoints : null;
+
   const handleSelectStartPoints = (value) => {
+    if (selectStartPoints === value) return;
     const selectedValue = value;
 
     if (selectedValue === "Custom") {
@@ -265,6 +283,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       gameData["gameCode"] = game.gameCode;
       gameData.training = false;
       updateGameState(gameData);
+
+      if (WLEDon) await postESP32JoinGame(game.gameCode);
     }
 
     navigate("game");
@@ -356,6 +376,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
           <DrawerHeader>
             <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>
+          <DrawerDescription className="hidden">Create new game</DrawerDescription>
           <div className="settings py-3 overflow-y-auto">
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
@@ -407,8 +428,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               <span>EGT: {egt}</span>
             </div>
             <Card className="settingsCard">
-              <CardHeader className="text-lg">
-                Settings
+              <CardHeader className="text-lg flex flex-row justify-between space-y-0">
+                <span>Settings</span>
+                <div className="flex m-0 gap-2 items-center">
+                  {WLEDon ? <Lightbulb size={25} /> : <LightbulbOff size={25} />}
+                  <Switch
+                    checked={WLEDon}
+                    onCheckedChange={setWLEDon}
+                    disabled={!WLEDAvailable}
+                  />
+                </div>
               </CardHeader>
               <hr />
               <CardContent className="card-content">
@@ -437,7 +466,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                     </SelectContent>
                   </Select>
                   <div className="text-xl">Start Points</div>
-                  <Select onValueChange={(value) => handleSelectStartPoints(value)} value={selectStartPoints}>
+                  <Select
+                    onValueChange={handleSelectStartPoints}
+                    value={selectStartPoints}
+                    modal={false}
+                  >
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Start Points" />
                     </SelectTrigger>
@@ -454,9 +487,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         <SelectItem value="901">901</SelectItem>
                         <SelectItem value="1001">1001</SelectItem>
                         <SelectItem value="Custom">Custom</SelectItem>
-                        {customStartPoints != '' && customStartPoints != '0' &&
-                          <SelectItem value={customStartPoints}>{customStartPoints}</SelectItem>
-                        }
+                        {/* {safeCustomStartPoints && <SelectItem value={safeCustomStartPoints}>{safeCustomStartPoints}</SelectItem>} */}
                       </SelectGroup>
                     </SelectContent>
                   </Select>

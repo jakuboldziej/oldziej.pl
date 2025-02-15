@@ -49,14 +49,19 @@ function AppRoutesHome() {
   };
 
   const AdminRequireAuth = ({ children }) => {
-    useEffect(() => {
-      if (!currentUser || currentUser.role !== "admin") {
-        navigate('/');
-      }
-    }, [currentUser]);
+    const navigate = useNavigate();
+
+    if (!currentUser) {
+      return <LoadingScreen />;
+    }
+
+    if (currentUser.role !== "admin") {
+      navigate("/");
+      return null;
+    }
 
     return children;
-  }
+  };
 
   const OnlyVerifiedAccess = ({ children }) => {
     useEffect(() => {
@@ -83,9 +88,11 @@ function AppRoutesHome() {
     )
   }
 
+  const hideNavBar = listOfNonNavbarComponents.some(path => location.pathname.startsWith(path));
+
   return (
     <>
-      {!listOfNonNavbarComponents.includes(location.pathname) && <NavBar />}
+      {!hideNavBar && <NavBar />}
       <Routes>
         <Route path="/">
           <Route index element={<Home />} />

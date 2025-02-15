@@ -71,7 +71,7 @@ function Admin() {
           </PaginationContent>
         </Pagination>
 
-        <div className='refresh absolute right-8'>
+        <div className='refresh absolute right-2 md:right-8'>
           <Button onClick={() => setRefreshingData(true)} variant="ghost" size="icon" className="justify-center"><RotateCcw /></Button>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { socket } from '@/lib/socketio';
 import { createContext, useMemo, useState } from 'react';
 import lodash from 'lodash';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
-import { handleWLEDGameEnd, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
+import { handleWLEDGameEnd, handleWLEDThrow180, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
 
 export const DartsGameContext = createContext();
 
@@ -96,7 +96,12 @@ export const DartsGameContextProvider = ({ children }) => {
       } else if (action === 'TRIPLE') {
         turns[currentUser.currentTurn] = `T${value}`;
 
-        if (turns[currentUser.currentTurn] === "T20") handleWLEDThrowT20()
+        if (turns[currentUser.currentTurn] === "T20" && !(
+          turns[1] === "T20" &&
+          turns[2] === "T20" &&
+          turns[3] === "T20"
+        )
+        ) handleWLEDThrowT20();
       }
     }
 
@@ -257,6 +262,10 @@ export const DartsGameContextProvider = ({ children }) => {
     if (currentUser.currentTurn === 3) {
       currentUser.currentTurn = 1;
       currentUser.turn = false;
+
+      if (currentUser.turns[1] === "T20" &&
+        currentUser.turns[2] === "T20" &&
+        currentUser.turns[3] === "T20") handleWLEDThrow180(currentUser.turns);
 
       const nextUser = handleNextUser();
       nextUser.turn = true;

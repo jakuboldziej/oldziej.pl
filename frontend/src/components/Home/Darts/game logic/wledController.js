@@ -99,7 +99,31 @@ export const handleWLEDThrowT20 = async () => {
 
     setTimeout(async () => {
       await handleWLEDEffectSolid();
-    }, 1000);
+    }, 1500);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export const handleWLEDThrow180 = async () => {
+  try {
+    const WLEDState = await getESP32State();
+    if (WLEDState.on === false) return;
+
+    const data = {
+      effect: {
+        fx: 99,
+        sx: 128,
+        ix: 128,
+        pal: 0
+      }
+    };
+
+    await patchESP32State(data);
+
+    setTimeout(async () => {
+      await handleWLEDEffectSolid();
+    }, 10000);
   } catch (err) {
     console.error(err);
   }
