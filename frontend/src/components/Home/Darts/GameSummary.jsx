@@ -127,7 +127,7 @@ function GameSummary({ show, setShow }) {
     setShow(false);
 
     const responseWLED = await getESP32Availability(game.gameCode);
-    if (responseWLED.available === true) await handleWLEDEffectSolid();
+    if (responseWLED.available === true) await handleWLEDEffectSolid(game.gameCode);
   }
 
   const handleBackToDarts = async () => {

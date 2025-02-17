@@ -2,7 +2,7 @@ import { getESP32State, patchESP32State } from "@/lib/fetch";
 
 let timeoutId = null;
 
-export const handleWLEDEffectSolid = async () => {
+export const handleWLEDEffectSolid = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -14,7 +14,8 @@ export const handleWLEDEffectSolid = async () => {
         sx: 0,
         ix: 0,
         pal: 0
-      }
+      },
+      gameCode
     };
 
     await patchESP32State(data);
@@ -23,7 +24,7 @@ export const handleWLEDEffectSolid = async () => {
   }
 };
 
-export const handleWLEDGameEnd = async () => {
+export const handleWLEDGameEnd = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -35,7 +36,8 @@ export const handleWLEDGameEnd = async () => {
         sx: 128,
         ix: 128,
         pal: 0
-      }
+      },
+      gameCode
     };
 
     await patchESP32State(data);
@@ -59,7 +61,7 @@ export const handleWLEDGameEnd = async () => {
   }
 };
 
-export const handleWLEDThrowDoors = async () => {
+export const handleWLEDThrowDoors = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -71,21 +73,22 @@ export const handleWLEDThrowDoors = async () => {
         sx: 0,
         ix: 0,
         pal: 0
-      }
+      },
+      gameCode: gameCode
     };
 
     await patchESP32State(data);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1500);
   } catch (err) {
     console.error(err);
   }
 };
 
-export const handleWLEDThrowT20 = async () => {
+export const handleWLEDThrowT20 = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -96,21 +99,22 @@ export const handleWLEDThrowT20 = async () => {
         sx: 128,
         ix: 128,
         pal: 0
-      }
+      },
+      gameCode
     };
 
     await patchESP32State(data);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1500);
   } catch (err) {
     console.error(err);
   }
 };
 
-export const handleWLEDThrow180 = async () => {
+export const handleWLEDThrow180 = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -121,21 +125,22 @@ export const handleWLEDThrow180 = async () => {
         sx: 128,
         ix: 0,
         pal: 0
-      }
+      },
+      gameCode
     };
 
     await patchESP32State(data);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 10000);
   } catch (err) {
     console.error(err);
   }
 };
 
-export const handleWLEDOverthrow = async () => {
+export const handleWLEDOverthrow = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
@@ -147,14 +152,15 @@ export const handleWLEDOverthrow = async () => {
         sx: 0,
         ix: 0,
         pal: 0
-      }
+      },
+      gameCode
     };
 
     await patchESP32State(data);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1000);
   } catch (err) {
     console.error(err);

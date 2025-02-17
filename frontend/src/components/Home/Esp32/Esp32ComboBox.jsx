@@ -25,7 +25,7 @@ const Esp32ComboBox = (props) => {
   const isMounted = useRef(false);
 
   useEffect(() => {
-    if (isMounted.current) {
+    if (isMounted.current && data[defaultValue] !== value) {
       handleESP32StateChange(type, value);
     } else {
       isMounted.current = true;

@@ -70,7 +70,7 @@ export const DartsGameContextProvider = ({ children }) => {
     if (game.legs === 1) {
       handleRecord("save");
       handlePodium();
-      handleWLEDGameEnd();
+      handleWLEDGameEnd(game.gameCode);
       return true;
     } else {
       const endGame = handleNextLeg(game.users, game);
@@ -78,7 +78,7 @@ export const DartsGameContextProvider = ({ children }) => {
       if (endGame) {
         handleRecord("save");
         handlePodium();
-        handleWLEDGameEnd();
+        handleWLEDGameEnd(game.gameCode);
         return true;
       } else {
         if (game.round !== 1) game.round = 0;
@@ -101,7 +101,7 @@ export const DartsGameContextProvider = ({ children }) => {
           turns[2] === "T20" &&
           turns[3] === "T20"
         )
-        ) handleWLEDThrowT20();
+        ) handleWLEDThrowT20(game.gameCode);
       }
     }
 
@@ -185,7 +185,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const handleSpecialValue = async (value) => {
     if (value === "DOORS") {
-      handleWLEDThrowDoors()
+      handleWLEDThrowDoors(game.gameCode);
       if (game.gameMode === "Reverse X01") {
         handleUsersState(doorsValueReverseX01);
       } else {
@@ -265,7 +265,7 @@ export const DartsGameContextProvider = ({ children }) => {
 
       if (currentUser.turns[1] === "T20" &&
         currentUser.turns[2] === "T20" &&
-        currentUser.turns[3] === "T20") handleWLEDThrow180(currentUser.turns);
+        currentUser.turns[3] === "T20") handleWLEDThrow180(game.gameCode);
 
       const nextUser = handleNextUser();
       nextUser.turn = true;

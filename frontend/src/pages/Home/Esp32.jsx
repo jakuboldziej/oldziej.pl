@@ -2,13 +2,16 @@ import Esp32ComboBox from '@/components/Home/Esp32/Esp32ComboBox';
 import Loading from '@/components/Home/Loading';
 import { Slider } from '@/components/ui/shadcn/slider';
 import { Switch } from '@/components/ui/shadcn/switch';
+import { AuthContext } from '@/context/Home/AuthContext';
 import { getESP32Effects, getESP32Info, getESP32State, patchESP32State } from '@/lib/fetch';
 import { Power, Sparkles, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
 function Esp32(props) {
   const { refreshingData, setRefreshingData } = props;
+
+  const { currentUser } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);
 
@@ -22,17 +25,17 @@ function Esp32(props) {
   const handleESP32StateChange = async (change, value) => {
     try {
       if (change === "on") {
-        const response = await patchESP32State({ on: "toggle" });
+        const response = await patchESP32State({ on: "toggle", role: currentUser.role });
         setESP32State((prev) => ({ ...prev, on: response.on }));
       } else if (change === "bri") {
-        const response = await patchESP32State({ bri: value });
+        const response = await patchESP32State({ bri: value, role: currentUser.role });
         setESP32State((prev) => ({ ...prev, bri: response.bri }));
       } else if (change === "color") {
         let { r, g, b, a } = value;
         r *= a;
         g *= a;
         b *= a;
-        await patchESP32State({ color: { r, g, b } });
+        await patchESP32State({ color: { r, g, b }, role: currentUser.role });
         setESP32State((prev) => ({ ...prev, seg: [{ col: [[r, g, b]] }] }));
       } else if (change === "effect") {
         const foundEffect = ESP32Effects.findIndex((eff) => value === eff);
@@ -43,7 +46,8 @@ function Esp32(props) {
             sx: 128,
             ix: 128,
             pal: 0
-          }
+          },
+          role: currentUser.role
         });
       }
     } catch (err) {

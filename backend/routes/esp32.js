@@ -67,7 +67,7 @@ const changeWLEDstate = async (data) => {
 
     return responseData;
   } catch (err) {
-    console.error(err);
+    return { message: err.message };
   }
 }
 
@@ -116,6 +116,14 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
     const stateBri = req.body.bri;
     const stateColor = req.body.color;
     const stateEffect = req.body.effect;
+
+    const gameCode = req.body.gameCode;
+    const role = req.body.role;
+
+    if (!role) {
+      if (!wledGameCode) return res.json({ message: "No running game" });
+      if (gameCode !== wledGameCode) return res.json({ message: "Game code does not match" });
+    } else if (role !== "admin") return res.json({ message: "Not authorized" });
 
     const responseData = await changeWLEDstate({
       stateOn: stateOn,
@@ -201,4 +209,4 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
   }
 });
 
-module.exports = router
+module.exports = router;

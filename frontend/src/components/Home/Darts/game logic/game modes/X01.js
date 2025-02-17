@@ -36,7 +36,7 @@ export const handlePointsX01 = (setOverthrow, game, currentUser) => {
     currentUser.currentThrows["overthrows"] += 1;
 
     // Effects
-    handleWLEDOverthrow();
+    handleWLEDOverthrow(game.gameCode);
     setOverthrow(currentUser.displayName);
     socket.emit("userOverthrow", JSON.stringify({
       userDisplayName: currentUser.displayName,
