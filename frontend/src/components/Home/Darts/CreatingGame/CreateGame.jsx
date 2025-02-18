@@ -89,6 +89,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
     const checkWLEDAvailability = async () => {
       const checkState = await getESP32Availability();
+
       if (checkState.available) {
         setWLEDon(true);
         setWLEDAvailable(true);
@@ -430,14 +431,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             <Card className="settingsCard">
               <CardHeader className="text-lg flex flex-row justify-between space-y-0">
                 <span>Settings</span>
-                <div className="flex m-0 gap-2 items-center">
-                  {WLEDon ? <Lightbulb size={25} /> : <LightbulbOff size={25} />}
-                  <Switch
-                    checked={WLEDon}
-                    onCheckedChange={setWLEDon}
-                    disabled={!WLEDAvailable}
-                  />
-                </div>
+                {WLEDAvailable === true && (
+                  <div className="flex m-0 gap-2 items-center">
+                    {WLEDon ? <Lightbulb size={25} /> : <LightbulbOff size={25} />}
+                    <Switch
+                      checked={WLEDon}
+                      onCheckedChange={setWLEDon}
+                      disabled={!WLEDAvailable}
+                    />
+                  </div>
+                )}
               </CardHeader>
               <hr />
               <CardContent className="card-content">
@@ -487,7 +490,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         <SelectItem value="901">901</SelectItem>
                         <SelectItem value="1001">1001</SelectItem>
                         <SelectItem value="Custom">Custom</SelectItem>
-                        {/* {safeCustomStartPoints && <SelectItem value={safeCustomStartPoints}>{safeCustomStartPoints}</SelectItem>} */}
+                        {safeCustomStartPoints && <SelectItem value={safeCustomStartPoints}>{safeCustomStartPoints}</SelectItem>}
                       </SelectGroup>
                     </SelectContent>
                   </Select>

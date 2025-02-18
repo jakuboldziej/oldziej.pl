@@ -55,24 +55,6 @@ const generateUniqueGameCode = async () => {
 
 // Darts Games
 
-router.get('/dartsGames', authenticateUser, async (req, res) => {
-  try {
-    let filter = {};
-    const userDisplayName = req.query.user
-    const limit = req.query.limit
-    if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
-
-    const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });
-    res.json(dartsGames)
-  } catch (err) {
-    res.json({ message: err.message })
-  }
-})
-
-router.get('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
-  res.json(res.game)
-});
-
 router.post('/dartsGames', authenticateUser, async (req, res) => {
   const body = req.body;
 
@@ -103,6 +85,24 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
   } catch (err) {
     res.json({ error: err.message })
   }
+});
+
+router.get('/dartsGames', authenticateUser, async (req, res) => {
+  try {
+    let filter = {};
+    const userDisplayName = req.query.user
+    const limit = req.query.limit
+    if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
+
+    const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });
+    res.json(dartsGames)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
+  res.json(res.game)
 });
 
 router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (req, res) => {

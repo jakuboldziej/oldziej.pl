@@ -1,5 +1,6 @@
 const express = require("express");
 const authenticateUser = require("../middleware/auth");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 require('dotenv').config();
@@ -193,7 +194,10 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
   try {
     const gameCode = req.params.gameCode;
 
-    let available = true;
+    let available = false;
+
+    const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+    if (decoded.userEmail !== process.env.ADMIN_EMAIL) return res.json({ available });
 
     if (gameCode && gameCode != "undefined") {
       if (gameCode === wledGameCode) available = true;

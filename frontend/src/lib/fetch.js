@@ -79,8 +79,8 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
     }
   }
   );
-  const games = await gamesResponse.json();
-  return games;
+
+  return await gamesResponse.json();
 }
 
 export const getDartsGame = async (identifier) => {

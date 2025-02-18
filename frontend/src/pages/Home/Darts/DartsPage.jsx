@@ -116,7 +116,9 @@ function DartsPage() {
   const handleScroll = (event) => {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
     if (scrollTop + clientHeight >= scrollHeight) {
-      if (games.length > 0) setCurrentPage(currentPage + 1);
+      if (!isLoading) {
+        setCurrentPage((prevPage) => prevPage + 1);
+      }
     }
   };
 
@@ -195,9 +197,7 @@ function DartsPage() {
       const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName));
       setGames(fetchedGames);
     }
-    if (gamesShown.length === 10) {
-      fetchAllData()
-    }
+    if (gamesShown.length === 10) fetchAllData();
   }, [gamesShown]);
 
   return (
