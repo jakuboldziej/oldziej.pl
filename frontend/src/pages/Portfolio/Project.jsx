@@ -3,8 +3,6 @@ import Navbar from '@/components/Portfolio/Navbar'
 import { useParams } from 'react-router';
 import ImgMmagusiak from "@/assets/images/Portfolio/ProjectsImages/mmagusiak.png"
 import ImgMmagusiakMobile from "@/assets/images/Portfolio/ProjectsImages/mmagusiak_mobile.png"
-import ImgHagaPolska from "@/assets/images/Portfolio/ProjectsImages/hagapolska.png"
-import ImgHagaPolskaMobile from "@/assets/images/Portfolio/ProjectsImages/hagapolska_mobile.png"
 import ImgDarts from "@/assets/images/Portfolio/ProjectsImages/darts.png"
 import ImgDartsMobile from "@/assets/images/Portfolio/ProjectsImages/darts_mobile.png"
 import ImgOldziej from "@/assets/images/Portfolio/ProjectsImages/oldziej.png"
@@ -56,20 +54,6 @@ function Project() {
         <SiBootstrap key={'#7952B3'} width={46} height={46} fill='#7952B3' />,
         <SiSanity key={'#F03E2F'} width={46} height={46} fill='#F03E2F' />,
         <SiFirebase key={'#DD2C00'} width={46} height={46} fill='#DD2C00' />,
-        <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
-      ]);
-    } else if (projectName === "hagapolska") {
-      setMainImage(isMobile ? ImgHagaPolskaMobile : ImgHagaPolska);
-      setMainLink({ text: "www.hagapolska.pl", href: 'https://www.hagapolska.pl' });
-      setDesignedBy('Mateusz Magusiak')
-      setTechStackIcons([
-        <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
-        <SiExpress key={'#FFFFFF'} width={46} height={46} fill='#FFFFFF' />,
-        <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
-        <SiSass key={'#CC6699'} width={46} height={46} fill='#CC6699' />,
-        <SiShadcnui key={'#ffffff'} width={46} height={46} fill='#ffffff' />,
-        <SiSanity key={'#F03E2F'} width={46} height={46} fill='#F03E2F' />,
-        <SiLeaflet key={'#199900'} width={46} height={46} fill='#199900' />,
         <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
       ]);
     } else if (projectName === "darts") {
