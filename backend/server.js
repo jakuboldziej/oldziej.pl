@@ -10,13 +10,14 @@ require('@babel/register')({
   presets: ['@babel/preset-env', '@babel/preset-react']
 });
 
-const express = require("express")
+const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
 const { createServer } = require('http')
 const { Server } = require("socket.io")
 const { instrument } = require("@socket.io/admin-ui");
+const { logger } = require("./middleware/logging");
 
 const environment = process.env.NODE_ENV || 'production';
 const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
@@ -87,9 +88,9 @@ const dartsConn = mongoose.createConnection(mongoURIDarts);
 const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/ftp`
 const ftpConn = mongoose.createConnection(mongoURIFTP);
 
-dartsConn.on('error', (err) => console.error('MongoDB (Darts) connection error:', err));
-dartsConn.once('open', () => console.log('Connected to Darts Database'));
-ftpConn.once('open', () => console.log('Connected to Ftp Database'));
+dartsConn.on('error', (err) => logger.error(`MongoDB (Darts) connection error: ${err}`));
+dartsConn.once('open', () => logger.info('Connected to Darts Database'));
+ftpConn.once('open', () => logger.info('Connected to Ftp Database'));
 
 module.exports = { dartsConn, ftpConn, mongoURIFTP, io };
 
@@ -126,4 +127,8 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
 
 console.log("Using environment - ", environment)
 
-server.listen(3000, () => console.log(`Server started on port 3000 - (${new Date().toLocaleString("pl-PL")})`));
+server.listen(
+  3000, () => {
+    logger.info("Server started on port 3000")
+  }
+);

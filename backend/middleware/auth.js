@@ -24,6 +24,7 @@ const authenticateUser = async (req, res, next) => {
 
     next();
   } catch (err) {
+    logger.error("Authenticate User", { method: req.method, url: req.url, error: err.message });
     res.status(403).send({ message: "User not authenticated." });
   }
 };

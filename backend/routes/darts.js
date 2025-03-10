@@ -4,6 +4,7 @@ const DartsGame = require('../models/dartsGame')
 const DartsUser = require('../models/dartsUser')
 const { Types } = require("mongoose")
 const authenticateUser = require("../middleware/auth")
+const { logger } = require("../middleware/logging")
 
 const getDartsUser = async (req, res, next) => {
   let user;
@@ -80,9 +81,12 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
       gameCode: await generateUniqueGameCode()
     });
 
-    const newDartsGame = await dartsGame.save()
-    res.json(newDartsGame)
+    const newDartsGame = await dartsGame.save();
+
+    logger.info("POST DartsGame", { method: req.method, url: req.url, data: newDartsGame });
+    res.json(newDartsGame);
   } catch (err) {
+    logger.error("POST DartsGame", { method: req.method, url: req.url, error: err.message });
     res.json({ error: err.message })
   }
 });
@@ -117,8 +121,11 @@ router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (r
     if (!updatedGame) {
       return res.status(404).json({ message: "Game not found" });
     }
+
+    logger.info("PATCH DartsGame", { method: req.method, url: req.url, data: updatedGame });
     res.json(updatedGame);
   } catch (err) {
+    logger.error("PATCH DartsGame", { method: req.method, url: req.url, error: err.message });
     return res.json({ message: err.message });
   }
 });
@@ -126,11 +133,14 @@ router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (r
 router.delete('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
   try {
     await DartsGame.deleteOne({ _id: res.game._id });
+
+    logger.info("DELETE DartsGame", { method: req.method, url: req.url, data: res.game });
     res.json({ message: 'Game deleted successfully' });
   } catch (err) {
+    logger.error("DELETE DartsGame", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message });
   }
-})
+});
 
 // Darts Users
 
@@ -159,8 +169,10 @@ router.patch("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (r
       return res.status(404).json({ message: "User not found" });
     }
 
+    logger.info("PATCH DartsUser", { method: req.method, url: req.url, data: res.user });
     res.json(updatedUser);
   } catch (err) {
+    logger.error("PATCH DartsUser", { method: req.method, url: req.url, error: err.message });
     return res.json({ message: err.message });
   }
 });
@@ -168,8 +180,11 @@ router.patch("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (r
 router.delete('/dartsUsers/:displayName', authenticateUser, async (req, res) => {
   try {
     await DartsUser.deleteOne({ displayName: req.params.displayName });
+
+    logger.info("DELETE DartsUser", { method: req.method, url: req.url, data: req.params.displayName });
     res.json({ ok: true });
   } catch (err) {
+    logger.error("DELETE DartsUser", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message });
   }
 });
@@ -189,9 +204,12 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
       throws: body.throws,
     });
 
-    const newDartsUser = await dartsUser.save()
-    res.json(newDartsUser)
+    const newDartsUser = await dartsUser.save();
+
+    logger.info("POST DartsUser", { method: req.method, url: req.url, data: newDartsUser });
+    res.json(newDartsUser);
   } catch (err) {
+    logger.error("POST DartsUser", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message })
   }
 });
@@ -204,7 +222,7 @@ router.post('/game/join/:gameCode', async (req, res) => {
 
     const game = await DartsGame.findOne({ gameCode: gameCode });
 
-    return res.json(game)
+    return res.json(game);
   } catch (err) {
     return res.json({ message: err.message });
   }

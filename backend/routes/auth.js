@@ -7,6 +7,7 @@ const { Types } = require("mongoose");
 const authenticateUser = require("../middleware/auth");
 const { io } = require("../server");
 const { createRateLimiter } = require("../middleware/rateLimiters");
+const { logger } = require("../middleware/logging");
 
 require('dotenv').config();
 
@@ -73,8 +74,10 @@ router.patch("/users/:displayName", getAuthUser, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    logger.info("PATCH User", { method: req.method, url: req.url, data: updatedUser });
     res.json(updatedUser);
   } catch (err) {
+    logger.error("PATCH User", { method: req.method, url: req.url, error: err.message });
     return res.json({ message: err.message });
   }
 });
@@ -82,8 +85,11 @@ router.patch("/users/:displayName", getAuthUser, async (req, res) => {
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
     await User.deleteOne({ displayName: req.params.displayName });
+
+    logger.info("DELETE User", { method: req.method, url: req.url, data: req.params.displayName });
     res.json({ ok: true });
   } catch (err) {
+    logger.error("DELETE User", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message });
   }
 });
@@ -316,6 +322,7 @@ router.post("/register", registerLimiter, (req, res) => {
         { expiresIn: "7d" }
       );
 
+      logger.info("Register User", { method: req.method, url: req.url, data: user });
       res.status(201).send({
         message: "User Created Successfully",
         verified: user.verified,
@@ -324,15 +331,17 @@ router.post("/register", registerLimiter, (req, res) => {
         _id: user._id
       });
     }).catch((error) => {
+      logger.error("Register User", { method: req.method, url: req.url, error: error.message });
       res.status(500).send({
         message: "Error creating user",
         error,
       });
     });
-  }).catch((e) => {
+  }).catch((error) => {
+    logger.error("Register User", { method: req.method, url: req.url, error: error.message });
     res.status(500).send({
       message: "Password was not hashed successfully",
-      e,
+      error,
     });
   });
 });
@@ -356,6 +365,7 @@ router.post("/login", loginLimiter, (req, res) => {
         { expiresIn: "7d" }
       );
 
+      logger.info("Login User", { method: req.method, url: req.url, data: user });
       res.status(200).send({
         message: "Login Successful",
         token,
@@ -363,12 +373,14 @@ router.post("/login", loginLimiter, (req, res) => {
         role: user.role,
         friendsRequestsReceived: user.friendsRequests.received.length,
       });
-    }).catch(() => {
+    }).catch((error) => {
+      logger.error("Login User", { method: req.method, url: req.url, error: error.message });
       res.status(500).send({
         message: "An error occurred while processing your request.",
       });
     });
-  }).catch(() => {
+  }).catch((error) => {
+    logger.error("Login User", { method: req.method, url: req.url, error: error.message });
     res.send({
       message: "User not found",
     });
@@ -380,23 +392,20 @@ router.patch("/change-password", changePasswordLimiter, authenticateUser, async 
     const user = await User.findOne({ displayName: req.body.displayName });
     if (!user) return res.status(404).send({ message: "User not found." });
 
-    // Compare current password (using bcrypt)
     const passwordMatch = await bcrypt.compare(req.body.currentPassword, user.password);
     if (!passwordMatch) {
       return res.send({ error: "Incorrect current password." });
     }
 
-    // Hash the new password
     const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
 
-    // Update the user's password
     user.password = hashedPassword;
     await user.save();
 
-    // Optional: Generate a new JWT token (if needed)
-
+    logger.info("ChangePassword User", { method: req.method, url: req.url, data: req.body.displayName });
     res.status(200).send({ message: "Password changed successfully" });
   } catch (error) {
+    logger.error("ChangePassword User", { method: req.method, url: req.url, error: error.message });
     res.status(500).send({ error: "Error changing password" });
   }
 });
