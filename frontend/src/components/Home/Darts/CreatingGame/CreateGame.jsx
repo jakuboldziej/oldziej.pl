@@ -378,7 +378,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
             <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>
           <DrawerDescription className="hidden">Create new game</DrawerDescription>
-          <div className="settings py-3 overflow-y-auto">
+          <div className="settings !py-3 overflow-y-auto">
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
                 <span>Add Users</span>

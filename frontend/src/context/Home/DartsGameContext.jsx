@@ -3,7 +3,7 @@ import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Ho
 import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
 import { getDartsUser, patchDartsGame, patchDartsUser } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
-import { createContext, useMemo, useState } from 'react';
+import { createContext, useEffect, useMemo, useState } from 'react';
 import lodash from 'lodash';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { handleWLEDGameEnd, handleWLEDThrow180, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
@@ -29,7 +29,10 @@ export const DartsGameContextProvider = ({ children }) => {
 
   const updateGameState = async (gameP) => {
     try {
-      const gameCopy = { ...gameP };
+      const gameCopy = {
+        ...gameP,
+        users: gameP.users ? gameP.users.map(user => ({ ...user })) : []
+      };
 
       setGame(gameCopy);
       localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
@@ -230,9 +233,9 @@ export const DartsGameContextProvider = ({ children }) => {
     game.turn = nextUser.displayName;
 
     const isLastUser = remainingUsers[remainingUsers.length - 1]._id === currentUser._id;
-    if (isLastUser) {
-      game.round += 1;
-    }
+
+    if (isLastUser) game.round += 1;
+
     return nextUser;
   };
 

@@ -1,7 +1,7 @@
 import React from 'react'
 
 const DartsUsersDialogCompare = ({ title, firstData, secondData }) => {
-  const handleColor = (firstData, seconData) => {
+  const handleColor = (firstData, secondData) => {
     if (firstData > secondData) return "text-red-500";
     else if (firstData < secondData) return "text-blue-500"
     else if (firstData === secondData) return "text-green";
