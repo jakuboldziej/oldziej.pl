@@ -1,5 +1,5 @@
 import React from "react";
-import { Html, Body, Button, Tailwind, Head, Container, Heading, Text, Font, Section, Link } from "@react-email/components";
+import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Section, Link } from "@react-email/components";
 
 require('dotenv').config();
 

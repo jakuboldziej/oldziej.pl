@@ -146,41 +146,51 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const updateUsersData = async (usersBeforeBack) => {
-    game.users.map(async (user) => {
-      if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
+    try {
+      await Promise.all(game.users.map(async (user) => {
+        if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
 
-      if (user.temporary || user.verified === false) return;
-      if (game.training) return
+        if (user.temporary || user.verified === false) return;
+        if (game.training) return
 
-      const dartUser = usersBeforeBack.find((us) => us.displayName === user.displayName);
-      const userOriginalData = JSON.parse(JSON.stringify(dartUser));
+        const dartUser = usersBeforeBack.find((us) => us.displayName === user.displayName);
+        const userOriginalData = JSON.parse(JSON.stringify(dartUser));
 
-      if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
-      if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
-      if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
+        if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
+        if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
+        if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
 
-      dartUser.throws["doors"] += user.throws["doors"];
-      dartUser.throws["doubles"] += user.throws["doubles"];
-      dartUser.throws["triples"] += user.throws["triples"];
-      dartUser.throws["normal"] += user.throws["normal"];
+        dartUser.throws["doors"] += user.throws["doors"];
+        dartUser.throws["doubles"] += user.throws["doubles"];
+        dartUser.throws["triples"] += user.throws["triples"];
+        dartUser.throws["normal"] += user.throws["normal"];
 
-      if (game.gameMode === "X01") {
-        dartUser.throws["overthrows"] += user.throws["overthrows"];
-        dartUser.overAllPoints += user.allGainedPoints;
-        currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+        if (game.gameMode === "X01") {
+          dartUser.throws["overthrows"] += user.throws["overthrows"];
+          dartUser.overAllPoints += user.allGainedPoints;
+          currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
-        if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
-        if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
-        if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
-      }
+          if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
+          if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
+          if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
+        }
 
-      dartUser.gamesPlayed += 1;
+        dartUser.gamesPlayed += 1;
 
-      const updatedDartsUser = await patchDartsUser(dartUser);
+        try {
+          const updatedDartsUser = await patchDartsUser(dartUser);
 
-      if (JSON.stringify(userOriginalData) === JSON.stringify(updatedDartsUser))
-        ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`);
-    });
+          if (JSON.stringify(userOriginalData) === JSON.stringify(updatedDartsUser)) {
+            ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`);
+          }
+        } catch (error) {
+          console.error("Error updating user.", error);
+        }
+      }));
+    } catch (error) {
+      console.error("Error in updateUsersData:", error);
+      ShowNewToast("Darts game", `Error updating user data: ${error.message}`, "error");
+    }
   }
 
   const handleSpecialValue = async (value) => {
