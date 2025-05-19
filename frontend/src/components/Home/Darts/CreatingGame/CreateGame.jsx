@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getAuthUser, getDartsUser, getESP32Availability, patchESP32State, postDartsGame, postESP32JoinGame } from "@/lib/fetch";
+import { getAuthUser, getDartsUser, getESP32Availability, postDartsGame, postESP32JoinGame } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
@@ -88,16 +88,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     const checkWLEDAvailability = async () => {
-      const checkState = await getESP32Availability();
+      // const checkState = await getESP32Availability();
 
-      if (checkState.available) {
-        setWLEDon(true);
-        setWLEDAvailable(true);
-      }
-      else {
-        setWLEDon(false);
-        setWLEDAvailable(false);
-      }
+      // if (checkState.available) {
+      setWLEDon(true);
+      setWLEDAvailable(true);
+      // }
+      // else {
+      // setWLEDon(false);
+      // setWLEDAvailable(false);
+      // }
     }
 
     if (drawerOpen) {
