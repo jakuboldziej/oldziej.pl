@@ -125,7 +125,7 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
   });
 });
 
-console.log("Using environment - ", environment)
+logger.info("Using environment - ", environment)
 
 server.listen(
   3000, () => {

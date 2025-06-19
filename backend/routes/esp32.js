@@ -146,7 +146,7 @@ router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
     const gameCode = req.params.gameCode;
     wledGameCode = gameCode;
 
-    await changeWLEDstate({
+    const response = await changeWLEDstate({
       stateOn: true,
       stateColor: { r: 255, g: 255, b: 255 },
       stateEffect: {
@@ -156,6 +156,8 @@ router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
         pal: 0
       }
     });
+
+    if (response.message) throw new Error("ESP32 failed", response.message);
 
     res.json(wledGameCode);
   } catch (err) {
@@ -192,7 +194,7 @@ router.post("/leave-game/:gameCode", authenticateUser, async (req, res) => {
 
 router.get("/check-availability/:gameCode", authenticateUser, async (req, res) => {
   try {
-    const gameCode = req.params.gameCode;
+    const gameCode = req.params?.gameCode;
 
     let available = false;
 
@@ -207,9 +209,11 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
       else available = true;
     }
 
+    await fetch(`${wledDomain}/json/state`);
+
     res.json({ available });
   } catch (err) {
-    res.json({ message: err.message });
+    res.json({ message: err.message, available: false });
   }
 });
 

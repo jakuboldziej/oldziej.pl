@@ -12,7 +12,7 @@ import ShowNewToast from "../../MyComponents/ShowNewToast";
 
 import { AuthContext } from "@/context/Home/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
-import { Lightbulb, LightbulbOff, Trash2 } from "lucide-react";
+import { Lightbulb, LightbulbOff, Loader2Icon, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/shadcn/switch";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
@@ -34,6 +34,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [showCustomPoints, setShowCustomPoints] = useState(false);
   const [customStartPoints, setCustomStartPoints] = useState('');
   const [egt, setEgt] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const { updateGameState } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
@@ -88,16 +89,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     const checkWLEDAvailability = async () => {
-      // const checkState = await getESP32Availability();
+      const checkState = await getESP32Availability();
 
-      // if (checkState.available) {
-      setWLEDon(true);
-      setWLEDAvailable(true);
-      // }
-      // else {
-      // setWLEDon(false);
-      // setWLEDAvailable(false);
-      // }
+      if (checkState.available) {
+        setWLEDon(true);
+        setWLEDAvailable(true);
+      }
+      else {
+        setWLEDon(false);
+        setWLEDAvailable(false);
+      }
     }
 
     if (drawerOpen) {
@@ -204,101 +205,114 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   }
 
   const handleGameStart = async (training) => {
-    const throwsData = {
-      doors: 0,
-      doubles: 0,
-      triples: 0,
-      normal: 0,
-      overthrows: 0,
+    setLoading(true);
+
+    try {
+      const throwsData = {
+        doors: 0,
+        doubles: 0,
+        triples: 0,
+        normal: 0,
+        overthrows: 0,
+      }
+
+      let updatedUsers = usersPlaying.map((user) => ({
+        _id: user._id,
+        displayName: user.displayName,
+        points: selectStartPoints,
+        allGainedPoints: 0,
+        turn: false,
+        turnsSum: 0,
+        currentTurn: 1,
+        place: 0,
+        turns: {
+          1: null,
+          2: null,
+          3: null
+        },
+        throws: { ...throwsData },
+        currentThrows: { ...throwsData },
+        legs: 0,
+        sets: 0,
+        avgPointsPerTurn: "0.00",
+        highestGameAvg: "0.00",
+        highestGameTurnPoints: 0,
+        gameCheckout: 0,
+        temporary: user.temporary || false
+      }));
+
+      if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
+      if (usersPlaying.length === 1 && training === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
+      if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
+
+      const gameData = {
+        created_by: currentUser.displayName,
+        created_at: Date.now(),
+        users: updatedUsers,
+        podiums: usersPodium,
+        podium: {
+          1: null,
+          2: null,
+          3: null
+        },
+        turn: updatedUsers[0].displayName,
+        active: true,
+        gameMode: selectGameMode,
+        startPoints: selectStartPoints,
+        checkOut: selectCheckOut,
+        sets: selectGameMode === "X01" ? selectSets : 1,
+        legs: selectGameMode === "X01" ? selectLegs : 1,
+        round: 1,
+      }
+
+      updatedUsers[0].turn = true;
+      const usersCopy = lodash.cloneDeep(updatedUsers);
+      const gameCopy = lodash.pick(gameData, ['round', 'turn']);
+
+      gameData.record = [{
+        game: {
+          round: gameCopy.round,
+          turn: gameCopy.turn
+        },
+        users: usersCopy
+      }];
+
+      if (training === true) {
+        gameData.training = true;
+        updateGameState(gameData);
+      } else {
+        const { record, ...gameWithoutRecord } = gameData;
+
+        const game = await postDartsGame(gameWithoutRecord);
+
+        gameData._id = game._id;
+        gameData["gameCode"] = game.gameCode;
+        gameData.training = false;
+        updateGameState(gameData);
+
+        if (WLEDon) {
+          const res = await postESP32JoinGame(game.gameCode);
+          if (res.message) ShowNewToast("ESP32 error", res.message);
+        }
+      }
+
+      navigate("game");
+
+      localStorage.setItem("gameSettings", JSON.stringify({
+        users: usersPlaying,
+        gamemode: selectGameMode,
+        startPoints: selectStartPoints,
+        checkout: selectCheckOut,
+        sets: selectSets,
+        legs: selectLegs,
+        training: training
+      }));
+    } catch (error) {
+      console.error(error);
+      ShowNewToast("Error starting game", error.message);
+    } finally {
+      setLoading(false);
     }
-
-    let updatedUsers = usersPlaying.map((user) => ({
-      _id: user._id,
-      displayName: user.displayName,
-      points: selectStartPoints,
-      allGainedPoints: 0,
-      turn: false,
-      turnsSum: 0,
-      currentTurn: 1,
-      place: 0,
-      turns: {
-        1: null,
-        2: null,
-        3: null
-      },
-      throws: { ...throwsData },
-      currentThrows: { ...throwsData },
-      legs: 0,
-      sets: 0,
-      avgPointsPerTurn: "0.00",
-      highestGameAvg: "0.00",
-      highestGameTurnPoints: 0,
-      gameCheckout: 0,
-      temporary: user.temporary || false
-    }));
-
-    if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
-    if (usersPlaying.length === 1 && training === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
-    if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
-
-    const gameData = {
-      created_by: currentUser.displayName,
-      created_at: Date.now(),
-      users: updatedUsers,
-      podiums: usersPodium,
-      podium: {
-        1: null,
-        2: null,
-        3: null
-      },
-      turn: updatedUsers[0].displayName,
-      active: true,
-      gameMode: selectGameMode,
-      startPoints: selectStartPoints,
-      checkOut: selectCheckOut,
-      sets: selectGameMode === "X01" ? selectSets : 1,
-      legs: selectGameMode === "X01" ? selectLegs : 1,
-      round: 1,
-    }
-
-    updatedUsers[0].turn = true;
-    const usersCopy = lodash.cloneDeep(updatedUsers);
-    const gameCopy = lodash.pick(gameData, ['round', 'turn']);
-    gameData.record = [{
-      game: {
-        round: gameCopy.round,
-        turn: gameCopy.turn
-      },
-      users: usersCopy
-    }];
-
-    if (training === true) {
-      gameData.training = true;
-      updateGameState(gameData);
-    } else {
-      const { record, ...gameWithoutRecord } = gameData;
-
-      const game = await postDartsGame(gameWithoutRecord);
-
-      gameData._id = game._id;
-      gameData["gameCode"] = game.gameCode;
-      gameData.training = false;
-      updateGameState(gameData);
-
-      if (WLEDon) await postESP32JoinGame(game.gameCode);
-    }
-
-    navigate("game");
-
-    localStorage.setItem("gameSettings", JSON.stringify({
-      users: usersPlaying,
-      gamemode: selectGameMode,
-      startPoints: selectStartPoints,
-      checkout: selectCheckOut,
-      sets: selectSets,
-      legs: selectLegs,
-      training: training
-    }));
   }
 
   const handleNotPlayingStyle = () => {
@@ -424,7 +438,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               </CardContent>
             </Card>
             <div className="sticky-top top-0 flex flex-col items-center gap-3 text-white">
-              <Button variant="outline_red" className="glow-button-red" disabled={!currentUser.verified} onClick={() => handleGameStart(false)}>Start</Button>
+              <Button variant="outline_red" className="glow-button-red" disabled={!currentUser.verified || loading} onClick={() => handleGameStart(false)}>
+                {loading ? (
+                  <span className="flex items-center gap-1"><Loader2Icon className="animate-spin" /> Loading</span>
+
+                ) : (
+                  <span>Start</span>
+                )}
+              </Button>
               <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
               <span>EGT: {egt}</span>
             </div>
