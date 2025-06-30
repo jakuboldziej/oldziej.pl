@@ -89,16 +89,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     const checkWLEDAvailability = async () => {
-      const checkState = await getESP32Availability();
+      // const checkState = await getESP32Availability();
 
-      if (checkState.available) {
-        setWLEDon(true);
-        setWLEDAvailable(true);
-      }
-      else {
-        setWLEDon(false);
-        setWLEDAvailable(false);
-      }
+      // if (checkState.available) {
+      setWLEDon(true);
+      setWLEDAvailable(true);
+      // }
+      // else {
+      //   setWLEDon(false);
+      //   setWLEDAvailable(false);
+      // }
     }
 
     if (drawerOpen) {
