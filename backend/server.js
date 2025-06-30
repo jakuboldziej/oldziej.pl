@@ -22,12 +22,13 @@ const { logger } = require("./middleware/logging");
 const environment = process.env.NODE_ENV || 'production';
 const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
 const portfolioDomain = environment === "production" ? process.env.PORTFOLIO_DOMAIN : process.env.PORTFOLIO_DOMAIN_LOCAL;
+const previewDomain = process.env.PREVIEW_DOMAIN;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json())
 
-const allowedOrigins = [domain, portfolioDomain];
+const allowedOrigins = [domain, portfolioDomain, previewDomain];
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -75,6 +76,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       domain,
+      previewDomain,
       "https://admin.socket.io",
     ],
     credentials: true,
