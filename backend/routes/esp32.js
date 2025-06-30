@@ -6,6 +6,7 @@ const router = express.Router();
 require('dotenv').config();
 
 const wledDomain = process.env.WLED_DOMAIN;
+
 let wledGameCode = "";
 
 const getWLEDstate = async () => {
@@ -199,7 +200,7 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
     let available = false;
 
     const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-    if (decoded.userEmail !== process.env.ADMIN_EMAIL) return res.json({ available });
+    if (decoded.userEmail !== process.env.ADMIN_EMAIL) return res.json({ available: false });
 
     if (gameCode && gameCode != "undefined") {
       if (gameCode === wledGameCode) available = true;
