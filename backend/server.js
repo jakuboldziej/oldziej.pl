@@ -23,12 +23,18 @@ const environment = process.env.NODE_ENV || 'production';
 const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
 const portfolioDomain = environment === "production" ? process.env.PORTFOLIO_DOMAIN : process.env.PORTFOLIO_DOMAIN_LOCAL;
 const previewDomain = process.env.PREVIEW_DOMAIN;
+const gamesDomains = [process.env.LOCALHOST_GAMES_DOMAIN, process.env.GAMES_DOMAIN];
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json())
 
-const allowedOrigins = [domain, portfolioDomain, previewDomain];
+const allowedOrigins = [
+  domain,
+  portfolioDomain,
+  previewDomain,
+  ...gamesDomains
+];
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -75,8 +81,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      domain,
-      previewDomain,
+      ...allowedOrigins,
       "https://admin.socket.io",
     ],
     credentials: true,
