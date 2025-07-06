@@ -60,7 +60,7 @@ function Login() {
     });
 
     if (searchParams.get("returnUrl")) {
-      navigate(searchParams.get("returnUrl"), { replace: true });
+      navigate(decodeURIComponent(searchParams.get("returnUrl")), { replace: true });
     } else {
       navigate("/", { replace: true });
     }

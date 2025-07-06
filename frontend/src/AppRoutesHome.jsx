@@ -41,7 +41,7 @@ function AppRoutesHome() {
   const ProtectedRoute = ({ children }) => {
     return (
       <RequireAuth
-        fallbackPath={`/auth?returnUrl=${location.pathname}`}
+        fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`}
       >
         {children}
       </RequireAuth>
@@ -113,7 +113,7 @@ function AppRoutesHome() {
           </Route>
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
         </Route>
-        <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/auth?returnUrl=${location.pathname}`} /></OnlyVerifiedAccess>}>
+        <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`} /></OnlyVerifiedAccess>}>
           <Route index element={<ProtectedRoute><CloudPage /></ProtectedRoute>} />
           <Route path='settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path='storage' element={<ProtectedRoute><Storage /></ProtectedRoute>} />
@@ -130,7 +130,7 @@ function AppRoutesHome() {
           <Route path="friends" element={<ProtectedRoute><OnlyVerifiedAccess><Friends /></OnlyVerifiedAccess></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />
         </Route>
-        <Route path="admin" element={<AuthOutlet fallbackPath={`/auth?returnUrl=${location.pathname}`} />}>
+        <Route path="admin" element={<AuthOutlet fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`} />}>
           <Route index element={<AdminRequireAuth><Admin /></AdminRequireAuth>} />
         </Route>
 
