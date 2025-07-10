@@ -10,6 +10,7 @@ const programmingLanguages = [
   "css3",
   "cplusplus",
   "php",
+  "openjdk"
 ];
 
 const frameworks = [

@@ -11,7 +11,7 @@ const { logger } = require("../middleware/logging");
 
 require('dotenv').config();
 
-const loginLimiter = createRateLimiter(5, 15 * 60 * 1000, "Too many login attempts. Try again later.");
+const loginLimiter = createRateLimiter(10, 15 * 60 * 1000, "Too many login attempts. Try again later.");
 const registerLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many registration attempts. Try again later.");
 const changePasswordLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many change password attempts. Try again later.");
 
