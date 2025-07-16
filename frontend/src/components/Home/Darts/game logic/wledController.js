@@ -114,6 +114,32 @@ export const handleWLEDThrowT20 = async (gameCode) => {
   }
 };
 
+export const handleWLEDThrowD25 = async (gameCode) => {
+  try {
+    const WLEDState = await getESP32State();
+    if (WLEDState.on === false) return;
+
+    const data = {
+      effect: {
+        fx: 63,
+        sx: 128,
+        ix: 0,
+        pal: 0
+      },
+      gameCode
+    };
+
+    await patchESP32State(data);
+
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
+      await handleWLEDEffectSolid(gameCode);
+    }, 10000);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 export const handleWLEDThrow180 = async (gameCode) => {
   try {
     const WLEDState = await getESP32State();

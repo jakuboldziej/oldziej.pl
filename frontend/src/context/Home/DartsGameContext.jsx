@@ -6,7 +6,7 @@ import { socket } from '@/lib/socketio';
 import { createContext, useEffect, useMemo, useState } from 'react';
 import lodash from 'lodash';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
-import { handleWLEDGameEnd, handleWLEDThrow180, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
+import { handleWLEDGameEnd, handleWLEDThrow180, handleWLEDThrowD25, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
 
 export const DartsGameContext = createContext();
 
@@ -96,6 +96,8 @@ export const DartsGameContextProvider = ({ children }) => {
     if (action) {
       if (action === 'DOUBLE') {
         turns[currentUser.currentTurn] = `D${value}`;
+
+        if (turns[currentUser.currentTurn] === "D25") handleWLEDThrowD25(game.gameCode);
       } else if (action === 'TRIPLE') {
         turns[currentUser.currentTurn] = `T${value}`;
 
