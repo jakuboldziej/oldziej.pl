@@ -360,6 +360,7 @@ router.post("/login", loginLimiter, (req, res) => {
         {
           userId: user._id,
           userEmail: user.email,
+          displayName: user.displayName
         },
         process.env.JWT_SECRET,
         { expiresIn: "7d" }
