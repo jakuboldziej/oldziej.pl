@@ -94,12 +94,17 @@ const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PAS
 const dartsConn = mongoose.createConnection(mongoURIDarts);
 const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/ftp`
 const ftpConn = mongoose.createConnection(mongoURIFTP);
+const mongoURIChores = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/chores`
+const choresConn = mongoose.createConnection(mongoURIChores)
 
 dartsConn.on('error', (err) => logger.error(`MongoDB (Darts) connection error: ${err}`));
 dartsConn.once('open', () => logger.info('Connected to Darts Database'));
+ftpConn.on('error', (err) => logger.error(`MongoDB (FTP) connection error: ${err}`));
 ftpConn.once('open', () => logger.info('Connected to Ftp Database'));
+choresConn.on('error', (err) => logger.error(`MongoDB (Chores) connection error: ${err}`));
+choresConn.once('open', () => logger.info('Connected to Chores Database'));
 
-module.exports = { dartsConn, ftpConn, mongoURIFTP, io };
+module.exports = { dartsConn, ftpConn, mongoURIFTP, choresConn, io };
 
 require("./socket.io/listeners");
 
@@ -111,6 +116,9 @@ app.use('/api/auth', usersRouter);
 
 const ftpRouter = require('./routes/ftp');
 app.use('/api/ftp', ftpRouter);
+
+const choresRouter = require('./routes/chore');
+app.use('/api/chore', choresRouter);
 
 const emailsRouter = require('./routes/emails');
 app.use('/api/emails', emailsRouter);
@@ -133,6 +141,10 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
 });
 
 logger.info("Using environment - ", environment)
+
+app.get('/health', async (req, res) => {
+  res.status(200).json("Server alive");
+});
 
 server.listen(
   3000, () => {
