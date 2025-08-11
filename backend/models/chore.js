@@ -17,8 +17,15 @@ const ChoresSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true
+    required: false
+  },
+  finished: {
+    type: Boolean,
+    required: false,
+    default: false
   }
+}, {
+  timestamps: true
 });
 
 module.exports = choresConn.model("Chore", ChoresSchema);
