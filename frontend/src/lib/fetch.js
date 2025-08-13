@@ -611,6 +611,25 @@ export const declineFriendsRequest = async (data) => {
   return await response.json();
 }
 
+export const cancelFriendsRequest = async (data) => {
+  const currentUserDisplayName = data.currentUserDisplayName;
+  const userDisplayName = data.userDisplayName;
+
+  const response = await fetch(`${mongodbApiUrl}/auth/users/cancel-friends-request/`, {
+    method: "POST",
+    body: JSON.stringify({
+      currentUserDisplayName: currentUserDisplayName,
+      userDisplayName: userDisplayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  })
+
+  return await response.json();
+}
+
 export const removeFriend = async (data) => {
   const currentUserDisplayName = data.currentUserDisplayName;
   const userDisplayName = data.userDisplayName;

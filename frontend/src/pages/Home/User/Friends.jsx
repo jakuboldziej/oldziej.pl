@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Input } from '@/components/ui/shadcn/input';
 import { AuthContext } from '@/context/Home/AuthContext';
-import { acceptFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/lib/fetch';
+import { acceptFriendsRequest, cancelFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/lib/fetch';
 import { Copy, Loader2, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import RedDot from "@/assets/images/icons/red_dot.png";
@@ -96,9 +96,9 @@ function Friends() {
   }
 
   const handleCancelFriendsRequest = async (userDisplayName) => {
-    await declineFriendsRequest({
-      currentUserDisplayName: userDisplayName,
-      userDisplayName: currentUser.displayName
+    await cancelFriendsRequest({
+      currentUserDisplayName: currentUser.displayName,
+      userDisplayName: userDisplayName
     });
 
     const updatedPendingFriendsRequests = authUser.friendsRequests.pending.filter((fUser) => fUser.displayName !== userDisplayName);
@@ -213,6 +213,87 @@ function Friends() {
       }));
     }
   }, [listeners.acceptedRequestFrom, authUser?.displayName]);
+
+  useEffect(() => {
+    const updatePendingRequests = () => {
+      const updatedPending = authUser.friendsRequests.pending.filter((req) => req.displayName !== listeners.declinedRequestFrom);
+
+      setAuthUser((prev) => ({
+        ...prev,
+        friendsRequests: {
+          received: prev.friendsRequests.received,
+          pending: updatedPending
+        }
+      }));
+      setListeners((prev) => ({
+        ...prev,
+        declinedRequestFrom: ''
+      }));
+    }
+
+    if (listeners.declinedRequestFrom && authUser?.displayName &&
+      authUser?.friendsRequests.pending.find((req) => req.displayName === listeners.declinedRequestFrom)) {
+      updatePendingRequests();
+    } else {
+      setListeners((prev) => ({
+        ...prev,
+        declinedRequestFrom: ''
+      }));
+    }
+  }, [listeners.declinedRequestFrom, authUser?.displayName]);
+
+  useEffect(() => {
+    const updateReceivedRequests = () => {
+      const updatedReceived = authUser.friendsRequests.received.filter((req) => req.displayName !== listeners.canceledRequestFrom);
+
+      setAuthUser((prev) => ({
+        ...prev,
+        friendsRequests: {
+          pending: prev.friendsRequests.pending,
+          received: updatedReceived
+        }
+      }));
+      setListeners((prev) => ({
+        ...prev,
+        canceledRequestFrom: ''
+      }));
+    }
+
+    if (listeners.canceledRequestFrom && authUser?.displayName &&
+      authUser?.friendsRequests.received.find((req) => req.displayName === listeners.canceledRequestFrom)) {
+      updateReceivedRequests();
+    } else {
+      setListeners((prev) => ({
+        ...prev,
+        canceledRequestFrom: ''
+      }));
+    }
+  }, [listeners.canceledRequestFrom, authUser?.displayName]);
+
+  useEffect(() => {
+    const updateFriendsList = () => {
+      const updatedFriends = authUser.friends.filter((friend) => friend.displayName !== listeners.removedByFriend);
+
+      setAuthUser((prev) => ({
+        ...prev,
+        friends: updatedFriends
+      }));
+      setListeners((prev) => ({
+        ...prev,
+        removedByFriend: ''
+      }));
+    }
+
+    if (listeners.removedByFriend && authUser?.displayName &&
+      authUser?.friends.find((friend) => friend.displayName === listeners.removedByFriend)) {
+      updateFriendsList();
+    } else {
+      setListeners((prev) => ({
+        ...prev,
+        removedByFriend: ''
+      }));
+    }
+  }, [listeners.removedByFriend, authUser?.displayName]);
 
   useEffect(() => {
     const updateReceivedRequests = async () => {

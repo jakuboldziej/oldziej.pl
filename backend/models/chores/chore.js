@@ -1,16 +1,22 @@
 const mongoose = require("mongoose");
-const { choresConn } = require("../server");
+const { choresConn } = require("../../server");
 
 const ChoresSchema = new mongoose.Schema({
   ownerId: {
     type: String,
     required: true
   },
-  usersList: {
-    type: Array,
-    required: false,
-    default: []
-  },
+  usersList: [{
+    displayName: {
+      type: String,
+      required: true
+    },
+    finished: {
+      type: Boolean,
+      required: false,
+      default: false
+    }
+  }],
   title: {
     type: String,
     required: true

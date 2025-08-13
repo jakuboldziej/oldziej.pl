@@ -15,6 +15,9 @@ export const SocketIoContextProvider = ({ children }) => {
   const [listeners, setListeners] = useState({
     friendsRequestsReceived: 0,
     acceptedRequestFrom: '',
+    declinedRequestFrom: '',
+    canceledRequestFrom: '',
+    removedByFriend: '',
   });
 
   // Emitters
@@ -87,6 +90,42 @@ export const SocketIoContextProvider = ({ children }) => {
       }
     }
 
+    const declineFriendsRequest = (data) => {
+      const { ...requestData } = JSON.parse(data);
+
+      if (requestData.declined && requestData.sentFrom === currentUser.displayName) {
+        setListeners((prev) => ({
+          ...prev,
+          declinedRequestFrom: requestData.sentTo
+        }));
+        ShowNewToast("Friends", `${requestData.sentTo} declined your friends request.`)
+      }
+    }
+
+    const cancelFriendsRequest = (data) => {
+      const { ...requestData } = JSON.parse(data);
+
+      if (requestData.canceled && requestData.sentTo === currentUser.displayName) {
+        setListeners((prev) => ({
+          ...prev,
+          canceledRequestFrom: requestData.sentFrom
+        }));
+        ShowNewToast("Friends", `${requestData.sentFrom} canceled their friend request.`)
+      }
+    }
+
+    const removeFriend = (data) => {
+      const { ...requestData } = JSON.parse(data);
+
+      if (requestData.removed && requestData.removedUser === currentUser.displayName) {
+        setListeners((prev) => ({
+          ...prev,
+          removedByFriend: requestData.removedBy
+        }));
+        ShowNewToast("Friends", `${requestData.removedBy} removed you as a friend.`)
+      }
+    }
+
     const updateCounters = (data) => {
       const { currentUserDisplayName, ...counterData } = JSON.parse(data);
 
@@ -120,6 +159,9 @@ export const SocketIoContextProvider = ({ children }) => {
     socket.on('onlineUsersListener', getOnlineUsers);
     socket.on('sendFriendsRequest', sendFriendsRequest);
     socket.on('acceptFriendsRequest', acceptFriendsRequest);
+    socket.on('declineFriendsRequest', declineFriendsRequest);
+    socket.on('cancelFriendsRequest', cancelFriendsRequest);
+    socket.on('removeFriend', removeFriend);
     socket.on('updateCounters', updateCounters);
     socket.on('verifyEmail', verifyEmail);
 
@@ -127,6 +169,9 @@ export const SocketIoContextProvider = ({ children }) => {
       socket.off('onlineUsersListener', getOnlineUsers);
       socket.off('sendFriendsRequest', sendFriendsRequest);
       socket.off('acceptFriendsRequest', acceptFriendsRequest);
+      socket.off('declineFriendsRequest', declineFriendsRequest);
+      socket.off('cancelFriendsRequest', cancelFriendsRequest);
+      socket.off('removeFriend', removeFriend);
       socket.off('updateCounters', updateCounters);
       socket.off('verifyEmail', verifyEmail);
     };

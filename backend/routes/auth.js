@@ -158,6 +158,7 @@ router.post('/users/send-friends-request/', authenticateUser, async (req, res) =
         userDisplayName: user.displayName,
       }));
 
+
       return res.json({
         message: `Friend request sent to ${user.displayName}.`,
         sentToUserDisplayName: user.displayName
@@ -221,8 +222,6 @@ router.post('/users/accept-friends-request/', authenticateUser, async (req, res)
 
 router.post('/users/decline-friends-request/', authenticateUser, async (req, res) => {
   try {
-    const io = req.app.locals.io;
-
     let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
     const userId = user._id.toString();
@@ -248,14 +247,84 @@ router.post('/users/decline-friends-request/', authenticateUser, async (req, res
         { new: true }
       );
 
+      io.emit("declineFriendsRequest", JSON.stringify({
+        declined: true,
+        sentFrom: user.displayName,
+        sentTo: currentUser.displayName,
+      }));
+
       io.emit("updateCounters", JSON.stringify({
         currentUserDisplayName: currentUser.displayName,
         friendsRequestsReceived: currentUser.friendsRequests.received.length
       }));
 
+      io.emit("updateCounters", JSON.stringify({
+        currentUserDisplayName: user.displayName,
+        friendsRequestsPending: user.friendsRequests.pending.length
+      }));
+
       res.json({
         message: `${currentUser.displayName} declined ${user.displayName}'s friends request.`,
         newCurrentUserFriend: userId
+      })
+    }
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.post('/users/cancel-friends-request/', authenticateUser, async (req, res) => {
+  try {
+    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
+    const userId = user._id.toString();
+    const currentUserId = currentUser._id.toString();
+
+    const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
+    const isCurrentUserPendingToUser = currentUser.friendsRequests.pending.find((friendId) => friendId === userId);
+
+    if (isUserFriendsWithCurrentUser) return res.json({
+      message: `You are already friends with ${user.displayName}.`
+    });
+    else if (!isCurrentUserPendingToUser) return res.json({
+      message: `You don't have a pending friend request to ${user.displayName}.`
+    });
+    else {
+      currentUser.friendsRequests.pending = currentUser.friendsRequests.pending.filter((id) => id !== userId);
+      user.friendsRequests.received = user.friendsRequests.received.filter((id) => id !== currentUserId);
+
+      await User.findByIdAndUpdate(
+        currentUser._id,
+        currentUser,
+        { new: true }
+      );
+      await User.findByIdAndUpdate(
+        user._id,
+        user,
+        { new: true }
+      );
+
+      // Notify the user who received the request that it was canceled
+      io.emit("cancelFriendsRequest", JSON.stringify({
+        canceled: true,
+        sentFrom: currentUser.displayName,
+        sentTo: user.displayName,
+      }));
+
+      // Update counters for both users
+      io.emit("updateCounters", JSON.stringify({
+        currentUserDisplayName: currentUser.displayName,
+        friendsRequestsPending: currentUser.friendsRequests.pending.length
+      }));
+
+      io.emit("updateCounters", JSON.stringify({
+        currentUserDisplayName: user.displayName,
+        friendsRequestsReceived: user.friendsRequests.received.length
+      }));
+
+      res.json({
+        message: `${currentUser.displayName} canceled friend request to ${user.displayName}.`,
+        canceledRequestTo: userId
       })
     }
   } catch (err) {
@@ -291,6 +360,13 @@ router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
         user,
         { new: true }
       );
+
+      io.emit("removeFriend", JSON.stringify({
+        removed: true,
+        removedBy: currentUser.displayName,
+        removedUser: user.displayName,
+      }));
+
       res.json({
         message: `${currentUser.displayName} removed ${user.displayName} as a friend.`,
         removedFriend: userId
@@ -355,7 +431,6 @@ router.post("/login", loginLimiter, (req, res) => {
         });
       }
 
-      // create JWT token
       const token = jwt.sign(
         {
           userId: user._id,
