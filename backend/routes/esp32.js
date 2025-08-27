@@ -1,6 +1,8 @@
 const express = require("express");
 const authenticateUser = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
+const { io } = require("../server");
+const { logger } = require("../middleware/logging");
 const router = express.Router();
 
 require('dotenv').config();
@@ -215,6 +217,74 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
     res.json({ available });
   } catch (err) {
     res.json({ message: err.message, available: false });
+  }
+});
+
+// Door
+
+let validationTimer = null;
+let isValidationPending = false;
+
+router.post("/door/change-sensor-state/:newState", async (req, res) => {
+  try {
+    const newState = parseInt(req.params?.newState);
+
+    if (newState === 1) {
+      isValidationPending = true;
+      if (validationTimer) clearTimeout(validationTimer);
+
+      io.emit("esp32:validation-state-changed", isValidationPending);
+
+      validationTimer = setTimeout(() => {
+        if (isValidationPending) {
+          logger.warn("POST ESP32:door/change-sensor", { method: req.method, url: req.url, data: { message: "Validation failed", isValidationPending } });
+          // notification
+        }
+
+        isValidationPending = false;
+        io.emit("esp32:validation-state-changed", isValidationPending);
+      }, 3000); // default - 30000 (30 seconds)
+
+    }
+
+    io.emit("esp32:door-state-changed", newState);
+
+    res.json({ newState });
+  } catch (err) {
+    logger.error("POST ESP32:door/change-sensor", { method: req.method, url: req.url, error: err.message });
+    res.json({ message: err.message });
+  }
+});
+
+router.post("/door/validate", async (req, res) => {
+  try {
+    const { secretCode } = req.body;
+
+    if (!isValidationPending) throw new Error("No validation pending")
+
+    if (secretCode === process.env.SECRET_CODE) {
+      clearTimeout(validationTimer);
+      validationTimer = null;
+      isValidationPending = false;
+
+      io.emit("esp32:validation-state-changed", isValidationPending);
+
+      logger.info("POST ESP32:door/validate", { method: req.method, url: req.url, data: { message: "Validation successfull" } });
+      return res.json({ message: "Validation successful", success: true });
+    } else {
+      throw new Error("Invalid code");
+    }
+  } catch (err) {
+    logger.error("POST ESP32:door/validate", { method: req.method, url: req.url, error: err });
+    res.status(400).json({ message: err.message, success: false });
+  }
+});
+
+router.get("/door/check-if-validation-needed", async (req, res) => {
+  try {
+    return res.json(isValidationPending);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 

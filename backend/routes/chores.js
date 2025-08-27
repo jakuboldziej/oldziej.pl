@@ -213,6 +213,39 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
       return res.status(404).json({ message: "Chore not found" });
     }
 
+    if (updatedChore.usersList && updatedChore.usersList.length > 0) {
+      const allUsersFinished = updatedChore.usersList.every(user => user.finished === true);
+
+      if (allUsersFinished && !updatedChore.finished) {
+        updatedChore.finished = true;
+        await updatedChore.save();
+
+        if (updatedChore.usersList.length > 1) {
+          try {
+            const owner = await User.findById(updatedChore.ownerId);
+            const ownerName = owner ? owner.displayName : 'Ktoś';
+
+            const allDisplayNames = updatedChore.usersList.map(user =>
+              typeof user === 'string' ? user : user.displayName
+            );
+
+            await sendPushNotifications(
+              allDisplayNames,
+              'Zadanie ukończone!',
+              `Wszyscy ukończyli zadanie: ${updatedChore.title}`,
+              {
+                choreId: updatedChore._id.toString(),
+                type: 'complete_chore',
+                title: updatedChore.title
+              }
+            );
+          } catch (notificationError) {
+            console.error('Failed to send completion notification:', notificationError);
+          }
+        }
+      }
+    }
+
     logger.info("PATCH Chore", { method: req.method, url: req.url, data: updatedChore });
     res.json(updatedChore);
   } catch (err) {

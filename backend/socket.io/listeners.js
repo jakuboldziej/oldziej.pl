@@ -85,6 +85,18 @@ io.on('connection', (socket) => {
     addingOnlineUser(data, socket.id, io);
   });
 
+  // ESP 32 
+
+  // DoorState
+
+  socket.on("esp32:checkDoorsState", (data) => {
+    io.emit("esp32:checkDoorsState", { requester: data.requester });
+  });
+
+  socket.on("esp32:doorState-response", (data) => {
+    io.to(data.requester).emit("esp32:doorState-response", data.state);
+  });
+
   // Connections
 
   socket.on('disconnect', () => {
