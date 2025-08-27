@@ -243,7 +243,7 @@ router.post("/door/change-sensor-state/:newState", async (req, res) => {
 
         isValidationPending = false;
         io.emit("esp32:validation-state-changed", isValidationPending);
-      }, 3000); // default - 30000 (30 seconds)
+      }, 30000); // default - 30000 (30 seconds)
 
     }
 
