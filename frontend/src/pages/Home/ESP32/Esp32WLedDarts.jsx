@@ -8,7 +8,7 @@ import { Power, Sparkles, Sun } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { RgbaColorPicker } from 'react-colorful';
 
-function Esp32(props) {
+function Esp32WLedDarts(props) {
   const { refreshingData, setRefreshingData } = props;
 
   const { currentUser } = useContext(AuthContext);
@@ -117,11 +117,10 @@ function Esp32(props) {
 
   return (
     <div className="esp32-page flex flex-col items-center gap-10">
-      <span className="text-5xl flex gap-4 items-center">WLED</span>
       {loading ? (
         <Loading />
       ) : (
-        ESP32State.message === "fetch failed" ? (
+        ESP32State?.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
           <div className='flex w-full flex-col md:flex-row gap-20 md:gap-0'>
@@ -221,4 +220,4 @@ function Esp32(props) {
   )
 }
 
-export default Esp32
+export default Esp32WLedDarts;

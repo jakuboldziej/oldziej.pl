@@ -3,6 +3,8 @@ const authenticateUser = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
 const { io } = require("../server");
 const { logger } = require("../middleware/logging");
+const { Expo } = require('expo-server-sdk');
+const DoorUser = require('../models/door/doorUser');
 const router = express.Router();
 
 require('dotenv').config();
@@ -10,6 +12,86 @@ require('dotenv').config();
 const wledDomain = process.env.WLED_DOMAIN;
 
 let wledGameCode = "";
+
+let doorExpo = new Expo({
+  accessToken: process.env.EXPO_DOOR_ACCESS_TOKEN,
+  useFcmV1: true
+});
+
+const sendDoorPushNotifications = async (title, body, data = {}) => {
+  try {
+    const doorUsers = await DoorUser.find({
+      pushToken: { $ne: null, $exists: true }
+    });
+
+    if (doorUsers.length === 0) {
+      console.warn('No door app push tokens found');
+      return;
+    }
+
+    let messages = [];
+    for (let doorUser of doorUsers) {
+      if (!Expo.isExpoPushToken(doorUser.pushToken)) {
+        console.error(`Push token ${doorUser.pushToken} is not a valid Expo push token`);
+        continue;
+      }
+
+      messages.push({
+        to: doorUser.pushToken,
+        sound: 'default',
+        title: title,
+        body: body,
+        data: data,
+        badge: 1,
+        priority: 'high',
+        ttl: 86400,
+        channelId: 'myNotificationChannel',
+        android: {
+          channelId: 'myNotificationChannel',
+          sound: 'default',
+          priority: 'max',
+          sticky: true,
+          vibrate: [0, 250, 250, 250],
+          color: '#FF231F7C',
+          style: {
+            type: 'bigText',
+            text: body
+          }
+        },
+        ios: {
+          sound: 'default',
+          badge: 1,
+          priority: 'high',
+          subtitle: 'DoorApp',
+          _displayInForeground: true,
+          interruptionLevel: 'active',
+          relevanceScore: 1.0
+        }
+      });
+    }
+
+    if (messages.length === 0) {
+      console.warn('No valid door push tokens to send to');
+      return;
+    }
+
+    let chunks = doorExpo.chunkPushNotifications(messages);
+    let tickets = [];
+
+    for (let chunk of chunks) {
+      try {
+        let ticketChunk = await doorExpo.sendPushNotificationsAsync(chunk);
+        tickets.push(...ticketChunk);
+      } catch (error) {
+        console.error('Error sending door push notification chunk:', error);
+      }
+    }
+
+    return tickets;
+  } catch (error) {
+    console.error('Error in sendDoorPushNotifications:', error);
+  }
+};
 
 const getWLEDstate = async () => {
   try {
@@ -142,8 +224,6 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
   }
 });
 
-// Control darts game
-
 router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
   try {
     const gameCode = req.params.gameCode;
@@ -225,34 +305,96 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
 let validationTimer = null;
 let isValidationPending = false;
 
+let validationStartHour = 22; // 22:00
+let validationEndHour = 5;   // 5:00
+let isValidationActive = true;
+const validationTime = 30000; // default - 30000 (30 seconds)
+
+const isWithinValidationWindow = () => {
+  const now = new Date();
+  const hour = now.getHours();
+  if (validationStartHour < validationEndHour) {
+    // e.g. 8 to 17
+    return hour >= validationStartHour && hour < validationEndHour;
+  } else {
+    // e.g. 22 to 5 (overnight)
+    return hour >= validationStartHour || hour < validationEndHour;
+  }
+};
+
+const shouldValidate = () => {
+  return isValidationActive || isWithinValidationWindow();
+};
+
 router.post("/door/change-sensor-state/:newState", async (req, res) => {
   try {
     const newState = parseInt(req.params?.newState);
 
-    if (newState === 1) {
-      isValidationPending = true;
-      if (validationTimer) clearTimeout(validationTimer);
-
-      io.emit("esp32:validation-state-changed", isValidationPending);
-
-      validationTimer = setTimeout(() => {
-        if (isValidationPending) {
-          logger.warn("POST ESP32:door/change-sensor", { method: req.method, url: req.url, data: { message: "Validation failed", isValidationPending } });
-          // notification
-        }
-
-        isValidationPending = false;
+    if (newState === 1 && shouldValidate()) {
+      if (!isValidationPending) {
+        isValidationPending = true;
         io.emit("esp32:validation-state-changed", isValidationPending);
-      }, 30000); // default - 30000 (30 seconds)
 
+        await sendDoorPushNotifications(
+          'Drzwi otwarte',
+          'Wymagana weryfikacja kodu!',
+          { doorsUnlocked: true, validation: true }
+        );
+
+        validationTimer = setTimeout(() => {
+          if (isValidationPending) {
+            logger.warn("POST ESP32:door/change-sensor", { method: req.method, url: req.url, data: { message: "Validation failed", isValidationPending } });
+            sendDoorPushNotifications(
+              'Timeout weryfikacji',
+              'Nie udało się zweryfikować kodu w wyznaczonym czasie',
+              { doorsUnlocked: false, validation: false, timeout: true }
+            );
+          }
+          isValidationPending = false;
+          io.emit("esp32:validation-state-changed", isValidationPending);
+        }, validationTime);
+      }
     }
 
     io.emit("esp32:door-state-changed", newState);
-
     res.json({ newState });
   } catch (err) {
     logger.error("POST ESP32:door/change-sensor", { method: req.method, url: req.url, error: err.message });
     res.json({ message: err.message });
+  }
+});
+
+router.get("/door/validation-config", authenticateUser, async (req, res) => {
+  res.json({
+    validationStartHour,
+    validationEndHour,
+    isValidationActive
+  });
+});
+
+router.post("/door/set-validation-window", authenticateUser, async (req, res) => {
+  const { startHour, endHour } = req.body;
+
+  if (
+    typeof startHour === "number" && startHour >= 0 && startHour < 24 &&
+    typeof endHour === "number" && endHour >= 0 && endHour < 24
+  ) {
+    validationStartHour = startHour;
+    validationEndHour = endHour;
+    res.json({ success: true, validationStartHour, validationEndHour });
+  } else {
+    res.status(400).json({ success: false, message: "Invalid hours" });
+  }
+});
+
+router.post("/door/set-validation-active", authenticateUser, async (req, res) => {
+  const { active } = req.body;
+
+  if (typeof active === "boolean") {
+    isValidationActive = active;
+    res.json({ success: true, isValidationActive });
+  } else {
+    res.status(400).json({ success: false, message: "Invalid value" });
   }
 });
 
@@ -285,6 +427,125 @@ router.get("/door/check-if-validation-needed", async (req, res) => {
     return res.json(isValidationPending);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// Door push notification endpoints
+
+router.post("/door/register-push-token", async (req, res) => {
+  try {
+    const { pushToken, deviceId } = req.body;
+
+    if (!Expo.isExpoPushToken(pushToken)) {
+      console.error('Invalid push token format:', pushToken);
+      return res.status(400).json({ error: 'Invalid push token' });
+    }
+
+    let doorUser = await DoorUser.findOne({ deviceId });
+
+    if (doorUser) {
+      doorUser.pushToken = pushToken;
+      doorUser.lastActive = new Date();
+      await doorUser.save();
+    } else {
+      doorUser = new DoorUser({
+        deviceId,
+        pushToken,
+        lastActive: new Date()
+      });
+      await doorUser.save();
+    }
+
+    res.json({ success: true, message: 'Door push token registered' });
+  } catch (err) {
+    console.error('Error in register-push-token:', err);
+    logger.error("POST ESP32:door/register-push-token", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post("/door/send-notification", authenticateUser, async (req, res) => {
+  try {
+    const { title, body, data } = req.body;
+
+    const tickets = await sendDoorPushNotifications(
+      title || 'Door Notification',
+      body || 'Test notification',
+      data || {}
+    );
+
+    res.json({ success: true, tickets });
+  } catch (err) {
+    logger.error("POST ESP32:door/send-notification", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Additional door user management endpoints
+
+router.get("/door/test-database", async (req, res) => {
+  try {
+    const allDoorUsers = await DoorUser.find({});
+    console.log('All door users in database:', allDoorUsers);
+    res.json({
+      success: true,
+      totalUsers: allDoorUsers.length,
+      users: allDoorUsers
+    });
+  } catch (err) {
+    console.error('Error querying door users:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/door/registered-devices", authenticateUser, async (req, res) => {
+  try {
+    const doorUsers = await DoorUser.find({}).select('deviceId lastActive createdAt');
+    res.json({
+      success: true,
+      devices: doorUsers,
+      count: doorUsers.length
+    });
+  } catch (err) {
+    logger.error("GET ESP32:door/registered-devices", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete("/door/remove-device/:deviceId", authenticateUser, async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+
+    const deletedUser = await DoorUser.findOneAndDelete({ deviceId });
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'Device not found' });
+    }
+
+    res.json({ success: true, message: 'Device removed' });
+  } catch (err) {
+    logger.error("DELETE ESP32:door/remove-device", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res) => {
+  try {
+    const daysInactive = req.body.days || 30;
+    const cutoffDate = new Date(Date.now() - (daysInactive * 24 * 60 * 60 * 1000));
+
+    const result = await DoorUser.deleteMany({
+      lastActive: { $lt: cutoffDate }
+    });
+
+    res.json({
+      success: true,
+      message: `Removed ${result.deletedCount} inactive devices`,
+      deletedCount: result.deletedCount
+    });
+  } catch (err) {
+    logger.error("POST ESP32:door/cleanup-inactive-devices", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

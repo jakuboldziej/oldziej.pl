@@ -10,7 +10,8 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { RotateCcw } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
-import Esp32 from '../Esp32';
+import Esp32WLedDarts from '../ESP32/Esp32WLedDarts';
+import Esp32DoorSensor from '../ESP32/Esp32DoorSensor';
 
 function Admin() {
   document.title = "Oldziej | Admin";
@@ -19,18 +20,21 @@ function Admin() {
   const [currentPage, setCurrentPage] = useState("");
   const [currentTable, setCurrentTable] = useState("users");
   const [refreshingData, setRefreshingData] = useState(false);
+  const [currentSubPage, setCurrentSubPage] = useState("");
 
-  const handlePaginationChange = (data) => {
+  const handlePaginationChange = (parsedPage) => {
     const pages = ["auth", "darts", "cloud", "esp32"];
+    const subpages = ["led-darts", "door-sensor"];
     const tables = ["users", "games", "files", "folders"];
 
-    if (pages.includes(data)) {
-      setCurrentPage(data);
-      localStorage.setItem("currentAdminPage", data)
+    if (pages.includes(parsedPage)) {
+      setCurrentPage(parsedPage);
+      localStorage.setItem("currentAdminPage", parsedPage)
       setCurrentTable("users");
-    }
-    else if (tables.includes(data)) {
-      setCurrentTable(data);
+    } else if (tables.includes(parsedPage)) {
+      setCurrentTable(parsedPage);
+    } else if (subpages.includes(parsedPage)) {
+      setCurrentSubPage(parsedPage);
     }
   }
 
@@ -115,7 +119,16 @@ function Admin() {
             </Pagination>
           )}
           {currentPage === "esp32" && (
-            <Esp32 {...componentProps} />
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("led-darts")} isActive={currentSubPage === "led-darts"}>WLED Darts</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePaginationChange("door-sensor")} isActive={currentSubPage === "door-sensor"}>Door sensor</PaginationLink>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </div>
 
@@ -149,6 +162,19 @@ function Admin() {
               )}
               {currentTable === "folders" && (
                 <CloudFoldersTable props={componentProps} />
+              )}
+            </>
+          )}
+        </div>
+
+        <div className='esp32'>
+          {currentPage === "esp32" && (
+            <>
+              {currentSubPage === "led-darts" && (
+                <Esp32WLedDarts {...componentProps} />
+              )}
+              {currentSubPage === "door-sensor" && (
+                <Esp32DoorSensor {...componentProps} />
               )}
             </>
           )}

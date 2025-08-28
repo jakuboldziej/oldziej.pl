@@ -87,6 +87,16 @@ io.on('connection', (socket) => {
 
   // ESP 32 
 
+  // Wifi connection
+
+  socket.on("esp32:connection-info", (data) => {
+    io.emit("esp32:connection-info", data);
+  });
+
+  socket.on("esp32-door:check-wifi-connection", (data) => {
+    io.emit("esp32-door:check-wifi-connection", data);
+  });
+
   // DoorState
 
   socket.on("esp32:checkDoorsState", (data) => {

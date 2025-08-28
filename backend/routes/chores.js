@@ -9,7 +9,7 @@ const { Expo } = require('expo-server-sdk');
 const router = express.Router()
 
 let expo = new Expo({
-  accessToken: process.env.EXPO_ACCESS_TOKEN,
+  accessToken: process.env.EXPO_CHORES_ACCESS_TOKEN,
   useFcmV1: true
 });
 
@@ -24,7 +24,7 @@ const sendPushNotifications = async (userDisplayNames, title, body, data = {}) =
     });
 
     if (choresUsers.length === 0) {
-      console.log('No users with push tokens found');
+      console.warn('No users with push tokens found');
       return;
     }
 
@@ -73,7 +73,7 @@ const sendPushNotifications = async (userDisplayNames, title, body, data = {}) =
     }
 
     if (messages.length === 0) {
-      console.log('No valid push tokens to send to');
+      console.warn('No valid push tokens to send to');
       return;
     }
 

@@ -756,6 +756,8 @@ export const userDeletedAccountEmail = async (data) => {
 
 // ESP32
 
+// WLED
+
 export const getESP32State = async () => {
   const response = await fetch(`${mongodbApiUrl}/esp32/json-state`, {
     method: "GET",
@@ -847,6 +849,55 @@ export const postESP32LeaveGame = async (gameCode) => {
   });
 
   return await response.json();
+}
+
+// Doors
+
+export const checkIfValidationNeeded = async () => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/check-if-validation-needed`);
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in checkIfValidationNeeded:", error);
+    throw error;
+  }
+}
+
+export const getValidationConfig = async () => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/validation-config`, {
+      method: "GET",
+      headers: {
+        "Authorization": Cookies.get("_auth")
+      },
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in getValidationConfig:", error);
+    throw error;
+  }
+}
+
+export const postValidationActive = async (active) => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/set-validation-active`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": Cookies.get("_auth")
+      },
+      body: JSON.stringify({
+        active
+      })
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in getValidationConfig:", error);
+    throw error;
+  }
 }
 
 // Statistics
