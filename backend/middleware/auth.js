@@ -23,6 +23,7 @@ const authenticateUser = async (req, res, next) => {
 
     if (!foundUser) res.status(403).send({ message: "User not authenticated." });
 
+    res.authUser = foundUser;
     next();
   } catch (err) {
     logger.error("Authenticate User", { method: req.method, url: req.url, error: err.message });

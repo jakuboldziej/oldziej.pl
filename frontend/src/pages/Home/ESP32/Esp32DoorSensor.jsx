@@ -1,10 +1,12 @@
-import Loading from '@/components/Home/Loading';
-import { Input } from '@/components/ui/shadcn/input';
-import { Switch } from '@/components/ui/shadcn/switch';
-import { checkIfValidationNeeded, getValidationConfig, postValidationActive } from '@/lib/fetch';
-import { socket } from '@/lib/socketio';
-import { Clock, Power } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { socket } from '@/lib/socketio';
+import { checkIfValidationNeeded, getValidationConfig, postValidationActive, patchValidationConfig, getKeypadStrokes, postKeypadStroke } from '@/lib/fetch';
+import Loading from '@/components/Home/Loading';
+import WiFiInfoCard from '@/components/Home/Esp32/WiFiInfoCard';
+import DoorManagementCard from '@/components/Home/Esp32/DoorManagementCard';
+import DoorInfoCard from '@/components/Home/Esp32/DoorInfoCard';
+import KeypadCard from '@/components/Home/Esp32/KeypadCard';
+import KeypadManagementCard from '@/components/Home/Esp32/KeypadManagementCard';
 
 function Esp32DoorSensor(props) {
   const { refreshingData, setRefreshingData } = props;
@@ -12,10 +14,13 @@ function Esp32DoorSensor(props) {
   const [loading, setLoading] = useState(true);
   const [ESP32State, setESP32State] = useState(null);
   const [ESP32Info, setESP32Info] = useState(null);
+  const [keypadStrokes, setKeypadStrokes] = useState("");
+  const [inputKeypadStokes, setInputKeypadStokes] = useState("");
+  const [validationResult, setValidationResult] = useState(null);
 
   const updateESP32State = (key, value) => {
     setESP32State((prev) => ({ ...prev, [key]: value }));
-  }
+  };
 
   const updateESP32WifiConnection = async (data) => {
     try {
@@ -53,6 +58,21 @@ function Esp32DoorSensor(props) {
     }
   };
 
+  const updateValidationConfig = async (newConfig) => {
+    try {
+      const response = await patchValidationConfig(newConfig);
+
+      if (!response) {
+        throw new Error("Updating validation configuration failed");
+      }
+
+      updateESP32State("validationConfig", response);
+    } catch (error) {
+      console.error(error);
+      await handleESP32ValidationConfig();
+    }
+  };
+
   const checkESP32ValidationState = async () => {
     try {
       const isValidationNeededResp = await checkIfValidationNeeded();
@@ -87,6 +107,51 @@ function Esp32DoorSensor(props) {
     }
   };
 
+  // Keypad
+
+  const handleGetESP32KeypadStrokes = async () => {
+    try {
+      const keypadStrokesResp = await getKeypadStrokes();
+      setKeypadStrokes(keypadStrokesResp);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updateESP32KeypadStrokes = (keyStroke) => {
+    const enterButton = "#";
+    const resetButton = "*";
+    const ABCD = "ABCD";
+
+    if (validationResult) {
+      setValidationResult(null);
+    }
+
+    if (keyStroke === enterButton) {
+      setKeypadStrokes("");
+    } else if (keyStroke === resetButton) {
+      setKeypadStrokes("");
+    } else if (!ABCD.includes(keyStroke)) {
+      setKeypadStrokes((prevCode) => prevCode += keyStroke);
+    }
+  };
+
+  const handleValidationResult = (result) => {
+    setValidationResult(result);
+
+    setTimeout(() => {
+      setValidationResult(null);
+    }, 5000);
+  };
+
+  const handleKeypadPress = async (keyStroke) => {
+    try {
+      await postKeypadStroke(keyStroke);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -96,6 +161,7 @@ function Esp32DoorSensor(props) {
         await checkESP32DoorState();
         await checkESP32ValidationState();
         await handleESP32ValidationConfig();
+        await handleGetESP32KeypadStrokes();
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (err) {
         console.error(err);
@@ -112,15 +178,19 @@ function Esp32DoorSensor(props) {
 
   useEffect(() => {
     socket.on("esp32:connection-info", updateESP32WifiConnection)
-    socket.on('esp32:door-state-changed', updateESP32DoorState);
-    socket.on('esp32:doorState-response', updateESP32DoorState);
-    socket.on('esp32:validation-state-changed', updateESP32ValidationState);
+    socket.on("esp32:door-state-changed", updateESP32DoorState);
+    socket.on("esp32:doorState-response", updateESP32DoorState);
+    socket.on("esp32:validation-state-changed", updateESP32ValidationState);
+    socket.on("esp32:keypad-stroke", updateESP32KeypadStrokes);
+    socket.on("esp32:keypad-validation-result", handleValidationResult);
 
     return () => {
       socket.off("esp32:connection-info", updateESP32WifiConnection)
       socket.off("esp32:door-state-changed", updateESP32DoorState)
       socket.off("esp32:doorState-response", updateESP32DoorState)
       socket.off("esp32:validation-state-changed", updateESP32ValidationState)
+      socket.off("esp32:keypad-stroke", updateESP32KeypadStrokes)
+      socket.off("esp32:keypad-validation-result", handleValidationResult)
     }
   }, []);
 
@@ -132,107 +202,38 @@ function Esp32DoorSensor(props) {
         !ESP32State || !ESP32Info || ESP32State?.message === "fetch failed" ? (
           <span className='text-2xl text-red-500'>ESP32 WLED connection failed.</span>
         ) : (
-          <div className='flex w-full flex-col md:flex-row gap-20 md:gap-0'>
+          <div className='flex w-full flex-col md:flex-row gap-20 md:gap-0 pb-20'>
             <div className='flex flex-col gap-10 items-center w-full md:w-1/2 md:px-20'>
-              <span className='text-4xl text-center'>
-                MANAGE
-              </span>
+              <span className='text-4xl text-center'>MANAGE</span>
 
-              <div className='flex flex-wrap justify-center gap-20'>
-                <div className='h-[100px] flex flex-col items-center justify-between'>
-                  <Power size={50} />
-                  <Switch
-                    checked={ESP32State.validationConfig.isValidationActive}
-                    onCheckedChange={() => updateESP32ValidationActive()}
-                  />
-                </div>
-                <div className='flex flex-col items-center justify-between gap-6'>
-                  <Clock size={50} />
-                  <div className="flex items-center gap-2">
-                    <div>
-                      <label className="text-sm">Start hour</label>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={23}
-                        step={1}
-                        value={ESP32State?.validationConfig?.validationStartHour ?? ''}
-                        onChange={e =>
-                          updateESP32State("validationConfig", {
-                            ...ESP32State.validationConfig,
-                            startHour: Math.max(0, Math.min(23, Number(e.target.value)))
-                          })
-                        }
-                        className="border rounded px-2 py-1 text-center"
-                        placeholder="0-23"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm">End hour</label>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={23}
-                        step={1}
-                        value={ESP32State?.validationConfig?.validationEndHour ?? ''}
-                        onChange={e =>
-                          updateESP32State("validationConfig", {
-                            ...ESP32State.validationConfig,
-                            endHour: Math.max(0, Math.min(23, Number(e.target.value)))
-                          })
-                        }
-                        className="border rounded px-2 py-1 text-center"
-                        placeholder="0-23"
-                      />
-                    </div>
-                  </div>
-                </div>
+              <DoorManagementCard
+                validationConfig={ESP32State.validationConfig}
+                onValidationActiveChange={updateESP32ValidationActive}
+                onConfigChange={updateValidationConfig}
+              />
 
-              </div>
+              <KeypadManagementCard
+                onKeypadPress={handleKeypadPress}
+              />
             </div>
 
             <div className='flex flex-col gap-10 items-center md:border-l-2 w-full md:w-1/2 md:px-20'>
-              <span className='text-4xl text-center'>
-                INFO
-              </span>
+              <span className='text-4xl text-center'>INFO</span>
 
-              <div className='flex flex-col items-center gap-10 w-full'>
-                <span className='text-4xl'>WIFI</span>
+              <WiFiInfoCard ESP32Info={ESP32Info} />
 
-                <div className='flex gap-10 flex-wrap justify-center'>
-                  <div className='h-[100px] flex flex-col items-center justify-between'>
-                    <span className='text-3xl'>IP</span>
-                    <span className='text-xl'>{ESP32Info.ip}</span>
-                  </div>
-                  <div className='h-[100px] flex flex-col items-center justify-between'>
-                    <span className='text-3xl'>RSSI</span>
-                    <span className='text-xl'>{ESP32Info.rssi} dBm</span>
-                  </div>
-                  <div className='h-[100px] flex flex-col items-center justify-between'>
-                    <span className='text-3xl'>Signal</span>
-                    <span className='text-xl'>{ESP32Info.signal} %</span>
-                  </div>
-                </div>
-              </div>
+              <DoorInfoCard
+                doorState={ESP32State.doorsState}
+                isValidationNeeded={ESP32State.isValidationNeeded}
+              />
 
-              <div className='flex flex-col items-center gap-10 w-full'>
-                <span className='text-4xl'>Door</span>
-
-                <div className='flex gap-10 flex-wrap justify-center'>
-                  <div className='h-[100px] flex flex-col items-center justify-between'>
-                    <span className='text-3xl'>Door opened?</span>
-                    <span className='text-xl'>{ESP32State.doorsState === true ? "Yes" : "No"}</span>
-                  </div>
-                  <div className='h-[100px] flex flex-col items-center justify-between'>
-                    <span className='text-3xl'>Verification?</span>
-                    <span className='text-xl'>{ESP32State.isValidationNeeded === true ? "Yes" : "No"}</span>
-                  </div>
-                </div>
-              </div>
+              <KeypadCard
+                keypadStrokes={keypadStrokes}
+                validationResult={validationResult}
+              />
             </div>
           </div>
-        )
-      )}
+        ))}
     </div>
   )
 }

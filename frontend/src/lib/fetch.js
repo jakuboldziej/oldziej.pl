@@ -895,8 +895,69 @@ export const postValidationActive = async (active) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error in getValidationConfig:", error);
+    console.error("Error in postValidationActive:", error);
     throw error;
+  }
+}
+
+export const patchValidationConfig = async (updatedConfig) => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/validation-config`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": Cookies.get("_auth")
+      },
+      body: JSON.stringify({
+        updatedConfig
+      })
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in patchValidationConfig:", error);
+    throw error;
+  }
+}
+
+// Keypad
+
+export const getKeypadStrokes = async () => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/keypad/get-keypad-strokes`, {
+      method: "GET",
+      headers: {
+        "Authorization": Cookies.get("_auth")
+      },
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in getKeypadStrokes:", error);
+    throw error;
+  }
+}
+
+export const postKeypadStroke = async (keyStroke) => {
+  try {
+    const encodedKeyStroke = encodeURIComponent(keyStroke);
+
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/keypad/send-keypad-stroke/${encodedKeyStroke}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": Cookies.get("_auth")
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to send keypad stroke');
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error('Error sending keypad stroke:', err);
+    throw err;
   }
 }
 

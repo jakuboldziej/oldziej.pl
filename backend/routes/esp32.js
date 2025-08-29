@@ -326,7 +326,52 @@ const shouldValidate = () => {
   return isValidationActive || isWithinValidationWindow();
 };
 
-router.post("/door/change-sensor-state/:newState", async (req, res) => {
+const validateCode = async (secretCode, req) => {
+  if (!isValidationPending) {
+    return {
+      success: false,
+      message: "No validation pending"
+    };
+  }
+
+  if (secretCode === process.env.SECRET_CODE) {
+    clearTimeout(validationTimer);
+    validationTimer = null;
+    isValidationPending = false;
+
+    io.emit("esp32:validation-state-changed", isValidationPending);
+
+    await sendDoorPushNotifications(
+      'Weryfikacja udana',
+      'Kod został poprawnie wprowadzony',
+      { doorsUnlocked: true, validation: false, success: true }
+    );
+
+    logger.info("Door validation", {
+      method: req.method,
+      url: req.url,
+      data: { message: "Validation successful" }
+    });
+
+    return {
+      success: true,
+      message: "Validation successful"
+    };
+  } else {
+    logger.warn("Door validation", {
+      method: req.method,
+      url: req.url,
+      data: { message: "Invalid code entered" }
+    });
+
+    return {
+      success: false,
+      message: "Invalid code"
+    };
+  }
+};
+
+router.post("/door/change-sensor-state/:newState", authenticateUser, async (req, res) => {
   try {
     const newState = parseInt(req.params?.newState);
 
@@ -365,6 +410,8 @@ router.post("/door/change-sensor-state/:newState", async (req, res) => {
 });
 
 router.get("/door/validation-config", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   res.json({
     validationStartHour,
     validationEndHour,
@@ -372,7 +419,28 @@ router.get("/door/validation-config", authenticateUser, async (req, res) => {
   });
 });
 
+router.patch("/door/validation-config", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
+  const { updatedConfig } = req.body;
+
+  const newConfig = {
+    isValidationActive,
+    validationStartHour,
+    validationEndHour,
+    ...updatedConfig
+  };
+
+  isValidationActive = newConfig.isValidationActive;
+  validationStartHour = newConfig.validationStartHour;
+  validationEndHour = newConfig.validationEndHour;
+
+  res.json(newConfig);
+});
+
 router.post("/door/set-validation-window", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   const { startHour, endHour } = req.body;
 
   if (
@@ -388,6 +456,8 @@ router.post("/door/set-validation-window", authenticateUser, async (req, res) =>
 });
 
 router.post("/door/set-validation-active", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   const { active } = req.body;
 
   if (typeof active === "boolean") {
@@ -402,19 +472,12 @@ router.post("/door/validate", async (req, res) => {
   try {
     const { secretCode } = req.body;
 
-    if (!isValidationPending) throw new Error("No validation pending")
+    const result = await validateCode(secretCode, req);
 
-    if (secretCode === process.env.SECRET_CODE) {
-      clearTimeout(validationTimer);
-      validationTimer = null;
-      isValidationPending = false;
-
-      io.emit("esp32:validation-state-changed", isValidationPending);
-
-      logger.info("POST ESP32:door/validate", { method: req.method, url: req.url, data: { message: "Validation successfull" } });
-      return res.json({ message: "Validation successful", success: true });
+    if (result.success) {
+      return res.json({ message: result.message, success: true });
     } else {
-      throw new Error("Invalid code");
+      throw new Error(result.message);
     }
   } catch (err) {
     logger.error("POST ESP32:door/validate", { method: req.method, url: req.url, error: err });
@@ -465,6 +528,8 @@ router.post("/door/register-push-token", async (req, res) => {
 });
 
 router.post("/door/send-notification", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   try {
     const { title, body, data } = req.body;
 
@@ -499,6 +564,8 @@ router.get("/door/test-database", async (req, res) => {
 });
 
 router.get("/door/registered-devices", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   try {
     const doorUsers = await DoorUser.find({}).select('deviceId lastActive createdAt');
     res.json({
@@ -513,6 +580,8 @@ router.get("/door/registered-devices", authenticateUser, async (req, res) => {
 });
 
 router.delete("/door/remove-device/:deviceId", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   try {
     const { deviceId } = req.params;
 
@@ -530,6 +599,8 @@ router.delete("/door/remove-device/:deviceId", authenticateUser, async (req, res
 });
 
 router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
   try {
     const daysInactive = req.body.days || 30;
     const cutoffDate = new Date(Date.now() - (daysInactive * 24 * 60 * 60 * 1000));
@@ -546,6 +617,53 @@ router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res)
   } catch (err) {
     logger.error("POST ESP32:door/cleanup-inactive-devices", { method: req.method, url: req.url, error: err.message });
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Keypad handle
+
+let currentCode = "";
+
+router.get("/door/keypad/get-keypad-strokes", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+
+  try {
+    res.json(currentCode);
+  } catch (err) {
+    res.json({ message: err.message });
+  }
+});
+
+router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, async (req, res) => {
+  try {
+    const keyStroke = decodeURIComponent(req.params?.keyStroke);
+
+    const enterButton = "#";
+    const resetButton = "*";
+    const ABCD = "ABCD";
+
+    if (keyStroke === enterButton) {
+      const codeToValidate = currentCode;
+      currentCode = "";
+
+      const result = await validateCode(codeToValidate, req);
+
+      io.emit("esp32:keypad-validation-result", {
+        success: result.success,
+        message: result.message
+      });
+    } else if (keyStroke === resetButton) {
+      currentCode = "";
+    } else if (!ABCD.includes(keyStroke)) {
+      currentCode += keyStroke;
+    }
+
+    io.emit("esp32:keypad-stroke", keyStroke);
+
+    res.json({ currentCode });
+  } catch (err) {
+    logger.error("POST ESP32:door/change-sensor", { method: req.method, url: req.url, error: err.message });
+    res.json({ message: err.message });
   }
 });
 
