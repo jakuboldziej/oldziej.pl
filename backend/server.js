@@ -90,12 +90,14 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'],
 });
 
-const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/darts`
+const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/darts`;
 const dartsConn = mongoose.createConnection(mongoURIDarts);
-const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/ftp`
+const mongoURIFTP = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/ftp`;
 const ftpConn = mongoose.createConnection(mongoURIFTP);
-const mongoURIChores = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/chores`
-const choresConn = mongoose.createConnection(mongoURIChores)
+const mongoURIChores = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/chores`;
+const choresConn = mongoose.createConnection(mongoURIChores);
+const mongoURIESP32 = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/esp32`;
+const esp32Conn = mongoose.createConnection(mongoURIESP32);
 
 dartsConn.on('error', (err) => logger.error(`MongoDB (Darts) connection error: ${err}`));
 dartsConn.once('open', () => logger.info('Connected to Darts Database'));
@@ -103,8 +105,10 @@ ftpConn.on('error', (err) => logger.error(`MongoDB (FTP) connection error: ${err
 ftpConn.once('open', () => logger.info('Connected to Ftp Database'));
 choresConn.on('error', (err) => logger.error(`MongoDB (Chores) connection error: ${err}`));
 choresConn.once('open', () => logger.info('Connected to Chores Database'));
+esp32Conn.on('error', (err) => logger.error(`MongoDB (ESP32) connection error: ${err}`));
+esp32Conn.once('open', () => logger.info('Connected to ESP32 Database'));
 
-module.exports = { dartsConn, ftpConn, mongoURIFTP, choresConn, io };
+module.exports = { dartsConn, ftpConn, mongoURIFTP, choresConn, esp32Conn, io };
 
 require("./socket.io/listeners");
 

@@ -4,7 +4,9 @@ const jwt = require("jsonwebtoken");
 const { io } = require("../server");
 const { logger } = require("../middleware/logging");
 const { Expo } = require('expo-server-sdk');
-const DoorUser = require('../models/door/doorUser');
+const DoorUser = require('../models/esp32/door/doorUser');
+const GeoAuthorizedDevice = require('../models/esp32/door/geoAuthorizedDevices');
+const ESP32Config = require('../models/esp32/esp32Config');
 const router = express.Router();
 
 require('dotenv').config();
@@ -304,29 +306,82 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
 
 let validationTimer = null;
 let isValidationPending = false;
+let validationAttempts = 0;
+const MAX_VALIDATION_ATTEMPTS = 3;
 
-let validationStartHour = 22; // 22:00
-let validationEndHour = 5;   // 5:00
-let isValidationActive = true;
-const validationTime = 30000; // default - 30000 (30 seconds)
+const validationTime = 3000; // default - 30000 (30 seconds)
 
-const isWithinValidationWindow = () => {
-  const now = new Date();
-  const hour = now.getHours();
-  if (validationStartHour < validationEndHour) {
-    // e.g. 8 to 17
-    return hour >= validationStartHour && hour < validationEndHour;
-  } else {
-    // e.g. 22 to 5 (overnight)
-    return hour >= validationStartHour || hour < validationEndHour;
+const initializeDoorConfiguration = async () => {
+  try {
+    const doorConfig = await ESP32Config.findOne({ name: 'ESP32-door-sensor' });
+
+    if (!doorConfig) {
+      await ESP32Config.create({
+        name: 'ESP32-door-sensor',
+        config: {
+          isValidationActive: true,
+          validationStartHour: 22,
+          validationEndHour: 5
+        }
+      });
+
+      logger.info('Created default door configuration in database');
+    }
+  } catch (error) {
+    logger.error('Error initializing door configuration', { error: error.message });
   }
 };
 
-const shouldValidate = () => {
-  return isValidationActive || isWithinValidationWindow();
+// Initialize configuration when server starts
+initializeDoorConfiguration();
+
+const getDoorConfig = async () => {
+  try {
+    const doorConfig = await ESP32Config.findOne({ name: 'ESP32-door-sensor' });
+    if (!doorConfig || !doorConfig.config) {
+      return {
+        isValidationActive: true,
+        validationStartHour: 22,
+        validationEndHour: 5
+      };
+    }
+    return doorConfig.config;
+  } catch (error) {
+    logger.error('Error getting door configuration', { error: error.message });
+    return {
+      isValidationActive: true,
+      validationStartHour: 22,
+      validationEndHour: 5
+    };
+  }
+};
+
+const isWithinValidationWindow = async () => {
+  const config = await getDoorConfig();
+
+  if (config.validationStartHour === 0 && config.validationEndHour === 0) return true;
+
+  const now = new Date();
+  const hour = now.getHours();
+  if (config.validationStartHour < config.validationEndHour) {
+    // e.g. 8 to 17
+    return hour >= config.validationStartHour && hour < config.validationEndHour;
+  } else {
+    // e.g. 22 to 5 (overnight)
+    return hour >= config.validationStartHour || hour < config.validationEndHour;
+  }
+};
+
+const shouldValidate = async () => {
+  const config = await getDoorConfig();
+  if (config.isValidationActive === false) return false;
+
+  return await isWithinValidationWindow();
 };
 
 const validateCode = async (secretCode, req) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
   if (!isValidationPending) {
     return {
       success: false,
@@ -338,6 +393,7 @@ const validateCode = async (secretCode, req) => {
     clearTimeout(validationTimer);
     validationTimer = null;
     isValidationPending = false;
+    validationAttempts = 0;
 
     io.emit("esp32:validation-state-changed", isValidationPending);
 
@@ -350,6 +406,7 @@ const validateCode = async (secretCode, req) => {
     logger.info("Door validation", {
       method: req.method,
       url: req.url,
+      ip,
       data: { message: "Validation successful" }
     });
 
@@ -358,15 +415,55 @@ const validateCode = async (secretCode, req) => {
       message: "Validation successful"
     };
   } else {
+    validationAttempts++;
+
+    if (validationAttempts >= MAX_VALIDATION_ATTEMPTS) {
+      clearTimeout(validationTimer);
+      validationTimer = null;
+      isValidationPending = false;
+      validationAttempts = 0;
+
+      io.emit("esp32:validation-state-changed", isValidationPending);
+
+      await sendDoorPushNotifications(
+        'Weryfikacja nieudana',
+        'Przekroczono maksymalną liczbę prób',
+        { doorsUnlocked: false, validation: false, maxAttempts: true }
+      );
+
+      logger.warn("Door validation", {
+        method: req.method,
+        url: req.url,
+        ip,
+        data: { message: "Max validation attempts reached", attempts: MAX_VALIDATION_ATTEMPTS }
+      });
+
+      return {
+        success: false,
+        message: "Max attempts reached",
+        maxAttemptsReached: true
+      };
+    }
+
+    const attemptsLeft = MAX_VALIDATION_ATTEMPTS - validationAttempts;
+
     logger.warn("Door validation", {
       method: req.method,
       url: req.url,
-      data: { message: "Invalid code entered" }
+      ip,
+      data: { message: "Invalid code entered", attemptNumber: validationAttempts, attemptsLeft }
+    });
+
+    await client.calls.create({
+      url: 'http://yourserver.com/twiml-response', // TwiML XML response
+      to: '+48XXXXXXXXX',
+      from: '+1XXXXXXXXXX'
     });
 
     return {
       success: false,
-      message: "Invalid code"
+      message: `Invalid code. ${attemptsLeft} attempts left`,
+      attemptsLeft: attemptsLeft
     };
   }
 };
@@ -375,9 +472,10 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
   try {
     const newState = parseInt(req.params?.newState);
 
-    if (newState === 1 && shouldValidate()) {
+    if (newState === 1 && await shouldValidate()) {
       if (!isValidationPending) {
         isValidationPending = true;
+        validationAttempts = 0;
         io.emit("esp32:validation-state-changed", isValidationPending);
 
         await sendDoorPushNotifications(
@@ -396,6 +494,7 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
             );
           }
           isValidationPending = false;
+          validationAttempts = 0;
           io.emit("esp32:validation-state-changed", isValidationPending);
         }, validationTime);
       }
@@ -410,78 +509,221 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
 });
 
 router.get("/door/validation-config", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
-  res.json({
-    validationStartHour,
-    validationEndHour,
-    isValidationActive
-  });
+  try {
+    const config = await getDoorConfig();
+    res.json(config);
+  } catch (error) {
+    logger.error('Error getting door validation config', { error: error.message });
+    res.status(500).json({ message: "Error fetching configuration" });
+  }
 });
 
 router.patch("/door/validation-config", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
-  const { updatedConfig } = req.body;
+  try {
+    const { updatedConfig } = req.body;
+    const currentConfig = await getDoorConfig();
 
-  const newConfig = {
-    isValidationActive,
-    validationStartHour,
-    validationEndHour,
-    ...updatedConfig
-  };
+    const newConfig = {
+      ...currentConfig,
+      ...updatedConfig
+    };
 
-  isValidationActive = newConfig.isValidationActive;
-  validationStartHour = newConfig.validationStartHour;
-  validationEndHour = newConfig.validationEndHour;
+    const result = await ESP32Config.findOneAndUpdate(
+      { name: 'ESP32-door-sensor' },
+      {
+        name: 'ESP32-door-sensor',
+        config: newConfig
+      },
+      { upsert: true, new: true }
+    );
 
-  res.json(newConfig);
+    logger.info('Door configuration updated', newConfig);
+    res.json(result.config);
+  } catch (error) {
+    logger.error('Error updating door validation config', { error: error.message });
+    res.status(500).json({ message: "Error updating configuration" });
+  }
 });
 
 router.post("/door/set-validation-window", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
-  const { startHour, endHour } = req.body;
+  try {
+    const { startHour, endHour } = req.body;
 
-  if (
-    typeof startHour === "number" && startHour >= 0 && startHour < 24 &&
-    typeof endHour === "number" && endHour >= 0 && endHour < 24
-  ) {
-    validationStartHour = startHour;
-    validationEndHour = endHour;
-    res.json({ success: true, validationStartHour, validationEndHour });
-  } else {
-    res.status(400).json({ success: false, message: "Invalid hours" });
+    if (
+      typeof startHour === "number" && startHour >= 0 && startHour < 24 &&
+      typeof endHour === "number" && endHour >= 0 && endHour < 24
+    ) {
+      const currentConfig = await getDoorConfig();
+
+      const updatedConfig = await ESP32Config.findOneAndUpdate(
+        { name: 'ESP32-door-sensor' },
+        {
+          name: 'ESP32-door-sensor',
+          config: {
+            ...currentConfig,
+            validationStartHour: startHour,
+            validationEndHour: endHour
+          }
+        },
+        { upsert: true, new: true }
+      );
+
+      logger.info('Validation window updated', {
+        validationStartHour: updatedConfig.config.validationStartHour,
+        validationEndHour: updatedConfig.config.validationEndHour
+      });
+
+      res.json({
+        success: true,
+        validationStartHour: updatedConfig.config.validationStartHour,
+        validationEndHour: updatedConfig.config.validationEndHour
+      });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid hours" });
+    }
+  } catch (error) {
+    logger.error('Error setting validation window', { error: error.message });
+    res.status(500).json({ success: false, message: "Error updating configuration" });
   }
 });
 
 router.post("/door/set-validation-active", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
-  const { active } = req.body;
+  try {
+    const { active } = req.body;
 
-  if (typeof active === "boolean") {
-    isValidationActive = active;
-    res.json({ success: true, isValidationActive });
-  } else {
-    res.status(400).json({ success: false, message: "Invalid value" });
+    if (typeof active === "boolean") {
+      const currentConfig = await getDoorConfig();
+
+      const updatedConfig = await ESP32Config.findOneAndUpdate(
+        { name: 'ESP32-door-sensor' },
+        {
+          name: 'ESP32-door-sensor',
+          config: {
+            ...currentConfig,
+            isValidationActive: active
+          }
+        },
+        { upsert: true, new: true }
+      );
+
+      logger.info('Validation active state updated', {
+        isValidationActive: updatedConfig.config.isValidationActive
+      });
+
+      res.json({
+        success: true,
+        isValidationActive: updatedConfig.config.isValidationActive
+      });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid value" });
+    }
+  } catch (error) {
+    logger.error('Error setting validation active state', { error: error.message });
+    res.status(500).json({ success: false, message: "Error updating configuration" });
   }
 });
 
 router.post("/door/validate", async (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
   try {
     const { secretCode } = req.body;
 
     const result = await validateCode(secretCode, req);
 
     if (result.success) {
-      return res.json({ message: result.message, success: true });
+      return res.json({
+        message: result.message,
+        success: true
+      });
     } else {
-      throw new Error(result.message);
+      return res.json({
+        message: result.message,
+        success: false,
+        attemptsLeft: result.attemptsLeft,
+        maxAttemptsReached: result.maxAttemptsReached
+      });
     }
   } catch (err) {
-    logger.error("POST ESP32:door/validate", { method: req.method, url: req.url, error: err });
+    logger.error("POST ESP32:door/validate", { method: req.method, url: req.url, ip, error: err });
     res.status(400).json({ message: err.message, success: false });
+  }
+});
+
+router.post("/door/validate-with-geo", async (req, res) => {
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+  try {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Device ID is required'
+      });
+    }
+
+    if (!isValidationPending) {
+      return res.json({
+        success: false,
+        message: "No validation pending"
+      });
+    }
+
+    const device = await GeoAuthorizedDevice.findOne({ deviceId });
+    if (!device || !device.enabled) {
+      logger.warn("POST ESP32:door/validate-with-geo", {
+        method: req.method,
+        url: req.url,
+        ip,
+        data: { message: "Unauthorized device attempted geo validation", deviceId }
+      });
+
+      return res.status(403).json({
+        success: false,
+        message: "Device not authorized for geo validation"
+      });
+    }
+
+    device.lastActive = new Date();
+    await device.save();
+
+    clearTimeout(validationTimer);
+    validationTimer = null;
+    isValidationPending = false;
+    validationAttempts = 0;
+
+    io.emit("esp32:validation-state-changed", isValidationPending);
+
+    await sendDoorPushNotifications(
+      'Weryfikacja udana',
+      'Kod został automatycznie zweryfikowany przez geolokalizację',
+      { doorsUnlocked: true, validation: false, success: true, viaGeolocation: true }
+    );
+
+    logger.info("Door validation via geolocation", {
+      method: req.method,
+      url: req.url,
+      ip,
+      deviceId,
+      data: { message: "Validation successful via geolocation" }
+    });
+
+    return res.json({
+      success: true,
+      message: "Validation successful via geolocation"
+    });
+  } catch (err) {
+    logger.error("POST ESP32:door/validate-with-geo", { method: req.method, url: req.url, ip, error: err });
+    res.status(500).json({ message: err.message, success: false });
   }
 });
 
@@ -490,6 +732,108 @@ router.get("/door/check-if-validation-needed", async (req, res) => {
     return res.json(isValidationPending);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+router.post("/door/check-geo-authorization", async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({
+        authorized: false,
+        message: 'Device ID is required'
+      });
+    }
+
+    const device = await GeoAuthorizedDevice.findOne({ deviceId });
+
+    if (!device) {
+      return res.json({
+        authorized: false,
+        message: 'To urządzenie nie jest autoryzowane'
+      });
+    }
+
+    if (!device.enabled) {
+      return res.json({
+        authorized: false,
+        message: 'Autoryzacja dla tego urządzenia została wyłączona'
+      });
+    }
+
+    device.lastActive = new Date();
+    await device.save();
+
+    return res.json({
+      authorized: true,
+      message: 'Urządzenie autoryzowane'
+    });
+
+  } catch (err) {
+    logger.error("POST ESP32:door/check-geo-authorization", {
+      method: req.method,
+      url: req.url,
+      error: err.message
+    });
+    res.status(500).json({
+      authorized: false,
+      message: 'Wystąpił błąd podczas sprawdzania autoryzacji'
+    });
+  }
+});
+
+router.post("/door/unlock-via-geo", async (req, res) => {
+  try {
+    const { deviceId } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Device ID is required'
+      });
+    }
+
+    const device = await GeoAuthorizedDevice.findOne({ deviceId });
+
+    if (!device || !device.enabled) {
+      return res.status(403).json({
+        success: false,
+        message: 'Urządzenie nie jest autoryzowane'
+      });
+    }
+
+    device.lastActive = new Date();
+    await device.save();
+
+    io.emit("esp32:door-state-changed", 1);
+
+    await sendDoorPushNotifications(
+      'Drzwi odblokowane',
+      'Drzwi zostały automatycznie odblokowane przez geolokalizację',
+      { doorsUnlocked: true, viaGeolocation: true }
+    );
+
+    logger.info("Door unlocked via geolocation", {
+      deviceId,
+      timestamp: new Date()
+    });
+
+    return res.json({
+      success: true,
+      message: 'Drzwi odblokowane pomyślnie'
+    });
+
+  } catch (err) {
+    logger.error("POST ESP32:door/unlock-via-geo", {
+      method: req.method,
+      url: req.url,
+      error: err.message
+    });
+    res.status(500).json({
+      success: false,
+      message: 'Wystąpił błąd podczas odblokowywania drzwi'
+    });
   }
 });
 
@@ -548,7 +892,7 @@ router.post("/door/send-notification", authenticateUser, async (req, res) => {
 
 // Additional door user management endpoints
 
-router.get("/door/test-database", async (req, res) => {
+router.get("/door/test-database", authenticateUser, async (req, res) => {
   try {
     const allDoorUsers = await DoorUser.find({});
     console.log('All door users in database:', allDoorUsers);
@@ -620,6 +964,125 @@ router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res)
   }
 });
 
+router.get("/door/geo-authorized-devices", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+
+  try {
+    const devices = await GeoAuthorizedDevice.find({});
+    res.json({
+      success: true,
+      devices,
+      count: devices.length
+    });
+  } catch (err) {
+    logger.error("GET ESP32:door/geo-authorized-devices", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post("/door/add-geo-authorized-device", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+
+  try {
+    const { deviceId, description } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({ message: "Device ID is required" });
+    }
+
+    let device = await GeoAuthorizedDevice.findOne({ deviceId });
+
+    if (device) {
+      device.enabled = true;
+      device.description = description || device.description;
+      device.lastActive = new Date();
+      await device.save();
+
+      return res.json({
+        success: true,
+        message: 'Device authorization updated',
+        device
+      });
+    }
+
+    device = new GeoAuthorizedDevice({
+      deviceId,
+      description: description || '',
+      enabled: true,
+      createdAt: new Date(),
+      lastActive: new Date()
+    });
+
+    await device.save();
+
+    res.json({
+      success: true,
+      message: 'Device added to authorized list',
+      device
+    });
+  } catch (err) {
+    logger.error("POST ESP32:door/add-geo-authorized-device", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.patch("/door/update-geo-authorized-device/:deviceId", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+
+  try {
+    const { deviceId } = req.params;
+    const { enabled, description } = req.body;
+
+    const device = await GeoAuthorizedDevice.findOne({ deviceId });
+
+    if (!device) {
+      return res.status(404).json({ message: 'Device not found' });
+    }
+
+    if (typeof enabled === 'boolean') {
+      device.enabled = enabled;
+    }
+
+    if (description) {
+      device.description = description;
+    }
+
+    device.lastActive = new Date();
+    await device.save();
+
+    res.json({
+      success: true,
+      message: 'Device authorization updated',
+      device
+    });
+  } catch (err) {
+    logger.error("PATCH ESP32:door/update-geo-authorized-device", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete("/door/remove-geo-authorized-device/:deviceId", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+
+  try {
+    const { deviceId } = req.params;
+
+    const result = await GeoAuthorizedDevice.findOneAndDelete({ deviceId });
+
+    if (!result) {
+      return res.status(404).json({ message: 'Device not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Device removed from authorized list'
+    });
+  } catch (err) {
+    logger.error("DELETE ESP32:door/remove-geo-authorized-device", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Keypad handle
 
 let currentCode = "";
@@ -650,7 +1113,9 @@ router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, asyn
 
       io.emit("esp32:keypad-validation-result", {
         success: result.success,
-        message: result.message
+        message: result.message,
+        attemptsLeft: result.attemptsLeft,
+        maxAttemptsReached: result.maxAttemptsReached
       });
     } else if (keyStroke === resetButton) {
       currentCode = "";
@@ -662,7 +1127,7 @@ router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, asyn
 
     res.json({ currentCode });
   } catch (err) {
-    logger.error("POST ESP32:door/change-sensor", { method: req.method, url: req.url, error: err.message });
+    logger.error("POST ESP32:door/send-keypad-stroke", { method: req.method, url: req.url, error: err.message });
     res.json({ message: err.message });
   }
 });

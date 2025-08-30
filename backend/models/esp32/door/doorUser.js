@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { choresConn } = require("../../server");
+const { esp32Conn } = require("../../../server");
 
 const DoorUserSchema = new mongoose.Schema({
   deviceId: {
@@ -19,4 +19,4 @@ const DoorUserSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = choresConn.model("DoorUser", DoorUserSchema);
+module.exports = esp32Conn.model("DoorUser", DoorUserSchema);

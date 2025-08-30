@@ -19,6 +19,9 @@ function KeypadManagementCard({ onKeypadPress }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       const key = event.key;
+      const target = event.target;
+
+      if (target.tagName === 'INPUT') return;
 
       if (/^[0-9*#]$/.test(key)) {
         handleKeyClick(key);

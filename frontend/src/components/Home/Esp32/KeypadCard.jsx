@@ -20,6 +20,18 @@ function KeypadCard({ keypadStrokes, validationResult }) {
               {validationResult.success ? 'Success!' : 'Failed!'}
             </span>
             <span className='text-sm mt-1'>{validationResult.message}</span>
+
+            {!validationResult.success && validationResult.attemptsLeft > 0 && (
+              <span className='text-sm mt-2 font-semibold'>
+                {validationResult.attemptsLeft} {validationResult.attemptsLeft === 1 ? 'attempt' : 'attempts'} remaining
+              </span>
+            )}
+
+            {validationResult.maxAttemptsReached && (
+              <span className='text-sm mt-2 font-semibold'>
+                Maximum attempts reached
+              </span>
+            )}
           </div>
         )}
       </div>
