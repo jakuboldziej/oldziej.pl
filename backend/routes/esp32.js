@@ -8,8 +8,12 @@ const DoorUser = require('../models/esp32/door/doorUser');
 const GeoAuthorizedDevice = require('../models/esp32/door/geoAuthorizedDevices');
 const ESP32Config = require('../models/esp32/esp32Config');
 const router = express.Router();
+const TelegramBot = require("node-telegram-bot-api");
 
 require('dotenv').config();
+
+const environment = process.env.NODE_ENV || "production";
+const domain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
 
 const wledDomain = process.env.WLED_DOMAIN;
 
@@ -45,7 +49,7 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
         continue;
       }
 
-      const soundName = isAlarmOrValidation ? 'nuclear_alarm.mp3' : 'default';
+      const soundName = isAlarmOrValidation ? 'nuclear_alarm' : 'default';
 
       messages.push({
         to: doorUser.pushToken,
@@ -59,26 +63,17 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
         channelId: channelId,
         android: {
           channelId: channelId,
-          sound: isAlarmOrValidation ? 'nuclear_alarm.mp3' : 'default',
+          sound: soundName,
           priority: 'max',
           sticky: true,
+          color: isAlarmOrValidation ? '#FF0000' : '#FF231F7C',
           vibrate: isAlarmOrValidation
             ? [0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000]
             : [0, 500, 250, 500, 250, 500],
-          color: isAlarmOrValidation ? '#FF0000' : '#FF231F7C',
           style: {
             type: 'bigText',
             text: body
           }
-        },
-        ios: {
-          sound: soundName,
-          badge: 1,
-          priority: 'high',
-          subtitle: isAlarmOrValidation ? 'ALARM SYSTEMOWY' : 'DoorApp',
-          _displayInForeground: true,
-          interruptionLevel: isAlarmOrValidation ? 'critical' : 'active',
-          relevanceScore: 1.0
         }
       });
     }
@@ -313,6 +308,72 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
   }
 });
 
+// Telegram bot
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+let telegramBot = null;
+
+if (TELEGRAM_BOT_TOKEN) {
+  telegramBot = new TelegramBot(TELEGRAM_BOT_TOKEN);
+
+  if (environment === "production" && domain && domain.startsWith('https://')) {
+    telegramBot.setWebHook(`${domain}/bot${TELEGRAM_BOT_TOKEN}`)
+      .then(() => {
+        console.log('Telegram webhook set successfully');
+      })
+      .catch((error) => {
+        console.error('Error setting Telegram webhook:', error.message);
+      });
+  } else {
+    if (environment !== "production") {
+      telegramBot.startPolling()
+        .then(() => {
+          console.log('Telegram bot polling started for development');
+        })
+        .catch((error) => {
+          console.error('Error starting Telegram polling:', error.message);
+        });
+    }
+  }
+}
+
+router.post(`/bot${TELEGRAM_BOT_TOKEN}`, async (req, res) => {
+  if (!telegramBot) {
+    return res.status(400).json({ error: 'Telegram bot not configured' });
+  }
+
+  try {
+    telegramBot.processUpdate(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error processing Telegram webhook:', error);
+    res.status(500).json({ error: 'Error processing webhook' });
+  }
+});
+
+const sendTelegramNotification = async (message, options = {}) => {
+  if (!telegramBot || !TELEGRAM_CHAT_ID) {
+    console.warn('Telegram bot or chat ID not configured');
+    return false;
+  }
+
+  try {
+    const defaultOptions = {
+      parse_mode: 'Markdown',
+      disable_notification: false,
+      ...options
+    };
+
+    await telegramBot.sendMessage(TELEGRAM_CHAT_ID, message, defaultOptions);
+    return true;
+  } catch (error) {
+    console.error('Error sending Telegram notification:', error.message);
+    return false;
+  }
+};
+
 // Door
 
 let validationTimer = null;
@@ -320,7 +381,7 @@ let isValidationPending = false;
 let validationAttempts = 0;
 const MAX_VALIDATION_ATTEMPTS = 3;
 
-const validationTime = 3000; // default - 30000 (30 seconds)
+const validationTime = 30000; // default - 30000 (30 seconds)
 
 const initializeDoorConfiguration = async () => {
   try {
@@ -414,12 +475,23 @@ const validateCode = async (secretCode, req) => {
       { doorsUnlocked: true, validation: false, success: true }
     );
 
+    await sendTelegramNotification(
+      `✅ *WERYFIKACJA UDANA* ✅\n\n` +
+      `🔐 *Kod został poprawnie wprowadzony*\n\n` +
+      `📍 *Lokalizacja:* Główne wejście\n` +
+      `⏰ *Czas:* ${new Date().toLocaleString('pl-PL')}\n` +
+      `🌐 *IP:* ${ip}\n\n` +
+      `✅ *Status:* Dostęp autoryzowany`
+    );
+
     logger.info("Door validation", {
       method: req.method,
       url: req.url,
       ip,
       data: { message: "Validation successful" }
     });
+
+    io.emit("esp32:validation-response", { success: true });
 
     return {
       success: true,
@@ -442,12 +514,24 @@ const validateCode = async (secretCode, req) => {
         { doorsUnlocked: false, validation: false, maxAttempts: true }
       );
 
+      await sendTelegramNotification(
+        `🚨 *ALARM BEZPIECZEŃSTWA* 🚨\n\n` +
+        `❌ *Weryfikacja nieudana - Przekroczono maksymalną liczbę prób*\n\n` +
+        `📍 *Lokalizacja:* Główne wejście\n` +
+        `⏰ *Czas:* ${new Date().toLocaleString('pl-PL')}\n` +
+        `🔢 *Próby:* ${MAX_VALIDATION_ATTEMPTS}/${MAX_VALIDATION_ATTEMPTS}\n` +
+        `🌐 *IP:* ${ip}\n\n` +
+        `⚠️ *Status:* Dostęp zablokowany`
+      );
+
       logger.warn("Door validation", {
         method: req.method,
         url: req.url,
         ip,
         data: { message: "Max validation attempts reached", attempts: MAX_VALIDATION_ATTEMPTS }
       });
+
+      io.emit("esp32:validation-response", { success: false });
 
       return {
         success: false,
@@ -458,12 +542,24 @@ const validateCode = async (secretCode, req) => {
 
     const attemptsLeft = MAX_VALIDATION_ATTEMPTS - validationAttempts;
 
+    await sendTelegramNotification(
+      `⚠️ *Nieprawidłowy kod dostępu* ⚠️\n\n` +
+      `📍 *Lokalizacja:* Główne wejście\n` +
+      `⏰ *Czas:* ${new Date().toLocaleString('pl-PL')}\n` +
+      `🔢 *Próba:* ${validationAttempts}/${MAX_VALIDATION_ATTEMPTS}\n` +
+      `⏳ *Pozostało prób:* ${attemptsLeft}\n` +
+      `🌐 *IP:* ${ip}\n\n` +
+      `${attemptsLeft === 1 ? '🚨 *OSTATNIA PRÓBA!*' : '⚠️ *Uwaga: Nieprawidłowy kod*'}`
+    );
+
     logger.warn("Door validation", {
       method: req.method,
       url: req.url,
       ip,
       data: { message: "Invalid code entered", attemptNumber: validationAttempts, attemptsLeft }
     });
+
+    io.emit("esp32:validation-response", { success: false });
 
     return {
       success: false,
@@ -490,14 +586,36 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
           true
         );
 
-        validationTimer = setTimeout(() => {
+        await sendTelegramNotification(
+          `🚪 *DRZWI OTWARTE* 🚪\n\n` +
+          `⚠️ *Wymagana weryfikacja kodu!*\n\n` +
+          `📍 *Lokalizacja:* Główne wejście\n` +
+          `⏰ *Czas:* ${new Date().toLocaleString('pl-PL')}\n` +
+          `⏳ *Czas na weryfikację:* ${validationTime / 1000}s\n` +
+          `🔐 *Status:* Oczekiwanie na kod\n\n` +
+          `🚨 *Natychmiastowa uwaga wymagana!*`
+        );
+
+        validationTimer = setTimeout(async () => {
           if (isValidationPending) {
             logger.warn("POST ESP32:door/change-sensor", { method: req.method, url: req.url, data: { message: "Validation failed", isValidationPending } });
-            sendDoorPushNotifications(
+            io.emit("esp32:validation-response", { success: false });
+
+            await sendDoorPushNotifications(
               'Timeout weryfikacji',
               'Nie udało się zweryfikować kodu w wyznaczonym czasie! UWAGA: Możliwe zagrożenie bezpieczeństwa!',
               { doorsUnlocked: false, validation: false, timeout: true, alert: true },
               true
+            );
+
+            await sendTelegramNotification(
+              `🔥 *KRYTYCZNY ALARM BEZPIECZEŃSTWA* 🔥\n\n` +
+              `⏰ *TIMEOUT WERYFIKACJI*\n\n` +
+              `📍 *Lokalizacja:* Główne wejście\n` +
+              `⏰ *Czas:* ${new Date().toLocaleString('pl-PL')}\n` +
+              `⏳ *Czas weryfikacji:* ${validationTime / 1000}s\n` +
+              `🚨 *Status:* Brak weryfikacji w wyznaczonym czasie\n\n` +
+              `⚠️ *MOŻLIWE ZAGROŻENIE BEZPIECZEŃSTWA!*\n`
             );
           }
           isValidationPending = false;
@@ -516,7 +634,7 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
 });
 
 router.get("/door/validation-config", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const config = await getDoorConfig();
@@ -528,7 +646,7 @@ router.get("/door/validation-config", authenticateUser, async (req, res) => {
 });
 
 router.patch("/door/validation-config", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { updatedConfig } = req.body;
@@ -557,7 +675,7 @@ router.patch("/door/validation-config", authenticateUser, async (req, res) => {
 });
 
 router.post("/door/set-validation-window", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { startHour, endHour } = req.body;
@@ -601,7 +719,7 @@ router.post("/door/set-validation-window", authenticateUser, async (req, res) =>
 });
 
 router.post("/door/set-validation-active", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { active } = req.body;
@@ -723,6 +841,8 @@ router.post("/door/validate-with-geo", async (req, res) => {
       deviceId,
       data: { message: "Validation successful via geolocation" }
     });
+
+    io.emit("esp32:validation-response", { success: true });
 
     return res.json({
       success: true,
@@ -882,12 +1002,13 @@ router.post("/door/send-notification", authenticateUser, async (req, res) => {
   if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
 
   try {
-    const { title, body, data } = req.body;
+    const { title, body, data, isCritical } = req.body;
 
     const tickets = await sendDoorPushNotifications(
       title || 'Door Notification',
       body || 'Test notification',
-      data || {}
+      data || {},
+      isCritical || false
     );
 
     res.json({ success: true, tickets });
@@ -902,7 +1023,6 @@ router.post("/door/send-notification", authenticateUser, async (req, res) => {
 router.get("/door/test-database", authenticateUser, async (req, res) => {
   try {
     const allDoorUsers = await DoorUser.find({});
-    console.log('All door users in database:', allDoorUsers);
     res.json({
       success: true,
       totalUsers: allDoorUsers.length,
@@ -972,7 +1092,7 @@ router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res)
 });
 
 router.get("/door/geo-authorized-devices", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const devices = await GeoAuthorizedDevice.find({});
@@ -988,7 +1108,7 @@ router.get("/door/geo-authorized-devices", authenticateUser, async (req, res) =>
 });
 
 router.post("/door/add-geo-authorized-device", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { deviceId, description } = req.body;
@@ -1034,7 +1154,7 @@ router.post("/door/add-geo-authorized-device", authenticateUser, async (req, res
 });
 
 router.patch("/door/update-geo-authorized-device/:deviceId", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { deviceId } = req.params;
@@ -1069,7 +1189,7 @@ router.patch("/door/update-geo-authorized-device/:deviceId", authenticateUser, a
 });
 
 router.delete("/door/remove-geo-authorized-device/:deviceId", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+  if (!res.authUser || res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { deviceId } = req.params;
@@ -1136,6 +1256,68 @@ router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, asyn
   } catch (err) {
     logger.error("POST ESP32:door/send-keypad-stroke", { method: req.method, url: req.url, error: err.message });
     res.json({ message: err.message });
+  }
+});
+
+router.post("/door/trigger-alarm", authenticateUser, async (req, res) => {
+  try {
+    const { eventType, location = "Główne wejście", message, isCritical = true } = req.body;
+
+    if (!eventType) {
+      return res.status(400).json({
+        success: false,
+        message: "eventType is required"
+      });
+    }
+
+    const eventTitles = {
+      unauthorized_access: "Nieautoryzowany dostęp",
+      forced_entry: "Próba włamania",
+      door_left_open: "Drzwi otwarte",
+      system_breach: "Naruszenie systemu"
+    };
+
+    const title = eventTitles[eventType] || "Alarm bezpieczeństwa";
+    const alarmMessage = message || `${title} - ${location}`;
+
+    // Send push notification with alarm flag
+    await sendDoorPushNotifications(
+      title,
+      alarmMessage,
+      {
+        alarm: true,
+        critical: isCritical,
+        eventType,
+        location,
+        timestamp: new Date().toISOString()
+      },
+      isCritical
+    );
+
+    logger.info("Door alarm triggered", {
+      eventType,
+      location,
+      isCritical,
+      user: req.user?.username
+    });
+
+    res.json({
+      success: true,
+      message: "Alarm triggered successfully",
+      eventType,
+      location
+    });
+
+  } catch (err) {
+    logger.error("POST ESP32:door/trigger-alarm", {
+      method: req.method,
+      url: req.url,
+      error: err.message
+    });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
