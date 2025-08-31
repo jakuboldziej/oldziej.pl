@@ -1,4 +1,3 @@
-import React from "react";
 import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Link, Section } from "@react-email/components";
 
 require('dotenv').config();

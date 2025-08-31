@@ -20,7 +20,7 @@ let doorExpo = new Expo({
   useFcmV1: true
 });
 
-const sendDoorPushNotifications = async (title, body, data = {}) => {
+const sendDoorPushNotifications = async (title, body, data = {}, isCritical = false) => {
   try {
     const doorUsers = await DoorUser.find({
       pushToken: { $ne: null, $exists: true }
@@ -31,6 +31,13 @@ const sendDoorPushNotifications = async (title, body, data = {}) => {
       return;
     }
 
+    const isAlarmOrValidation = data.validation || data.security || data.alert || isCritical;
+    const channelId = isAlarmOrValidation ? 'criticalAlerts' : 'myNotificationChannel';
+
+    if (isAlarmOrValidation && !title.includes('⚠️')) {
+      title = `⚠️ ${title} ⚠️`;
+    }
+
     let messages = [];
     for (let doorUser of doorUsers) {
       if (!Expo.isExpoPushToken(doorUser.pushToken)) {
@@ -38,35 +45,39 @@ const sendDoorPushNotifications = async (title, body, data = {}) => {
         continue;
       }
 
+      const soundName = isAlarmOrValidation ? 'nuclear_alarm.mp3' : 'default';
+
       messages.push({
         to: doorUser.pushToken,
-        sound: 'default',
+        sound: soundName,
         title: title,
         body: body,
-        data: data,
+        data: { ...data, isCritical: isAlarmOrValidation },
         badge: 1,
         priority: 'high',
         ttl: 86400,
-        channelId: 'myNotificationChannel',
+        channelId: channelId,
         android: {
-          channelId: 'myNotificationChannel',
-          sound: 'default',
+          channelId: channelId,
+          sound: isAlarmOrValidation ? 'nuclear_alarm.mp3' : 'default',
           priority: 'max',
           sticky: true,
-          vibrate: [0, 250, 250, 250],
-          color: '#FF231F7C',
+          vibrate: isAlarmOrValidation
+            ? [0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000]
+            : [0, 500, 250, 500, 250, 500],
+          color: isAlarmOrValidation ? '#FF0000' : '#FF231F7C',
           style: {
             type: 'bigText',
             text: body
           }
         },
         ios: {
-          sound: 'default',
+          sound: soundName,
           badge: 1,
           priority: 'high',
-          subtitle: 'DoorApp',
+          subtitle: isAlarmOrValidation ? 'ALARM SYSTEMOWY' : 'DoorApp',
           _displayInForeground: true,
-          interruptionLevel: 'active',
+          interruptionLevel: isAlarmOrValidation ? 'critical' : 'active',
           relevanceScore: 1.0
         }
       });
@@ -454,12 +465,6 @@ const validateCode = async (secretCode, req) => {
       data: { message: "Invalid code entered", attemptNumber: validationAttempts, attemptsLeft }
     });
 
-    await client.calls.create({
-      url: 'http://yourserver.com/twiml-response', // TwiML XML response
-      to: '+48XXXXXXXXX',
-      from: '+1XXXXXXXXXX'
-    });
-
     return {
       success: false,
       message: `Invalid code. ${attemptsLeft} attempts left`,
@@ -480,8 +485,9 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
 
         await sendDoorPushNotifications(
           'Drzwi otwarte',
-          'Wymagana weryfikacja kodu!',
-          { doorsUnlocked: true, validation: true }
+          'Wymagana weryfikacja kodu! Natychmiastowa uwaga!',
+          { doorsUnlocked: true, validation: true, alert: true },
+          true
         );
 
         validationTimer = setTimeout(() => {
@@ -489,8 +495,9 @@ router.post("/door/change-sensor-state/:newState", authenticateUser, async (req,
             logger.warn("POST ESP32:door/change-sensor", { method: req.method, url: req.url, data: { message: "Validation failed", isValidationPending } });
             sendDoorPushNotifications(
               'Timeout weryfikacji',
-              'Nie udało się zweryfikować kodu w wyznaczonym czasie',
-              { doorsUnlocked: false, validation: false, timeout: true }
+              'Nie udało się zweryfikować kodu w wyznaczonym czasie! UWAGA: Możliwe zagrożenie bezpieczeństwa!',
+              { doorsUnlocked: false, validation: false, timeout: true, alert: true },
+              true
             );
           }
           isValidationPending = false;
@@ -704,8 +711,8 @@ router.post("/door/validate-with-geo", async (req, res) => {
     io.emit("esp32:validation-state-changed", isValidationPending);
 
     await sendDoorPushNotifications(
-      'Weryfikacja udana',
-      'Kod został automatycznie zweryfikowany przez geolokalizację',
+      'Weryfikacja automatyczna',
+      'Kod został automatycznie zweryfikowany przez geolokalizację - system działał prawidłowo',
       { doorsUnlocked: true, validation: false, success: true, viaGeolocation: true }
     );
 
