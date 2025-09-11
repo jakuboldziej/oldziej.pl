@@ -11,6 +11,11 @@ const DoorUserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  tokenType: {
+    type: String,
+    enum: ['expo', 'fcm'],
+    default: 'expo'
+  },
   lastActive: {
     type: Date,
     default: Date.now

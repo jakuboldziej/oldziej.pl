@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { io } = require("../server");
 const { logger } = require("../middleware/logging");
 const { Expo } = require('expo-server-sdk');
+const admin = require('firebase-admin');
 const DoorUser = require('../models/esp32/door/doorUser');
 const GeoAuthorizedDevice = require('../models/esp32/door/geoAuthorizedDevices');
 const ESP32Config = require('../models/esp32/esp32Config');
@@ -18,6 +19,20 @@ const domain = environment === "production" ? process.env.BACKEND_DOMAIN : proce
 const wledDomain = process.env.WLED_DOMAIN;
 
 let wledGameCode = "";
+
+let firebaseApp = null;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  try {
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    firebaseApp = admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: serviceAccount.project_id
+    });
+    console.log('Firebase Admin SDK initialized for FCM');
+  } catch (error) {
+    console.error('Error initializing Firebase Admin SDK:', error.message);
+  }
+}
 
 let doorExpo = new Expo({
   accessToken: process.env.EXPO_DOOR_ACCESS_TOKEN,
@@ -42,14 +57,128 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
       title = `⚠️ ${title} ⚠️`;
     }
 
+    const soundName = isAlarmOrValidation ? 'nuclear_alarm' : 'default';
+
+    const fcmUsers = doorUsers.filter(user => user.tokenType === 'fcm' || (!user.tokenType && !Expo.isExpoPushToken(user.pushToken)));
+    const expoUsers = doorUsers.filter(user => user.tokenType === 'expo' || (!user.tokenType && Expo.isExpoPushToken(user.pushToken)));
+
+    const results = [];
+
+    // Send FCM notifications if Firebase is available
+    if (fcmUsers.length > 0 && firebaseApp) {
+      console.log(`Sending FCM notifications to ${fcmUsers.length} users`);
+      const fcmResult = await sendFCMNotifications(fcmUsers, title, body, data, isAlarmOrValidation, channelId, soundName);
+      results.push({ type: 'fcm', result: fcmResult });
+    } else if (fcmUsers.length > 0) {
+      console.warn('FCM users found but Firebase not configured');
+    }
+
+    // Send Expo notifications
+    if (expoUsers.length > 0) {
+      console.log(`Sending Expo notifications to ${expoUsers.length} users`);
+      const expoResult = await sendExpoNotifications(expoUsers, title, body, data, isAlarmOrValidation, channelId, soundName);
+      results.push({ type: 'expo', result: expoResult });
+    }
+
+    return results;
+  } catch (error) {
+    console.error('Error in sendDoorPushNotifications:', error);
+  }
+};
+
+const sendFCMNotifications = async (doorUsers, title, body, data, isAlarmOrValidation, channelId, soundName) => {
+  try {
+    const messages = [];
+
+    for (let doorUser of doorUsers) {
+      if (!doorUser.pushToken || doorUser.pushToken.length < 100) {
+        console.error(`Invalid FCM token for user ${doorUser.deviceId}`);
+        continue;
+      }
+
+      const message = {
+        token: doorUser.pushToken,
+        notification: {
+          title: title,
+          body: body
+        },
+        data: {
+          ...data,
+          isCritical: String(isAlarmOrValidation),
+          timestamp: new Date().toISOString()
+        },
+        android: {
+          priority: 'high',
+          notification: {
+            channelId: channelId,
+            sound: soundName,
+            priority: 'max',
+            color: isAlarmOrValidation ? '#FF0000' : '#FF231F7C',
+            vibrateTimingsMillis: isAlarmOrValidation
+              ? [0, 1000, 500, 1000, 500, 1000, 500, 1000, 500, 1000]
+              : [0, 500, 250, 500, 250, 500],
+            sticky: true,
+            defaultVibrateTimings: false,
+            visibility: 'public',
+            localOnly: false,
+            defaultSound: false,
+            defaultLightSettings: false
+          }
+        },
+        apns: {
+          payload: {
+            aps: {
+              alert: {
+                title: title,
+                body: body
+              },
+              badge: 1,
+              sound: soundName === 'nuclear_alarm' ? 'nuclear_alarm.wav' : 'default',
+              'content-available': 1,
+              category: isAlarmOrValidation ? 'CRITICAL_ALERT' : 'DOOR_NOTIFICATION'
+            }
+          }
+        }
+      };
+
+      messages.push(message);
+    }
+
+    if (messages.length === 0) {
+      console.warn('No valid FCM tokens to send to');
+      return [];
+    }
+
+    console.log(`Sending ${messages.length} FCM notifications`);
+    const response = await admin.messaging().sendAll(messages);
+
+    console.log(`FCM Response: ${response.successCount} successful, ${response.failureCount} failed`);
+
+    // Handle failed tokens
+    if (response.failureCount > 0) {
+      response.responses.forEach((resp, idx) => {
+        if (!resp.success) {
+          console.error(`FCM failed for token ${messages[idx].token}: ${resp.error}`);
+        }
+      });
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Error sending FCM notifications:', error);
+    throw error;
+  }
+};
+
+const sendExpoNotifications = async (doorUsers, title, body, data, isAlarmOrValidation, channelId, soundName) => {
+  try {
     let messages = [];
+
     for (let doorUser of doorUsers) {
       if (!Expo.isExpoPushToken(doorUser.pushToken)) {
         console.error(`Push token ${doorUser.pushToken} is not a valid Expo push token`);
         continue;
       }
-
-      const soundName = isAlarmOrValidation ? 'nuclear_alarm' : 'default';
 
       messages.push({
         to: doorUser.pushToken,
@@ -79,8 +208,8 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
     }
 
     if (messages.length === 0) {
-      console.warn('No valid door push tokens to send to');
-      return;
+      console.warn('No valid Expo push tokens to send to');
+      return [];
     }
 
     let chunks = doorExpo.chunkPushNotifications(messages);
@@ -91,13 +220,14 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
         let ticketChunk = await doorExpo.sendPushNotificationsAsync(chunk);
         tickets.push(...ticketChunk);
       } catch (error) {
-        console.error('Error sending door push notification chunk:', error);
+        console.error('Error sending Expo push notification chunk:', error);
       }
     }
 
     return tickets;
   } catch (error) {
-    console.error('Error in sendDoorPushNotifications:', error);
+    console.error('Error sending Expo notifications:', error);
+    throw error;
   }
 };
 
@@ -321,7 +451,7 @@ if (TELEGRAM_BOT_TOKEN) {
   if (environment === "production" && domain && domain.startsWith('https://')) {
     telegramBot.setWebHook(`${domain}/bot${TELEGRAM_BOT_TOKEN}`)
       .then(() => {
-        console.log('Telegram webhook set successfully');
+        logger.info('Telegram webhook set successfully');
       })
       .catch((error) => {
         console.error('Error setting Telegram webhook:', error.message);
@@ -330,7 +460,7 @@ if (TELEGRAM_BOT_TOKEN) {
     if (environment !== "production") {
       telegramBot.startPolling()
         .then(() => {
-          console.log('Telegram bot polling started for development');
+          logger.info('Telegram bot polling started for development');
         })
         .catch((error) => {
           console.error('Error starting Telegram polling:', error.message);
@@ -964,33 +1094,78 @@ router.post("/door/unlock-via-geo", async (req, res) => {
   }
 });
 
+// Utility function to validate push tokens
+const isValidPushToken = (pushToken, tokenType = 'auto') => {
+  if (!pushToken || typeof pushToken !== 'string') {
+    return false;
+  }
+
+  if (tokenType === 'expo' || (tokenType === 'auto' && Expo.isExpoPushToken(pushToken))) {
+    return Expo.isExpoPushToken(pushToken);
+  }
+
+  if (tokenType === 'fcm' || (tokenType === 'auto' && !Expo.isExpoPushToken(pushToken))) {
+    // FCM tokens are typically longer than 100 characters and contain specific patterns
+    return pushToken.length > 100 && /^[a-zA-Z0-9_-]+$/.test(pushToken.replace(/:/g, ''));
+  }
+
+  return false;
+};
+
 // Door push notification endpoints
 
 router.post("/door/register-push-token", async (req, res) => {
   try {
-    const { pushToken, deviceId } = req.body;
+    const { pushToken, deviceId, tokenType } = req.body;
 
-    if (!Expo.isExpoPushToken(pushToken)) {
-      console.error('Invalid push token format:', pushToken);
-      return res.status(400).json({ error: 'Invalid push token' });
+    // Determine token type if not specified
+    let detectedTokenType = tokenType;
+    if (!detectedTokenType) {
+      if (Expo.isExpoPushToken(pushToken)) {
+        detectedTokenType = 'expo';
+      } else if (pushToken && pushToken.length > 100) {
+        detectedTokenType = 'fcm';
+      }
+    }
+
+    // Validate token based on environment and type
+    if (environment === "production" && detectedTokenType !== 'fcm') {
+      console.warn('Production environment expects FCM tokens, received:', detectedTokenType);
+    }
+
+    if (!isValidPushToken(pushToken, detectedTokenType)) {
+      console.error('Invalid push token format:', pushToken, 'Type:', detectedTokenType);
+      return res.status(400).json({
+        error: 'Invalid push token',
+        expectedType: environment === "production" ? 'fcm' : 'expo',
+        receivedType: detectedTokenType
+      });
     }
 
     let doorUser = await DoorUser.findOne({ deviceId });
 
     if (doorUser) {
       doorUser.pushToken = pushToken;
+      doorUser.tokenType = detectedTokenType;
       doorUser.lastActive = new Date();
       await doorUser.save();
     } else {
       doorUser = new DoorUser({
         deviceId,
         pushToken,
+        tokenType: detectedTokenType,
         lastActive: new Date()
       });
       await doorUser.save();
     }
 
-    res.json({ success: true, message: 'Door push token registered' });
+    console.log(`Push token registered - Device: ${deviceId}, Type: ${detectedTokenType}, Environment: ${environment}`);
+    res.json({
+      success: true,
+      message: 'Door push token registered',
+      tokenType: detectedTokenType,
+      environment: environment
+    });
   } catch (err) {
     console.error('Error in register-push-token:', err);
     logger.error("POST ESP32:door/register-push-token", { method: req.method, url: req.url, error: err.message });
@@ -1014,6 +1189,79 @@ router.post("/door/send-notification", authenticateUser, async (req, res) => {
     res.json({ success: true, tickets });
   } catch (err) {
     logger.error("POST ESP32:door/send-notification", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// TEST ENDPOINT - FCM Testing (Remove in production)
+router.post("/door/test-fcm-notification", async (req, res) => {
+  try {
+    const { title, body, data, isCritical } = req.body;
+
+    console.log('FCM Test Notification Request:', { title, body, data, isCritical });
+
+    const tickets = await sendDoorPushNotifications(
+      title || 'FCM Test Notification',
+      body || 'This is a test notification from FCM',
+      data || { test: true },
+      isCritical || false
+    );
+
+    logger.info("FCM Test Notification Sent", {
+      method: req.method,
+      url: req.url,
+      data: { title, body, isCritical, ticketCount: tickets?.length || 0 }
+    });
+
+    res.json({
+      success: true,
+      message: 'Test notification sent successfully',
+      tickets,
+      notificationCount: tickets?.length || 0
+    });
+  } catch (err) {
+    console.error('FCM Test Notification Error:', err);
+    logger.error("POST ESP32:door/test-fcm-notification", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send test notification',
+      error: err.message
+    });
+  }
+});
+
+// Notification system status endpoint
+router.get("/door/notification-system-status", authenticateUser, async (req, res) => {
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
+
+  try {
+    const doorUsers = await DoorUser.find({});
+    const fcmUsers = doorUsers.filter(user => user.tokenType === 'fcm' || (!user.tokenType && !Expo.isExpoPushToken(user.pushToken)));
+    const expoUsers = doorUsers.filter(user => user.tokenType === 'expo' || (!user.tokenType && Expo.isExpoPushToken(user.pushToken)));
+
+    res.json({
+      success: true,
+      environment: environment,
+      firebaseConfigured: !!firebaseApp,
+      expoConfigured: !!process.env.EXPO_DOOR_ACCESS_TOKEN,
+      totalUsers: doorUsers.length,
+      fcmUsers: fcmUsers.length,
+      expoUsers: expoUsers.length,
+      userBreakdown: {
+        fcm: fcmUsers.map(user => ({
+          deviceId: user.deviceId,
+          tokenType: user.tokenType,
+          lastActive: user.lastActive
+        })),
+        expo: expoUsers.map(user => ({
+          deviceId: user.deviceId,
+          tokenType: user.tokenType,
+          lastActive: user.lastActive
+        }))
+      }
+    });
+  } catch (err) {
+    logger.error("GET ESP32:door/notification-system-status", { method: req.method, url: req.url, error: err.message });
     res.status(500).json({ message: err.message });
   }
 });
