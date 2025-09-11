@@ -4,6 +4,7 @@ import NotFoundPortfolio from '@/pages/Portfolio/NotFoundPortfolio'
 import Project from '@/pages/Portfolio/Project'
 import React from 'react'
 import { Navigate, Route, Routes } from 'react-router'
+import Dictionary from '@/pages/Portfolio/Dictionary'
 
 function AppRoutesPortfolio() {
   return (
@@ -13,6 +14,7 @@ function AppRoutesPortfolio() {
       </Route> */}
       <Route path="/">
         <Route index element={<Home />} />
+        <Route path="dictionary" element={<Dictionary />} />
         <Route path='projects' element={<Navigate to="/" replace state={{ projectsRedirect: true }} />} />
         <Route path='projects/:projectName' element={<Project />} />
       </Route>
