@@ -6,6 +6,8 @@ const mongoSanitize = require("express-mongo-sanitize");
 
 require('dotenv').config()
 
+require('events').EventEmitter.defaultMaxListeners = 20;
+
 require('@babel/register')({
   presets: ['@babel/preset-env', '@babel/preset-react']
 });
@@ -104,7 +106,12 @@ dartsConn.once('open', () => logger.info('Connected to Darts Database'));
 ftpConn.on('error', (err) => logger.error(`MongoDB (FTP) connection error: ${err}`));
 ftpConn.once('open', () => logger.info('Connected to Ftp Database'));
 choresConn.on('error', (err) => logger.error(`MongoDB (Chores) connection error: ${err}`));
-choresConn.once('open', () => logger.info('Connected to Chores Database'));
+choresConn.once('open', () => {
+  logger.info('Connected to Chores Database');
+
+  const cronService = require('./services/cronService');
+  cronService.startAllJobs();
+});
 esp32Conn.on('error', (err) => logger.error(`MongoDB (ESP32) connection error: ${err}`));
 esp32Conn.once('open', () => logger.info('Connected to ESP32 Database'));
 

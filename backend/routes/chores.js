@@ -5,6 +5,11 @@ const User = require('../models/user');
 const ChoresUser = require('../models/chores/choresUser');
 const { logger } = require("../middleware/logging");
 const { Expo } = require('expo-server-sdk');
+const {
+  calculateNextDueDate,
+  validateIntervalData,
+  getChoreStatus
+} = require('../lib/intervalUtils');
 
 const router = express.Router()
 
@@ -130,7 +135,17 @@ router.get('/', authenticateUser, async (req, res) => {
     }
 
     const chores = await Chore.find(filters).sort({});
-    res.json(chores);
+
+    const choresWithStatus = chores.map(chore => {
+      const choreObj = chore.toObject();
+      const status = getChoreStatus(choreObj);
+      return {
+        ...choreObj,
+        intervalStatus: status
+      };
+    });
+
+    res.json(choresWithStatus);
   } catch (err) {
     res.json({ message: err.message });
   }
@@ -150,7 +165,16 @@ router.get('/:displayName', authenticateUser, async (req, res) => {
       ]
     });
 
-    res.json(chores);
+    const choresWithStatus = chores.map(chore => {
+      const choreObj = chore.toObject();
+      const status = getChoreStatus(choreObj);
+      return {
+        ...choreObj,
+        intervalStatus: status
+      };
+    });
+
+    res.json(choresWithStatus);
   } catch (err) {
     res.json({ message: err.message });
   }
@@ -160,12 +184,34 @@ router.post('/', authenticateUser, async (req, res) => {
   const body = req.body;
 
   try {
-    const chore = new Chore({
+    if (body.isRepeatable) {
+      const validation = validateIntervalData(body);
+      if (!validation.isValid) {
+        return res.status(400).json({ message: validation.error });
+      }
+    }
+
+    const choreData = {
       ownerId: body.ownerId,
       title: body.title,
       description: body.description,
-      usersList: body.usersList
-    });
+      usersList: body.usersList,
+      isRepeatable: body.isRepeatable || false
+    };
+
+    if (body.isRepeatable && body.intervalType) {
+      choreData.intervalType = body.intervalType;
+
+      if (body.intervalType === 'custom' && body.customDays) {
+        choreData.customDays = body.customDays;
+      }
+
+      choreData.nextDueDate = body.nextDueDate
+        ? new Date(body.nextDueDate)
+        : calculateNextDueDate(body.intervalType, body.customDays);
+    }
+
+    const chore = new Chore(choreData);
 
     const newChore = await chore.save();
 
@@ -218,6 +264,11 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
 
       if (allUsersFinished && !updatedChore.finished) {
         updatedChore.finished = true;
+
+        if (updatedChore.isRepeatable) {
+          updatedChore.lastCompletedDate = new Date();
+        }
+
         await updatedChore.save();
 
         if (updatedChore.usersList.length > 1) {
@@ -291,6 +342,31 @@ router.delete("/:choreId", authenticateUser, async (req, res) => {
   } catch (err) {
     logger.error("DELETE Chore", { method: req.method, url: req.url, error: err.message });
     return res.json({ message: err.message });
+  }
+});
+
+// Cron Service Management (for debugging/testing)
+
+router.get('/cron/status', authenticateUser, async (req, res) => {
+  try {
+    const cronService = require('../services/cronService');
+    const status = cronService.getJobsStatus();
+    res.json({ cronJobs: status });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post('/cron/trigger-reset', authenticateUser, async (req, res) => {
+  try {
+    const cronService = require('../services/cronService');
+    const resetCount = await cronService.triggerChoreReset();
+    res.json({
+      message: `Manually triggered chore reset. Reset ${resetCount} chores.`,
+      resetCount
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

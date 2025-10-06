@@ -29,6 +29,35 @@ const ChoresSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
     default: false
+  },
+  isRepeatable: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  intervalType: {
+    type: String,
+    enum: ['daily', 'weekly', 'monthly', 'custom'],
+    required: false
+  },
+  customDays: {
+    type: Number,
+    min: 1,
+    max: 365,
+    required: false
+  },
+  nextDueDate: {
+    type: Date,
+    required: false
+  },
+  lastCompletedDate: {
+    type: Date,
+    required: false
+  },
+  repeatable: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 }, {
   timestamps: true
