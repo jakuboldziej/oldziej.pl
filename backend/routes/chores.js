@@ -208,7 +208,7 @@ router.post('/', authenticateUser, async (req, res) => {
 
       choreData.nextDueDate = body.nextDueDate
         ? new Date(body.nextDueDate)
-        : calculateNextDueDate(body.intervalType, body.customDays);
+        : calculateNextDueDate(body.intervalType, body.customDays, new Date(), true);
     }
 
     const chore = new Chore(choreData);
@@ -294,6 +294,9 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
             console.error('Failed to send completion notification:', notificationError);
           }
         }
+      } else {
+        updatedChore.finished = false;
+        await updatedChore.save();
       }
     }
 

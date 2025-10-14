@@ -1,31 +1,52 @@
-function calculateNextDueDate(intervalType, customDays = 1, fromDate = new Date()) {
+function calculateNextDueDate(intervalType, customDays = 1, fromDate = new Date(), isInitialCreation = false) {
   const nextDate = new Date(fromDate);
+
+  nextDate.setHours(0, 0, 0, 0);
 
   switch (intervalType) {
     case 'daily':
-      nextDate.setDate(nextDate.getDate() + 1);
+      if (!isInitialCreation) {
+        nextDate.setDate(nextDate.getDate() + 1);
+      }
       break;
 
     case 'weekly':
-      nextDate.setDate(nextDate.getDate() + 7);
+      if (!isInitialCreation) {
+        nextDate.setDate(nextDate.getDate() + 7);
+      } else {
+        nextDate.setDate(nextDate.getDate() + 7);
+      }
       break;
 
     case 'monthly':
-      nextDate.setMonth(nextDate.getMonth() + 1);
+      if (!isInitialCreation) {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+      } else {
+        nextDate.setMonth(nextDate.getMonth() + 1);
+      }
       break;
 
     case 'custom':
-      if (customDays && customDays > 0) {
-        nextDate.setDate(nextDate.getDate() + customDays);
+      const daysToAdd = customDays && customDays > 0 ? customDays : 1;
+      if (!isInitialCreation) {
+        nextDate.setDate(nextDate.getDate() + daysToAdd);
       } else {
-        nextDate.setDate(nextDate.getDate() + 1); // Default to daily
+        if (daysToAdd === 1) {
+          // Due today
+        } else {
+          nextDate.setDate(nextDate.getDate() + daysToAdd);
+        }
       }
       break;
 
     default:
-      nextDate.setDate(nextDate.getDate() + 1);
+      if (!isInitialCreation) {
+        nextDate.setDate(nextDate.getDate() + 1);
+      }
       break;
   }
+
+  nextDate.setHours(23, 59, 59, 999);
 
   return nextDate;
 }
@@ -46,7 +67,6 @@ function isCompletedInCurrentInterval(chore, currentDate = new Date()) {
   const lastCompleted = new Date(chore.lastCompletedDate);
   const nextDue = new Date(chore.nextDueDate);
 
-  // Calculate when the current interval started
   let intervalStart = new Date(nextDue);
 
   switch (chore.intervalType) {
@@ -67,8 +87,9 @@ function isCompletedInCurrentInterval(chore, currentDate = new Date()) {
       break;
   }
 
-  // Check if last completed date is within current interval
-  return lastCompleted >= intervalStart && lastCompleted < nextDue;
+  intervalStart.setHours(0, 0, 0, 0);
+
+  return lastCompleted >= intervalStart && lastCompleted <= nextDue;
 }
 
 function resetChoreForNextInterval(chore) {
@@ -84,7 +105,8 @@ function resetChoreForNextInterval(chore) {
   updatedChore.nextDueDate = calculateNextDueDate(
     updatedChore.intervalType,
     updatedChore.customDays,
-    new Date(updatedChore.nextDueDate)
+    new Date(updatedChore.nextDueDate),
+    false
   );
 
   return updatedChore;
@@ -150,11 +172,25 @@ function validateIntervalData(choreData) {
   return { isValid: true };
 }
 
+function getStartOfDay(date = new Date()) {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  return startOfDay;
+}
+
+function getEndOfDay(date = new Date()) {
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+  return endOfDay;
+}
+
 module.exports = {
   calculateNextDueDate,
   isChoreOverdue,
   isCompletedInCurrentInterval,
   resetChoreForNextInterval,
   getChoreStatus,
-  validateIntervalData
+  validateIntervalData,
+  getStartOfDay,
+  getEndOfDay
 };

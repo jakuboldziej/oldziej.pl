@@ -53,11 +53,6 @@ const ChoresSchema = new mongoose.Schema({
   lastCompletedDate: {
     type: Date,
     required: false
-  },
-  repeatable: {
-    type: Boolean,
-    required: false,
-    default: false
   }
 }, {
   timestamps: true
