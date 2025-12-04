@@ -11,7 +11,7 @@ import { handleTimePlayed } from './game logic/gameUtils';
 import { handleWLEDEffectSolid } from './game logic/wledController';
 
 function GameSummary({ show, setShow }) {
-  const { game, updateGameState, handleRound } = useContext(DartsGameContext);
+  const { game, updateGameState, handleRound, clearDartsUsersBackup } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
 
   function handleShow() {
@@ -19,6 +19,8 @@ function GameSummary({ show, setShow }) {
   }
 
   const handlePlayAgain = async () => {
+    clearDartsUsersBackup();
+
     const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
 
     const throwsData = {
@@ -132,6 +134,8 @@ function GameSummary({ show, setShow }) {
 
   const handleBackToDarts = async () => {
     try {
+      clearDartsUsersBackup();
+
       socket.emit("hostDisconnectedFromGame", JSON.stringify({
         gameCode: game.gameCode
       }));

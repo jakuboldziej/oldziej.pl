@@ -135,7 +135,6 @@ export const DartsGameContextProvider = ({ children }) => {
       3: game.podium[3],
     };
 
-    setDartsUsersBeforeBack([]);
 
     updateGameState(game);
   };
@@ -338,9 +337,15 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const restoreUsersSummaryBack = async () => {
-    dartsUsersBeforeBack.map(async (user) => {
-      await patchDartsUser(user);
-    });
+    await Promise.all(
+      dartsUsersBeforeBack.map(async (user) => {
+        await patchDartsUser(user);
+      })
+    );
+  }
+
+  const clearDartsUsersBackup = () => {
+    setDartsUsersBeforeBack([]);
   }
 
   const contextParams = {
@@ -351,7 +356,8 @@ export const DartsGameContextProvider = ({ children }) => {
     overthrow,
     setOverthrow,
     specialState,
-    updateGameState
+    updateGameState,
+    clearDartsUsersBackup
   }
 
   return (
