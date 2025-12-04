@@ -135,6 +135,8 @@ export const DartsGameContextProvider = ({ children }) => {
       3: game.podium[3],
     };
 
+    setDartsUsersBeforeBack([]);
+
     updateGameState(game);
   };
 
@@ -158,7 +160,8 @@ export const DartsGameContextProvider = ({ children }) => {
         if (user.temporary || user.verified === false) return;
         if (game.training) return
 
-        const dartUser = usersBeforeBack.find((us) => us.displayName === user.displayName);
+        const freshDartUser = await getDartsUser(user.displayName);
+        const dartUser = JSON.parse(JSON.stringify(freshDartUser));
         const userOriginalData = JSON.parse(JSON.stringify(dartUser));
 
         if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
