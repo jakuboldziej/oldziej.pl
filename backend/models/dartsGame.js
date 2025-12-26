@@ -61,6 +61,11 @@ const dartsGameSchema = new mongoose.Schema({
   gameCode: {
     type: String,
     required: true
+  },
+  training: {
+    type: Boolean,
+    required: true,
+    default: false
   }
 });
 

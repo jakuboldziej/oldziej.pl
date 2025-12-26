@@ -44,7 +44,7 @@ function DartsGamesTable({ props }) {
 
   const fetchMoreGames = async () => {
     try {
-      const fetchedGames = await getDartsGames(null, 10 * currentPage);
+      const fetchedGames = await getDartsGames(null, 10 * currentPage, true);
       setDartsGames(fetchedGames);
     } catch (err) {
       console.error('Error fetching more games', err);
@@ -61,7 +61,7 @@ function DartsGamesTable({ props }) {
     const fetchInitialDartsGames = async () => {
       setIsLoading(true);
       try {
-        const fetchedDartsGames = await getDartsGames(null, 10);
+        const fetchedDartsGames = await getDartsGames(null, 10, true);
         setDartsGames(fetchedDartsGames);
       } catch (err) {
         console.error('Error fetching', err);
@@ -84,92 +84,100 @@ function DartsGamesTable({ props }) {
         <Loading />
       ) : (
         <ScrollArea className="h-[700px] w-full" onScroll={handleScroll}>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">ID</TableHead>
-                <TableHead>Created by</TableHead>
-                <TableHead>Created at</TableHead>
-                <TableHead>Finished at</TableHead>
-                <TableHead>Users</TableHead>
-                <TableHead>Podiums</TableHead>
-                <TableHead className="text-center">Podium</TableHead>
-                <TableHead>Active</TableHead>
-                <TableHead>Game mode</TableHead>
-                <TableHead>Start points</TableHead>
-                <TableHead>Checkout</TableHead>
-                <TableHead>Sets</TableHead>
-                <TableHead>Legs</TableHead>
-                <TableHead>Game code</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleGames.map((game) => (
-                <TableRow key={game._id}>
-                  <TableCell className="font-medium">{game._id}</TableCell>
-                  <TableCell>{game.created_by}</TableCell>
-                  <TableCell>
-                    <MyTooltip title={handleDisplayDate(game.created_at)}>
-                      <span className="timedate">{handleDisplayDate(game.created_at)}</span>
-                    </MyTooltip>
-                  </TableCell>
-                  <TableCell>
-                    <MyTooltip title={handleDisplayDate(game.finished_at)}>
-                      <span className="timedate">{handleDisplayDate(game.finished_at)}</span>
-                    </MyTooltip>
-                  </TableCell>
-                  <TableCell>
-                    <MyTooltip title={game.users.map((user) => user.displayName).join(", ")}>
-                      <span>{game.users.length}</span>
-                    </MyTooltip>
-                  </TableCell>
-                  <TableCell>{game.podiums}</TableCell>
-                  <TableCell className="text-center flex items-center justify-center gap-1">
-                    {game.podium[1] && <span>1. {game.podium[1]}</span>}
-                    {game.podium[2] && <span>2. {game.podium[2]}</span>}
-                    {game.podium[3] && <span>3. {game.podium[3]}</span>}
-                  </TableCell>
-                  <TableCell>{game.active ? "Yes" : "No"}</TableCell>
-                  <TableCell>{game.gameMode}</TableCell>
-                  <TableCell>{game.startPoints}</TableCell>
-                  <TableCell>{game.checkOut}</TableCell>
-                  <TableCell>{game.sets}</TableCell>
-                  <TableCell>{game.legs}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {game.gameCode}
-                      <CopyTextButton
-                        textToCopy={game.gameCode}
-                        toastTitle="Code copied"
-                        toastDesc="Code copied to clipboard"
-                      >
-                        <MyTooltip title="Copy code to clipboard">
-                          <Copy height={15} />
-                        </MyTooltip>
-                      </CopyTextButton>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
-                          <Grip />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="mr-5">
-                        <DropdownMenuLabel>{game.gameCode}</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDialogOpen(game)}>
-                          <Trash height={20} /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[1200px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>Created by</TableHead>
+                  <TableHead>Created at</TableHead>
+                  <TableHead>Finished at</TableHead>
+                  <TableHead>Users</TableHead>
+                  <TableHead>Podiums</TableHead>
+                  <TableHead className="text-center">Podium</TableHead>
+                  <TableHead>Active</TableHead>
+                  <TableHead>Game mode</TableHead>
+                  <TableHead>Start points</TableHead>
+                  <TableHead>Checkout</TableHead>
+                  <TableHead>Sets</TableHead>
+                  <TableHead>Legs</TableHead>
+                  <TableHead>Training</TableHead>
+                  <TableHead>Game code</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {visibleGames.map((game) => (
+                  <TableRow key={game._id}>
+                    <TableCell className="font-medium">{game._id}</TableCell>
+                    <TableCell>{game.created_by}</TableCell>
+                    <TableCell>
+                      <MyTooltip title={handleDisplayDate(game.created_at)}>
+                        <span className="timedate">{handleDisplayDate(game.created_at)}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={handleDisplayDate(game.finished_at)}>
+                        <span className="timedate">{handleDisplayDate(game.finished_at)}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={game.users.map((user) => user.displayName).join(", ")}>
+                        <span>{game.users.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>{game.podiums}</TableCell>
+                    <TableCell className="text-center flex items-center justify-center gap-1">
+                      {game.podium[1] && <span>1. {game.podium[1]}</span>}
+                      {game.podium[2] && <span>2. {game.podium[2]}</span>}
+                      {game.podium[3] && <span>3. {game.podium[3]}</span>}
+                    </TableCell>
+                    <TableCell>{game.active ? "Yes" : "No"}</TableCell>
+                    <TableCell>{game.gameMode}</TableCell>
+                    <TableCell>{game.startPoints}</TableCell>
+                    <TableCell>{game.checkOut}</TableCell>
+                    <TableCell>{game.sets}</TableCell>
+                    <TableCell>{game.legs}</TableCell>
+                    <TableCell>
+                      <span className={game.training ? "text-yellow-500" : ""}>
+                        {game.training ? "Yes" : "No"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        {game.gameCode}
+                        <CopyTextButton
+                          textToCopy={game.gameCode}
+                          toastTitle="Code copied"
+                          toastDesc="Code copied to clipboard"
+                        >
+                          <MyTooltip title="Copy code to clipboard">
+                            <Copy height={15} />
+                          </MyTooltip>
+                        </CopyTextButton>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost">
+                            <Grip />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="mr-5">
+                          <DropdownMenuLabel>{game.gameCode}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDialogOpen(game)}>
+                            <Trash height={20} /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </ScrollArea>
       )}
 

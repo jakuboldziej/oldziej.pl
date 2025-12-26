@@ -37,9 +37,8 @@ export const DartsGameContextProvider = ({ children }) => {
       setGame(gameCopy);
       localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
 
-      if (gameCopy?.training) return;
-
       socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
+
 
       const { record, userWon, ...restGameData } = gameCopy;
       await patchDartsGame(restGameData);
@@ -157,7 +156,7 @@ export const DartsGameContextProvider = ({ children }) => {
         if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
 
         if (user.temporary || user.verified === false) return;
-        if (game.training) return
+        if (game.training) return;
 
         const freshDartUser = await getDartsUser(user.displayName);
         const dartUser = JSON.parse(JSON.stringify(freshDartUser));

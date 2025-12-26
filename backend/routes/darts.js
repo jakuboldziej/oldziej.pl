@@ -78,7 +78,8 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
       sets: body.sets,
       legs: body.legs,
       round: 1,
-      gameCode: await generateUniqueGameCode()
+      gameCode: await generateUniqueGameCode(),
+      training: body.training || false
     });
 
     const newDartsGame = await dartsGame.save();
@@ -96,7 +97,13 @@ router.get('/dartsGames', authenticateUser, async (req, res) => {
     let filter = {};
     const userDisplayName = req.query.user
     const limit = req.query.limit
+    const includeTraining = req.query.includeTraining === 'true'
+
     if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
+
+    if (!includeTraining) {
+      filter.training = { $ne: true };
+    }
 
     const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });
     res.json(dartsGames)

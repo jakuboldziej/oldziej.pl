@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { formatDataSize } from '@/components/Home/Cloud/utils';
+import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function CloudFoldersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -63,9 +64,11 @@ function CloudFoldersTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
+        <ScrollArea className="h-[700px] w-full">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[1000px]">
+              <TableHeader>
+                <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Owner</TableHead>
@@ -120,6 +123,8 @@ function CloudFoldersTable({ props }) {
             ))}
           </TableBody>
         </Table >
+          </div>
+        </ScrollArea>
       )}
       <Dialog open={dialogOpen}>
         <DialogContent>

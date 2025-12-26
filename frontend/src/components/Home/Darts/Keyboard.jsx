@@ -23,9 +23,11 @@ function Keyboard({ props }) {
   const handleQuit = async () => {
     handleShow();
 
-    if (!game.training) {
+    if (game._id) {
       game.active = false;
-      socket.emit("updateLiveGamePreview", JSON.stringify(game));
+      if (!game.training) {
+        socket.emit("updateLiveGamePreview", JSON.stringify(game));
+      }
       await deleteDartsGame(game._id);
     }
     localStorage.setItem('dartsGame', null);

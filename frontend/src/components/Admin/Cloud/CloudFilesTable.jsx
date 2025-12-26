@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { formatDataSize } from '@/components/Home/Cloud/utils';
+import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function CloudFilesTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -67,9 +68,11 @@ function CloudFilesTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
+        <ScrollArea className="h-[700px] w-full">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[1200px]">
+              <TableHeader>
+                <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead className="w-[100px]">FileId</TableHead>
               <TableHead>Filename</TableHead>
@@ -133,7 +136,9 @@ function CloudFilesTable({ props }) {
               </TableRow>
             ))}
           </TableBody>
-        </Table >
+        </Table>
+          </div>
+        </ScrollArea>
       )}
       <Dialog open={dialogOpen}>
         <DialogContent>

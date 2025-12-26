@@ -24,6 +24,7 @@ export const postDartsGame = async (gameData) => {
       sets: gameData.sets,
       legs: gameData.legs,
       round: gameData.round,
+      training: gameData.training || false,
     }),
     headers: {
       "Content-Type": "application/json",
@@ -58,7 +59,7 @@ export const deleteDartsGame = async (gameId) => {
   });
 }
 
-export const getDartsGames = async (userDisplayName = null, limit = 0) => {
+export const getDartsGames = async (userDisplayName = null, limit = 0, includeTraining = false) => {
   let url = `${mongodbApiUrl}/darts/dartsGames`;
 
   const queryParams = [];
@@ -67,6 +68,9 @@ export const getDartsGames = async (userDisplayName = null, limit = 0) => {
   }
   if (userDisplayName) {
     queryParams.push(`user=${userDisplayName}`);
+  }
+  if (includeTraining) {
+    queryParams.push(`includeTraining=true`);
   }
 
   if (queryParams.length > 0) {
@@ -841,6 +845,18 @@ export const postESP32JoinGame = async (gameCode) => {
 
 export const postESP32LeaveGame = async (gameCode) => {
   const response = await fetch(`${mongodbApiUrl}/esp32/leave-game/${gameCode}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const postESP32ForceReset = async () => {
+  const response = await fetch(`${mongodbApiUrl}/esp32/force-reset-wled`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

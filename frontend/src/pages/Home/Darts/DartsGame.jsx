@@ -138,27 +138,23 @@ function DartsGame() {
         <MyAccordion title={`Live Data (${game.gameMode})`}>
           <UserDataTable users={game.users} game={game} />
         </MyAccordion>
-        {game.training ? (
-          <span className="text-white fs-2 text-center">Training</span>
-        ) : (
-          <span className="text-white fs-2 text-center flex justify-center gap-2">
-            <Link
-              to={`/darts/game/live?gameCode=${game.gameCode}`}
-              target="_blank"
-              className="text-red-600 hover:text-red-400"
-            >
-              Live Game
-            </Link>
-            <div className="flex items-center">
-              Code: {game.gameCode}
-              <CopyTextButton textToCopy={game.gameCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
-                <MyTooltip title="Copy code to clipboard">
-                  <Copy height={15} />
-                </MyTooltip>
-              </CopyTextButton>
-            </div>
-          </span>
-        )}
+        <span className="text-white fs-2 text-center flex justify-center gap-2">
+          <Link
+            to={`/darts/game/live?gameCode=${game.gameCode}`}
+            target="_blank"
+            className="text-red-600 hover:text-red-400"
+          >
+            Live Game
+          </Link>
+          <div className="flex items-center">
+            Code: {game.gameCode}
+            <CopyTextButton textToCopy={game.gameCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+              <MyTooltip title="Copy code to clipboard">
+                <Copy height={15} />
+              </MyTooltip>
+            </CopyTextButton>
+          </div>
+        </span>
         <Keyboard props={keyboardProps} />
       </div>
 

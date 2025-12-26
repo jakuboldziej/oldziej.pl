@@ -10,6 +10,7 @@ import CopyTextButton from '../../Home/CopyTextButton';
 import MyTooltip from '../../Home/MyComponents/MyTooltip';
 import { socket } from '@/lib/socketio';
 import Loading from '../../Home/Loading';
+import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -66,9 +67,11 @@ function AuthUsersTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
+        <ScrollArea className="h-[700px] w-full">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[1000px]">
+              <TableHeader>
+                <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>DisplayName</TableHead>
               <TableHead>Email</TableHead>
@@ -120,6 +123,8 @@ function AuthUsersTable({ props }) {
             ))}
           </TableBody>
         </Table>
+          </div>
+        </ScrollArea>
       )}
 
       <Dialog open={dialogOpen}>

@@ -83,12 +83,12 @@ function GameSummary({ show, setShow }) {
     const gameDataMerged = { ...gameCopy, ...gameData };
 
     if (previousSettings && previousSettings.training === false) {
-      game.training = false;
+      gameDataMerged.training = false;
       const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
-      const gameData = await postDartsGame(gameWithoutRecordAndUserWon);
+      const newGameData = await postDartsGame(gameWithoutRecordAndUserWon);
 
-      gameDataMerged._id = gameData._id;
-      gameDataMerged["gameCode"] = gameData.gameCode;
+      gameDataMerged._id = newGameData._id;
+      gameDataMerged["gameCode"] = newGameData.gameCode;
       updateGameState(gameDataMerged);
 
       socket.emit("playAgainButtonServer", JSON.stringify({
@@ -101,9 +101,15 @@ function GameSummary({ show, setShow }) {
       }));
 
       const responseWLED = await getESP32Availability(gameCopy.gameCode);
-      if (responseWLED.available === true) await postESP32JoinGame(gameData.gameCode);
+      if (responseWLED.available === true) await postESP32JoinGame(newGameData.gameCode);
     } else {
-      game.training = true;
+      gameDataMerged.training = true;
+
+      const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
+      const newGameData = await postDartsGame(gameWithoutRecordAndUserWon);
+
+      gameDataMerged._id = newGameData._id;
+      gameDataMerged["gameCode"] = newGameData.gameCode;
       updateGameState(gameDataMerged);
     }
 

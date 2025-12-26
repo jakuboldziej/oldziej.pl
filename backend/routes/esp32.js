@@ -18,7 +18,10 @@ const domain = environment === "production" ? process.env.BACKEND_DOMAIN : proce
 
 const wledDomain = process.env.WLED_DOMAIN;
 
-let wledGameCode = "";
+let wledGameCode = {
+  code: "",
+  joinedAt: null
+};
 
 let firebaseApp = null;
 if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
@@ -345,8 +348,8 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
     const role = req.body.role;
 
     if (!role) {
-      if (!wledGameCode) return res.json({ message: "No running game" });
-      if (gameCode !== wledGameCode) return res.json({ message: "Game code does not match" });
+      if (!wledGameCode.code) return res.json({ message: "No running game" });
+      if (gameCode !== wledGameCode.code) return res.json({ message: "Game code does not match" });
     } else if (role !== "admin") return res.json({ message: "Not authorized" });
 
     const responseData = await changeWLEDstate({
@@ -365,7 +368,10 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
 router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
   try {
     const gameCode = req.params.gameCode;
-    wledGameCode = gameCode;
+    wledGameCode = {
+      code: gameCode,
+      joinedAt: Date.now()
+    };
 
     const response = await changeWLEDstate({
       stateOn: true,
@@ -380,7 +386,8 @@ router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
 
     if (response.message) throw new Error("ESP32 failed", response.message);
 
-    res.json(wledGameCode);
+    logger.info("WLED joined game", { gameCode, timestamp: wledGameCode.joinedAt });
+    res.json(wledGameCode.code);
   } catch (err) {
     res.json({ message: err.message });
   }
@@ -390,8 +397,11 @@ router.post("/leave-game/:gameCode", authenticateUser, async (req, res) => {
   try {
     const gameCode = req.params.gameCode;
 
-    if (wledGameCode === gameCode) {
-      wledGameCode = "";
+    if (wledGameCode.code === gameCode) {
+      wledGameCode = {
+        code: "",
+        joinedAt: null
+      };
 
       await changeWLEDstate({
         stateOn: false,
@@ -404,12 +414,51 @@ router.post("/leave-game/:gameCode", authenticateUser, async (req, res) => {
         }
       });
 
+      logger.info("WLED left game", { gameCode });
       res.json({ ok: true });
     } else {
       res.json({ ok: false });
     }
   } catch (err) {
     res.json({ message: err.message });
+  }
+});
+
+router.post("/force-reset-wled", authenticateUser, async (req, res) => {
+  try {
+    const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
+    if (decoded.userEmail !== process.env.ADMIN_EMAIL) {
+      return res.status(401).json({ success: false, message: "Not authorized" });
+    }
+
+    const previousGameCode = wledGameCode.code;
+
+    wledGameCode = {
+      code: "",
+      joinedAt: null
+    };
+
+    await changeWLEDstate({
+      stateOn: false,
+      stateColor: { r: 255, g: 255, b: 255 },
+      stateEffect: {
+        fx: 0,
+        sx: 0,
+        ix: 0,
+        pal: 0
+      }
+    });
+
+    logger.info("WLED force reset", { previousGameCode });
+
+    res.json({
+      success: true,
+      message: "WLED state reset successfully",
+      previousGameCode
+    });
+  } catch (err) {
+    logger.error("Force reset WLED error", { error: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -422,17 +471,42 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
     const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
     if (decoded.userEmail !== process.env.ADMIN_EMAIL) return res.json({ available: false });
 
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    if (wledGameCode.code && wledGameCode.joinedAt) {
+      if (Date.now() - wledGameCode.joinedAt > TWELVE_HOURS) {
+        logger.warn("Auto-clearing stale WLED game code", {
+          oldGameCode: wledGameCode.code,
+          age: Math.round((Date.now() - wledGameCode.joinedAt) / 1000 / 60) + " minutes"
+        });
+        wledGameCode = { code: "", joinedAt: null };
+      }
+    }
+
+    if (wledGameCode.code) {
+      const DartsGame = require('../models/dartsGame');
+      const currentGame = await DartsGame.findOne({ gameCode: wledGameCode.code });
+
+      if (!currentGame || currentGame.active === false) {
+        logger.warn("Clearing WLED game code - game no longer active", {
+          gameCode: wledGameCode.code,
+          gameExists: !!currentGame,
+          gameActive: currentGame?.active
+        });
+        wledGameCode = { code: "", joinedAt: null };
+      }
+    }
+
     if (gameCode && gameCode != "undefined") {
-      if (gameCode === wledGameCode) available = true;
+      if (gameCode === wledGameCode.code) available = true;
       else available = false;
     } else {
-      if (wledGameCode) available = false;
+      if (wledGameCode.code) available = false;
       else available = true;
     }
 
     await fetch(`${wledDomain}/json/state`);
 
-    res.json({ available });
+    res.json({ available, currentGameCode: wledGameCode.code || null });
   } catch (err) {
     res.json({ message: err.message, available: false });
   }

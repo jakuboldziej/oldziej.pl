@@ -6,6 +6,7 @@ import React, { useContext } from 'react';
 import { totalThrows } from '../../../Home/Darts/game logic/userUtils';
 import { Button } from '@/components/ui/shadcn/button';
 import { DartsUsersContext } from './DartsUsersContext';
+import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 
 const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
   const { setDialogOpen, setSelectedUser, setModalType, setModalDesc } = useContext(DartsUsersContext);
@@ -17,7 +18,7 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
 
     if (type === "sync") {
       try {
-        const userGames = await getDartsGames(user.displayName);
+        const userGames = await getDartsGames(user.displayName, null, false);
 
         const gamesPlayed = userGames.length;
         let highestCheckout = 0;
@@ -97,70 +98,74 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[100px]">_id</TableHead>
-          <TableHead>displayName</TableHead>
-          <TableHead>highestCheckout</TableHead>
-          <TableHead>highestEndingAvg</TableHead>
-          <TableHead>highestTurnPoints</TableHead>
-          <TableHead>overAllPoints</TableHead>
-          <TableHead>gamesPlayed</TableHead>
-          <TableHead>podiums</TableHead>
-          <TableHead>throws</TableHead>
-          <TableHead>Visible</TableHead>
-          <TableHead className='text-right'>Action</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {dartsUsers.map((user) => (
-          <TableRow key={user._id}>
-            <TableCell className="font-medium">{user._id}</TableCell>
-            <TableCell>{user.displayName}</TableCell>
-            <TableCell>{user.highestCheckout}</TableCell>
-            <TableCell>{user.highestEndingAvg}</TableCell>
-            <TableCell>{user.highestTurnPoints}</TableCell>
-            <TableCell>{user.overAllPoints}</TableCell>
-            <TableCell>{user.gamesPlayed}</TableCell>
-            <TableCell>
-              {user.podiums.firstPlace} | {user.podiums.secondPlace} | {user.podiums.thirdPlace}
-            </TableCell>
-            <TableCell>{totalThrows(user, false)}</TableCell>
-            <TableCell>{user.visible ? "Yes" : "No"}</TableCell>
-            <TableCell className='text-right'>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost'><Grip /></Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className='mr-5'>
-                  <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => handleVisibleUser(user)}
-                  >
-                    {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
-                    {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleDialogOpen(user, "sync")}
-                  >
-                    <FolderSync height={20} />
-                    <span>Sync data</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => handleDialogOpen(user, "reset")}
-                  >
-                    <Trash height={20} />
-                    <span>Reset data</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </TableCell>
+    <ScrollArea className="h-[700px] w-full">
+      <div className="overflow-x-auto">
+        <Table className="min-w-[1000px]">
+          <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">_id</TableHead>
+            <TableHead>displayName</TableHead>
+            <TableHead>highestCheckout</TableHead>
+            <TableHead>highestEndingAvg</TableHead>
+            <TableHead>highestTurnPoints</TableHead>
+            <TableHead>overAllPoints</TableHead>
+            <TableHead>gamesPlayed</TableHead>
+            <TableHead>podiums</TableHead>
+            <TableHead>throws</TableHead>
+            <TableHead>Visible</TableHead>
+            <TableHead className='text-right'>Action</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {dartsUsers.map((user) => (
+            <TableRow key={user._id}>
+              <TableCell className="font-medium">{user._id}</TableCell>
+              <TableCell>{user.displayName}</TableCell>
+              <TableCell>{user.highestCheckout}</TableCell>
+              <TableCell>{user.highestEndingAvg}</TableCell>
+              <TableCell>{user.highestTurnPoints}</TableCell>
+              <TableCell>{user.overAllPoints}</TableCell>
+              <TableCell>{user.gamesPlayed}</TableCell>
+              <TableCell>
+                {user.podiums.firstPlace} | {user.podiums.secondPlace} | {user.podiums.thirdPlace}
+              </TableCell>
+              <TableCell>{totalThrows(user, false)}</TableCell>
+              <TableCell>{user.visible ? "Yes" : "No"}</TableCell>
+              <TableCell className='text-right'>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant='ghost'><Grip /></Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className='mr-5'>
+                    <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleVisibleUser(user)}
+                    >
+                      {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
+                      {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDialogOpen(user, "sync")}
+                    >
+                      <FolderSync height={20} />
+                      <span>Sync data</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDialogOpen(user, "reset")}
+                    >
+                      <Trash height={20} />
+                      <span>Reset data</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+      </div>
+    </ScrollArea>
   )
 }
 
