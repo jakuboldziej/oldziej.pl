@@ -15,9 +15,16 @@ function Keyboard({ props }) {
   const numbers = [];
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => handleClick(i)}>{i}</button>);
 
-  const handleEndTraining = () => {
+  const handleEndTraining = async () => {
     game.podium[1] = game.turn;
     handleShow();
+
+    if (game._id) {
+      game.active = false;
+      socket.emit("updateLiveGamePreview", JSON.stringify(game));
+      await deleteDartsGame(game._id);
+    }
+    localStorage.setItem('dartsGame', null);
   }
 
   const handleQuit = async () => {
@@ -25,9 +32,7 @@ function Keyboard({ props }) {
 
     if (game._id) {
       game.active = false;
-      if (!game.training) {
-        socket.emit("updateLiveGamePreview", JSON.stringify(game));
-      }
+      socket.emit("updateLiveGamePreview", JSON.stringify(game));
       await deleteDartsGame(game._id);
     }
     localStorage.setItem('dartsGame', null);

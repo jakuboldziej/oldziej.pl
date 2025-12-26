@@ -39,7 +39,6 @@ export const DartsGameContextProvider = ({ children }) => {
 
       socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
 
-
       const { record, userWon, ...restGameData } = gameCopy;
       await patchDartsGame(restGameData);
     } catch (err) {
