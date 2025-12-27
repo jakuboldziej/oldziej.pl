@@ -277,36 +277,25 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         users: usersCopy
       }];
 
-      if (training === true) {
-        gameData.training = true;
+      gameData.training = training === true;
 
-        const { record, ...gameWithoutRecord } = gameData;
-        const game = await postDartsGame(gameWithoutRecord);
+      const { record, ...gameWithoutRecord } = gameData;
+      const game = await postDartsGame(gameWithoutRecord);
 
-        gameData._id = game._id;
-        gameData["gameCode"] = game.gameCode;
-        updateGameState(gameData);
-      } else {
-        gameData.training = false;
+      gameData._id = game._id;
+      gameData["gameCode"] = game.gameCode;
+      updateGameState(gameData);
 
-        const { record, ...gameWithoutRecord } = gameData;
-        const game = await postDartsGame(gameWithoutRecord);
-
-        gameData._id = game._id;
-        gameData["gameCode"] = game.gameCode;
-        updateGameState(gameData);
-
-        if (WLEDon) {
-          const res = await postESP32JoinGame(game.gameCode);
-          if (res.message) {
-            ShowNewToast("ESP32 error", res.message, "error");
-            if (res.message.includes("does not match")) {
-              ShowNewToast(
-                "WLED Stuck?",
-                "WLED might be stuck on an old game. Try force resetting from ESP32 settings.",
-                "warning"
-              );
-            }
+      if (WLEDon) {
+        const res = await postESP32JoinGame(game.gameCode);
+        if (res.message) {
+          ShowNewToast("ESP32 error", res.message, "error");
+          if (res.message.includes("does not match")) {
+            ShowNewToast(
+              "WLED Stuck?",
+              "WLED might be stuck on an old game. Try force resetting from ESP32 settings.",
+              "warning"
+            );
           }
         }
       }
