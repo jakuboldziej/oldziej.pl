@@ -4,6 +4,8 @@ let timeoutId = null;
 
 export const handleWLEDEffectSolid = async (gameCode) => {
   try {
+    if (timeoutId) clearTimeout(timeoutId);
+
     const WLEDState = await getESP32State();
     if (WLEDState.on === false) return;
 
@@ -51,7 +53,8 @@ export const handleWLEDGameEnd = async (gameCode) => {
           sx: 128,
           ix: 128,
           pal: 0
-        }
+        },
+        gameCode
       };
 
       await patchESP32State(data);

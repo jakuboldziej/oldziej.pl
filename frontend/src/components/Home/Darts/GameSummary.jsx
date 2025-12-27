@@ -104,7 +104,7 @@ function GameSummary({ show, setShow }) {
       gameCode: gameDataMerged.gameCode
     }));
 
-    const responseWLED = await getESP32Availability(gameCopy.gameCode);
+    const responseWLED = await getESP32Availability();
     if (responseWLED.available === true) await postESP32JoinGame(newGameData.gameCode);
 
     setShow(false);
