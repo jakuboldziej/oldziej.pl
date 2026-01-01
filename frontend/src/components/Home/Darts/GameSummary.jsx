@@ -13,101 +13,114 @@ import { handleWLEDEffectSolid } from './game logic/wledController';
 function GameSummary({ show, setShow }) {
   const { game, updateGameState, handleRound, clearDartsUsersBackup } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   function handleShow() {
     setShow(true);
   }
 
   const handlePlayAgain = async () => {
-    clearDartsUsersBackup();
+    setIsLoading(true);
 
-    const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
+    try {
+      clearDartsUsersBackup();
 
-    const throwsData = {
-      doors: 0,
-      doubles: 0,
-      triples: 0,
-      normal: 0,
-      overthrows: 0,
-    }
+      const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
 
-    const updatedUsers = game.users.map((user) => {
-      user.points = game.startPoints;
-      user.allGainedPoints = 0;
-      user.turn = false;
-      user.turnsSum = 0;
-      user.currentTurn = 1;
-      user.place = 0;
-      user.turns = {
-        1: null,
-        2: null,
-        3: null
-      };
-      user.throws = { ...throwsData };
-      user.currentThrows = { ...throwsData };
-      user.legs = 0;
-      user.sets = 0;
-      user.avgPointsPerTurn = "0.00";
-      user.highestGameAvg = "0.00";
-      user.highestGameTurnPoints = 0;
-      user.gameCheckout = 0;
+      const throwsData = {
+        doors: 0,
+        doubles: 0,
+        triples: 0,
+        normal: 0,
+        overthrows: 0,
+      }
 
-      return user;
-    });
+      const updatedUsers = game.users.map((user) => {
+        user.points = game.startPoints;
+        user.allGainedPoints = 0;
+        user.turn = false;
+        user.turnsSum = 0;
+        user.currentTurn = 1;
+        user.place = 0;
+        user.turns = {
+          1: null,
+          2: null,
+          3: null
+        };
+        user.throws = { ...throwsData };
+        user.currentThrows = { ...throwsData };
+        user.legs = 0;
+        user.sets = 0;
+        user.avgPointsPerTurn = "0.00";
+        user.highestGameAvg = "0.00";
+        user.highestGameTurnPoints = 0;
+        user.gameCheckout = 0;
 
-    // game.users = updatedUsers.sort(() => Math.random() - 0.5);
-    game.users = updatedUsers.reverse();
-    game.users[0].turn = true;
+        return user;
+      });
 
-    const usersCopy = lodash.cloneDeep(game.users);
-    const gameCopy = lodash.cloneDeep(game);
-    const gameData = {
-      created_at: Date.now(),
-      active: true,
-      podium: {
-        1: null,
-        2: null,
-        3: null
-      },
-      userWon: "",
-      turn: usersCopy[0].displayName,
-      round: 1,
-      record: [{
-        game: {
-          round: 1,
-          turn: usersCopy[0].displayName
+      // game.users = updatedUsers.sort(() => Math.random() - 0.5);
+      game.users = updatedUsers.reverse();
+      game.users[0].turn = true;
+
+      const usersCopy = lodash.cloneDeep(game.users);
+      const gameCopy = lodash.cloneDeep(game);
+      const gameData = {
+        created_at: Date.now(),
+        active: true,
+        podium: {
+          1: null,
+          2: null,
+          3: null
         },
-        users: usersCopy
-      }],
+        userWon: "",
+        turn: usersCopy[0].displayName,
+        round: 1,
+        record: [{
+          game: {
+            round: 1,
+            turn: usersCopy[0].displayName
+          },
+          users: usersCopy
+        }],
+      }
+      const gameDataMerged = { ...gameCopy, ...gameData };
+
+      if (previousSettings && previousSettings.training === false) {
+        gameDataMerged.training = false;
+      } else {
+        gameDataMerged.training = true;
+      }
+
+      const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
+      const newGameData = await postDartsGame(gameWithoutRecordAndUserWon);
+
+      gameDataMerged._id = newGameData._id;
+      gameDataMerged["gameCode"] = newGameData.gameCode;
+      updateGameState(gameDataMerged);
+
+      socket.emit("playAgainButtonServer", JSON.stringify({
+        oldGameCode: gameCopy.gameCode,
+        newGame: gameDataMerged
+      }));
+
+      socket.emit("joinLiveGamePreview", JSON.stringify({
+        gameCode: gameDataMerged.gameCode
+      }));
+
+      setShow(false);
+      setIsLoading(false);
+
+      // Check ESP32 availability asynchronously after closing modal
+      getESP32Availability().then(responseWLED => {
+        if (responseWLED.available === true) {
+          postESP32JoinGame(newGameData.gameCode).catch(err => console.error('ESP32 join error:', err));
+        }
+      }).catch(err => console.error('ESP32 availability check error:', err));
+    } catch (err) {
+      console.error('Play Again error:', err);
+      setIsLoading(false);
     }
-    const gameDataMerged = { ...gameCopy, ...gameData };
-
-    if (previousSettings && previousSettings.training === false) {
-      gameDataMerged.training = false;
-    } else {
-      gameDataMerged.training = true;
-    }
-
-    const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
-    const newGameData = await postDartsGame(gameWithoutRecordAndUserWon);
-
-    gameDataMerged._id = newGameData._id;
-    gameDataMerged["gameCode"] = newGameData.gameCode;
-    updateGameState(gameDataMerged);
-
-    socket.emit("playAgainButtonServer", JSON.stringify({
-      oldGameCode: gameCopy.gameCode,
-      newGame: gameDataMerged
-    }));
-
-    socket.emit("joinLiveGamePreview", JSON.stringify({
-      gameCode: gameDataMerged.gameCode
-    }));
-
-    const responseWLED = await getESP32Availability();
-    if (responseWLED.available === true) await postESP32JoinGame(newGameData.gameCode);
-
-    setShow(false);
   }
 
   const handleDisabledBack = () => {
@@ -221,7 +234,9 @@ function GameSummary({ show, setShow }) {
           <span className='flex flex-col items-center gap-5 mt-5'>
             <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={handleBackToDarts}>Create New Game</Link>
             <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={handleBackToDarts}>Back to Darts</Link>
-            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain}>Play Again</Button>
+            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={isLoading}>
+              {isLoading ? 'Loading...' : 'Play Again'}
+            </Button>
             <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
           </span>
         </div>

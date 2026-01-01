@@ -39,8 +39,24 @@ export const DartsGameContextProvider = ({ children }) => {
 
       socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
 
+      const lastRecordMinimal = gameCopy.record && gameCopy.record.length > 0 ? {
+        game: gameCopy.record[gameCopy.record.length - 1].game,
+        users: gameCopy.record[gameCopy.record.length - 1].users.map(user => ({
+          _id: user._id,
+          displayName: user.displayName,
+          points: user.points,
+          turn: user.turn,
+          currentTurn: user.currentTurn,
+          turns: user.turns,
+          place: user.place
+        }))
+      } : null;
+
       const { record, userWon, ...restGameData } = gameCopy;
-      await patchDartsGame(restGameData);
+      await patchDartsGame({
+        ...restGameData,
+        lastRecord: lastRecordMinimal
+      });
     } catch (err) {
       console.error("Error updating game", err);
       ShowNewToast("Error updating game", err, "error");

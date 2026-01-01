@@ -450,7 +450,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   <span>Start</span>
                 )}
               </Button>
-              <Button variant="outline_green" className="glow-button-green" onClick={() => handleGameStart(true)}>Training</Button>
+              <Button variant="outline_green" className="glow-button-green" disabled={loading} onClick={() => handleGameStart(true)}>
+                {loading ? (
+                  <span className="flex items-center gap-1"><Loader2Icon className="animate-spin" /> Loading</span>
+
+                ) : (
+                  <span>Training</span>
+                )}
+              </Button>
               <span>EGT: {egt}</span>
             </div>
             <Card className="settingsCard">

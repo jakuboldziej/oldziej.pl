@@ -504,7 +504,20 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
       else available = true;
     }
 
-    await fetch(`${wledDomain}/json/state`);
+    if (available) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+        const response = await fetch(`${wledDomain}/json/state`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+          available = false;
+        }
+      } catch (err) {
+        logger.debug('WLED device offline or unreachable', { error: err.message });
+        available = false;
+      }
+    }
 
     res.json({ available, currentGameCode: wledGameCode.code || null });
   } catch (err) {

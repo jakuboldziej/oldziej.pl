@@ -66,6 +66,10 @@ const dartsGameSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false
+  },
+  lastRecord: {
+    type: Object,
+    required: false
   }
 });
 

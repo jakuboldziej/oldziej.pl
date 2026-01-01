@@ -172,6 +172,33 @@ function DartsPage() {
           doorHits: doorHits
         });
 
+        const activeGames = await getDartsGames(currentUser.displayName, 0, false);
+        const playerActiveGame = activeGames.find(game =>
+          game.active === true &&
+          game.users.some(user => user.displayName === currentUser.displayName)
+        );
+
+        if (playerActiveGame) {
+          if (playerActiveGame.lastRecord && !playerActiveGame.record) {
+            playerActiveGame.record = [playerActiveGame.lastRecord];
+          } else if (!playerActiveGame.record) {
+            playerActiveGame.record = [{
+              game: {
+                round: playerActiveGame.round,
+                turn: playerActiveGame.turn
+              },
+              users: playerActiveGame.users.map(user => ({ ...user }))
+            }];
+          }
+
+          setPlayerInGame(true);
+          localStorage.setItem('dartsGame', JSON.stringify(playerActiveGame));
+          ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
+        } else {
+          localStorage.setItem('dartsGame', null);
+          setPlayerInGame(false);
+        }
+
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching', err);
@@ -179,13 +206,6 @@ function DartsPage() {
       }
     }
     fetchData();
-
-    // Managing live game
-    const liveGame = JSON.parse(localStorage.getItem('dartsGame'));
-    if (liveGame !== null) {
-      setPlayerInGame(true);
-      ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
-    }
 
     // Create New Game Auto
     const params = location.state;
@@ -269,7 +289,7 @@ function DartsPage() {
           <CardHeader>
             <CardTitle>Games ({gamesShown.length})</CardTitle>
           </CardHeader>
-          <ScrollArea onScroll={handleScroll}>
+          <ScrollArea onScrollCapture={handleScroll}>
             <CardContent className="info p-0 pr-3">
               {isLoading ? (
                 <Loading />
