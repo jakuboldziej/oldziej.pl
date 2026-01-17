@@ -11,7 +11,7 @@ import { handleTimePlayed } from './game logic/gameUtils';
 import { handleWLEDEffectSolid } from './game logic/wledController';
 
 function GameSummary({ show, setShow }) {
-  const { game, updateGameState, handleRound, clearDartsUsersBackup } = useContext(DartsGameContext);
+  const { game, updateGameState, handleRound, clearDartsUsersBackup, restoreUsersSummaryBack } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -128,6 +128,12 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleSummaryBackButton = async () => {
+    const restored = await restoreUsersSummaryBack();
+
+    if (!restored) {
+      console.warn('Could not restore user data - backup may be empty');
+    }
+
     game.active = true;
     game.podium = {
       1: null,

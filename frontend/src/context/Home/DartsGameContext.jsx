@@ -73,10 +73,12 @@ export const DartsGameContextProvider = ({ children }) => {
     }
   };
 
-  const handlePodium = () => {
+  const handlePodium = async () => {
+    const usersBeforeBack = await handleUsersBeforeBack();
+
     if (game.gameMode === "X01") {
       handlePodiumX01(game, currentUser);
-      handleDartsData();
+      await handleDartsData(usersBeforeBack);
     } else if (game.gameMode === "Reverse X01") {
       handlePodiumReverseX01(game);
     }
@@ -138,9 +140,7 @@ export const DartsGameContextProvider = ({ children }) => {
     }
   };
 
-  const handleDartsData = async () => {
-    const usersBeforeBack = await handleUsersBeforeBack();
-
+  const handleDartsData = async (usersBeforeBack) => {
     await updateUsersData(usersBeforeBack);
 
     game.podium = {
@@ -148,7 +148,6 @@ export const DartsGameContextProvider = ({ children }) => {
       2: game.podium[2],
       3: game.podium[3],
     };
-
 
     updateGameState(game);
   };
@@ -308,8 +307,9 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const handleRecord = (action) => {
-    if (!game.active) return;
     if (action === "save") {
+      if (!game.active) return;
+
       const usersCopy = lodash.cloneDeep(game.users);
 
       game.record.push({
@@ -320,6 +320,11 @@ export const DartsGameContextProvider = ({ children }) => {
         users: [...usersCopy],
       });
     } else if (action === "back") {
+      if (game.record.length <= 1) {
+        console.warn('Cannot go back further - at initial state');
+        return;
+      }
+
       game.record.splice(-1);
 
       const restoredState = game.record[game.record.length - 1];
@@ -339,11 +344,6 @@ export const DartsGameContextProvider = ({ children }) => {
 
         game.round = restoredState.game.round;
         game.turn = restoredState.game.turn;
-
-        if (dartsUsersBeforeBack.length > 0) {
-          restoreUsersSummaryBack();
-          setDartsUsersBeforeBack([]);
-        }
       }
     }
 
@@ -351,11 +351,22 @@ export const DartsGameContextProvider = ({ children }) => {
   };
 
   const restoreUsersSummaryBack = async () => {
-    await Promise.all(
-      dartsUsersBeforeBack.map(async (user) => {
-        await patchDartsUser(user);
-      })
-    );
+    if (dartsUsersBeforeBack.length === 0) {
+      console.warn('No user backup found to restore');
+      return false;
+    }
+
+    try {
+      await Promise.all(
+        dartsUsersBeforeBack.map(async (user) => {
+          await patchDartsUser(user);
+        })
+      );
+      return true;
+    } catch (error) {
+      console.error('Error restoring user data:', error);
+      return false;
+    }
   }
 
   const clearDartsUsersBackup = () => {
@@ -371,7 +382,8 @@ export const DartsGameContextProvider = ({ children }) => {
     setOverthrow,
     specialState,
     updateGameState,
-    clearDartsUsersBackup
+    clearDartsUsersBackup,
+    restoreUsersSummaryBack
   }
 
   return (

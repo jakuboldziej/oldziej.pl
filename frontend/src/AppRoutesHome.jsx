@@ -2,7 +2,8 @@ import Home from './pages/Home/Home';
 import NotFound from './pages/Home/NotFound';
 import DartsPage from './pages/Home/Darts/DartsPage';
 import DartsGame from './pages/Home/Darts/DartsGame';
-import DartsUser from "./pages/Home/Darts/UserPreview/DartsUser";
+import DartsUser from './pages/Home/Darts/UserPreview/DartsUser';
+import DartsGamePreview from './pages/Home/Darts/GamePreview/DartsGamePreview';
 import CloudPage from './pages/Home/Cloud/CloudPage';
 import MyFiles from './pages/Home/Cloud/Files/MyFiles';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
@@ -111,6 +112,7 @@ function AppRoutesHome() {
             <Route path='live' element={<GameLivePreviewPage />} />
             <Route path='join-game-from-qrcode' element={<JoinFromAnotherDevice />} />
           </Route>
+          <Route path='games/:gameId' element={<ProtectedRoute><DartsGamePreview /></ProtectedRoute>} />
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
         </Route>
         <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`} /></OnlyVerifiedAccess>}>
