@@ -124,31 +124,14 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleDisabledBack = () => {
-    if (game.podium[1] === null || game.record.length === 1) return true;
+    if (game.training || game.podium[1] === null || game.record.length === 1) return true;
   }
 
   const handleSummaryBackButton = async () => {
-    const restored = await restoreUsersSummaryBack();
-
-    if (!restored) {
-      console.warn('Could not restore user data - backup may be empty');
-    }
-
-    game.active = true;
-    game.podium = {
-      1: null,
-      2: null,
-      3: null
-    };
-    game.userWon = "";
-    game.finished_at = null;
-
-    handleRound("BACK", handleShow);
+    // Backend now handles all state restoration via handleBack
+    await handleRound("BACK", handleShow);
 
     setShow(false);
-
-    const responseWLED = await getESP32Availability(game.gameCode);
-    if (responseWLED.available === true) await handleWLEDEffectSolid(game.gameCode);
   }
 
   const handleBackToDarts = async () => {

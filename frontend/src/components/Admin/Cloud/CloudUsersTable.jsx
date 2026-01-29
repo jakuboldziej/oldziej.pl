@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Loading from '../../Home/Loading';
 import { getFtpUsers, getStatisticsUsersFilesCreated, getStatisticsUsersFoldersCreated } from '@/lib/fetch';
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function CloudUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -51,45 +51,46 @@ function CloudUsersTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <ScrollArea className="h-[700px] w-full">
-          <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[700px] w-full">
             <Table className="min-w-[800px]">
               <TableHeader>
                 <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>DisplayName</TableHead>
-              <TableHead>Main folder ID</TableHead>
-              <TableHead>Files</TableHead>
-              <TableHead>Folders</TableHead>
-              <TableHead className='text-right'>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cloudUsers.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell className="font-medium">{user._id}</TableCell>
-                <TableCell>{user.displayName}</TableCell>
-                <TableCell>{user.main_folder}</TableCell>
-                <TableCell>{user.filesCount}</TableCell>
-                <TableCell>{user.foldersCount}</TableCell>
-                <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost'><Grip /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className='mr-5'>
-                      <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-          </div>
-        </ScrollArea>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>DisplayName</TableHead>
+                  <TableHead>Main folder ID</TableHead>
+                  <TableHead>Files</TableHead>
+                  <TableHead>Folders</TableHead>
+                  <TableHead className='text-right'>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {cloudUsers.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell className="font-medium">{user._id}</TableCell>
+                    <TableCell>{user.displayName}</TableCell>
+                    <TableCell>{user.main_folder}</TableCell>
+                    <TableCell>{user.filesCount}</TableCell>
+                    <TableCell>{user.foldersCount}</TableCell>
+                    <TableCell className='text-right'>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost'><Grip /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className='mr-5'>
+                          <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation='horizontal' />
+          </ScrollArea>
+        </div>
       )}
     </>
   )

@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { formatDataSize } from '@/components/Home/Cloud/utils';
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function CloudFilesTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -68,77 +68,78 @@ function CloudFilesTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <ScrollArea className="h-[700px] w-full">
-          <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[700px] w-full">
             <Table className="min-w-[1200px]">
               <TableHeader>
                 <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead className="w-[100px]">FileId</TableHead>
-              <TableHead>Filename</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead className='min-w-[100px]'>Size</TableHead>
-              <TableHead>Folders</TableHead>
-              <TableHead>Upload date</TableHead>
-              <TableHead>Last modified</TableHead>
-              <TableHead>Metadata</TableHead>
-              <TableHead>Shared</TableHead>
-              <TableHead>Favorite</TableHead>
-              <TableHead className='text-right'>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {files.map((file) => (
-              <TableRow key={file._id}>
-                <TableCell>{file._id}</TableCell>
-                <TableCell>{file.fileId}</TableCell>
-                <TableCell>{file.filename}</TableCell>
-                <TableCell>{file.ownerName}</TableCell>
-                <TableCell>{formatDataSize(file.length)}</TableCell>
-                <TableCell>
-                  <MyTooltip title={file.folders.map((folder) => folder).join(', ')}>
-                    <span className="timedate">{file.folders.length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={new Date(file.uploadDate).toLocaleString()}>
-                    <span className="timedate">{new Date(file.uploadDate).toLocaleDateString()}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={new Date(file.lastModified).toLocaleString()}>
-                    <span className="timedate">{new Date(file.lastModified).toLocaleDateString()}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={displayMetadata(file.metadata)}>
-                    <span className="timedate">{Object.keys(file.metadata).length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={file.shared.map((folder) => folder).join(', ')}>
-                    <span className="timedate">{file.shared.length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>{file.favorite ? "Yes" : "No"}</TableCell>
-                <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost'><Grip /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className='mr-5'>
-                      <DropdownMenuLabel>{file._id}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleDialogOpen(file)}><Trash height={20} /> Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-          </div>
-        </ScrollArea>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead className="w-[100px]">FileId</TableHead>
+                  <TableHead>Filename</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead className='min-w-[100px]'>Size</TableHead>
+                  <TableHead>Folders</TableHead>
+                  <TableHead>Upload date</TableHead>
+                  <TableHead>Last modified</TableHead>
+                  <TableHead>Metadata</TableHead>
+                  <TableHead>Shared</TableHead>
+                  <TableHead>Favorite</TableHead>
+                  <TableHead className='text-right'>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {files.map((file) => (
+                  <TableRow key={file._id}>
+                    <TableCell>{file._id}</TableCell>
+                    <TableCell>{file.fileId}</TableCell>
+                    <TableCell>{file.filename}</TableCell>
+                    <TableCell>{file.ownerName}</TableCell>
+                    <TableCell>{formatDataSize(file.length)}</TableCell>
+                    <TableCell>
+                      <MyTooltip title={file.folders.map((folder) => folder).join(', ')}>
+                        <span className="timedate">{file.folders.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={new Date(file.uploadDate).toLocaleString()}>
+                        <span className="timedate">{new Date(file.uploadDate).toLocaleDateString()}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={new Date(file.lastModified).toLocaleString()}>
+                        <span className="timedate">{new Date(file.lastModified).toLocaleDateString()}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={displayMetadata(file.metadata)}>
+                        <span className="timedate">{Object.keys(file.metadata).length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={file.shared.map((folder) => folder).join(', ')}>
+                        <span className="timedate">{file.shared.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>{file.favorite ? "Yes" : "No"}</TableCell>
+                    <TableCell className='text-right'>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost'><Grip /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className='mr-5'>
+                          <DropdownMenuLabel>{file._id}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDialogOpen(file)}><Trash height={20} /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation='horizontal' />
+          </ScrollArea>
+        </div>
       )}
       <Dialog open={dialogOpen}>
         <DialogContent>

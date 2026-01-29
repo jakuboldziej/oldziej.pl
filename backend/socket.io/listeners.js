@@ -1,5 +1,7 @@
 const { io } = require('../server');
 const { addingOnlineUser, scheduleUserOffline } = require('./utils');
+const { getGameManager, removeGameManager } = require('../services/dartsGameManager');
+const { logger } = require('../middleware/logging');
 
 io.on('connection', (socket) => {
   // Listeners
@@ -21,6 +23,7 @@ io.on('connection', (socket) => {
     const joinData = JSON.parse(data);
 
     socket.join(`game-${joinData.gameCode}`);
+    logger.info(`[joinLiveGamePreview] Socket ${socket.id} joined room game-${joinData.gameCode}`);
   });
 
   socket.on("leaveLiveGamePreview", (data) => {
@@ -48,6 +51,9 @@ io.on('connection', (socket) => {
     const oldGameCode = playAgainData.oldGameCode;
     const newGame = playAgainData.newGame;
 
+    // Clean up old game manager
+    removeGameManager(oldGameCode);
+
     io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
     io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
   });
@@ -61,22 +67,113 @@ io.on('connection', (socket) => {
   socket.on("hostDisconnectedFromGame", (data) => {
     const { gameCode } = JSON.parse(data);
 
+    // Clean up game manager
+    removeGameManager(gameCode);
+
     io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
     io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
   });
 
   // Mobile App Inputs
 
-  socket.on("externalKeyboardInput", (data) => {
-    const { gameCode, input } = JSON.parse(data);
+  socket.on("externalKeyboardInput", async (data) => {
+    try {
+      const { gameCode, input } = JSON.parse(data);
 
-    io.to(`game-${gameCode}`).emit("externalKeyboardInputClient", JSON.stringify(input));
+      if (!gameCode) {
+        console.error('[externalKeyboardInput] No gameCode provided');
+        return;
+      }
+
+      const gameManager = await getGameManager(gameCode, io);
+      if (!gameManager) {
+        console.error(`[externalKeyboardInput] Game manager not found for gameCode: ${gameCode}`);
+        return;
+      }
+
+      // Handle special actions
+      if (input === "END") {
+        await gameManager.handleEnd();
+      } else if (input === "QUIT") {
+        await gameManager.handleEnd();
+      } else if (input === "BACK") {
+        const errorMessage = await gameManager.handleBack();
+        if (errorMessage) {
+          console.error(`[externalKeyboardInput] Back error: ${errorMessage}`);
+        }
+      } else {
+        // Regular throw input
+        await gameManager.handleThrow(input);
+      }
+    } catch (error) {
+      console.error('[externalKeyboardInput] Error:', error);
+    }
   });
 
   socket.on("externalKeyboardPlayAgain", (data) => {
     const { gameCode } = JSON.parse(data);
 
     io.to(`game-${gameCode}`).emit("externalKeyboardPlayAgainClient", JSON.stringify(gameCode));
+  });
+
+  // Darts Game Logic - Server-side game management
+
+  socket.on("game:throw", async (data) => {
+    try {
+      const { gameCode, value, action } = JSON.parse(data);
+
+      if (!gameCode) {
+        socket.emit("game:throw-result", JSON.stringify({ success: false, message: "Invalid gameCode" }));
+        return;
+      }
+
+      const gameManager = await getGameManager(gameCode, io);
+      const result = await gameManager.handleThrow(value, action);
+
+      if (result.success) {
+        // Game state is already emitted by updateGameState in the manager
+        socket.emit("game:throw-result", JSON.stringify({ success: true, gameEnd: result.gameEnd }));
+      } else {
+        socket.emit("game:throw-result", JSON.stringify({ success: false, message: result.message }));
+      }
+    } catch (error) {
+      console.error("Error handling throw:", error);
+      socket.emit("game:throw-result", JSON.stringify({ success: false, message: error.message }));
+    }
+  });
+
+  socket.on("game:back", async (data) => {
+    try {
+      const { gameCode } = JSON.parse(data);
+
+      if (!gameCode) {
+        socket.emit("game:back-result", JSON.stringify({ success: false, message: "Invalid gameCode" }));
+        return;
+      }
+
+      const gameManager = await getGameManager(gameCode, io);
+      const result = await gameManager.handleBack();
+
+      if (result.success) {
+        socket.emit("game:back-result", JSON.stringify({ success: true }));
+      } else {
+        socket.emit("game:back-result", JSON.stringify({ success: false, message: result.message }));
+      }
+    } catch (error) {
+      console.error("Error handling back:", error);
+      socket.emit("game:back-result", JSON.stringify({ success: false, message: error.message }));
+    }
+  });
+
+  socket.on("game:end", async (data) => {
+    try {
+      const { gameCode } = JSON.parse(data);
+      removeGameManager(gameCode);
+      socket.emit("game:end-result", JSON.stringify({ success: true }));
+    } catch (error) {
+      console.error("Error ending game:", error);
+      socket.emit("game:end-result", JSON.stringify({ success: false, message: error.message }));
+    }
   });
 
   // Handling Online Users

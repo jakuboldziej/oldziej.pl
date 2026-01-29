@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import CopyTextButton from '@/components/Home/CopyTextButton';
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function DartsGamesTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -83,9 +83,9 @@ function DartsGamesTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <ScrollArea className="h-[700px] w-full" onScroll={handleScroll}>
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1200px]">
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[700px] w-full" onScroll={handleScroll}>
+            <Table className="min-w-[1400px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[100px]">ID</TableHead>
@@ -177,11 +177,10 @@ function DartsGamesTable({ props }) {
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </ScrollArea>
-      )}
-
-      <Dialog open={dialogOpen}>
+            <ScrollBar orientation='horizontal' />
+          </ScrollArea>
+        </div>
+      )}      <Dialog open={dialogOpen}>
         <DialogContent>
           <DialogHeader className="text-white">
             <DialogTitle className='flex justify-center text-2xl'>Delete {selectedGame?.displayName}</DialogTitle>

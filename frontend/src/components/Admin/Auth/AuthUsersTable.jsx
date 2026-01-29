@@ -10,7 +10,7 @@ import CopyTextButton from '../../Home/CopyTextButton';
 import MyTooltip from '../../Home/MyComponents/MyTooltip';
 import { socket } from '@/lib/socketio';
 import Loading from '../../Home/Loading';
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -67,67 +67,66 @@ function AuthUsersTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <ScrollArea className="h-[700px] w-full">
-          <div className="overflow-x-auto">
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[700px] w-full">
             <Table className="min-w-[1000px]">
               <TableHeader>
                 <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>DisplayName</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Friends Code</TableHead>
-              <TableHead>Online</TableHead>
-              <TableHead>Verified</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className='text-right'>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {authUsers.map((user) => (
-              <TableRow key={user._id}>
-                <TableCell className="font-medium">{user._id}</TableCell>
-                <TableCell>{user.displayName}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <div className='flex gap-1'>
-                    {user.friendsCode}
-                    <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
-                      <MyTooltip title="Copy code to clipboard">
-                        <Copy height={15} />
-                      </MyTooltip>
-                    </CopyTextButton>
-                  </div>
-                </TableCell>
-                <TableCell>{user.online ? "Yes" : "No"}</TableCell>
-                <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost'><Grip /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className='mr-5'>
-                      <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
-                      {user.verified === false ? (
-                        <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldOff height={20} /> Disprove</DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-          </div>
-        </ScrollArea>
-      )}
-
-      <Dialog open={dialogOpen}>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>DisplayName</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Friends Code</TableHead>
+                  <TableHead>Online</TableHead>
+                  <TableHead>Verified</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className='text-right'>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {authUsers.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell className="font-medium">{user._id}</TableCell>
+                    <TableCell>{user.displayName}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <div className='flex gap-1'>
+                        {user.friendsCode}
+                        <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                          <MyTooltip title="Copy code to clipboard">
+                            <Copy height={15} />
+                          </MyTooltip>
+                        </CopyTextButton>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.online ? "Yes" : "No"}</TableCell>
+                    <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell className='text-right'>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost'><Grip /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className='mr-5'>
+                          <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
+                          {user.verified === false ? (
+                            <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldOff height={20} /> Disprove</DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation='horizontal' />
+          </ScrollArea>
+        </div>
+      )}      <Dialog open={dialogOpen}>
         <DialogContent>
           <DialogHeader className="text-white">
             <DialogTitle className='flex justify-center text-2xl'>Delete {selectedUser?.displayName}</DialogTitle>

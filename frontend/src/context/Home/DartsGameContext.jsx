@@ -1,12 +1,14 @@
-import { doorsValueReverseX01, handlePodiumReverseX01, handlePointsReverseX01, zeroValueReverseX01 } from '@/components/Home/Darts/game logic/game modes/Reverse X01';
-import { handleNextLeg, handlePodiumX01, handlePointsX01 } from '@/components/Home/Darts/game logic/game modes/X01';
-import { calculatePoints, handleAvgPointsPerTurn, handleTurnsSum } from '@/components/Home/Darts/game logic/userUtils';
-import { getDartsUser, patchDartsGame, patchDartsUser } from '@/lib/fetch';
-import { socket } from '@/lib/socketio';
-import { createContext, useEffect, useMemo, useState } from 'react';
-import lodash from 'lodash';
+import { createContext, useEffect, useMemo, useState, useRef } from 'react';
+import {
+  subscribeToGameUpdates,
+  subscribeToOverthrows,
+  subscribeToGameEnd,
+  joinGameRoom,
+  leaveGameRoom,
+  sendThrow,
+  sendBack
+} from '@/lib/dartsGameSocket';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
-import { handleWLEDGameEnd, handleWLEDThrow180, handleWLEDThrowD25, handleWLEDThrowDoors, handleWLEDThrowT20 } from '@/components/Home/Darts/game logic/wledController';
 
 export const DartsGameContext = createContext();
 
@@ -17,8 +19,7 @@ export const DartsGameContextProvider = ({ children }) => {
   });
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
-
-  const [dartsUsersBeforeBack, setDartsUsersBeforeBack] = useState([]);
+  const subscribedGameCode = useRef(null);
 
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
@@ -27,355 +28,111 @@ export const DartsGameContextProvider = ({ children }) => {
 
   let handleShow;
 
-  const updateGameState = async (gameP) => {
-    try {
-      const gameCopy = {
-        ...gameP,
-        users: gameP.users ? gameP.users.map(user => ({ ...user })) : []
-      };
+  // Subscribe to game updates from backend
+  useEffect(() => {
+    const gameCode = game?.gameCode;
 
-      setGame(gameCopy);
-      localStorage.setItem("dartsGame", JSON.stringify(gameCopy));
+    if (!gameCode || subscribedGameCode.current === gameCode) return;
 
-      socket.emit("updateLiveGamePreview", JSON.stringify(gameCopy));
+    subscribedGameCode.current = gameCode;
 
-      const lastRecordMinimal = gameCopy.record && gameCopy.record.length > 0 ? {
-        game: gameCopy.record[gameCopy.record.length - 1].game,
-        users: gameCopy.record[gameCopy.record.length - 1].users.map(user => ({
-          _id: user._id,
-          displayName: user.displayName,
-          points: user.points,
-          turn: user.turn,
-          currentTurn: user.currentTurn,
-          turns: user.turns,
-          place: user.place
-        }))
-      } : null;
+    // Join game room
+    joinGameRoom(gameCode);
 
-      const { record, userWon, ...restGameData } = gameCopy;
-      await patchDartsGame({
-        ...restGameData,
-        lastRecord: lastRecordMinimal
-      });
-    } catch (err) {
-      console.error("Error updating game", err);
-      ShowNewToast("Error updating game", err, "error");
-    }
-  }
+    // Subscribe to game state updates
+    const unsubscribeUpdates = subscribeToGameUpdates(gameCode, (updatedGame) => {
+      setGame(updatedGame);
+      localStorage.setItem("dartsGame", JSON.stringify(updatedGame));
+    });
 
-  const handleRound = (value, handleShowP) => {
+    // Subscribe to overthrow events
+    const unsubscribeOverthrows = subscribeToOverthrows((userDisplayName) => {
+      setOverthrow(userDisplayName);
+      setTimeout(() => setOverthrow(false), 2000);
+    });
+
+    // Subscribe to game end events
+    const unsubscribeGameEnd = subscribeToGameEnd((endedGame) => {
+      setGame(endedGame);
+      localStorage.setItem("dartsGame", JSON.stringify(endedGame));
+      if (handleShow) handleShow();
+    });
+
+    return () => {
+      unsubscribeUpdates();
+      unsubscribeOverthrows();
+      unsubscribeGameEnd();
+      leaveGameRoom(gameCode);
+      subscribedGameCode.current = null;
+    };
+  }, [game?.gameCode]);
+
+  // Handle throw - send to backend
+  const handleRound = async (value, handleShowP) => {
     handleShow = handleShowP;
 
-    if (Number.isInteger(value)) {
-      handleUsersState(value);
-    } else if (!Number.isInteger(value)) {
-      handleSpecialValue(value);
-    }
-  };
-
-  const handlePodium = async () => {
-    const usersBeforeBack = await handleUsersBeforeBack();
-
-    if (game.gameMode === "X01") {
-      handlePodiumX01(game, currentUser);
-      await handleDartsData(usersBeforeBack);
-    } else if (game.gameMode === "Reverse X01") {
-      handlePodiumReverseX01(game);
-    }
-    handleShow();
-  };
-
-  const handleGameEnd = () => {
-    if (game.legs === 1) {
-      handleRecord("save");
-      handlePodium();
-      handleWLEDGameEnd(game.gameCode);
-      return true;
-    } else {
-      const endGame = handleNextLeg(game.users, game);
-
-      if (endGame) {
-        handleRecord("save");
-        handlePodium();
-        handleWLEDGameEnd(game.gameCode);
-        return true;
-      } else {
-        if (game.round !== 1) game.round = 0;
-        return false;
-      }
-    }
-  };
-
-  const handlePoints = (action, value) => {
-    const { turns } = currentUser;
-
-    if (action) {
-      if (action === 'DOUBLE') {
-        turns[currentUser.currentTurn] = `D${value}`;
-
-        if (turns[currentUser.currentTurn] === "D25") handleWLEDThrowD25(game.gameCode);
-      } else if (action === 'TRIPLE') {
-        turns[currentUser.currentTurn] = `T${value}`;
-
-        if (turns[currentUser.currentTurn] === "T20" && !(
-          turns[1] === "T20" &&
-          turns[2] === "T20" &&
-          turns[3] === "T20"
-        )
-        ) handleWLEDThrowT20(game.gameCode);
-      }
+    if (!game?.gameCode) {
+      ShowNewToast("Error", "No active game", "error");
+      return;
     }
 
-    let stop = false;
-    if (game.gameMode === "X01") stop = handlePointsX01(setOverthrow, game, currentUser);
-    if (game.gameMode === "Reverse X01") stop = handlePointsReverseX01(currentUser);
-
-    handleAvgPointsPerTurn(currentUser, game);
-
-    if (stop) {
-      const endGame = handleGameEnd();
-
-      if (endGame) return true;
-      else return false;
-    }
-  };
-
-  const handleDartsData = async (usersBeforeBack) => {
-    await updateUsersData(usersBeforeBack);
-
-    game.podium = {
-      1: game.podium[1],
-      2: game.podium[2],
-      3: game.podium[3],
-    };
-
-    updateGameState(game);
-  };
-
-  const handleUsersBeforeBack = async () => {
-    const tempUsers = await Promise.all(
-      game.users.map(async (user) => {
-        const dartUser = await getDartsUser(user.displayName);
-        return JSON.parse(JSON.stringify(dartUser));
-      })
-    );
-
-    setDartsUsersBeforeBack(JSON.parse(JSON.stringify(tempUsers)));
-    return tempUsers;
-  };
-
-  const updateUsersData = async (usersBeforeBack) => {
     try {
-      await Promise.all(game.users.map(async (user) => {
-        if (game.legs === 1 && game.sets === 1) user.highestGameAvg = user.avgPointsPerTurn;
+      let action = null;
+      let throwValue = value;
 
-        if (user.temporary || user.verified === false) return;
-        if (game.training) return;
-
-        const freshDartUser = await getDartsUser(user.displayName);
-        const dartUser = JSON.parse(JSON.stringify(freshDartUser));
-        const userOriginalData = JSON.parse(JSON.stringify(dartUser));
-
-        if (user.place === 1) dartUser.podiums["firstPlace"] += 1;
-        if (user.place === 2) dartUser.podiums["secondPlace"] += 1;
-        if (user.place === 3) dartUser.podiums["thirdPlace"] += 1;
-
-        dartUser.throws["doors"] += user.throws["doors"];
-        dartUser.throws["doubles"] += user.throws["doubles"];
-        dartUser.throws["triples"] += user.throws["triples"];
-        dartUser.throws["normal"] += user.throws["normal"];
-
-        if (game.gameMode === "X01") {
-          dartUser.throws["overthrows"] += user.throws["overthrows"];
-          dartUser.overAllPoints += user.allGainedPoints;
-          currentUser.gameCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
-
-          if (parseFloat(user.highestGameAvg) > parseFloat(dartUser.highestEndingAvg)) dartUser.highestEndingAvg = parseFloat(user.highestGameAvg);
-          if (parseFloat(user.highestGameTurnPoints) > parseFloat(dartUser.highestTurnPoints)) dartUser.highestTurnPoints = parseFloat(user.highestGameTurnPoints);
-          if (user.gameCheckout > dartUser.highestCheckout) dartUser.highestCheckout = user.gameCheckout;
+      if (value === "DOUBLE" || value === "TRIPLE") {
+        if (specialState[0]) {
+          setSpecialState([false, ""]);
+        } else {
+          setSpecialState([true, value]);
         }
-
-        dartUser.gamesPlayed += 1;
-
-        try {
-          const updatedDartsUser = await patchDartsUser(dartUser);
-
-          if (JSON.stringify(userOriginalData) === JSON.stringify(updatedDartsUser)) {
-            ShowNewToast("Darts game", `${userOriginalData.displayName}'s data didn't update properly.`);
-          }
-        } catch (error) {
-          console.error("Error updating user.", error);
-        }
-      }));
-    } catch (error) {
-      console.error("Error in updateUsersData:", error);
-      ShowNewToast("Darts game", `Error updating user data: ${error.message}`, "error");
-    }
-  }
-
-  const handleSpecialValue = async (value) => {
-    if (value === "DOORS") {
-      handleWLEDThrowDoors(game.gameCode);
-      if (game.gameMode === "Reverse X01") {
-        handleUsersState(doorsValueReverseX01);
-      } else {
-        handleUsersState("DOORS");
-      }
-    } else if (value === "BACK") {
-      handleRecord("back");
-    } else if (value === "DOUBLE" || value === "TRIPLE") {
-      specialState[0] ? setSpecialState([false, ""]) : setSpecialState([true, value]);
-    }
-  };
-
-  const handleNextUser = () => {
-    const remainingUsers = game.users.filter(user => user.place === 0);
-
-    if (remainingUsers.length === 0) {
-      return;
-    }
-
-    let nextUserIndex = (game.users.findIndex(user => user._id === currentUser._id) + 1) % game.users.length;
-    let nextUser = game.users[nextUserIndex];
-
-    while (nextUser.place !== 0) {
-      nextUserIndex = (nextUserIndex + 1) % game.users.length;
-      nextUser = game.users[nextUserIndex];
-    }
-
-    nextUser.turn = true;
-    nextUser.turns = { 1: null, 2: null, 3: null };
-    nextUser.turnsSum = 0;
-
-    game.turn = nextUser.displayName;
-
-    const isLastUser = remainingUsers[remainingUsers.length - 1]._id === currentUser._id;
-
-    if (isLastUser) game.round += 1;
-
-    return nextUser;
-  };
-
-  const handleUsersState = (value) => {
-    if (specialState[0]) {
-      const multiplier = specialState[1] === "DOUBLE" ? 2 : 3;
-      currentUser.turns[currentUser.currentTurn] = value * multiplier;
-      specialState[1] === "DOUBLE" ? currentUser.throws["doubles"] += 1 : currentUser.throws["triples"] += 1;
-      specialState[1] === "DOUBLE" ? currentUser.currentThrows["doubles"] += 1 : currentUser.currentThrows["triples"] += 1;
-      handleTurnsSum(currentUser);
-      handlePoints(specialState[1], value);
-      setSpecialState([false, ""]);
-    } else {
-      if (value === "DOORS") {
-        currentUser.turns[currentUser.currentTurn] = 0;
-        currentUser.throws["doors"] += 1;
-        currentUser.currentThrows["doors"] += 1;
-        value = 0;
-      }
-      else {
-        currentUser.throws["normal"] += 1;
-        currentUser.currentThrows["normal"] += 1;
-      }
-      if (game.gameMode === "Reverse X01" && value === 0) {
-        currentUser.turns[currentUser.currentTurn] = zeroValueReverseX01;
-      } else {
-        currentUser.turns[currentUser.currentTurn] = value;
-      }
-      handleTurnsSum(currentUser);
-      handlePoints(null, value);
-    }
-
-    if (game.userWon || !currentUser.turn || game.active === false) {
-      return;
-    }
-
-    if (currentUser.currentTurn === 3) {
-      currentUser.currentTurn = 1;
-      currentUser.turn = false;
-
-      if (currentUser.turns[1] === "T20" &&
-        currentUser.turns[2] === "T20" &&
-        currentUser.turns[3] === "T20") handleWLEDThrow180(game.gameCode);
-
-      const nextUser = handleNextUser();
-      nextUser.turn = true;
-    } else {
-      currentUser.currentTurn += 1;
-    }
-
-    handleRecord("save");
-  };
-
-  const handleRecord = (action) => {
-    if (action === "save") {
-      if (!game.active) return;
-
-      const usersCopy = lodash.cloneDeep(game.users);
-
-      game.record.push({
-        game: {
-          round: game.round,
-          turn: game.turn,
-        },
-        users: [...usersCopy],
-      });
-    } else if (action === "back") {
-      if (game.record.length <= 1) {
-        console.warn('Cannot go back further - at initial state');
         return;
       }
 
-      game.record.splice(-1);
-
-      const restoredState = game.record[game.record.length - 1];
-
-      if (restoredState) {
-        const updatedUsers = restoredState.users.map((user) => {
-          const userCopy = { ...user };
-          return {
-            ...userCopy,
-            turns: { ...userCopy.turns },
-            throws: { ...userCopy.throws },
-            currentThrows: { ...userCopy.currentThrows },
-          };
-        });
-
-        game.users = updatedUsers;
-
-        game.round = restoredState.game.round;
-        game.turn = restoredState.game.turn;
+      if (value === "BACK") {
+        await sendBack(game.gameCode);
+        return;
       }
-    }
 
-    updateGameState(game);
+      // Handle DOORS
+      if (value === "DOORS") {
+        throwValue = "DOORS";
+      } else if (specialState[0]) {
+        // User clicked a number while in DOUBLE/TRIPLE state
+        action = specialState[1];
+        throwValue = value;
+        setSpecialState([false, ""]);
+      }
+
+      // Send throw to backend
+      const result = await sendThrow(game.gameCode, throwValue, action);
+
+      if (result.gameEnd && handleShowP) {
+        handleShowP();
+      }
+    } catch (error) {
+      console.error("Error handling throw:", error);
+      ShowNewToast("Error", error.message, "error");
+    }
+  };
+
+  const updateGameState = (gameP) => {
+    setGame(gameP);
+    localStorage.setItem("dartsGame", JSON.stringify(gameP));
+  };
+
+  const clearDartsUsersBackup = () => {
+    // No longer needed - backend handles this
   };
 
   const restoreUsersSummaryBack = async () => {
-    if (dartsUsersBeforeBack.length === 0) {
-      console.warn('No user backup found to restore');
-      return false;
-    }
-
-    try {
-      await Promise.all(
-        dartsUsersBeforeBack.map(async (user) => {
-          await patchDartsUser(user);
-        })
-      );
-      return true;
-    } catch (error) {
-      console.error('Error restoring user data:', error);
-      return false;
-    }
-  }
-
-  const clearDartsUsersBackup = () => {
-    setDartsUsersBeforeBack([]);
-  }
+    // No longer needed - backend handles this
+    return true;
+  };
 
   const contextParams = {
     game,
-    setGame,
+    setGame: updateGameState,
     currentUser,
     handleRound,
     overthrow,

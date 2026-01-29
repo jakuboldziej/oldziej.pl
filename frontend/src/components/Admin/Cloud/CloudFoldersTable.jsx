@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { formatDataSize } from '@/components/Home/Cloud/utils';
-import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function CloudFoldersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
@@ -64,67 +64,68 @@ function CloudFoldersTable({ props }) {
       {isLoading ? (
         <Loading />
       ) : (
-        <ScrollArea className="h-[700px] w-full">
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1000px]">
+        <div className="w-full overflow-x-auto">
+          <ScrollArea className="h-[700px] w-full">
+            <Table className="min-w-[1200px]">
               <TableHeader>
                 <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Upload date</TableHead>
-              <TableHead>Files</TableHead>
-              <TableHead>Folders</TableHead>
-              <TableHead>Shared</TableHead>
-              <TableHead>Favorite</TableHead>
-              <TableHead className='text-right'>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {folders.map((folder) => (
-              <TableRow key={folder._id}>
-                <TableCell>{folder._id}</TableCell>
-                <TableCell>{folder.name}</TableCell>
-                <TableCell>{folder.ownerName}</TableCell>
-                <TableCell>
-                  <MyTooltip title={new Date(folder.uploadDate).toLocaleString()}>
-                    <span className="timedate">{new Date(folder.uploadDate).toLocaleDateString()}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={folder.files.map((file) => file).join(', ')}>
-                    <span className="timedate">{folder.files.length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={folder.folders.map((folder) => folder).join(', ')}>
-                    <span className="timedate">{folder.folders.length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>
-                  <MyTooltip title={folder.shared.map((folder) => folder).join(', ')}>
-                    <span className="timedate">{folder.shared.length}</span>
-                  </MyTooltip>
-                </TableCell>
-                <TableCell>{folder.favorite ? "Yes" : "No"}</TableCell>
-                <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost'><Grip /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className='mr-5'>
-                      <DropdownMenuLabel>{folder._id}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleDialogOpen(folder)}><Trash height={20} /> Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table >
-          </div>
-        </ScrollArea>
+                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Upload date</TableHead>
+                  <TableHead>Files</TableHead>
+                  <TableHead>Folders</TableHead>
+                  <TableHead>Shared</TableHead>
+                  <TableHead>Favorite</TableHead>
+                  <TableHead className='text-right'>Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {folders.map((folder) => (
+                  <TableRow key={folder._id}>
+                    <TableCell>{folder._id}</TableCell>
+                    <TableCell>{folder.name}</TableCell>
+                    <TableCell>{folder.ownerName}</TableCell>
+                    <TableCell>
+                      <MyTooltip title={new Date(folder.uploadDate).toLocaleString()}>
+                        <span className="timedate">{new Date(folder.uploadDate).toLocaleDateString()}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={folder.files.map((file) => file).join(', ')}>
+                        <span className="timedate">{folder.files.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={folder.folders.map((folder) => folder).join(', ')}>
+                        <span className="timedate">{folder.folders.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>
+                      <MyTooltip title={folder.shared.map((folder) => folder).join(', ')}>
+                        <span className="timedate">{folder.shared.length}</span>
+                      </MyTooltip>
+                    </TableCell>
+                    <TableCell>{folder.favorite ? "Yes" : "No"}</TableCell>
+                    <TableCell className='text-right'>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost'><Grip /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className='mr-5'>
+                          <DropdownMenuLabel>{folder._id}</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDialogOpen(folder)}><Trash height={20} /> Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation='horizontal' />
+          </ScrollArea>
+        </div>
       )}
       <Dialog open={dialogOpen}>
         <DialogContent>

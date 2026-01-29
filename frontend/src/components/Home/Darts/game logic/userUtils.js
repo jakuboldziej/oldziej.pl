@@ -1,4 +1,5 @@
 const isNumericRegex = /^\d+$/;
+
 export const calculatePoints = (turnValue) => {
   if (!isNumericRegex.test(turnValue) && turnValue) {
     if (turnValue[0] === "D") {

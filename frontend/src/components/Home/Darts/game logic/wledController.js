@@ -137,7 +137,7 @@ export const handleWLEDThrowD25 = async (gameCode) => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
       await handleWLEDEffectSolid(gameCode);
-    }, 10000);
+    }, 3000);
   } catch (err) {
     console.error(err);
   }

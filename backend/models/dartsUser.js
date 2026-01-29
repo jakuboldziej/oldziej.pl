@@ -47,7 +47,7 @@ const dartsUserSchema = new mongoose.Schema({
     default: {
       normal: 0,
       doubles: 0,
-      tripes: 0,
+      triples: 0,
       overthrows: 0,
       doors: 0
     }
