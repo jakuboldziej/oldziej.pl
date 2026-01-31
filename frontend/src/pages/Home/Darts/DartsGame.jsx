@@ -23,7 +23,19 @@ function DartsGame() {
     setShow(true);
   }
 
-  const { game, overthrow, setOverthrow } = useContext(DartsGameContext);
+  const { game, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
+
+  useEffect(() => {
+    if (setHandleShow) {
+      setHandleShow(handleShow);
+    }
+  }, [setHandleShow]);
+
+  useEffect(() => {
+    if (game?.active) {
+      setShow(false);
+    }
+  }, [game?.active]);
 
   if (!game) {
     return (

@@ -1,6 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const User = require('../models/user');
+const DartsUser = require('../models/dartsUser');
+const FtpUser = require('../models/ftpUser');
+const ChoresUser = require('../models/chores/choresUser');
+const DoorUser = require('../models/esp32/door/doorUser');
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
@@ -84,12 +88,25 @@ router.patch("/users/:displayName", getAuthUser, async (req, res) => {
 
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
-    await User.deleteOne({ displayName: req.params.displayName });
+    const displayName = req.params.displayName;
 
-    logger.info("DELETE User", { method: req.method, url: req.url, data: req.params.displayName });
+    // Delete user from all related collections
+    await Promise.all([
+      User.deleteOne({ displayName }),
+      DartsUser.deleteOne({ displayName }),
+      FtpUser.deleteOne({ displayName }),
+      ChoresUser.deleteOne({ displayName }),
+      DoorUser.deleteOne({ displayName })
+    ]);
+
+    logger.info("DELETE User - Cascade delete completed", { 
+      method: req.method, 
+      url: req.url, 
+      displayName 
+    });
     res.json({ ok: true });
   } catch (err) {
-    logger.error("DELETE User", { method: req.method, url: req.url, error: err.message });
+    logger.error("DELETE User - Failed", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message });
   }
 });
@@ -380,10 +397,20 @@ router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
 // Auth
 
 router.post("/register", registerLimiter, (req, res) => {
+  const displayName = req.body.displayName?.trim();
+  const email = req.body.email?.trim();
+  
+  if (!displayName || displayName !== req.body.displayName) {
+    logger.error("Register User - Invalid displayName", { method: req.method, url: req.url });
+    return res.status(400).send({
+      message: "DisplayName cannot have leading or trailing spaces"
+    });
+  }
+  
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({
-      email: req.body.email,
-      displayName: req.body.displayName,
+      email: email,
+      displayName: displayName,
       password: hashedPassword,
       friendsCode: req.body.friendsCode
     });
@@ -423,7 +450,9 @@ router.post("/register", registerLimiter, (req, res) => {
 });
 
 router.post("/login", loginLimiter, (req, res) => {
-  User.findOne({ displayName: req.body.displayName }).then((user) => {
+  const displayName = req.body.displayName?.trim();
+  
+  User.findOne({ displayName }).then((user) => {
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
         return res.send({

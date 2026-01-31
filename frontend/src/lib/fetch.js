@@ -135,7 +135,7 @@ export const patchDartsUser = async (userData) => {
 }
 
 export const deleteDartsUser = async (displayName) => {
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${displayName}`, {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
       "Authorization": Cookies.get("_auth")
@@ -183,7 +183,7 @@ export const getFtpUsers = async () => {
 }
 
 export const getFtpUser = async (identifier) => {
-  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${identifier}`, {
+  const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${encodeURIComponent(identifier.trim())}`, {
     headers: {
       "Authorization": Cookies.get("_auth")
     },
@@ -210,7 +210,7 @@ export const postFtpUser = async (userData) => {
 }
 
 export const deleteFtpUser = async (displayName) => {
-  const response = await fetch(`${mongodbApiUrl}/ftp/users/${displayName}`, {
+  const response = await fetch(`${mongodbApiUrl}/ftp/users/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
       "Authorization": Cookies.get("_auth")
@@ -445,7 +445,7 @@ export const patchAuthUser = async (userData) => {
 }
 
 export const deleteAuthUser = async (displayName) => {
-  const response = await fetch(`${mongodbApiUrl}/auth/users/${displayName}`, {
+  const response = await fetch(`${mongodbApiUrl}/auth/users/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
       "Authorization": Cookies.get("_auth")

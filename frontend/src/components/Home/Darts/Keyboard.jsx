@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/shadcn/button";
 import { useContext } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import { socket } from "@/lib/socketio";
+import { endGame } from "@/lib/dartsGameSocket";
 
 function Keyboard({ props }) {
-  const { game, handleRound, specialState } = useContext(DartsGameContext);
+  const { game, handleRound, specialState, updateGameState } = useContext(DartsGameContext);
   const { handleShow } = props;
 
   const handleClick = (value) => {
@@ -16,26 +17,27 @@ function Keyboard({ props }) {
   for (let i = 1; i <= 20; i++) numbers.push(<button key={i} className="input number" onClick={() => handleClick(i)}>{i}</button>);
 
   const handleEndTraining = async () => {
-    game.podium[1] = game.turn;
-    handleShow();
-
+    const updatedGame = { ...game };
+    updatedGame.podium[1] = game.turn;
+    updatedGame.active = false;
+    
     if (game._id) {
-      game.active = false;
-      socket.emit("updateLiveGamePreview", JSON.stringify(game));
       await deleteDartsGame(game._id);
     }
-    localStorage.setItem('dartsGame', null);
+    
+    await endGame(game.gameCode, updatedGame);
   }
 
   const handleQuit = async () => {
-    handleShow();
-
+    const updatedGame = { ...game };
+    updatedGame.active = false;
+    updatedGame.podium[1] = null; 
+    
     if (game._id) {
-      game.active = false;
-      socket.emit("updateLiveGamePreview", JSON.stringify(game));
       await deleteDartsGame(game._id);
     }
-    localStorage.setItem('dartsGame', null);
+    
+    await endGame(game.gameCode, updatedGame);
   }
 
   const handleDisabledSpecial = (type) => {

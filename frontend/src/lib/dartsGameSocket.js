@@ -1,10 +1,5 @@
 import { socket } from '@/lib/socketio';
 
-/**
- * Frontend adapter for server-side darts game logic
- * This replaces the client-side DartsGameContext logic
- */
-
 export const sendThrow = (gameCode, value, action = null) => {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -51,13 +46,13 @@ export const sendBack = (gameCode) => {
   });
 };
 
-export const endGame = (gameCode) => {
+export const endGame = (gameCode, game = null) => {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error('End game timeout'));
     }, 5000);
 
-    socket.emit("game:end", JSON.stringify({ gameCode }));
+    socket.emit("game:end", JSON.stringify({ gameCode, game }));
 
     const handleResult = (data) => {
       clearTimeout(timeout);
@@ -74,9 +69,6 @@ export const endGame = (gameCode) => {
   });
 };
 
-/**
- * Subscribe to game state updates from the server
- */
 export const subscribeToGameUpdates = (gameCode, callback) => {
   const handler = (data) => {
     try {
@@ -94,9 +86,6 @@ export const subscribeToGameUpdates = (gameCode, callback) => {
   };
 };
 
-/**
- * Subscribe to overthrow events
- */
 export const subscribeToOverthrows = (callback) => {
   socket.on("userOverthrowClient", callback);
 
@@ -105,9 +94,6 @@ export const subscribeToOverthrows = (callback) => {
   };
 };
 
-/**
- * Subscribe to game end events
- */
 export const subscribeToGameEnd = (callback) => {
   const handler = (data) => {
     try {
@@ -125,9 +111,23 @@ export const subscribeToGameEnd = (callback) => {
   };
 };
 
-/**
- * Join game room for live updates
- */
+export const subscribeToPlayAgain = (callback) => {
+  const handler = (data) => {
+    try {
+      const game = JSON.parse(data);
+      callback(game);
+    } catch (error) {
+      console.error('Error parsing game end:', error);
+    }
+  };
+
+  socket.on("playAgainButtonClient", handler);
+
+  return () => {
+    socket.off("playAgainButtonClient", handler);
+  };
+};
+
 export const joinGameRoom = (gameCode) => {
   if (!gameCode) {
     console.error('joinGameRoom called with empty gameCode');
@@ -136,9 +136,6 @@ export const joinGameRoom = (gameCode) => {
   socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode }));
 };
 
-/**
- * Leave game room
- */
 export const leaveGameRoom = (gameCode) => {
   if (!gameCode) {
     console.error('leaveGameRoom called with empty gameCode');
@@ -147,11 +144,6 @@ export const leaveGameRoom = (gameCode) => {
   socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode }));
 };
 
-/**
- * Mobile external keyboard input
- * Note: External keyboard now communicates directly with backend via externalKeyboardInput event
- * The backend processes the input and updates all clients via normal game update events
- */
 export const sendExternalKeyboardInput = (gameCode, input) => {
   socket.emit("externalKeyboardInput", JSON.stringify({ gameCode, input }));
 };

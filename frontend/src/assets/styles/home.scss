@@ -453,7 +453,7 @@ html {
   align-items: center;
   height: 100vh;
 
-  @media screen and (max-width: 640px) {
+  @media screen and (max-width: 700px) {
     flex-direction: column;
   }
 
@@ -471,7 +471,7 @@ html {
     border-bottom-right-radius: 10px;
     border-radius: 20px;
 
-    @media screen and (max-width: 640px) {
+    @media screen and (max-width: 700px) {
       width: 100%;
       border-radius: 0;
       height: auto;
@@ -484,7 +484,7 @@ html {
       width: calc(100% - 20px);
       background-color: black;
 
-      @media screen and (max-width: 640px) {
+      @media screen and (max-width: 700px) {
         display: none;
       }
     }
@@ -508,7 +508,7 @@ html {
         border-radius: 20px;
         height: 50px;
 
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 700px) {
           font-size: 1.5rem;
           height: 5.3vh;
         }
@@ -525,7 +525,7 @@ html {
         gap: 10px;
         padding-bottom: 10px;
 
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 700px) {
           grid-template-columns: repeat(auto-fill, minmax(21.5vw, 1fr));
           gap: 5px;
         }
@@ -536,7 +536,7 @@ html {
         grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
         gap: 10px;
 
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 700px) {
           grid-template-columns: repeat(auto-fill, minmax(20vw, 1fr));
           gap: 5px;
         }
@@ -569,7 +569,7 @@ html {
     padding: 15px;
     color: white;
 
-    @media screen and (max-width: 640px) {
+    @media screen and (max-width: 700px) {
       width: 100%;
       padding: 5px;
       border-radius: 0;
@@ -587,13 +587,13 @@ html {
       font-size: 2vw;
 
       h2 {
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 700px) {
           font-size: 17px;
         }
       }
 
       h5 {
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 700px) {
           font-size: 12px;
         }
       }
@@ -609,7 +609,7 @@ html {
       height: 100%;
       overflow-y: auto;
 
-      @media screen and (max-width: 640px) {
+      @media screen and (max-width: 700px) {
         width: 100%;
         padding: 0;
       }
@@ -654,7 +654,7 @@ html {
           border: 1px solid #ddd;
           text-align: center;
 
-          @media screen and (max-width: 640px) {
+          @media screen and (max-width: 700px) {
             font-size: 20px;
           }
         }

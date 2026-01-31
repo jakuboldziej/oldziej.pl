@@ -173,7 +173,7 @@ function DartsPage() {
           doorHits: doorHits
         });
 
-        const activeGames = await getDartsGames(currentUser.displayName, 0, false);
+        const activeGames = await getDartsGames(currentUser.displayName, 0, true);
         const playerActiveGame = activeGames.find(game =>
           game.active === true &&
           game.users.some(user => user.displayName === currentUser.displayName)

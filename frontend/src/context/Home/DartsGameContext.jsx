@@ -3,6 +3,7 @@ import {
   subscribeToGameUpdates,
   subscribeToOverthrows,
   subscribeToGameEnd,
+  subscribeToPlayAgain,
   joinGameRoom,
   leaveGameRoom,
   sendThrow,
@@ -20,15 +21,13 @@ export const DartsGameContextProvider = ({ children }) => {
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
   const subscribedGameCode = useRef(null);
+  const handleShowRef = useRef(null);
 
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
     return game.users.find(user => user.turn);
   }, [game]);
 
-  let handleShow;
-
-  // Subscribe to game updates from backend
   useEffect(() => {
     const gameCode = game?.gameCode;
 
@@ -39,26 +38,29 @@ export const DartsGameContextProvider = ({ children }) => {
     // Join game room
     joinGameRoom(gameCode);
 
-    // Subscribe to game state updates
     const unsubscribeUpdates = subscribeToGameUpdates(gameCode, (updatedGame) => {
       setGame(updatedGame);
       localStorage.setItem("dartsGame", JSON.stringify(updatedGame));
     });
 
-    // Subscribe to overthrow events
     const unsubscribeOverthrows = subscribeToOverthrows((userDisplayName) => {
       setOverthrow(userDisplayName);
       setTimeout(() => setOverthrow(false), 2000);
     });
 
-    // Subscribe to game end events
     const unsubscribeGameEnd = subscribeToGameEnd((endedGame) => {
       setGame(endedGame);
       localStorage.setItem("dartsGame", JSON.stringify(endedGame));
-      if (handleShow) handleShow();
+      if (handleShowRef.current) handleShowRef.current();
+    });
+
+    const unsubscribeToPlayAgain = subscribeToPlayAgain((newGame) => {
+      setGame(newGame);
+      localStorage.setItem("dartsGame", JSON.stringify(newGame));
     });
 
     return () => {
+      unsubscribeToPlayAgain();
       unsubscribeUpdates();
       unsubscribeOverthrows();
       unsubscribeGameEnd();
@@ -67,9 +69,8 @@ export const DartsGameContextProvider = ({ children }) => {
     };
   }, [game?.gameCode]);
 
-  // Handle throw - send to backend
   const handleRound = async (value, handleShowP) => {
-    handleShow = handleShowP;
+    handleShowRef.current = handleShowP;
 
     if (!game?.gameCode) {
       ShowNewToast("Error", "No active game", "error");
@@ -98,7 +99,6 @@ export const DartsGameContextProvider = ({ children }) => {
       if (value === "DOORS") {
         throwValue = "DOORS";
       } else if (specialState[0]) {
-        // User clicked a number while in DOUBLE/TRIPLE state
         action = specialState[1];
         throwValue = value;
         setSpecialState([false, ""]);
@@ -121,13 +121,8 @@ export const DartsGameContextProvider = ({ children }) => {
     localStorage.setItem("dartsGame", JSON.stringify(gameP));
   };
 
-  const clearDartsUsersBackup = () => {
-    // No longer needed - backend handles this
-  };
-
-  const restoreUsersSummaryBack = async () => {
-    // No longer needed - backend handles this
-    return true;
+  const setHandleShow = (handleShowFn) => {
+    handleShowRef.current = handleShowFn;
   };
 
   const contextParams = {
@@ -139,8 +134,7 @@ export const DartsGameContextProvider = ({ children }) => {
     setOverthrow,
     specialState,
     updateGameState,
-    clearDartsUsersBackup,
-    restoreUsersSummaryBack
+    setHandleShow,
   }
 
   return (

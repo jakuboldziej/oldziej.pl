@@ -23,7 +23,6 @@ io.on('connection', (socket) => {
     const joinData = JSON.parse(data);
 
     socket.join(`game-${joinData.gameCode}`);
-    logger.info(`[joinLiveGamePreview] Socket ${socket.id} joined room game-${joinData.gameCode}`);
   });
 
   socket.on("leaveLiveGamePreview", (data) => {
@@ -167,7 +166,12 @@ io.on('connection', (socket) => {
 
   socket.on("game:end", async (data) => {
     try {
-      const { gameCode } = JSON.parse(data);
+      const { gameCode, game: endedGame } = JSON.parse(data);
+      
+      if (endedGame) {
+        io.to(`game-${gameCode}`).emit("gameEndClient", JSON.stringify(endedGame));
+      }
+      
       removeGameManager(gameCode);
       socket.emit("game:end-result", JSON.stringify({ success: true }));
     } catch (error) {

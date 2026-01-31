@@ -41,9 +41,21 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const displayName = e.target[0].value
-    const email = e.target[1].value;
+    const displayName = e.target[0].value.trim();
+    const email = e.target[1].value.trim();
     const password = e.target[2].value;
+
+    if (!displayName) {
+      setErr("DisplayName cannot be empty");
+      setIsLoading(false);
+      return;
+    }
+
+    if (displayName !== e.target[0].value) {
+      setErr("DisplayName cannot have leading or trailing spaces");
+      setIsLoading(false);
+      return;
+    }
 
     setIsLoading(true);
 
