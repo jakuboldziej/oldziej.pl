@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
 import ShowNewToast from "@/components/Home/MyComponents/ShowNewToast";
 import { AuthContext } from "@/context/Home/AuthContext";
+import { ensureGameRecord } from '@/lib/recordUtils';
 import { Link } from "react-router-dom";
 import Loading from "@/components/Home/Loading";
 import DartsGamesList from "@/components/Home/Darts/DartsGamesList";
@@ -156,20 +157,10 @@ function DartsPage() {
           setGamesShown(sortedGames);
         });
 
-        if (game.lastRecord && !game.record) {
-          game.record = [game.lastRecord];
-        } else if (!game.record) {
-          game.record = [{
-            game: {
-              round: game.round,
-              turn: game.turn
-            },
-            users: game.users.map(user => ({ ...user }))
-          }];
-        }
+        const gameWithRecord = ensureGameRecord(game);
 
         setPlayerInGame(true);
-        localStorage.setItem('dartsGame', JSON.stringify(game));
+        localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
 
         if (game.created_by !== currentUser.displayName) {
           ShowNewToast("New Game Created", `A new game has been created: <a class='underline text-white' href='/darts/game'>Join Game</a>`);
@@ -223,20 +214,10 @@ function DartsPage() {
         );
 
         if (playerActiveGame) {
-          if (playerActiveGame.lastRecord && !playerActiveGame.record) {
-            playerActiveGame.record = [playerActiveGame.lastRecord];
-          } else if (!playerActiveGame.record) {
-            playerActiveGame.record = [{
-              game: {
-                round: playerActiveGame.round,
-                turn: playerActiveGame.turn
-              },
-              users: playerActiveGame.users.map(user => ({ ...user }))
-            }];
-          }
+          const gameWithRecord = ensureGameRecord(playerActiveGame);
 
           setPlayerInGame(true);
-          localStorage.setItem('dartsGame', JSON.stringify(playerActiveGame));
+          localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
           ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
         } else {
           localStorage.setItem('dartsGame', null);
@@ -273,9 +254,9 @@ function DartsPage() {
     <div className="darts-page">
       <div className="flex justify-center">
         <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
-          <Button 
-            variant="outline_red" 
-            className="glow-button-red" 
+          <Button
+            variant="outline_red"
+            className="glow-button-red"
             onClick={(e) => {
               e.currentTarget.blur();
               setDrawerOpen(true);
@@ -370,17 +351,17 @@ function DartsPage() {
               <>
                 <div className="text-center">
                   <span>We've played</span>
-                  <span className="font-bold">{dartsStatistics.gamesPlayed}</span>
+                  <span className="font-bold">{dartsStatistics?.gamesPlayed || 0}</span>
                   <span>games</span>
                 </div>
                 <div>
                   <span>We scored</span>
-                  <span className="font-bold">{dartsStatistics.overAllPoints}</span>
+                  <span className="font-bold">{dartsStatistics?.overAllPoints || 0}</span>
                   <span>points</span>
                 </div>
                 <div className="text-center">
                   <span>We threw</span>
-                  <span className="font-bold">{dartsStatistics.doorHits}</span>
+                  <span className="font-bold">{dartsStatistics?.doorHits || 0}</span>
                   <span>darts at the door</span>
                 </div>
               </>

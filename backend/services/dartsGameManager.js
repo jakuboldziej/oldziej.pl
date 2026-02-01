@@ -249,8 +249,8 @@ class DartsGameManager {
       }
     });
 
-    if (!this.game.record) {
-      this.game.record = this.game.lastRecord ? [this.game.lastRecord] : [];
+    if (!this.game.record || this.game.record.length === 0) {
+      this.game.record = [];
     }
 
     if (this.game.record.length === 0) {
@@ -274,26 +274,13 @@ class DartsGameManager {
 
   async updateGameState() {
     try {
-      const lastRecordMinimal = this.game.record && this.game.record.length > 0 ? {
-        game: this.game.record[this.game.record.length - 1].game,
-        users: this.game.record[this.game.record.length - 1].users.map(user => ({
-          _id: user._id,
-          displayName: user.displayName,
-          points: user.points,
-          turn: user.turn,
-          currentTurn: user.currentTurn,
-          turns: user.turns,
-          place: user.place
-        }))
-      } : null;
-
-      const { record, userWon, ...restGameData } = this.game;
+      const { userWon, ...restGameData } = this.game;
       await DartsGame.findOneAndUpdate(
         { gameCode: this.gameCode },
         {
           ...restGameData,
-          lastRecord: lastRecordMinimal,
-          legStarterIndex: this.game.legStarterIndex
+          legStarterIndex: this.game.legStarterIndex,
+          record: this.game.record
         },
         { new: true }
       );

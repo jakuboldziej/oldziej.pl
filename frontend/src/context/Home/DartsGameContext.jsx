@@ -10,7 +10,10 @@ import {
   sendThrow,
   sendBack
 } from '@/lib/dartsGameSocket';
+import { onReconnected } from '@/lib/socketio';
+import { getDartsGame } from '@/lib/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
+import { ensureGameRecord } from '@/lib/recordUtils';
 
 export const DartsGameContext = createContext();
 
@@ -20,22 +23,7 @@ export const DartsGameContextProvider = ({ children }) => {
     if (!storedGame) return null;
 
     const parsedGame = JSON.parse(storedGame);
-
-    if (parsedGame && !parsedGame.record) {
-      if (parsedGame.lastRecord) {
-        parsedGame.record = [parsedGame.lastRecord];
-      } else {
-        parsedGame.record = [{
-          game: {
-            round: parsedGame.round,
-            turn: parsedGame.turn
-          },
-          users: parsedGame.users.map(user => ({ ...user }))
-        }];
-      }
-    }
-
-    return parsedGame;
+    return ensureGameRecord(parsedGame);
   });
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
@@ -67,20 +55,8 @@ export const DartsGameContextProvider = ({ children }) => {
         try {
           const parsedStoredGame = JSON.parse(storedGame);
           if (parsedStoredGame && parsedStoredGame._id !== game?._id) {
-            if (!parsedStoredGame.record) {
-              if (parsedStoredGame.lastRecord) {
-                parsedStoredGame.record = [parsedStoredGame.lastRecord];
-              } else {
-                parsedStoredGame.record = [{
-                  game: {
-                    round: parsedStoredGame.round,
-                    turn: parsedStoredGame.turn
-                  },
-                  users: parsedStoredGame.users.map(user => ({ ...user }))
-                }];
-              }
-            }
-            setGame(parsedStoredGame);
+            const gameWithRecord = ensureGameRecord(parsedStoredGame);
+            setGame(gameWithRecord);
           }
         } catch (e) {
         }
@@ -104,21 +80,9 @@ export const DartsGameContextProvider = ({ children }) => {
     joinGameRoom(gameCode);
 
     const unsubscribeUpdates = subscribeToGameUpdates(gameCode, (updatedGame) => {
-      if (!updatedGame.record) {
-        if (updatedGame.lastRecord) {
-          updatedGame.record = [updatedGame.lastRecord];
-        } else {
-          updatedGame.record = [{
-            game: {
-              round: updatedGame.round,
-              turn: updatedGame.turn
-            },
-            users: updatedGame.users.map(user => ({ ...user }))
-          }];
-        }
-      }
-      setGame(updatedGame);
-      localStorage.setItem("dartsGame", JSON.stringify(updatedGame));
+      const gameWithRecord = ensureGameRecord(updatedGame);
+      setGame(gameWithRecord);
+      localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
     });
 
     const unsubscribeOverthrows = subscribeToOverthrows((userDisplayName) => {
@@ -127,27 +91,16 @@ export const DartsGameContextProvider = ({ children }) => {
     });
 
     const unsubscribeGameEnd = subscribeToGameEnd((endedGame) => {
-      setGame(endedGame);
-      localStorage.setItem("dartsGame", JSON.stringify(endedGame));
+      const gameWithRecord = ensureGameRecord(endedGame);
+      setGame(gameWithRecord);
+      localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
       if (handleShowRef.current) handleShowRef.current();
     });
 
     const unsubscribeToPlayAgain = subscribeToPlayAgain((newGame) => {
-      if (!newGame.record) {
-        if (newGame.lastRecord) {
-          newGame.record = [newGame.lastRecord];
-        } else {
-          newGame.record = [{
-            game: {
-              round: newGame.round,
-              turn: newGame.turn
-            },
-            users: newGame.users.map(user => ({ ...user }))
-          }];
-        }
-      }
-      setGame(newGame);
-      localStorage.setItem("dartsGame", JSON.stringify(newGame));
+      const gameWithRecord = ensureGameRecord(newGame);
+      setGame(gameWithRecord);
+      localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
     });
 
     const unsubscribeToCreateNewGame = subscribeToCreateNewGame((newGame) => {
@@ -164,6 +117,39 @@ export const DartsGameContextProvider = ({ children }) => {
       subscribedGameCode.current = null;
     };
   }, [game?.gameCode]);
+
+  useEffect(() => {
+    const unsubscribe = onReconnected(async () => {
+      if (game?.gameCode) {
+        
+        try {
+          const freshGame = await getDartsGame(game._id);
+          
+          const gameWithRecord = ensureGameRecord(freshGame);
+          
+          setGame(gameWithRecord);
+          localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+          
+          joinGameRoom(game.gameCode);
+          
+          import('@/lib/socketio').then(({ socket }) => {
+            socket.emit("updateLiveGamePreview", JSON.stringify(gameWithRecord));
+          });
+          
+        } catch (error) {
+          console.error('Failed to restore game from database:', error);
+          
+          const gameToSync = ensureGameRecord({ ...game });
+          joinGameRoom(game.gameCode);
+          import('@/lib/socketio').then(({ socket }) => {
+            socket.emit("updateLiveGamePreview", JSON.stringify(gameToSync));
+          });
+        }
+      }
+    });
+
+    return unsubscribe;
+  }, [game]);
 
   const handleRound = async (value, handleShowP) => {
     handleShowRef.current = handleShowP;

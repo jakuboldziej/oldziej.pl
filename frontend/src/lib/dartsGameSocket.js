@@ -1,4 +1,4 @@
-import { socket, ensureSocketConnection } from '@/lib/socketio';
+import { socket, ensureSocketConnection, trackRoom, untrackRoom } from '@/lib/socketio';
 
 export const sendThrow = async (gameCode, value, action = null) => {
   await ensureSocketConnection();
@@ -154,6 +154,7 @@ export const joinGameRoom = (gameCode) => {
     console.error('joinGameRoom called with empty gameCode');
     return;
   }
+  trackRoom(gameCode);
   socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode }));
 };
 
@@ -162,6 +163,7 @@ export const leaveGameRoom = (gameCode) => {
     console.error('leaveGameRoom called with empty gameCode');
     return;
   }
+  untrackRoom(gameCode);
   socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode }));
 };
 

@@ -9,6 +9,7 @@ import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './game logic/gameUtils';
 import { handleWLEDEffectSolid } from './game logic/wledController';
+import { isInitialGameState } from '@/lib/recordUtils';
 
 function GameSummary({ show, setShow }) {
   const { game, updateGameState, handleRound } = useContext(DartsGameContext);
@@ -123,7 +124,7 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleDisabledBack = () => {
-    if (game.training || game.podium[1] === null || game.record.length === 1) return true;
+    if (game.training || game.podium[1] === null || isInitialGameState(game)) return true;
   }
 
   const handleSummaryBackButton = async () => {

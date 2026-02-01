@@ -202,8 +202,13 @@ export const handleAvgPointsPerTurn = (user, game) => {
 }
 
 export const totalThrows = (user, cr = true) => {
-  if (cr)
-    return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - user.currentThrows["overthrows"];
-  else
-    return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - user.throws["overthrows"];
+  if (!user) return 0;
+  
+  if (cr) {
+    if (!user.currentThrows) return 0;
+    return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - (user.currentThrows["overthrows"] || 0);
+  } else {
+    if (!user.throws) return 0;
+    return Object.values(user.throws).reduce((acc, val) => acc + val, 0) - (user.throws["overthrows"] || 0);
+  }
 }

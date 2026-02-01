@@ -9,6 +9,8 @@ import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 import DartsGamesList from '@/components/Home/Darts/DartsGamesList';
 import { Button } from '@/components/ui/shadcn/button';
 import { AuthContext } from '@/context/Home/AuthContext';
+import { analyzeUserGames } from '@/lib/userAnalytics';
+import { Badge } from '@/components/ui/shadcn/badge';
 
 function DartsUser() {
   const { username } = useParams();
@@ -22,6 +24,7 @@ function DartsUser() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingGames, setIsLoadingGames] = useState(false);
   const [trainingFilter, setTrainingFilter] = useState('competitive');
+  const [analytics, setAnalytics] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -33,6 +36,10 @@ function DartsUser() {
       setDartUser(resUser);
       setGames(resGames);
       setGamesShown(resGames.slice(0, 20));
+      
+      const userAnalytics = analyzeUserGames(resGames, resUser);
+      setAnalytics(userAnalytics);
+      
       setIsLoading(false);
     }
 
@@ -46,6 +53,12 @@ function DartsUser() {
       const resGames = await getDartsGames(username, 0, trainingFilter);
       setGames(resGames);
       setGamesShown(resGames.slice(0, 20));
+      
+      if (dartUser) {
+        const userAnalytics = analyzeUserGames(resGames, dartUser);
+        setAnalytics(userAnalytics);
+      }
+      
       setIsLoadingGames(false);
     }
 
@@ -87,6 +100,184 @@ function DartsUser() {
         <Loading />
       ) :
         <div className='darts-page'>
+          {analytics && (
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-8'>
+              <Card className='bg-gray-800 border-gray-700'>
+                <CardHeader>
+                  <CardTitle className='text-lg flex items-center justify-between'>
+                    <span>Recent Form</span>
+                    <Badge variant={parseFloat(analytics.recentForm.trend) > 0 ? "default" : "destructive"}>
+                      {parseFloat(analytics.recentForm.trend) > 0 ? "↑" : "↓"} {Math.abs(analytics.recentForm.trend)}%
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='mb-4'>
+                    <p className='text-gray-400 text-sm mb-2'>Last 5 Games Average</p>
+                    <p className='text-3xl font-bold'>{analytics.recentForm.avgLast5}</p>
+                  </div>
+                  <div className='space-y-2'>
+                    {analytics.recentForm.last5Games.map((game, idx) => (
+                      <div key={game.gameCode} className='flex justify-between items-center bg-gray-900 p-2 rounded'>
+                        <span className='text-sm text-gray-400'>Game #{games.length - idx}</span>
+                        <div className='flex items-center gap-2'>
+                          <span className='font-semibold'>{game.avg}</span>
+                          {!game.active && game.place === 1 && (
+                            <img width="20" height="20" src="https://img.icons8.com/color/20/first-place-ribbon.png" alt="win" />
+                          )}
+                          {!game.active && game.place === 2 && (
+                            <img width="20" height="20" src="https://img.icons8.com/color/20/second-place-ribbon.png" alt="second" />
+                          )}
+                          {!game.active && game.place === 3 && (
+                            <img width="20" height="20" src="https://img.icons8.com/color/20/third-place-ribbon.png" alt="third" />
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className='bg-gray-800 border-gray-700'>
+                <CardHeader>
+                  <CardTitle className='text-lg'>Performance Metrics</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <MyTooltip title="Percentage of games won">
+                    <div className='flex justify-between items-center'>
+                      <div className='flex items-center gap-2'>
+                        <img width="25" height="25" src="https://img.icons8.com/color/25/trophy.png" alt="trophy" />
+                        <span className='text-gray-400'>Win Rate</span>
+                      </div>
+                      <span className='text-2xl font-bold text-green-400'>{analytics.winRate}%</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Average points scored per dart thrown">
+                    <div className='flex justify-between items-center'>
+                      <div className='flex items-center gap-2'>
+                        <img width="25" height="25" src="https://img.icons8.com/fluency/25/average-2.png" alt="efficiency" />
+                        <span className='text-gray-400'>Points/Dart</span>
+                      </div>
+                      <span className='text-2xl font-bold'>{analytics.efficiency.pointsPerDart}</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Percentage of darts that scored points">
+                    <div className='flex justify-between items-center'>
+                      <div className='flex items-center gap-2'>
+                        <img width="25" height="25" src="https://img.icons8.com/color/25/checked.png" alt="accuracy" />
+                        <span className='text-gray-400'>Accuracy</span>
+                      </div>
+                      <span className='text-2xl font-bold text-blue-400'>{analytics.efficiency.accuracy}%</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Checkouts per game played">
+                    <div className='flex justify-between items-center'>
+                      <div className='flex items-center gap-2'>
+                        <img width="25" height="25" src="https://img.icons8.com/color/25/cash-register.png" alt="checkout" />
+                        <span className='text-gray-400'>Checkout Rate</span>
+                      </div>
+                      <span className='text-2xl font-bold'>{analytics.checkoutStats.checkoutRate}</span>
+                    </div>
+                  </MyTooltip>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {analytics && Object.keys(analytics.performanceByGameMode).length > 0 && (
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-8'>
+              <Card className='bg-gray-800 border-gray-700'>
+                <CardHeader>
+                  <CardTitle className='text-lg'>Consistency Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-3'>
+                  <MyTooltip title="Standard deviation of your game averages">
+                    <div className='flex justify-between items-center'>
+                      <span className='text-gray-400'>Consistency Score</span>
+                      <span className='text-xl font-bold'>±{analytics.consistency.stdDev}</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Your best game average">
+                    <div className='flex justify-between items-center'>
+                      <span className='text-gray-400'>Best Game</span>
+                      <span className='text-xl font-bold text-green-400'>{analytics.consistency.bestGameAvg}</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Your worst game average">
+                    <div className='flex justify-between items-center'>
+                      <span className='text-gray-400'>Worst Game</span>
+                      <span className='text-xl font-bold text-red-400'>{analytics.consistency.worstGameAvg}</span>
+                    </div>
+                  </MyTooltip>
+                  <MyTooltip title="Difference between best and worst">
+                    <div className='flex justify-between items-center pt-2 border-t border-gray-700'>
+                      <span className='text-gray-400'>Range</span>
+                      <span className='text-xl font-bold'>{analytics.consistency.avgDifference}</span>
+                    </div>
+                  </MyTooltip>
+                </CardContent>
+              </Card>
+
+              <Card className='bg-gray-800 border-gray-700'>
+                <CardHeader>
+                  <CardTitle className='text-lg'>Performance by Game Mode</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className='h-[200px]'>
+                    <div className='space-y-3 pr-4'>
+                      {Object.entries(analytics.performanceByGameMode).map(([mode, stats]) => (
+                        <div key={mode} className='bg-gray-900 p-3 rounded'>
+                          <div className='flex justify-between items-center mb-2'>
+                            <span className='font-semibold'>{mode}</span>
+                            <Badge variant="outline">{stats.games} games</Badge>
+                          </div>
+                          <div className='grid grid-cols-3 gap-2 text-sm'>
+                            <div className='text-center'>
+                              <p className='text-gray-400 text-xs'>Avg</p>
+                              <p className='font-bold'>{stats.avgAvg}</p>
+                            </div>
+                            <div className='text-center'>
+                              <p className='text-gray-400 text-xs'>Wins</p>
+                              <p className='font-bold text-green-400'>{stats.wins}</p>
+                            </div>
+                            <div className='text-center'>
+                              <p className='text-gray-400 text-xs'>Win Rate</p>
+                              <p className='font-bold text-blue-400'>{stats.winRate}%</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {analytics && analytics.checkoutStats.totalCheckouts > 0 && (
+            <Card className='bg-gray-800 border-gray-700 mb-8'>
+              <CardHeader>
+                <CardTitle className='text-lg'>Checkout Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+                  <div className='text-center bg-gray-900 p-4 rounded'>
+                    <p className='text-gray-400 text-sm mb-2'>Total Checkouts</p>
+                    <p className='text-3xl font-bold text-green-400'>{analytics.checkoutStats.totalCheckouts}</p>
+                  </div>
+                  <div className='text-center bg-gray-900 p-4 rounded'>
+                    <p className='text-gray-400 text-sm mb-2'>Average Checkout</p>
+                    <p className='text-3xl font-bold'>{analytics.checkoutStats.avgCheckout}</p>
+                  </div>
+                  <div className='text-center bg-gray-900 p-4 rounded'>
+                    <p className='text-gray-400 text-sm mb-2'>Highest Checkout</p>
+                    <p className='text-3xl font-bold text-yellow-400'>{dartUser.highestCheckout}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Overall Stats Cards */}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-8'>
             {/* Podiums Card */}

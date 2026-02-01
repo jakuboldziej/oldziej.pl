@@ -1,9 +1,12 @@
-import { socket } from '@/lib/socketio';
+import { socket, onReconnectionStateChange, onReconnected } from '@/lib/socketio';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { getAuthUser } from '@/lib/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import Cookies from 'js-cookie';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
+import { Button } from '@/components/ui/shadcn/button';
+import { Loader2 } from 'lucide-react';
 
 export const SocketIoContext = createContext();
 
@@ -11,6 +14,11 @@ export const SocketIoContextProvider = ({ children }) => {
   const { currentUser, setCurrentUser } = useContext(AuthContext);
 
   const [isServerConnected, setIsServerConnected] = useState(socket.connected);
+  const [reconnectionState, setReconnectionState] = useState({
+    isReconnecting: false,
+    attempt: 0,
+    maxAttempts: 5
+  });
   const [onlineFriends, setOnlineFriends] = useState([]);
   const [listeners, setListeners] = useState({
     friendsRequestsReceived: 0,
@@ -215,9 +223,90 @@ export const SocketIoContextProvider = ({ children }) => {
     };
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = onReconnectionStateChange((state) => {
+      setReconnectionState(state);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onReconnected(() => {
+      if (currentUser && isServerConnected) {
+        addingOnlineUser(currentUser.displayName);
+      }
+    });
+
+    return unsubscribe;
+  }, [currentUser, isServerConnected]);
+
+  const handleRefreshPage = () => {
+    window.location.reload();
+  };
+
   return (
     <SocketIoContext.Provider value={{ isServerConnected, onlineFriends, listeners, setListeners }}>
       {children}
+
+      <Dialog open={reconnectionState.isReconnecting}>
+        <DialogContent className="text-white max-w-md" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogTitle className="text-center text-xl font-semibold">
+            {reconnectionState.attempt >= reconnectionState.maxAttempts
+              ? "Connection Lost"
+              : "Reconnecting..."}
+          </DialogTitle>
+          <DialogDescription className="hidden">Connection status information</DialogDescription>
+
+          <div className="flex flex-col items-center gap-4 py-4">
+            {reconnectionState.attempt < reconnectionState.maxAttempts ? (
+              <>
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="text-center text-muted-foreground">
+                  Attempting to reconnect to the server...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Attempt {reconnectionState.attempt} of {reconnectionState.maxAttempts}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="rounded-full bg-destructive/10 p-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12 text-destructive"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="font-medium text-destructive">
+                    Unable to connect to the server
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Please check your internet connection and try again.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleRefreshPage}
+                  className="w-full mt-2"
+                  variant="default"
+                >
+                  Refresh Page
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </SocketIoContext.Provider>
   );
 };

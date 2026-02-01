@@ -4,6 +4,7 @@ import { useContext } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import { socket } from "@/lib/socketio";
 import { endGame } from "@/lib/dartsGameSocket";
+import { isInitialGameState } from '@/lib/recordUtils';
 
 function Keyboard({ props }) {
   const { game, handleRound, specialState, updateGameState } = useContext(DartsGameContext);
@@ -48,7 +49,7 @@ function Keyboard({ props }) {
     } else if (type === 'TRIPLE') {
       return specialState[1] === 'DOUBLE';
     } else if (type === 'BACK') {
-      return specialState[1] === 'DOUBLE' || specialState[1] === 'TRIPLE' || game.record.length <= 1;
+      return specialState[1] === 'DOUBLE' || specialState[1] === 'TRIPLE' || isInitialGameState(game);
     }
     return specialState[1] === 'TRIPLE' || specialState[1] === 'DOUBLE' || specialState[1] === type;
   };
@@ -66,7 +67,7 @@ function Keyboard({ props }) {
         <Button className="input special" disabled={handleDisabledSpecial('TRIPLE')} style={{ backgroundColor: `${specialState[1] === 'TRIPLE' ? "#c96e02" : "#ff8a00"}` }} onClick={() => handleClick('TRIPLE')}>TRIPLE</Button>
         <Button className="input special" disabled={handleDisabledSpecial('BACK')} onClick={() => handleClick('BACK')}>BACK</Button>
         {game.training && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: "#E55555" }} onClick={handleEndTraining}>END</Button>}
-        {game.record.length === 1 && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
+        {isInitialGameState(game) && <Button className="input special" disabled={handleDisabledSpecial()} style={{ backgroundColor: '#E55555' }} onClick={handleQuit}>QUIT</Button>}
       </span>
     </div>
   )

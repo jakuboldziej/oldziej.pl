@@ -67,8 +67,12 @@ const dartsGameSchema = new mongoose.Schema({
     required: true,
     default: false
   },
-  lastRecord: {
-    type: Object,
+  record: {
+    type: Array,
+    required: false
+  },
+  legStarterIndex: {
+    type: Number,
     required: false
   }
 });

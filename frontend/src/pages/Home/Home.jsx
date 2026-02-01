@@ -65,17 +65,17 @@ function Home() {
               <div className="flex justify-center flex-wrap gap-10">
                 <div className="text-center">
                   <span>Players played</span>
-                  <span className="font-bold">{dartsStatistics.gamesPlayed}</span>
+                  <span className="font-bold">{dartsStatistics?.gamesPlayed || 0}</span>
                   <span>games</span>
                 </div>
                 <div>
                   <span>Players scored</span>
-                  <span className="font-bold">{dartsStatistics.overAllPoints}</span>
+                  <span className="font-bold">{dartsStatistics?.overAllPoints || 0}</span>
                   <span>points</span>
                 </div>
                 <div className="text-center">
                   <span>Players threw</span>
-                  <span className="font-bold">{dartsStatistics.doorHits}</span>
+                  <span className="font-bold">{dartsStatistics?.doorHits || 0}</span>
                   <span>darts at the door</span>
                 </div>
               </div>

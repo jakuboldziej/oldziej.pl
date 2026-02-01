@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../game logic/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
 import { socket } from '@/lib/socketio';
+import { getLatestRecord } from '@/lib/recordUtils';
 
 function GameLivePreview({ props }) {
   const { liveGame, setLiveGame, overthrow } = props;
@@ -14,9 +15,9 @@ function GameLivePreview({ props }) {
   const [timePlayed, setTimePlayed] = useState(0);
 
   useEffect(() => {
-    if (liveGame?.record) {
-      const lastRecord = liveGame.record[liveGame.record.length - 1];
-      setUsers(lastRecord.users);
+    const latestRecord = getLatestRecord(liveGame);
+    if (latestRecord) {
+      setUsers(latestRecord.users);
     }
 
     if (!liveGame.active) {

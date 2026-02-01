@@ -3,6 +3,7 @@ import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import Loading from "../Loading";
+import { ensureGameRecord } from '@/lib/recordUtils';
 
 function DartsGamesList({ games, isLoading }) {
   if (isLoading) {
@@ -14,20 +15,8 @@ function DartsGamesList({ games, isLoading }) {
   }
 
   const handleActiveGameClick = (game) => {
-    if (!game.record) {
-      if (game.lastRecord) {
-        game.record = [game.lastRecord];
-      } else {
-        game.record = [{
-          game: {
-            round: game.round,
-            turn: game.turn
-          },
-          users: game.users.map(user => ({ ...user }))
-        }];
-      }
-    }
-    localStorage.setItem('dartsGame', JSON.stringify(game));
+    const gameWithRecord = ensureGameRecord(game);
+    localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
   };
 
   return (

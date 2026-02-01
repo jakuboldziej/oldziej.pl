@@ -4,8 +4,13 @@ import { totalThrows } from './game logic/userUtils';
 
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {
+    if (!user || !user.currentThrows) {
+      return <span>0</span>;
+    }
+    
+    const throws = user.currentThrows;
     return (
-      <MyTooltip title={`N: ${user.currentThrows['normal']} | Dou: ${user.currentThrows['doubles']} | T: ${user.currentThrows['triples']} | Doo: ${user.currentThrows['doors']} | O: ${user.currentThrows['overthrows']}`}>
+      <MyTooltip title={`N: ${throws['normal'] || 0} | Dou: ${throws['doubles'] || 0} | T: ${throws['triples'] || 0} | Doo: ${throws['doors'] || 0} | O: ${throws['overthrows'] || 0}`}>
         <span>
           {totalThrows(user)}
         </span>
@@ -15,10 +20,10 @@ function UserDataTable({ users, game }) {
 
   const dynamicUserStyle = (user) => {
     let style = {};
-    if (user.turn) {
+    if (user?.turn) {
       style = { ...style, borderLeft: '1px solid #E00000' };
     }
-    if (game.userWon === user.displayName) {
+    if (game?.userWon === user?.displayName) {
       style = { ...style, color: 'gold' };
     }
     return style;
@@ -39,16 +44,16 @@ function UserDataTable({ users, game }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map(user => (
+          {users?.map(user => (
             <TableRow key={user._id} style={dynamicUserStyle(user)}>
-              <TableCell className="whitespace-nowrap">{user.displayName}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.points}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.displayName || 'Unknown'}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.points ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">{displayUserThrows(user)}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.highestGameTurnPoints}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.avgPointsPerTurn}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.highestGameAvg}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.legs}</TableCell>
-              <TableCell className="whitespace-nowrap">{user.sets}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.highestGameTurnPoints ?? 0}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.avgPointsPerTurn ?? '0.00'}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.highestGameAvg ?? '0.00'}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.legs ?? 0}</TableCell>
+              <TableCell className="whitespace-nowrap">{user?.sets ?? 0}</TableCell>
             </TableRow>
           ))}
         </TableBody>
