@@ -387,7 +387,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
   return (
     <>
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} modal={true}>
+      <Drawer open={drawerOpen} onOpenChange={setDrawerOpen} modal={true}>
         <DrawerTrigger asChild>
           {children}
         </DrawerTrigger>
@@ -478,7 +478,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               <CardContent className="card-content">
                 <div className="selects">
                   <div className="text-xl">Podium</div>
-                  <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium}>
+                  <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium} modal={false}>
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Podium" />
                     </SelectTrigger>
@@ -489,14 +489,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                     </SelectContent>
                   </Select>
                   <div className="text-xl">Gamemode</div>
-                  <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode}>
+                  <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode} modal={false}>
                     <SelectTrigger className="text-white">
                       <SelectValue placeholder="Select Gamemode" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="X01">X01</SelectItem>
-                        <SelectItem value="Reverse X01">Reverse X01 (2 Players)</SelectItem>
+                        {/* <SelectItem value="Reverse X01">Reverse X01 (2 Players)</SelectItem> */}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -529,7 +529,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   {handleGamemodeOptions() === "X01" ? (
                     <>
                       <div className="text-lg">Check-Out</div>
-                      <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut}>
+                      <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut} modal={false}>
                         <SelectTrigger className="text-white">
                           <SelectValue placeholder="Select Check-Out" />
                         </SelectTrigger>
@@ -540,7 +540,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         </SelectContent>
                       </Select>
                       <div className="text-lg">Legs</div>
-                      <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs}>
+                      <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs} modal={false}>
                         <SelectTrigger className="text-white">
                           <SelectValue placeholder="Select Legs" />
                         </SelectTrigger>
@@ -551,7 +551,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         </SelectContent>
                       </Select>
                       <div className="text-lg">Sets</div>
-                      <Select onValueChange={(value) => setSelectSets(value)} value={selectSets}>
+                      <Select onValueChange={(value) => setSelectSets(value)} value={selectSets} modal={false}>
                         <SelectTrigger className="text-white">
                           <SelectValue placeholder="Select Sets" />
                         </SelectTrigger>

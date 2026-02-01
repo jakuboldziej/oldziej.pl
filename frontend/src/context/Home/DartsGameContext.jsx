@@ -4,6 +4,7 @@ import {
   subscribeToOverthrows,
   subscribeToGameEnd,
   subscribeToPlayAgain,
+  subscribeToCreateNewGame,
   joinGameRoom,
   leaveGameRoom,
   sendThrow,
@@ -16,7 +17,25 @@ export const DartsGameContext = createContext();
 export const DartsGameContextProvider = ({ children }) => {
   const [game, setGame] = useState(() => {
     const storedGame = localStorage.getItem('dartsGame');
-    return storedGame ? JSON.parse(storedGame) : null;
+    if (!storedGame) return null;
+
+    const parsedGame = JSON.parse(storedGame);
+
+    if (parsedGame && !parsedGame.record) {
+      if (parsedGame.lastRecord) {
+        parsedGame.record = [parsedGame.lastRecord];
+      } else {
+        parsedGame.record = [{
+          game: {
+            round: parsedGame.round,
+            turn: parsedGame.turn
+          },
+          users: parsedGame.users.map(user => ({ ...user }))
+        }];
+      }
+    }
+
+    return parsedGame;
   });
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
@@ -26,6 +45,52 @@ export const DartsGameContextProvider = ({ children }) => {
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
     return game.users.find(user => user.turn);
+  }, [game]);
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const storedGame = localStorage.getItem('dartsGame');
+      if (!storedGame || storedGame === 'null') {
+        setGame(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    const interval = setInterval(() => {
+      const storedGame = localStorage.getItem('dartsGame');
+      if (!storedGame || storedGame === 'null') {
+        if (game !== null) {
+          setGame(null);
+        }
+      } else {
+        try {
+          const parsedStoredGame = JSON.parse(storedGame);
+          if (parsedStoredGame && parsedStoredGame._id !== game?._id) {
+            if (!parsedStoredGame.record) {
+              if (parsedStoredGame.lastRecord) {
+                parsedStoredGame.record = [parsedStoredGame.lastRecord];
+              } else {
+                parsedStoredGame.record = [{
+                  game: {
+                    round: parsedStoredGame.round,
+                    turn: parsedStoredGame.turn
+                  },
+                  users: parsedStoredGame.users.map(user => ({ ...user }))
+                }];
+              }
+            }
+            setGame(parsedStoredGame);
+          }
+        } catch (e) {
+        }
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, [game]);
 
   useEffect(() => {
@@ -39,6 +104,19 @@ export const DartsGameContextProvider = ({ children }) => {
     joinGameRoom(gameCode);
 
     const unsubscribeUpdates = subscribeToGameUpdates(gameCode, (updatedGame) => {
+      if (!updatedGame.record) {
+        if (updatedGame.lastRecord) {
+          updatedGame.record = [updatedGame.lastRecord];
+        } else {
+          updatedGame.record = [{
+            game: {
+              round: updatedGame.round,
+              turn: updatedGame.turn
+            },
+            users: updatedGame.users.map(user => ({ ...user }))
+          }];
+        }
+      }
       setGame(updatedGame);
       localStorage.setItem("dartsGame", JSON.stringify(updatedGame));
     });
@@ -55,11 +133,29 @@ export const DartsGameContextProvider = ({ children }) => {
     });
 
     const unsubscribeToPlayAgain = subscribeToPlayAgain((newGame) => {
+      if (!newGame.record) {
+        if (newGame.lastRecord) {
+          newGame.record = [newGame.lastRecord];
+        } else {
+          newGame.record = [{
+            game: {
+              round: newGame.round,
+              turn: newGame.turn
+            },
+            users: newGame.users.map(user => ({ ...user }))
+          }];
+        }
+      }
       setGame(newGame);
       localStorage.setItem("dartsGame", JSON.stringify(newGame));
     });
 
+    const unsubscribeToCreateNewGame = subscribeToCreateNewGame((newGame) => {
+
+    });
+
     return () => {
+      unsubscribeToCreateNewGame();
       unsubscribeToPlayAgain();
       unsubscribeUpdates();
       unsubscribeOverthrows();

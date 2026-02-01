@@ -2,6 +2,7 @@ import { createContext, useState } from 'react';
 import Cookies from 'js-cookie';
 import AuthProvider from 'react-auth-kit';
 import createStore from 'react-auth-kit/createStore';
+import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 
 const store = createStore({
   authName: "_auth",
@@ -12,6 +13,16 @@ const store = createStore({
 
 export const AuthContext = createContext();
 
+const AuthContextProviderInner = ({ children, currentUser, setCurrentUser }) => {
+  useTokenRefresh(currentUser);
+
+  return (
+    <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
 export const AuthContextProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     const userCookie = Cookies.get('_auth_state');
@@ -20,9 +31,9 @@ export const AuthContextProvider = ({ children }) => {
 
   return (
     <AuthProvider store={store}>
-      <AuthContext.Provider value={{ currentUser, setCurrentUser }}>
+      <AuthContextProviderInner currentUser={currentUser} setCurrentUser={setCurrentUser}>
         {children}
-      </AuthContext.Provider>
+      </AuthContextProviderInner>
     </AuthProvider>
   );
 };

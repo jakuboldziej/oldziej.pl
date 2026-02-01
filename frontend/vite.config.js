@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
           secure: mode === "development",
         },
       },
+      allowedHosts: ["merely-meet-muskrat.ngrok-free.app"]
     },
   };
 });

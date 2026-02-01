@@ -2,9 +2,12 @@ import GameLivePreview from '@/components/Home/Darts/GameLivePreview/GameLivePre
 import JoiningLiveGame from '@/components/Home/Darts/GameLivePreview/JoiningLiveGame';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { socket } from '@/lib/socketio';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { AuthContext } from '@/context/Home/AuthContext';
 
 function GameLivePreviewPage() {
+  const { currentUser } = useContext(AuthContext);
+
   const [liveGame, setLiveGame] = useState(null);
   const [overthrow, setOverthrow] = useState(false);
 
@@ -43,6 +46,18 @@ function GameLivePreviewPage() {
       }
     }
 
+    const gameCreated = (data) => {
+      const { game, userDisplayNames } = JSON.parse(data);
+
+      if (userDisplayNames.includes(currentUser.displayName)) {
+        socket.emit("joinLiveGamePreview", JSON.stringify({
+          gameCode: game.gameCode
+        }));
+
+        setLiveGame(game);
+      }
+    }
+
     const playAgainButtonClient = (data) => {
       const gameData = JSON.parse(data);
 
@@ -66,6 +81,7 @@ function GameLivePreviewPage() {
       }
     }
 
+    socket.on("gameCreated", gameCreated);
     socket.on("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
     socket.on("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
     socket.on("playAgainButtonClient", playAgainButtonClient);
@@ -73,9 +89,11 @@ function GameLivePreviewPage() {
     socket.on("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
 
     return () => {
+      socket.off("gameCreated", gameCreated);
       socket.off("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
       socket.off("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
       socket.off("playAgainButtonClient", playAgainButtonClient);
+      socket.off("userOverthrowClient", handleOverthrowEffect);
       socket.off("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
     }
   }, []);

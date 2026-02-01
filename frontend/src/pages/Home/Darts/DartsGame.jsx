@@ -14,6 +14,7 @@ import CopyTextButton from "@/components/Home/CopyTextButton";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { Copy } from "lucide-react";
 import { socket } from "@/lib/socketio";
+import MostCommonCheckout from "@/components/Home/Darts/MostCommonCheckout";
 
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
@@ -150,7 +151,7 @@ function DartsGame() {
         <MyAccordion title={`Live Data (${game.gameMode})`}>
           <UserDataTable users={game.users} game={game} />
         </MyAccordion>
-        <span className="text-white fs-2 text-center flex justify-center gap-2">
+        <span className="text-white text-xs sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-1 sm:gap-2">
           <Link
             to={`/darts/game/live?gameCode=${game.gameCode}`}
             target="_blank"
@@ -158,15 +159,18 @@ function DartsGame() {
           >
             Live Game
           </Link>
-          <div className="flex items-center">
-            Code: {game.gameCode}
+          <div className="flex items-center gap-1">
+            <span className="hidden sm:inline">Code:</span> {game.gameCode}
             <CopyTextButton textToCopy={game.gameCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
               <MyTooltip title="Copy code to clipboard">
-                <Copy height={15} />
+                <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
               </MyTooltip>
             </CopyTextButton>
           </div>
         </span>
+        <div className="w-full">
+          <MostCommonCheckout users={game.users} game={game} compact={true} />
+        </div>
         <Keyboard props={keyboardProps} />
       </div>
 

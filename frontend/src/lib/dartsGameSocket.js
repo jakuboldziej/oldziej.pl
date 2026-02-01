@@ -1,9 +1,11 @@
-import { socket } from '@/lib/socketio';
+import { socket, ensureSocketConnection } from '@/lib/socketio';
 
-export const sendThrow = (gameCode, value, action = null) => {
+export const sendThrow = async (gameCode, value, action = null) => {
+  await ensureSocketConnection();
+  
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      reject(new Error('Throw timeout'));
+      reject(new Error('Throw timeout - check your connection'));
     }, 5000);
 
     socket.emit("game:throw", JSON.stringify({ gameCode, value, action }));
@@ -23,10 +25,12 @@ export const sendThrow = (gameCode, value, action = null) => {
   });
 };
 
-export const sendBack = (gameCode) => {
+export const sendBack = async (gameCode) => {
+  await ensureSocketConnection();
+  
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
-      reject(new Error('Back timeout'));
+      reject(new Error('Back timeout - check your connection'));
     }, 5000);
 
     socket.emit("game:back", JSON.stringify({ gameCode }));
@@ -125,6 +129,23 @@ export const subscribeToPlayAgain = (callback) => {
 
   return () => {
     socket.off("playAgainButtonClient", handler);
+  };
+};
+
+export const subscribeToCreateNewGame = (callback) => {
+  const handler = (data) => {
+    try {
+      const game = JSON.parse(data);
+      callback(game);
+    } catch (error) {
+      console.error('Error parsing game end:', error);
+    }
+  };
+
+  socket.on("createNewGameClient", handler);
+
+  return () => {
+    socket.off("createNewGameClient", handler);
   };
 };
 

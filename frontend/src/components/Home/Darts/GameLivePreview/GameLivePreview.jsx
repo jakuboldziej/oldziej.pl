@@ -4,6 +4,8 @@ import GreenDot from "@/assets/images/icons/green_dot.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../game logic/gameUtils';
+import MostCommonCheckout from '../MostCommonCheckout';
+import { socket } from '@/lib/socketio';
 
 function GameLivePreview({ props }) {
   const { liveGame, setLiveGame, overthrow } = props;
@@ -24,6 +26,19 @@ function GameLivePreview({ props }) {
     }
     else setShowDialog(false);
   }, [liveGame]);
+
+  useEffect(() => {
+    const gameEndClient = (data) => {
+      const endedGame = JSON.parse(data);
+      setLiveGame(endedGame);
+    }
+
+    socket.on('gameEndClient', gameEndClient);
+
+    return () => {
+      socket.off('gameEndClient', gameEndClient);
+    }
+  }, [setLiveGame]);
 
   // Scroll to user
   const usersContainerRef = useRef(null);
@@ -58,14 +73,19 @@ function GameLivePreview({ props }) {
   return (
     <>
       <div className='live-game text-white'>
-        <div className='text-3xl top-bar backdrop-blur-sm fixed top-0 flex justify-around w-full p-5'>
-          <span>Round: {liveGame.round}</span>
-          {handleShowingSetsAndLegs() && <span>Legs: {liveGame.legs}</span>}
-          <span>Gamemode: {liveGame.gameMode}</span>
-          {handleShowingSetsAndLegs() && <span>Sets: {liveGame.sets}</span>}
-          <span className='flex items-center gap-2'>Live: <img className='h-[15px]' src={liveGame.active ? GreenDot : RedDot} /></span>
+        <div className='top-bar backdrop-blur-sm fixed top-0 flex justify-around items-center w-full p-2 sm:p-3 md:p-5 z-20 text-[10px] sm:text-xl md:text-3xl'>
+          <span className="truncate">R: {liveGame.round}</span>
+          {handleShowingSetsAndLegs() && <span className="hidden md:inline truncate">Legs: {liveGame.legs}</span>}
+          <span className="truncate">{liveGame.gameMode}</span>
+          {handleShowingSetsAndLegs() && <span className="hidden md:inline truncate">Sets: {liveGame.sets}</span>}
+          <span className='flex items-center gap-1 truncate'>
+            <img className='h-[10px] sm:h-[12px] md:h-[15px]' src={liveGame.active ? GreenDot : RedDot} />
+          </span>
         </div>
-        <div ref={usersContainerRef} className='users-playing flex flex-wrap items-center justify-center gap-8 w-full pt-16 min-h-screen'>
+        <div className='fixed top-12 sm:top-16 md:top-24 left-1/2 transform -translate-x-1/2 z-10 w-full max-w-4xl px-1 sm:px-2 md:px-4'>
+          <MostCommonCheckout users={users} game={liveGame} compact={true} />
+        </div>
+        <div ref={usersContainerRef} className='users-playing flex flex-wrap items-center justify-center gap-4 sm:gap-8 w-full pt-24 sm:pt-32 md:pt-40 min-h-screen'>
           {users && users.map((user) => (
             <div key={user._id} data-userid={user._id} className='user transition-colors' style={userDynamicStyle(user)}>
               <div className="p-1">

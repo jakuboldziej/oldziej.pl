@@ -2,21 +2,39 @@ import { Link } from "react-router-dom";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
+import Loading from "../Loading";
 
 function DartsGamesList({ games, isLoading }) {
   if (isLoading) {
-    return <div className="text-center">Loading...</div>;
+    return <Loading />;
   }
 
   if (games.length === 0) {
     return <span className="text-lg text-center">No games found</span>;
   }
 
+  const handleActiveGameClick = (game) => {
+    if (!game.record) {
+      if (game.lastRecord) {
+        game.record = [game.lastRecord];
+      } else {
+        game.record = [{
+          game: {
+            round: game.round,
+            turn: game.turn
+          },
+          users: game.users.map(user => ({ ...user }))
+        }];
+      }
+    }
+    localStorage.setItem('dartsGame', JSON.stringify(game));
+  };
+
   return (
     <>
       {games.map((game) => (
         game.active ?
-          <Link key={game._id} to={`/darts/games/${game._id}`} className="element">
+          <Link key={game._id} to={`/darts/game`} className="element" onClick={() => handleActiveGameClick(game)}>
             <MyTooltip title="Game Active">
               <span className="elementInfo gameActive">
                 <img src={game.active ? GreenDot : RedDot} />

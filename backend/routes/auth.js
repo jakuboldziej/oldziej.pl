@@ -420,9 +420,10 @@ router.post("/register", registerLimiter, (req, res) => {
         {
           userId: result._id,
           userEmail: result.email,
+          displayName: result.displayName
         },
         process.env.JWT_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "30d" }
       );
 
       logger.info("Register User", { method: req.method, url: req.url, data: user });
@@ -467,7 +468,7 @@ router.post("/login", loginLimiter, (req, res) => {
           displayName: user.displayName
         },
         process.env.JWT_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "30d" }
       );
 
       logger.info("Login User", { method: req.method, url: req.url, data: user });
@@ -515,6 +516,49 @@ router.patch("/change-password", changePasswordLimiter, authenticateUser, async 
   }
 });
 
+router.post("/refresh-token", async (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).send({ message: "Not authorized." });
+  }
+
+  try {
+    const decoded = jwt.decode(authHeader);
+    
+    if (!decoded || !decoded.userId) {
+      return res.status(403).send({ message: "Invalid token" });
+    }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const newToken = jwt.sign(
+      {
+        userId: user._id,
+        userEmail: user.email,
+        displayName: user.displayName
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    logger.info("Token Refreshed", { method: req.method, url: req.url, userId: user._id });
+    res.status(200).send({
+      message: "Token refreshed successfully",
+      token: newToken,
+      verified: user.verified,
+      role: user.role,
+      friendsRequestsReceived: user.friendsRequests.received.length,
+    });
+  } catch (err) {
+    logger.error("Token Refresh Failed", { method: req.method, url: req.url, error: err.message });
+    res.status(403).send({ message: "Token refresh failed" });
+  }
+});
+
 router.post("/check-session", async (req, res) => {
   const authHeader = req.headers.authorization;
 
@@ -523,9 +567,16 @@ router.post("/check-session", async (req, res) => {
   }
 
   try {
-    jwt.verify(authHeader, process.env.JWT_SECRET);
+    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
+    
+    const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+    const shouldRefresh = expiresIn < 7 * 24 * 60 * 60;
 
-    res.json({ ok: true });
+    res.json({ 
+      ok: true,
+      shouldRefresh,
+      expiresIn
+    });
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
       return res.status(401).send({ message: "Token expired" });

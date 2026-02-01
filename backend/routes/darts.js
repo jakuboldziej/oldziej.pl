@@ -5,6 +5,7 @@ const DartsUser = require('../models/dartsUser')
 const { Types } = require("mongoose")
 const authenticateUser = require("../middleware/auth")
 const { logger } = require("../middleware/logging")
+const { io } = require('../server')
 
 const getDartsUser = async (req, res, next) => {
   let user;
@@ -84,6 +85,12 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
 
     const newDartsGame = await dartsGame.save();
 
+    const userDisplayNames = body.users.map(user => user.displayName);
+    io.emit("gameCreated", JSON.stringify({
+      game: newDartsGame,
+      userDisplayNames: userDisplayNames
+    }));
+
     logger.info("POST DartsGame", { method: req.method, url: req.url, data: newDartsGame });
     res.json(newDartsGame);
   } catch (err) {
@@ -97,12 +104,14 @@ router.get('/dartsGames', authenticateUser, async (req, res) => {
     let filter = {};
     const userDisplayName = req.query.user
     const limit = req.query.limit
-    const includeTraining = req.query.includeTraining === 'true'
+    const trainingFilter = req.query.trainingFilter;
 
     if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
 
-    if (!includeTraining) {
-      filter.training = { $ne: true };
+    if (trainingFilter === 'training') {
+      filter.training = true;
+    } else if (trainingFilter === 'competitive') {
+      filter.$or = [{ training: false }, { training: { $exists: false } }];
     }
 
     const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });

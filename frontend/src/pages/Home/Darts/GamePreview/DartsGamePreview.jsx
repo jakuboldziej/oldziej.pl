@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/shadcn/badge';
 import Loading from '@/components/Home/Loading';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 import NavBar from '@/components/Home/NavBar';
+import MostCommonCheckout from '@/components/Home/Darts/MostCommonCheckout';
 
 function DartsGamePreview() {
   const { gameId } = useParams();
@@ -71,7 +72,6 @@ function DartsGamePreview() {
     <>
       <NavBar />
       <div className='dart-game-preview p-6 text-white max-w-7xl mx-auto'>
-        {/* Game Header */}
         <div className='header mb-8'>
           <div className='flex items-center justify-between mb-4'>
             <div>
@@ -91,7 +91,6 @@ function DartsGamePreview() {
             </div>
           </div>
 
-          {/* Game Info */}
           <Card className='bg-gray-800 border-gray-700'>
             <CardContent className='pt-6'>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 text-center'>
@@ -116,7 +115,12 @@ function DartsGamePreview() {
           </Card>
         </div>
 
-        {/* Podium */}
+        {game.active && (
+          <div className='mb-8'>
+            <MostCommonCheckout users={game.users} game={game} />
+          </div>
+        )}
+
         {!game.active && game.podium && game.podium[1] && (
           <Card className='bg-gray-800 border-gray-700 mb-8'>
             <CardHeader>
@@ -124,7 +128,6 @@ function DartsGamePreview() {
             </CardHeader>
             <CardContent>
               <div className='flex justify-center items-end gap-8'>
-                {/* Second Place */}
                 {game.podium[2] && (
                   <div className='text-center flex flex-col items-center'>
                     <img width="60" height="60" src="https://img.icons8.com/color/60/second-place-ribbon.png" alt="second-place" />
@@ -133,14 +136,12 @@ function DartsGamePreview() {
                   </div>
                 )}
 
-                {/* First Place */}
                 <div className='text-center flex flex-col items-center'>
                   <img width="80" height="80" src="https://img.icons8.com/color/80/first-place-ribbon.png" alt="first-place" />
                   <p className='text-2xl font-bold mt-2'>{game.podium[1]}</p>
                   <p className='text-gray-400'>1st Place</p>
                 </div>
 
-                {/* Third Place */}
                 {game.podium[3] && (
                   <div className='text-center flex flex-col items-center'>
                     <img width="60" height="60" src="https://img.icons8.com/color/60/third-place-ribbon.png" alt="third-place" />
@@ -153,7 +154,6 @@ function DartsGamePreview() {
           </Card>
         )}
 
-        {/* Players Stats */}
         <Card className='bg-gray-800 border-gray-700'>
           <CardHeader>
             <CardTitle>Players Statistics</CardTitle>
@@ -192,7 +192,7 @@ function DartsGamePreview() {
                         <MyTooltip title="Average per turn">
                           <div className='text-center bg-gray-800 p-3 rounded'>
                             <p className='text-gray-400 text-xs mb-1'>Avg/Turn</p>
-                            <p className='text-lg font-bold'>{user.avgPointsPerThrow || "0.00"}</p>
+                            <p className='text-lg font-bold'>{user.avgPointsPerTurn || "0.00"}</p>
                           </div>
                         </MyTooltip>
 

@@ -1,7 +1,5 @@
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
-import RedDot from "@/assets//images/icons/red_dot.png";
-import GreenDot from "@/assets//images/icons/green_dot.png";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/lib/fetch";
@@ -13,6 +11,7 @@ import { AuthContext } from "@/context/Home/AuthContext";
 import { Link } from "react-router-dom";
 import Loading from "@/components/Home/Loading";
 import DartsGamesList from "@/components/Home/Darts/DartsGamesList";
+import { socket } from '@/lib/socketio';
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -35,7 +34,7 @@ function DartsPage() {
     if (!playerInGame) {
       setDrawerOpen(true);
     } else {
-      ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
+      ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
     }
   }
 
@@ -148,6 +147,50 @@ function DartsPage() {
   }, [currentPage]);
 
   useEffect(() => {
+    socket.on("gameCreated", (data) => {
+      const { game, userDisplayNames } = JSON.parse(data);
+
+      if (userDisplayNames.includes(currentUser.displayName)) {
+        getDartsGames(currentUser.displayName, 10).then(fetchedGames => {
+          const sortedGames = handleFilterGames(filterGamesType, fetchedGames);
+          setGamesShown(sortedGames);
+        });
+
+        if (game.lastRecord && !game.record) {
+          game.record = [game.lastRecord];
+        } else if (!game.record) {
+          game.record = [{
+            game: {
+              round: game.round,
+              turn: game.turn
+            },
+            users: game.users.map(user => ({ ...user }))
+          }];
+        }
+
+        setPlayerInGame(true);
+        localStorage.setItem('dartsGame', JSON.stringify(game));
+
+        if (game.created_by !== currentUser.displayName) {
+          ShowNewToast("New Game Created", `A new game has been created: <a class='underline text-white' href='/darts/game'>Join Game</a>`);
+        }
+      }
+    });
+
+    socket.on("gameEnded", (data) => {
+      const { userDisplayNames } = JSON.parse(data);
+
+      if (userDisplayNames.includes(currentUser.displayName)) {
+        getDartsGames(currentUser.displayName, 10).then(fetchedGames => {
+          const sortedGames = handleFilterGames(filterGamesType, fetchedGames);
+          setGamesShown(sortedGames);
+        });
+
+        setPlayerInGame(false);
+        localStorage.setItem('dartsGame', null);
+      }
+    });
+
     const fetchData = async () => {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
@@ -194,7 +237,7 @@ function DartsPage() {
 
           setPlayerInGame(true);
           localStorage.setItem('dartsGame', JSON.stringify(playerActiveGame));
-          ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Live Game</a>");
+          ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
         } else {
           localStorage.setItem('dartsGame', null);
           setPlayerInGame(false);
@@ -211,6 +254,11 @@ function DartsPage() {
     // Create New Game Auto
     const params = location.state;
     if (params && params.createNewGame) handleShow();
+
+    return () => {
+      socket.off("gameCreated");
+      socket.off("gameEnded");
+    };
   }, []);
 
   useEffect(() => {
@@ -225,7 +273,16 @@ function DartsPage() {
     <div className="darts-page">
       <div className="flex justify-center">
         <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
-          <Button variant="outline_red" className="glow-button-red" onClick={() => setDrawerOpen(true)}>Create</Button>
+          <Button 
+            variant="outline_red" 
+            className="glow-button-red" 
+            onClick={(e) => {
+              e.currentTarget.blur();
+              setDrawerOpen(true);
+            }}
+          >
+            Create
+          </Button>
         </CreateGame>
       </div>
       <div className="cards">

@@ -3,7 +3,44 @@ const { addingOnlineUser, scheduleUserOffline } = require('./utils');
 const { getGameManager, removeGameManager } = require('../services/dartsGameManager');
 const { logger } = require('../middleware/logging');
 
+const socketAuthMiddleware = (socket, next) => {
+  const handshake = socket.handshake;
+
+  logger.info(`Socket connection attempt from ${socket.id}`, {
+    address: handshake.address,
+    headers: handshake.headers.origin
+  });
+
+  // token validation?
+  next();
+};
+
+io.use(socketAuthMiddleware);
+
+// Connection health monitoring
+const activeConnections = new Map();
+
 io.on('connection', (socket) => {
+  activeConnections.set(socket.id, {
+    connectedAt: Date.now(),
+    lastHeartbeat: Date.now(),
+    address: socket.handshake.address
+  });
+
+  socket.on('heartbeat', () => {
+    const connection = activeConnections.get(socket.id);
+    if (connection) {
+      connection.lastHeartbeat = Date.now();
+    }
+    socket.emit('heartbeat-ack', { timestamp: Date.now() });
+  });
+
+  socket.on('ping', (callback) => {
+    if (typeof callback === 'function') {
+      callback({ timestamp: Date.now() });
+    }
+  });
+
   // Listeners
 
   // Admin Listeners
@@ -77,7 +114,7 @@ io.on('connection', (socket) => {
 
   socket.on("externalKeyboardInput", async (data) => {
     try {
-      const { gameCode, input } = JSON.parse(data);
+      const { gameCode, input, action } = JSON.parse(data);
 
       if (!gameCode) {
         console.error('[externalKeyboardInput] No gameCode provided');
@@ -90,7 +127,6 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Handle special actions
       if (input === "END") {
         await gameManager.handleEnd();
       } else if (input === "QUIT") {
@@ -101,8 +137,7 @@ io.on('connection', (socket) => {
           console.error(`[externalKeyboardInput] Back error: ${errorMessage}`);
         }
       } else {
-        // Regular throw input
-        await gameManager.handleThrow(input);
+        await gameManager.handleThrow(input, action);
       }
     } catch (error) {
       console.error('[externalKeyboardInput] Error:', error);
@@ -117,20 +152,37 @@ io.on('connection', (socket) => {
 
   // Darts Game Logic - Server-side game management
 
+  // Helper function to validate game manager access
+  const validateGameAccess = async (socket, gameCode) => {
+    if (!gameCode) {
+      socket.emit('error', { message: 'Invalid gameCode' });
+      return null;
+    }
+
+    try {
+      const gameManager = await getGameManager(gameCode, io);
+      if (!gameManager || !gameManager.game) {
+        socket.emit('error', { message: 'Game not found or no longer active' });
+        return null;
+      }
+      return gameManager;
+    } catch (error) {
+      logger.error(`Error accessing game ${gameCode}:`, { error: error.message });
+      socket.emit('error', { message: 'Failed to access game' });
+      return null;
+    }
+  };
+
   socket.on("game:throw", async (data) => {
     try {
       const { gameCode, value, action } = JSON.parse(data);
 
-      if (!gameCode) {
-        socket.emit("game:throw-result", JSON.stringify({ success: false, message: "Invalid gameCode" }));
-        return;
-      }
+      const gameManager = await validateGameAccess(socket, gameCode);
+      if (!gameManager) return;
 
-      const gameManager = await getGameManager(gameCode, io);
       const result = await gameManager.handleThrow(value, action);
 
       if (result.success) {
-        // Game state is already emitted by updateGameState in the manager
         socket.emit("game:throw-result", JSON.stringify({ success: true, gameEnd: result.gameEnd }));
       } else {
         socket.emit("game:throw-result", JSON.stringify({ success: false, message: result.message }));
@@ -145,12 +197,9 @@ io.on('connection', (socket) => {
     try {
       const { gameCode } = JSON.parse(data);
 
-      if (!gameCode) {
-        socket.emit("game:back-result", JSON.stringify({ success: false, message: "Invalid gameCode" }));
-        return;
-      }
+      const gameManager = await validateGameAccess(socket, gameCode);
+      if (!gameManager) return;
 
-      const gameManager = await getGameManager(gameCode, io);
       const result = await gameManager.handleBack();
 
       if (result.success) {
@@ -167,11 +216,17 @@ io.on('connection', (socket) => {
   socket.on("game:end", async (data) => {
     try {
       const { gameCode, game: endedGame } = JSON.parse(data);
-      
+
       if (endedGame) {
         io.to(`game-${gameCode}`).emit("gameEndClient", JSON.stringify(endedGame));
+
+        const userDisplayNames = endedGame.users.map(user => user.displayName);
+        io.emit("gameEnded", JSON.stringify({
+          gameCode: gameCode,
+          userDisplayNames: userDisplayNames
+        }));
       }
-      
+
       removeGameManager(gameCode);
       socket.emit("game:end-result", JSON.stringify({ success: true }));
     } catch (error) {
@@ -210,11 +265,34 @@ io.on('connection', (socket) => {
 
   // Connections
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', (reason) => {
+    activeConnections.delete(socket.id);
     scheduleUserOffline(socket.id, io);
   });
 
   socket.on('connection_error', (err) => {
-    console.error(err)
+    logger.error(`Connection error for ${socket.id}:`, { error: err.message });
+    console.error(err);
+  });
+
+  socket.on('error', (err) => {
+    logger.error(`Socket error for ${socket.id}:`, { error: err.message });
   });
 });
+
+// Periodic health check
+setInterval(() => {
+  const now = Date.now();
+  const staleTimeout = 60000; // 60 seconds
+
+  activeConnections.forEach((connection, socketId) => {
+    if (now - connection.lastHeartbeat > staleTimeout) {
+      logger.warn(`Removing stale connection: ${socketId}`);
+      activeConnections.delete(socketId);
+      const socket = io.sockets.sockets.get(socketId);
+      if (socket) {
+        socket.disconnect(true);
+      }
+    }
+  });
+}, 30000); // 30 seconds

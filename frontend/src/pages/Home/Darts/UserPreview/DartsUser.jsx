@@ -1,31 +1,35 @@
 import { useParams } from 'react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { getDartsGames, getDartsUser } from '@/lib/fetch';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { UserBarChart } from './UserBarChart';
 import Loading from '@/components/Home/Loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
-import { Badge } from '@/components/ui/shadcn/badge';
-import { Link } from 'react-router-dom';
-import RedDot from '@/assets/images/icons/red_dot.png';
-import GreenDot from '@/assets/images/icons/green_dot.png';
 import DartsGamesList from '@/components/Home/Darts/DartsGamesList';
+import { Button } from '@/components/ui/shadcn/button';
+import { AuthContext } from '@/context/Home/AuthContext';
 
 function DartsUser() {
   const { username } = useParams();
+  const { currentUser } = useContext(AuthContext);
+
   document.title = `Oldziej | ${username}`
   const [dartUser, setDartUser] = useState();
   const [games, setGames] = useState([]);
   const [gamesShown, setGamesShown] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingGames, setIsLoadingGames] = useState(false);
+  const [trainingFilter, setTrainingFilter] = useState('competitive');
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setIsLoading(true);
+      setCurrentPage(1);
       const resUser = await getDartsUser(username);
-      const resGames = await getDartsGames(username, 0, false);
-      resUser.games = resGames.reverse();
+      const resGames = await getDartsGames(username, 0, trainingFilter);
+      resUser.games = resGames;
       setDartUser(resUser);
       setGames(resGames);
       setGamesShown(resGames.slice(0, 20));
@@ -34,6 +38,21 @@ function DartsUser() {
 
     fetchUserData();
   }, [username]);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      setIsLoadingGames(true);
+      setCurrentPage(1);
+      const resGames = await getDartsGames(username, 0, trainingFilter);
+      setGames(resGames);
+      setGamesShown(resGames.slice(0, 20));
+      setIsLoadingGames(false);
+    }
+
+    if (dartUser) {
+      fetchGames();
+    }
+  }, [trainingFilter]);
 
   useEffect(() => {
     setGamesShown(games.slice(0, 20 * currentPage));
@@ -207,7 +226,7 @@ function DartsUser() {
                         <img width="20" height="20" src="https://img.icons8.com/officel/20/door.png" alt="door" />
                         <p className='text-gray-400 text-sm'>Doors</p>
                       </div>
-                      <p className='text-3xl font-bold text-red-400'>{dartUser.throws.doors.toLocaleString()}</p>
+                      <p className='text-3xl font-bold text-green'>{dartUser.throws.doors.toLocaleString()}</p>
                       <p className='text-xs text-gray-500 mt-1'>
                         {((dartUser.throws.doors / calculateTotalThrows()) * 100).toFixed(1)}%
                       </p>
@@ -217,7 +236,7 @@ function DartsUser() {
                 {dartUser.throws.overthrows !== undefined && (
                   <div className='text-center bg-gray-900 p-4 rounded'>
                     <p className='text-gray-400 text-sm mb-2'>Overthrows</p>
-                    <p className='text-3xl font-bold text-yellow-400'>{dartUser.throws.overthrows.toLocaleString()}</p>
+                    <p className='text-3xl font-bold text-red-400'>{dartUser.throws.overthrows.toLocaleString()}</p>
                     <p className='text-xs text-gray-500 mt-1'>
                       {((dartUser.throws.overthrows / calculateTotalThrows()) * 100).toFixed(1)}%
                     </p>
@@ -235,11 +254,33 @@ function DartsUser() {
           <div className='cards'>
             <Card className='my-card games !w-full'>
               <CardHeader>
-                <CardTitle>Recent Games ({gamesShown.length})</CardTitle>
+                <div className='flex items-center justify-between flex-wrap gap-2'>
+                  <CardTitle>Recent Games ({gamesShown.length})</CardTitle>
+                  {currentUser?.displayName === username && (
+                    <div className='flex gap-2'>
+                      <Button
+                        variant={trainingFilter === 'competitive' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTrainingFilter('competitive')}
+                        className='text-xs'
+                      >
+                        Competitive
+                      </Button>
+                      <Button
+                        variant={trainingFilter === 'training' ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setTrainingFilter('training')}
+                        className='text-xs'
+                      >
+                        Training
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <ScrollArea className='h-[600px]' onScroll={handleScroll}>
                 <CardContent className="info p-0 pr-3">
-                  <DartsGamesList games={gamesShown} isLoading={false} />
+                  <DartsGamesList games={gamesShown} isLoading={isLoadingGames} />
                 </CardContent>
               </ScrollArea>
             </Card>

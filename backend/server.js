@@ -27,6 +27,7 @@ const domain = environment === "production" ? process.env.DOMAIN : process.env.D
 const portfolioDomain = environment === "production" ? process.env.PORTFOLIO_DOMAIN : process.env.PORTFOLIO_DOMAIN_LOCAL;
 const previewDomain = process.env.PREVIEW_DOMAIN;
 const gamesDomains = [process.env.LOCALHOST_GAMES_DOMAIN, process.env.GAMES_DOMAIN];
+const ngrokDomain = process.env.NGROK_DOMAIN;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -36,33 +37,26 @@ const allowedOrigins = [
   domain,
   portfolioDomain,
   previewDomain,
-  ...gamesDomains
-];
+  ...gamesDomains,
+  ngrokDomain
+].filter(Boolean);
 
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", ...allowedOrigins],
-    },
-  },
-  crossOriginEmbedderPolicy: true,
-  crossOriginOpenerPolicy: true,
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
   crossOriginResourcePolicy: { policy: "cross-origin" },
   dnsPrefetchControl: true,
   frameguard: { action: "deny" },
   hidePoweredBy: true,
-  hsts: true,
+  hsts: false,
   ieNoOpen: true,
   noSniff: true,
-  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+  referrerPolicy: { policy: "no-referrer" },
   xssFilter: true,
 }));
 
-app.set('trust proxy', '127.0.0.1');
+app.set('trust proxy', true);
 
 app.use(xssClean());
 app.use(mongoSanitize());
@@ -76,21 +70,25 @@ app.use((req, res, next) => {
 
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS, PATCH, PUT");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, ngrok-skip-browser-warning");
   next();
 });
 
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: [
-      ...allowedOrigins,
-      "https://admin.socket.io",
-    ],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin === "https://admin.socket.io") {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST"],
   },
   allowEIO3: true,
-  transports: ['websocket', 'polling'],
+  transports: ['polling', 'websocket'],
 });
 
 const mongoURIDarts = `mongodb://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}/darts`;
@@ -157,7 +155,7 @@ logger.info("Using environment - ", environment)
 // Initialize WLED listeners
 initializeWLEDListeners(io);
 
-app.get('/health', async (req, res) => {
+app.get('/api/health', async (req, res) => {
   res.status(200).json("Server alive");
 });
 

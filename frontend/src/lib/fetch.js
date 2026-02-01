@@ -59,7 +59,7 @@ export const deleteDartsGame = async (gameId) => {
   });
 }
 
-export const getDartsGames = async (userDisplayName = null, limit = 0, includeTraining = false) => {
+export const getDartsGames = async (userDisplayName = null, limit = 0, trainingFilter = 'competitive') => {
   let url = `${mongodbApiUrl}/darts/dartsGames`;
 
   const queryParams = [];
@@ -69,8 +69,8 @@ export const getDartsGames = async (userDisplayName = null, limit = 0, includeTr
   if (userDisplayName) {
     queryParams.push(`user=${userDisplayName}`);
   }
-  if (includeTraining) {
-    queryParams.push(`includeTraining=true`);
+  if (trainingFilter) {
+    queryParams.push(`trainingFilter=${trainingFilter}`);
   }
 
   if (queryParams.length > 0) {
@@ -689,6 +689,17 @@ export const registerUser = async (userData) => {
 
 export const checkSession = async () => {
   const response = await fetch(`${mongodbApiUrl}/auth/check-session`, {
+    method: "POST",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const refreshToken = async () => {
+  const response = await fetch(`${mongodbApiUrl}/auth/refresh-token`, {
     method: "POST",
     headers: {
       "Authorization": Cookies.get("_auth")

@@ -93,7 +93,6 @@ const handlePointsX01 = (game, currentUser, io) => {
   currentUser.allGainedPoints = parseInt(game.startPoints) - currentUser.points;
   const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
 
-  // Update highest turn points on 3rd throw (including winning throw per official darts rules)
   if (currentUser.currentTurn === 3 && currentUser.points >= 0) {
     updateHighestTurnPoints(currentUser);
   }
@@ -165,7 +164,6 @@ const handleNextLeg = (game, currentUser) => {
   return endGame;
 };
 
-// Main game manager class
 class DartsGameManager {
   constructor(gameCode, io) {
     this.gameCode = gameCode;
@@ -179,12 +177,10 @@ class DartsGameManager {
     if (!game) throw new Error('Game not found');
     this.game = game.toObject();
 
-    // Initialize record array from lastRecord if it exists
     if (!this.game.record) {
       this.game.record = this.game.lastRecord ? [this.game.lastRecord] : [];
     }
 
-    // If record is empty, save initial state
     if (this.game.record.length === 0) {
       const usersCopy = JSON.parse(JSON.stringify(this.game.users));
       this.game.record.push({
@@ -229,7 +225,6 @@ class DartsGameManager {
         { new: true }
       );
 
-      // Emit update to all clients
       await this.io.in(`game-${this.gameCode}`).fetchSockets();
       this.io.to(`game-${this.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(this.game));
 
@@ -272,11 +267,9 @@ class DartsGameManager {
   }
 
   handleNextUser(finishingUser = null) {
-    // Use the passed user or get current user
     const userToFind = finishingUser || this.getCurrentUser();
 
     if (!userToFind) {
-      // Fallback: start with first user if no one has played yet
       const firstUser = this.game.users[0];
       if (firstUser) {
         firstUser.turn = true;
@@ -325,7 +318,7 @@ class DartsGameManager {
     return this.dartsUsersBeforeBack;
   }
 
-  async updateUsersData(usersBeforeBack) {
+  async updateUsersData() {
     try {
       await Promise.all(this.game.users.map(async (user) => {
         if (parseInt(this.game.legs) === 1 && parseInt(this.game.sets) === 1) user.highestGameAvg = user.avgPointsPerTurn;
@@ -417,11 +410,14 @@ class DartsGameManager {
 
     await this.updateGameState();
 
-    // Emit game end event
     this.io.to(`game-${this.gameCode}`).emit("gameEndClient", JSON.stringify(this.game));
     this.io.to(`game-${this.gameCode}`).emit("wled:game-end", { gameCode: this.gameCode });
 
-    // Note: Game manager should NOT be removed here as user might click "Back" button
+    const userDisplayNames = this.game.users.map(user => user.displayName);
+    this.io.emit("gameEnded", JSON.stringify({
+      gameCode: this.gameCode,
+      userDisplayNames: userDisplayNames
+    }));
   }
 
   async handleGameEnd() {
@@ -509,7 +505,6 @@ class DartsGameManager {
     } else if (value === "BACK") {
       return await this.handleBack();
     } else if (action === "DOUBLE" || action === "TRIPLE") {
-      // Handle double/triple - handlePoints will set the turn value
       if (action === "DOUBLE") {
         currentUser.throws["doubles"] += 1;
         currentUser.currentThrows["doubles"] += 1;
@@ -524,7 +519,6 @@ class DartsGameManager {
         return { success: true, gameEnd: true, game: this.game };
       }
     } else {
-      // Handle normal throw
       if (this.game.gameMode === "Reverse X01" && value === 0) {
         currentUser.turns[currentUser.currentTurn] = zeroValueReverseX01;
       } else {
@@ -533,7 +527,6 @@ class DartsGameManager {
 
       currentUser.throws["normal"] += 1;
       currentUser.currentThrows["normal"] += 1;
-      // Don't call handleTurnsSum here - it's called inside handlePoints
 
       const result = await this.handlePoints(null, value);
 
@@ -570,7 +563,6 @@ class DartsGameManager {
   }
 
   async handleBack() {
-    // Validate game can be backed
     if (!this.game) {
       return { success: false, message: "No active game" };
     }
@@ -579,7 +571,6 @@ class DartsGameManager {
       return { success: false, message: "Cannot go back - at initial state" };
     }
 
-    // Restore user data if available
     if (this.dartsUsersBeforeBack.length > 0) {
       try {
         await Promise.all(
