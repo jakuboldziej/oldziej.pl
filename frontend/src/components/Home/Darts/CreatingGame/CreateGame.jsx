@@ -26,7 +26,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
   const [selectCheckOut, setSelectCheckOut] = useState('Straight Out');
-  const [selectSets, setSelectSets] = useState(1);
+  const [selectSets, setSelectSets] = useState(0);
   const [selectLegs, setSelectLegs] = useState(1);
   const [usersPodium, setUsersPodium] = useState("None");
   const [showAddUser, setShowAddUser] = useState(false);
@@ -42,7 +42,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 6; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
+  for (let i = 0; i <= 6; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
@@ -244,6 +244,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
       if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
       if (usersPlaying.length === 1 && training === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
+      if (selectLegs === 0 && selectSets === 0) return ShowNewToast("Game settings", "You must set at least legs or sets to a value greater than 0");
       if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
 
       const gameData = {

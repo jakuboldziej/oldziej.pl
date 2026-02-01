@@ -164,11 +164,26 @@ const handleNextLeg = (game, currentUser) => {
   let endSet = false;
   let endGame = false;
 
-  if (parseInt(game.legs) > 0 && currentUser.legs === parseInt(game.legs)) {
+  const legs = parseInt(game.legs);
+  const sets = parseInt(game.sets);
+
+  if (sets === 0 && legs > 0 && currentUser.legs === legs) {
+    endGame = true;
+    endSet = false;
+  }
+  else if (legs > 0 && currentUser.legs === legs) {
     endSet = true;
     currentUser.sets += 1;
 
-    if (parseInt(game.sets) > 0 && currentUser.sets === parseInt(game.sets)) {
+    if (sets > 0 && currentUser.sets === sets) {
+      endGame = true;
+    }
+  }
+  else if (legs === 0 && sets > 0) {
+    currentUser.sets += 1;
+    endSet = false;
+    
+    if (currentUser.sets === sets) {
       endGame = true;
     }
   }
@@ -178,7 +193,7 @@ const handleNextLeg = (game, currentUser) => {
   });
 
   if (endGame) {
-    return { endGame: true, endSet: true };
+    return { endGame: true, endSet: endSet };
   }
 
   game.users.forEach((user) => {

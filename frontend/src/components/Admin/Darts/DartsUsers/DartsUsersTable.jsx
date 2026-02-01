@@ -39,23 +39,27 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
         };
 
         if (userGames.length > 0) {
-          userGames.map((game) => {
+          userGames.forEach((game) => {
             const foundUser = game.users.find((usr) => usr.displayName === user.displayName);
 
-            if (foundUser.gameCheckout && foundUser.gameCheckout > highestCheckout) highestCheckout = foundUser.gameCheckout;
-            if (foundUser.highestGameAvg && foundUser.highestGameAvg > highestEndingAvg) highestEndingAvg = foundUser.highestGameAvg;
-            if (foundUser.highestGameTurnPoints && foundUser.highestGameTurnPoints > highestTurnPoints) highestTurnPoints = foundUser.highestGameTurnPoints;
-            if (foundUser.allGainedPoints && foundUser.allGainedPoints) overAllPoints += foundUser.allGainedPoints;
+            if (foundUser) {
+              if (foundUser.gameCheckout && foundUser.gameCheckout > highestCheckout) highestCheckout = foundUser.gameCheckout;
+              if (foundUser.highestGameAvg && foundUser.highestGameAvg > highestEndingAvg) highestEndingAvg = foundUser.highestGameAvg;
+              if (foundUser.highestGameTurnPoints && foundUser.highestGameTurnPoints > highestTurnPoints) highestTurnPoints = foundUser.highestGameTurnPoints;
+              if (foundUser.allGainedPoints) overAllPoints += foundUser.allGainedPoints;
 
-            if (game.podium[1] === foundUser.displayName) podiums.firstPlace += 1;
-            if (game.podium[2] === foundUser.displayName) podiums.secondPlace += 1;
-            if (game.podium[3] === foundUser.displayName) podiums.thirdPlace += 1;
+              if (game.podium && game.podium[1] === foundUser.displayName) podiums.firstPlace += 1;
+              if (game.podium && game.podium[2] === foundUser.displayName) podiums.secondPlace += 1;
+              if (game.podium && game.podium[3] === foundUser.displayName) podiums.thirdPlace += 1;
 
-            if (foundUser.throws.doors) throws.doors += foundUser.throws.doors;
-            if (foundUser.throws.doubles) throws.doubles += foundUser.throws.doubles;
-            if (foundUser.throws.triples) throws.triples += foundUser.throws.triples;
-            if (foundUser.throws.normal) throws.normal += foundUser.throws.normal;
-            if (foundUser.throws.overthrows) throws.overthrows += foundUser.throws.overthrows;
+              if (foundUser.throws) {
+                if (foundUser.throws.doors) throws.doors += foundUser.throws.doors;
+                if (foundUser.throws.doubles) throws.doubles += foundUser.throws.doubles;
+                if (foundUser.throws.triples) throws.triples += foundUser.throws.triples;
+                if (foundUser.throws.normal) throws.normal += foundUser.throws.normal;
+                if (foundUser.throws.overthrows) throws.overthrows += foundUser.throws.overthrows;
+              }
+            }
           });
         }
 
