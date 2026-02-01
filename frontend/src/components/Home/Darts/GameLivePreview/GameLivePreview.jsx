@@ -34,10 +34,18 @@ function GameLivePreview({ props }) {
       setLiveGame(endedGame);
     }
 
+    const hostDisconnectedFromGameClient = (disconnected) => {
+      if (disconnected) {
+        setLiveGame(null);
+      }
+    }
+
     socket.on('gameEndClient', gameEndClient);
+    socket.on('hostDisconnectedFromGameClient', hostDisconnectedFromGameClient);
 
     return () => {
       socket.off('gameEndClient', gameEndClient);
+      socket.off('hostDisconnectedFromGameClient', hostDisconnectedFromGameClient);
     }
   }, [setLiveGame]);
 
