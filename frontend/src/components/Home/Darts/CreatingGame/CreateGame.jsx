@@ -42,7 +42,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const navigate = useNavigate();
 
   const numbersLegsSets = [];
-  for (let i = 1; i <= 1; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
+  for (let i = 1; i <= 6; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
     const podiumOptions = [];
@@ -234,6 +234,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         currentThrows: { ...throwsData },
         legs: 0,
         sets: 0,
+        totalLegsWon: 0,
         avgPointsPerTurn: "0.00",
         highestGameAvg: "0.00",
         highestGameTurnPoints: 0,
@@ -557,8 +558,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
-                            {/* {numbersLegsSets} */}
-                            <SelectItem value={1}>1</SelectItem>
+                            {numbersLegsSets}
                           </SelectGroup>
                         </SelectContent>
                       </Select>

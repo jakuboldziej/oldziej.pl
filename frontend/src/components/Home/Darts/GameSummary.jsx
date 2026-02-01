@@ -49,6 +49,7 @@ function GameSummary({ show, setShow }) {
         user.currentThrows = { ...throwsData };
         user.legs = 0;
         user.sets = 0;
+        user.totalLegsWon = 0;
         user.avgPointsPerTurn = "0.00";
         user.highestGameAvg = "0.00";
         user.highestGameTurnPoints = 0;
@@ -195,18 +196,18 @@ function GameSummary({ show, setShow }) {
               </div>
             )
               : (
-                <div className="training-stats flex flex-col items-center gap-5">
+                <div className="training-stats flex flex-col items-center gap-5 w-full px-2">
                   <span className='text-lg font-bold'>Training Stats</span>
                   <div className="podium">
                     <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
                     <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
                     <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4 justify-center text-center">
                     <span>Time played: {timePlayed}</span>
                     <span>Start Points: {game.startPoints}</span>
                   </div>
-                  <span>
+                  <span className="text-center">
                     Gamemode: {game.gameMode}
                     {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
                   </span>

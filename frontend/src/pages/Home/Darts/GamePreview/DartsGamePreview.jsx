@@ -10,16 +10,16 @@ import NavBar from '@/components/Home/NavBar';
 import MostCommonCheckout from '@/components/Home/Darts/MostCommonCheckout';
 
 function DartsGamePreview() {
-  const { gameId } = useParams();
+  const { gameCode } = useParams();
   const [game, setGame] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        const resGame = await getDartsGame(gameId);
+        const resGame = await getDartsGame(gameCode);
         setGame(resGame);
-        document.title = `Oldziej | Game ${resGame.gameCode || gameId}`;
+        document.title = `Oldziej | Game ${resGame.gameCode || gameCode}`;
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching game:', err);
@@ -28,7 +28,7 @@ function DartsGamePreview() {
     }
 
     fetchGameData();
-  }, [gameId]);
+  }, [gameCode]);
 
   if (isLoading) {
     return (

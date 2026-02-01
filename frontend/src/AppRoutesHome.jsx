@@ -112,7 +112,7 @@ function AppRoutesHome() {
             <Route path='live' element={<GameLivePreviewPage />} />
             <Route path='join-game-from-qrcode' element={<JoinFromAnotherDevice />} />
           </Route>
-          <Route path='games/:gameId' element={<ProtectedRoute><DartsGamePreview /></ProtectedRoute>} />
+          <Route path='games/:gameCode' element={<ProtectedRoute><DartsGamePreview /></ProtectedRoute>} />
           <Route path='users/:username' element={<ProtectedRoute><DartsUser /></ProtectedRoute>} />
         </Route>
         <Route path="cloud" element={<OnlyVerifiedAccess><AuthOutlet fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`} /></OnlyVerifiedAccess>}>

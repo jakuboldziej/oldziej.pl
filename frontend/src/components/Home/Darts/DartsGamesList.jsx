@@ -75,7 +75,7 @@ function DartsGamesList({ games, isLoading }) {
             </MyTooltip>
           </Link>
           :
-          <Link key={game._id} to={`/darts/games/${game._id}`} className="element">
+          <Link key={game._id} to={`/darts/games/${game.gameCode}`} className="element">
             <MyTooltip title="Game Ended">
               <span className="elementInfo gameActive">
                 <img src={game.active ? GreenDot : RedDot} />

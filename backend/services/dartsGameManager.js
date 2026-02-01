@@ -63,7 +63,28 @@ const handlePodiumX01 = (game, currentUser) => {
 
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (usersWithoutPodium.length > 0) {
-    const sortedUsers = usersWithoutPodium.sort((a, b) => b.allGainedPoints - a.allGainedPoints);
+    let sortedUsers = [];
+
+    if (parseInt(game.sets) > 1) {
+      sortedUsers = usersWithoutPodium.sort((a, b) => {
+        if (b.sets !== a.sets) return b.sets - a.sets;
+        if ((b.totalLegsWon || 0) !== (a.totalLegsWon || 0)) return (b.totalLegsWon || 0) - (a.totalLegsWon || 0);
+        if (a.points !== b.points) return a.points - b.points;
+        return b.allGainedPoints - a.allGainedPoints;
+      });
+    } else if (parseInt(game.legs) > 1) {
+      sortedUsers = usersWithoutPodium.sort((a, b) => {
+        if (b.legs !== a.legs) return b.legs - a.legs;
+        if (a.points !== b.points) return a.points - b.points;
+        return b.allGainedPoints - a.allGainedPoints;
+      });
+    } else {
+      sortedUsers = usersWithoutPodium.sort((a, b) => {
+        if (a.points !== b.points) return a.points - b.points;
+        return b.allGainedPoints - a.allGainedPoints;
+      });
+    }
+
     if (sortedUsers[0]) { game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2; }
     if (sortedUsers[1]) { game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3; }
   }
@@ -134,17 +155,38 @@ const handlePointsReverseX01 = (game, currentUser) => {
 const handleNextLeg = (game, currentUser) => {
   const legCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
   if (legCheckout > currentUser.gameCheckout) currentUser.gameCheckout = legCheckout;
+
   currentUser.legs += 1;
 
-  let endGame = false;
-  if (currentUser.legs === parseInt(game.legs)) endGame = true;
+  if (!currentUser.totalLegsWon) currentUser.totalLegsWon = 0;
+  currentUser.totalLegsWon += 1;
 
-  game.users.map((user) => {
+  let endSet = false;
+  let endGame = false;
+
+  if (parseInt(game.legs) > 0 && currentUser.legs === parseInt(game.legs)) {
+    endSet = true;
+    currentUser.sets += 1;
+
+    if (parseInt(game.sets) > 0 && currentUser.sets === parseInt(game.sets)) {
+      endGame = true;
+    }
+  }
+
+  game.users.forEach((user) => {
     if (user.avgPointsPerTurn > user.highestGameAvg) user.highestGameAvg = user.avgPointsPerTurn;
-    if (endGame) return user;
+  });
+
+  if (endGame) {
+    return { endGame: true, endSet: true };
+  }
+
+  game.users.forEach((user) => {
     user.points = parseInt(game.startPoints);
     user.avgPointsPerTurn = "0.00";
     user.turnsSum = 0;
+    user.turn = false;
+    user.currentTurn = 1;
     user.turns = {
       1: null,
       2: null,
@@ -158,10 +200,23 @@ const handleNextLeg = (game, currentUser) => {
       overthrows: 0,
     };
 
-    return user;
+    if (endSet) {
+      user.legs = 0;
+    }
   });
 
-  return endGame;
+  game.legStarterIndex = (game.legStarterIndex + 1) % game.users.length;
+
+  const newStarter = game.users[game.legStarterIndex];
+  newStarter.turn = true;
+  newStarter.currentTurn = 1;
+  newStarter.turns = { 1: null, 2: null, 3: null };
+  newStarter.turnsSum = 0;
+  game.turn = newStarter.displayName;
+
+  game.round = 1;
+
+  return { endGame: false, endSet: endSet };
 };
 
 class DartsGameManager {
@@ -176,6 +231,23 @@ class DartsGameManager {
     const game = await DartsGame.findOne({ gameCode: this.gameCode });
     if (!game) throw new Error('Game not found');
     this.game = game.toObject();
+
+    if (this.game.legStarterIndex === undefined) {
+      const currentStarter = this.game.users.findIndex(u => u.turn);
+      this.game.legStarterIndex = currentStarter >= 0 ? currentStarter : 0;
+
+      await DartsGame.findOneAndUpdate(
+        { gameCode: this.gameCode },
+        { legStarterIndex: this.game.legStarterIndex },
+        { new: true }
+      );
+    }
+
+    this.game.users.forEach(user => {
+      if (user.totalLegsWon === undefined) {
+        user.totalLegsWon = 0;
+      }
+    });
 
     if (!this.game.record) {
       this.game.record = this.game.lastRecord ? [this.game.lastRecord] : [];
@@ -220,7 +292,8 @@ class DartsGameManager {
         { gameCode: this.gameCode },
         {
           ...restGameData,
-          lastRecord: lastRecordMinimal
+          lastRecord: lastRecordMinimal,
+          legStarterIndex: this.game.legStarterIndex
         },
         { new: true }
       );
@@ -245,6 +318,7 @@ class DartsGameManager {
         game: {
           round: this.game.round,
           turn: this.game.turn,
+          legStarterIndex: this.game.legStarterIndex,
         },
         users: usersCopy,
       });
@@ -262,6 +336,9 @@ class DartsGameManager {
         this.game.users = JSON.parse(JSON.stringify(restoredState.users));
         this.game.round = restoredState.game.round;
         this.game.turn = restoredState.game.turn;
+        if (restoredState.game.legStarterIndex !== undefined) {
+          this.game.legStarterIndex = restoredState.game.legStarterIndex;
+        }
       }
     }
   }
@@ -421,22 +498,16 @@ class DartsGameManager {
   }
 
   async handleGameEnd() {
-    if (parseInt(this.game.legs) === 1) {
+    const currentUser = this.getCurrentUser();
+    const result = handleNextLeg(this.game, currentUser);
+
+    if (result.endGame) {
       this.handleRecord("save");
       await this.handlePodium();
       return true;
     } else {
-      const currentUser = this.getCurrentUser();
-      const endGame = handleNextLeg(this.game, currentUser);
-
-      if (endGame) {
-        this.handleRecord("save");
-        await this.handlePodium();
-        return true;
-      } else {
-        if (this.game.round !== 1) this.game.round = 0;
-        return false;
-      }
+      await this.updateGameState();
+      return false;
     }
   }
 
@@ -475,8 +546,8 @@ class DartsGameManager {
     handleAvgPointsPerTurn(currentUser, this.game);
 
     if (result.gameEnd) {
-      const endGame = await this.handleGameEnd();
-      return { ...result, gameEnd: endGame };
+      const fullGameEnded = await this.handleGameEnd();
+      return { ...result, gameEnd: fullGameEnded, legEnded: true };
     }
 
     return result;
@@ -518,6 +589,11 @@ class DartsGameManager {
       if (result.gameEnd) {
         return { success: true, gameEnd: true, game: this.game };
       }
+      if (result.legEnded) {
+        this.handleRecord("save");
+        await this.updateGameState();
+        return { success: true, gameEnd: false, legEnded: true, game: this.game };
+      }
     } else {
       if (this.game.gameMode === "Reverse X01" && value === 0) {
         currentUser.turns[currentUser.currentTurn] = zeroValueReverseX01;
@@ -532,6 +608,11 @@ class DartsGameManager {
 
       if (result.gameEnd) {
         return { success: true, gameEnd: true, game: this.game };
+      }
+      if (result.legEnded) {
+        this.handleRecord("save");
+        await this.updateGameState();
+        return { success: true, gameEnd: false, legEnded: true, game: this.game };
       }
     }
 
@@ -548,7 +629,6 @@ class DartsGameManager {
         this.io.to(`game-${this.gameCode}`).emit("wled:throw-180", { gameCode: this.gameCode });
       }
 
-      // Get next user before setting current turn to false
       const nextUser = this.handleNextUser(currentUser);
       currentUser.turn = false;
       if (nextUser) nextUser.turn = true;
