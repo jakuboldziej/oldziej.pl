@@ -25,7 +25,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [twoPlayersGamemode, setTwoPlayersGamemode] = useState(false);
   const [selectGameMode, setSelectGameMode] = useState('X01');
   const [selectStartPoints, setSelectStartPoints] = useState('501');
-  const [selectCheckOut, setSelectCheckOut] = useState('Straight Out');
+  const [selectCheckOut, setSelectCheckOut] = useState('Any Out');
   const [selectSets, setSelectSets] = useState(0);
   const [selectLegs, setSelectLegs] = useState(1);
   const [usersPodium, setUsersPodium] = useState("None");
@@ -537,7 +537,9 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectGroup>
+                            <SelectItem value="Any Out">Any Out</SelectItem>
                             <SelectItem value="Straight Out">Straight Out</SelectItem>
+                            <SelectItem value="Double Out">Double Out</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

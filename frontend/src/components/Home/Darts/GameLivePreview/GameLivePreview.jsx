@@ -3,7 +3,7 @@ import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button } from '@/components/ui/shadcn/button';
-import { handleTimePlayed } from '../game logic/gameUtils';
+import { handleTimePlayed } from '../utils/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
 import { socket } from '@/lib/socketio';
 import { getLatestRecord } from '@/lib/recordUtils';

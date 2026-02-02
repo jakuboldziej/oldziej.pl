@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { getDartsGames, patchDartsUser } from '@/lib/fetch';
 import { Eye, EyeOff, FolderSync, Grip, Trash } from 'lucide-react';
 import React, { useContext } from 'react';
-import { totalThrows } from '../../../Home/Darts/game logic/userUtils';
+import { totalThrows } from '../../../Home/Darts/utils/userUtils';
 import { Button } from '@/components/ui/shadcn/button';
 import { DartsUsersContext } from './DartsUsersContext';
 import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';

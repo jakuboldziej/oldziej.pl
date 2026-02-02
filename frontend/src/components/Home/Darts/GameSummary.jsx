@@ -7,8 +7,7 @@ import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { getESP32Availability, postDartsGame, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
 import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
-import { handleTimePlayed } from './game logic/gameUtils';
-import { handleWLEDEffectSolid } from './game logic/wledController';
+import { handleTimePlayed } from './utils/gameUtils';
 import { isInitialGameState } from '@/lib/recordUtils';
 
 function GameSummary({ show, setShow }) {

@@ -106,34 +106,66 @@ const handlePodiumReverseX01 = (game, currentUser) => {
   }
 };
 
+// Checkouts
+
+const handleCheckoutStraightOut = (userCurrentTurn) => {
+  if (userCurrentTurn[0] === "D" || userCurrentTurn[0] === "T") {
+    return { overthrow: true, gameEnd: false };
+  }
+
+  return { overthrow: false, gameEnd: true };
+};
+
+const handleCheckoutDoubleOut = (userCurrentTurn) => {
+  if (userCurrentTurn[0] !== "D") {
+    return { overthrow: true, gameEnd: false };
+  }
+
+  return { overthrow: false, gameEnd: true };
+};
+
+// Handle points
+
+const handleOverthrow = (gameCode, currentUser, io) => {
+  const initialPoints = parseInt(currentUser.points) + calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
+
+  currentUser.allGainedPoints -= currentUser.turnsSum;
+  currentUser.points = initialPoints;
+  currentUser.turnsSum = 0;
+  currentUser.currentTurn = 3;
+  currentUser.turns = { 1: null, 2: null, 3: null };
+  currentUser.throws["overthrows"] += 1;
+  currentUser.currentThrows["overthrows"] += 1;
+
+  // Emit overthrow event
+  io.to(`game-${gameCode}`).emit("userOverthrowClient", currentUser.displayName);
+  io.to(`game-${gameCode}`).emit("wled:overthrow", { gameCode: gameCode });
+}
+
 const handlePointsX01 = (game, currentUser, io) => {
-  const { turns } = currentUser;
-  const currentTurnValue = turns[currentUser.currentTurn];
+  const currentTurnValue = currentUser.turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
   currentUser.allGainedPoints = parseInt(game.startPoints) - currentUser.points;
-  const initialPoints = parseInt(currentUser.points) + calculatePoints(turns["1"]) + calculatePoints(turns["2"]) + calculatePoints(turns["3"]);
 
   if (currentUser.currentTurn === 3 && currentUser.points >= 0) {
     updateHighestTurnPoints(currentUser);
   }
 
   if (currentUser.points < 0) {
-    currentUser.allGainedPoints -= currentUser.turnsSum;
-    currentUser.points = initialPoints;
-    currentUser.turnsSum = 0;
-    currentUser.currentTurn = 3;
-    currentUser.turns = { 1: null, 2: null, 3: null };
-    currentUser.throws["overthrows"] += 1;
-    currentUser.currentThrows["overthrows"] += 1;
-
-    // Emit overthrow event
-    io.to(`game-${game.gameCode}`).emit("userOverthrowClient", currentUser.displayName);
-    io.to(`game-${game.gameCode}`).emit("wled:overthrow", { gameCode: game.gameCode });
+    handleOverthrow(game.gameCode, currentUser, io);
 
     return { overthrow: true, gameEnd: false };
   } else if (currentUser.points === 0) {
-    return { overthrow: false, gameEnd: true };
+    let result = { overthrow: false, gameEnd: true };
+
+    if (game.checkOut === "Straight Out") result = handleCheckoutStraightOut(currentUser.turns[currentUser.currentTurn]);
+    if (game.checkOut === "Double Out") result = handleCheckoutDoubleOut(currentUser.turns[currentUser.currentTurn]);
+    if (game.checkOut === "Any Out") result = { overthrow: false, gameEnd: true };
+
+    if (result.overthrow === true) handleOverthrow(game.gameCode, currentUser, io);
+
+    return result;
   }
   return { overthrow: false, gameEnd: false };
 };
@@ -182,7 +214,7 @@ const handleNextLeg = (game, currentUser) => {
   else if (legs === 0 && sets > 0) {
     currentUser.sets += 1;
     endSet = false;
-    
+
     if (currentUser.sets === sets) {
       endGame = true;
     }

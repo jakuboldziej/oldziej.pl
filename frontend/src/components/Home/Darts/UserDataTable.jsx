@@ -1,13 +1,13 @@
 import MyTooltip from '../MyComponents/MyTooltip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { totalThrows } from './game logic/userUtils';
+import { totalThrows } from './utils/userUtils';
 
 function UserDataTable({ users, game }) {
   const displayUserThrows = (user) => {
     if (!user || !user.currentThrows) {
       return <span>0</span>;
     }
-    
+
     const throws = user.currentThrows;
     return (
       <MyTooltip title={`N: ${throws['normal'] || 0} | Dou: ${throws['doubles'] || 0} | T: ${throws['triples'] || 0} | Doo: ${throws['doors'] || 0} | O: ${throws['overthrows'] || 0}`}>
@@ -38,7 +38,9 @@ function UserDataTable({ users, game }) {
             <TableHead className="whitespace-nowrap">Throws</TableHead>
             <TableHead className="whitespace-nowrap"><MyTooltip title="Your Highest Round Points thrown"><span>HRP</span></MyTooltip></TableHead>
             <TableHead className="whitespace-nowrap"><MyTooltip title="Your Average of points in a current leg"><span>AVG</span></MyTooltip></TableHead>
-            <TableHead className="whitespace-nowrap"><MyTooltip title="Your Highest Average of points in a leg"><span>HAVG</span></MyTooltip></TableHead>
+            {game?.legs > 0 || game?.sets > 0 && (
+              <TableHead className="whitespace-nowrap"><MyTooltip title="Your Highest Average of points in a leg"><span>HAVG</span></MyTooltip></TableHead>
+            )}
             <TableHead className="whitespace-nowrap">Legs</TableHead>
             <TableHead className="whitespace-nowrap">Sets</TableHead>
           </TableRow>
@@ -51,7 +53,9 @@ function UserDataTable({ users, game }) {
               <TableCell className="whitespace-nowrap">{displayUserThrows(user)}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.highestGameTurnPoints ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.avgPointsPerTurn ?? '0.00'}</TableCell>
-              <TableCell className="whitespace-nowrap">{user?.highestGameAvg ?? '0.00'}</TableCell>
+              {game?.legs > 0 || game?.sets > 0 && (
+                <TableCell className="whitespace-nowrap">{user?.highestGameAvg ?? '0.00'}</TableCell>
+              )}
               <TableCell className="whitespace-nowrap">{user?.legs ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.sets ?? 0}</TableCell>
             </TableRow>

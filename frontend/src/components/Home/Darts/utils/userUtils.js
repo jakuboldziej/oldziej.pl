@@ -1,5 +1,3 @@
-const isNumericRegex = /^\d+$/;
-
 export const checkoutCombinations = {
   2: [{ combo: ['D1'], description: 'Double 1' }],
   3: [{ combo: ['1', 'D1'], description: '1, Double 1' }],
@@ -172,38 +170,9 @@ export const checkoutCombinations = {
   170: [{ combo: ['T20', 'T20', 'D25'], description: 'Treble 20, Treble 20, Bull' }]
 };
 
-export const calculatePoints = (turnValue) => {
-  if (!isNumericRegex.test(turnValue) && turnValue) {
-    if (turnValue[0] === "D") {
-      return parseInt(turnValue.slice(1)) * 2;
-    }
-    if (turnValue[0] === "T") {
-      return parseInt(turnValue.slice(1)) * 3;
-    }
-  }
-  return turnValue ? parseInt(turnValue) : turnValue;
-}
-
-export const handleTurnsSum = (currentUser) => {
-  const currentTurn = currentUser.turns[currentUser.currentTurn];
-  currentUser.turnsSum += currentTurn;
-  if (currentUser.currentTurn === 3 && currentUser.turnsSum > currentUser.highestGameTurnPoints) currentUser.highestGameTurnPoints = currentUser.turnsSum;
-}
-
-export const handleAvgPointsPerTurn = (user, game) => {
-  const pointsThrown = game.startPoints - user.points;
-  const dartsThrown = totalThrows(user);
-  const avg = (pointsThrown / dartsThrown) * 3;
-
-  user.avgPointsPerTurn = (avg).toFixed(2);
-  if (isNaN(avg)) user.avgPointsPerTurn = 0;
-
-  return (avg).toFixed(2);
-}
-
 export const totalThrows = (user, cr = true) => {
   if (!user) return 0;
-  
+
   if (cr) {
     if (!user.currentThrows) return 0;
     return Object.values(user.currentThrows).reduce((acc, val) => acc + val, 0) - (user.currentThrows["overthrows"] || 0);

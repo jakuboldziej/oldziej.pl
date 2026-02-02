@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { Badge } from "@/components/ui/shadcn/badge";
 import { Target, TrendingUp } from "lucide-react";
-import { checkoutCombinations } from "./game logic/userUtils";
+import { checkoutCombinations } from "./utils/userUtils";
 import MyTooltip from "../MyComponents/MyTooltip";
 
 function MostCommonCheckout({ users, game, compact = false, showForUser = null }) {

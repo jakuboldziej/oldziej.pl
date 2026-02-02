@@ -4,7 +4,7 @@ import Keyboard from "@/components/Home/Darts/Keyboard";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import GameSummary from "@/components/Home/Darts/GameSummary";
-import { totalThrows } from "@/components/Home/Darts/game logic/userUtils";
+import { totalThrows } from "@/components/Home/Darts/utils/userUtils";
 import { Link } from "react-router-dom";
 import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
