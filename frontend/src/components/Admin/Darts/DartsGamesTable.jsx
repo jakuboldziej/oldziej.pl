@@ -44,7 +44,7 @@ function DartsGamesTable({ props }) {
 
   const fetchMoreGames = async () => {
     try {
-      const fetchedGames = await getDartsGames(null, 10 * currentPage, true);
+      const fetchedGames = await getDartsGames(null, 10 * currentPage, null);
       setDartsGames(fetchedGames);
     } catch (err) {
       console.error('Error fetching more games', err);
@@ -61,7 +61,7 @@ function DartsGamesTable({ props }) {
     const fetchInitialDartsGames = async () => {
       setIsLoading(true);
       try {
-        const fetchedDartsGames = await getDartsGames(null, 10, true);
+        const fetchedDartsGames = await getDartsGames(null, 10, null);
         setDartsGames(fetchedDartsGames);
       } catch (err) {
         console.error('Error fetching', err);

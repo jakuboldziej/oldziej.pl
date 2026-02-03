@@ -226,7 +226,7 @@ function DartsPage() {
           doorHits: doorHits
         });
 
-        const activeGames = await getDartsGames(currentUser.displayName, 0, true);
+        const activeGames = await getDartsGames(currentUser.displayName, 0, null);
         if (!isMounted) return;
 
         const playerActiveGame = activeGames.find(game =>
@@ -235,10 +235,8 @@ function DartsPage() {
         );
 
         if (playerActiveGame) {
-          const gameWithRecord = ensureGameRecord(playerActiveGame);
-
+          localStorage.setItem('dartsGame', JSON.stringify(playerActiveGame));
           setPlayerInGame(true);
-          localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
           if (isMounted) {
             ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
           }

@@ -20,10 +20,14 @@ export const DartsGameContext = createContext();
 export const DartsGameContextProvider = ({ children }) => {
   const [game, setGame] = useState(() => {
     const storedGame = localStorage.getItem('dartsGame');
-    if (!storedGame) return null;
+    if (!storedGame || storedGame === 'null') return null;
 
-    const parsedGame = JSON.parse(storedGame);
-    return ensureGameRecord(parsedGame);
+    try {
+      const parsedGame = JSON.parse(storedGame);
+      return ensureGameRecord(parsedGame);
+    } catch (e) {
+      return null;
+    }
   });
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
@@ -33,11 +37,43 @@ export const DartsGameContextProvider = ({ children }) => {
   const lastRequestTime = useRef(0);
   const lastSocketUpdate = useRef(0);
   const minRequestInterval = 100;
+  const hasFetchedFullGame = useRef(false);
 
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
     return game.users.find(user => user.turn);
   }, [game]);
+
+  useEffect(() => {
+    const fetchFullGameIfNeeded = async () => {
+      if (!game || !game._id || !game.active) return;
+      if (hasFetchedFullGame.current) return;
+
+      const needsFullGame = !game.record || game.record.length <= 1;
+
+      if (needsFullGame) {
+        hasFetchedFullGame.current = true;
+        try {
+          const fullGame = await getDartsGame(game._id);
+          if (fullGame && fullGame._id) {
+            const gameWithRecord = ensureGameRecord(fullGame);
+            setGame(gameWithRecord);
+            localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+          }
+        } catch (error) {
+          console.error('Error fetching full game:', error);
+        }
+      }
+    };
+
+    fetchFullGameIfNeeded();
+  }, [game?._id, game?.active]);
+
+  useEffect(() => {
+    if (!game) {
+      hasFetchedFullGame.current = false;
+    }
+  }, [game?._id]);
 
   useEffect(() => {
     const handleStorageChange = () => {

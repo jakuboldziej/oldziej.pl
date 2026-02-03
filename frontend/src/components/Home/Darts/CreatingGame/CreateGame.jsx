@@ -46,12 +46,12 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   for (let i = 0; i <= 6; i++) numbersLegsSets.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
 
   useEffect(() => {
-    const podiumOptions = [];
-    if (usersPlaying) {
-      for (let i = 1; i <= usersPlaying.length; i++) {
-        podiumOptions.push(<SelectItem key={i} value={i}>{i}</SelectItem>);
-      }
-      setUserPodiumsCount(podiumOptions);
+    if (usersPlaying && usersPlaying.length > 0) {
+      setUsersPodium(1);
+      setUserPodiumsCount([<SelectItem key={1} value={1}>1</SelectItem>]);
+    } else {
+      setUsersPodium("None");
+      setUserPodiumsCount([]);
     }
   }, [usersPlaying]);
 
@@ -135,10 +135,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
     if (updatedUsersPlaying.length === 0) {
       setUsersPodium("None");
-    } else {
-      if (userPodiumsCount.length !== 0 && usersPodium == userPodiumsCount[userPodiumsCount.length - 1].key) {
-        setUsersPodium(Number(userPodiumsCount[userPodiumsCount.length - 2].key))
-      }
     }
   }
 

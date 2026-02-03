@@ -18,7 +18,7 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
 
     if (type === "sync") {
       try {
-        const userGames = await getDartsGames(user.displayName, null, false);
+        const userGames = await getDartsGames(user.displayName, 0, 'competitive');
 
         const gamesPlayed = userGames.length;
         let highestCheckout = 0;

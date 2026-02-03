@@ -59,7 +59,7 @@ export const deleteDartsGame = async (gameId) => {
   });
 }
 
-export const getDartsGames = async (userDisplayName = null, limit = 0, trainingFilter = 'competitive') => {
+export const getDartsGames = async (userDisplayName = null, limit = 0, trainingFilter = 'competitive', excludeRecord = true) => {
   let url = `${mongodbApiUrl}/darts/dartsGames`;
 
   const queryParams = [];
@@ -71,6 +71,9 @@ export const getDartsGames = async (userDisplayName = null, limit = 0, trainingF
   }
   if (trainingFilter) {
     queryParams.push(`trainingFilter=${trainingFilter}`);
+  }
+  if (excludeRecord) {
+    queryParams.push(`excludeRecord=true`);
   }
 
   if (queryParams.length > 0) {

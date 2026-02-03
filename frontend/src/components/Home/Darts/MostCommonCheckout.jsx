@@ -5,7 +5,7 @@ import { checkoutCombinations } from "./utils/userUtils";
 import MyTooltip from "../MyComponents/MyTooltip";
 
 function MostCommonCheckout({ users, game, compact = false, showForUser = null }) {
-  if (game.checkOut !== "Double Out" && game.checkOut !== "Straight Out") {
+  if (game.checkOut !== "Double Out" && game.checkOut !== "Straight Out" && game.checkOut !== "Any Out") {
     return null;
   }
 
@@ -15,7 +15,7 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
     usersToShow = [users.find(u => u._id === showForUser || u.displayName === showForUser)];
   } else {
     const currentUserIndex = users.findIndex(u => u.turn);
-    if (currentUserIndex !== -1) {
+    if (currentUserIndex !== -1 && users.length > 1) {
       const nextUserIndex = (currentUserIndex + 1) % users.length;
       usersToShow = [users[currentUserIndex], users[nextUserIndex]];
     }

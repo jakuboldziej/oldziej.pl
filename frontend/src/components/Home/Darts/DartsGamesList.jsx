@@ -1,11 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import Loading from "../Loading";
 import { ensureGameRecord } from '@/lib/recordUtils';
+import { getDartsGame } from '@/lib/fetch';
+import { useState } from 'react';
 
 function DartsGamesList({ games, isLoading }) {
+  const navigate = useNavigate();
+  const [loadingGameId, setLoadingGameId] = useState(null);
+
   if (isLoading) {
     return <Loading />;
   }
@@ -14,16 +19,30 @@ function DartsGamesList({ games, isLoading }) {
     return <span className="text-lg text-center">No games found</span>;
   }
 
-  const handleActiveGameClick = (game) => {
-    const gameWithRecord = ensureGameRecord(game);
-    localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+  const handleActiveGameClick = async (e, game) => {
+    e.preventDefault();
+    setLoadingGameId(game._id);
+
+    try {
+      const fullGame = await getDartsGame(game._id);
+      const gameWithRecord = ensureGameRecord(fullGame);
+      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+      navigate('/darts/game');
+    } catch (error) {
+      console.error('Error fetching game:', error);
+      const gameWithRecord = ensureGameRecord(game);
+      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+      navigate('/darts/game');
+    } finally {
+      setLoadingGameId(null);
+    }
   };
 
   return (
     <>
       {games.map((game) => (
         game.active ?
-          <Link key={game._id} to={`/darts/game`} className="element" onClick={() => handleActiveGameClick(game)}>
+          <Link key={game._id} to={`/darts/game`} className={`element ${loadingGameId === game._id ? 'opacity-50' : ''}`} onClick={(e) => handleActiveGameClick(e, game)}>
             <MyTooltip title="Game Active">
               <span className="elementInfo gameActive">
                 <img src={game.active ? GreenDot : RedDot} />

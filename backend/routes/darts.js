@@ -105,6 +105,7 @@ router.get('/dartsGames', authenticateUser, async (req, res) => {
     const userDisplayName = req.query.user
     const limit = req.query.limit
     const trainingFilter = req.query.trainingFilter;
+    const excludeRecord = req.query.excludeRecord === 'true';
 
     if (userDisplayName) filter.users = { $elemMatch: { displayName: userDisplayName } };
 
@@ -114,7 +115,9 @@ router.get('/dartsGames', authenticateUser, async (req, res) => {
       filter.$or = [{ training: false }, { training: { $exists: false } }];
     }
 
-    const dartsGames = await DartsGame.find(filter, null, { limit: limit, sort: { created_at: -1 } });
+    const projection = excludeRecord ? { record: 0 } : null;
+
+    const dartsGames = await DartsGame.find(filter, projection, { limit: limit, sort: { created_at: -1 } });
     res.json(dartsGames)
   } catch (err) {
     res.json({ message: err.message })

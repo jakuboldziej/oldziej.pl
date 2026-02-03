@@ -59,7 +59,7 @@ function Admin() {
 
       for (const user of dartsUsers) {
         try {
-          const userGames = await getDartsGames(user.displayName, null, false);
+          const userGames = await getDartsGames(user.displayName, 0, 'competitive');
 
           const gamesPlayed = userGames.length;
           let highestCheckout = 0;
@@ -232,9 +232,9 @@ function Admin() {
               {currentTable === "users" && (
                 <DartsUsersContextProvider>
                   <div className="flex gap-2 flex-col items-end">
-                    <Button 
-                      onClick={() => syncAllData()} 
-                      variant="outline_blue" 
+                    <Button
+                      onClick={() => syncAllData()}
+                      variant="outline_blue"
                       className="justify-center"
                       disabled={isSyncing}
                     >
