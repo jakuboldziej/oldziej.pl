@@ -2,6 +2,7 @@ const { io } = require('../server');
 const { addingOnlineUser, scheduleUserOffline } = require('./utils');
 const { getGameManager, removeGameManager } = require('../services/dartsGameManager');
 const { logger } = require('../middleware/logging');
+const DartsGame = require('../models/dartsGame');
 
 const socketAuthMiddleware = (socket, next) => {
   const handshake = socket.handshake;
@@ -60,6 +61,11 @@ io.on('connection', (socket) => {
     const joinData = JSON.parse(data);
 
     socket.join(`game-${joinData.gameCode}`);
+
+    socket.emit("game:joined", {
+      gameCode: joinData.gameCode,
+      timestamp: Date.now()
+    });
   });
 
   socket.on("leaveLiveGamePreview", (data) => {
@@ -117,30 +123,33 @@ io.on('connection', (socket) => {
       const { gameCode, input, action } = JSON.parse(data);
 
       if (!gameCode) {
-        console.error('[externalKeyboardInput] No gameCode provided');
+        logger.error('[externalKeyboardInput] No gameCode provided');
+        socket.emit('externalKeyboardInput:error', { message: 'No gameCode provided' });
         return;
       }
 
       const gameManager = await getGameManager(gameCode, io);
       if (!gameManager) {
-        console.error(`[externalKeyboardInput] Game manager not found for gameCode: ${gameCode}`);
+        logger.error(`[externalKeyboardInput] Game manager not found for gameCode: ${gameCode}`);
+        socket.emit('externalKeyboardInput:error', { message: 'Game not found' });
         return;
       }
 
-      if (input === "END") {
-        await gameManager.handleEnd();
-      } else if (input === "QUIT") {
-        await gameManager.handleEnd();
-      } else if (input === "BACK") {
-        const errorMessage = await gameManager.handleBack();
-        if (errorMessage) {
-          console.error(`[externalKeyboardInput] Back error: ${errorMessage}`);
-        }
+      let result;
+      if (input === "BACK") {
+        result = await gameManager.handleBack();
       } else {
-        await gameManager.handleThrow(input, action);
+        result = await gameManager.handleThrow(input, action);
+      }
+
+      if (result && !result.success) {
+        socket.emit('externalKeyboardInput:error', { message: result.message });
+      } else {
+        socket.emit('externalKeyboardInput:success', { input, action });
       }
     } catch (error) {
-      console.error('[externalKeyboardInput] Error:', error);
+      logger.error('[externalKeyboardInput] Error:', { error: error.message });
+      socket.emit('externalKeyboardInput:error', { message: error.message });
     }
   });
 
@@ -225,6 +234,10 @@ io.on('connection', (socket) => {
           gameCode: gameCode,
           userDisplayNames: userDisplayNames
         }));
+
+        if (endedGame._id) {
+          await DartsGame.findByIdAndDelete(endedGame._id);
+        }
       }
 
       removeGameManager(gameCode);

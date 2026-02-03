@@ -1,6 +1,15 @@
 const DartsGame = require('../models/dartsGame');
 const DartsUser = require('../models/dartsUser');
 const { logger } = require('../middleware/logging');
+const {
+  handleWLEDEffectSolid,
+  handleWLEDGameEnd,
+  handleWLEDThrowDoors,
+  handleWLEDThrowT20,
+  handleWLEDThrowD25,
+  handleWLEDThrow180,
+  handleWLEDOverthrow
+} = require('./wledService');
 
 // Game state manager - stores active games in memory
 const activeGames = new Map();
@@ -124,6 +133,14 @@ const handleCheckoutDoubleOut = (userCurrentTurn) => {
   return { overthrow: false, gameEnd: true };
 };
 
+const handleCheckoutTripleOut = (userCurrentTurn) => {
+  if (userCurrentTurn[0] !== "T") {
+    return { overthrow: true, gameEnd: false };
+  }
+
+  return { overthrow: false, gameEnd: true };
+};
+
 // Handle points
 
 const handleOverthrow = (gameCode, currentUser, io) => {
@@ -139,7 +156,7 @@ const handleOverthrow = (gameCode, currentUser, io) => {
 
   // Emit overthrow event
   io.to(`game-${gameCode}`).emit("userOverthrowClient", currentUser.displayName);
-  io.to(`game-${gameCode}`).emit("wled:overthrow", { gameCode: gameCode });
+  handleWLEDOverthrow(gameCode);
 }
 
 const handlePointsX01 = (game, currentUser, io) => {
@@ -161,12 +178,22 @@ const handlePointsX01 = (game, currentUser, io) => {
 
     if (game.checkOut === "Straight Out") result = handleCheckoutStraightOut(currentUser.turns[currentUser.currentTurn]);
     if (game.checkOut === "Double Out") result = handleCheckoutDoubleOut(currentUser.turns[currentUser.currentTurn]);
+    if (game.checkOut === "Triple Out") result = handleCheckoutTripleOut(currentUser.turns[currentUser.currentTurn]);
     if (game.checkOut === "Any Out") result = { overthrow: false, gameEnd: true };
 
     if (result.overthrow === true) handleOverthrow(game.gameCode, currentUser, io);
 
     return result;
   }
+
+  if (game.checkOut === "Double Out" && currentUser.points < 2) {
+    handleOverthrow(game.gameCode, currentUser, io);
+    return { overthrow: true, gameEnd: false };
+  } else if (game.checkOut === "Triple Out" && currentUser.points < 3) {
+    handleOverthrow(game.gameCode, currentUser, io);
+    return { overthrow: true, gameEnd: false };
+  }
+
   return { overthrow: false, gameEnd: false };
 };
 
@@ -272,6 +299,10 @@ class DartsGameManager {
     this.io = io;
     this.game = null;
     this.dartsUsersBeforeBack = [];
+    this.requestQueue = [];
+    this.isProcessing = false;
+    this.updateRetryCount = 0;
+    this.maxRetries = 3;
   }
 
   async loadGame() {
@@ -332,13 +363,35 @@ class DartsGameManager {
         { new: true }
       );
 
-      await this.io.in(`game-${this.gameCode}`).fetchSockets();
-      this.io.to(`game-${this.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(this.game));
+      await this.emitGameUpdate();
 
       return this.game;
     } catch (err) {
       logger.error("Error updating game state", { error: err.message });
       throw err;
+    }
+  }
+
+  async emitGameUpdate(retryCount = 0) {
+    try {
+      const sockets = await this.io.in(`game-${this.gameCode}`).fetchSockets();
+
+      if (sockets.length === 0 && retryCount < this.maxRetries) {
+        logger.warn(`No sockets in room game-${this.gameCode}, retrying... (${retryCount + 1}/${this.maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return this.emitGameUpdate(retryCount + 1);
+      }
+
+      const gameString = JSON.stringify(this.game);
+
+      this.io.to(`game-${this.gameCode}`).emit("updateLiveGamePreviewClient", gameString);
+
+    } catch (error) {
+      logger.error(`Error emitting game update for ${this.gameCode}:`, { error: error.message });
+      if (retryCount < this.maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return this.emitGameUpdate(retryCount + 1);
+      }
     }
   }
 
@@ -522,7 +575,7 @@ class DartsGameManager {
     await this.updateGameState();
 
     this.io.to(`game-${this.gameCode}`).emit("gameEndClient", JSON.stringify(this.game));
-    this.io.to(`game-${this.gameCode}`).emit("wled:game-end", { gameCode: this.gameCode });
+    handleWLEDGameEnd(this.gameCode);
 
     const userDisplayNames = this.game.users.map(user => user.displayName);
     this.io.emit("gameEnded", JSON.stringify({
@@ -553,7 +606,7 @@ class DartsGameManager {
       if (action === 'DOUBLE') {
         turns[currentUser.currentTurn] = `D${value}`;
         if (turns[currentUser.currentTurn] === "D25") {
-          this.io.to(`game-${this.gameCode}`).emit("wled:throw-d25", { gameCode: this.gameCode });
+          handleWLEDThrowD25(this.gameCode);
         }
       } else if (action === 'TRIPLE') {
         turns[currentUser.currentTurn] = `T${value}`;
@@ -562,7 +615,7 @@ class DartsGameManager {
           turns[2] === "T20" &&
           turns[3] === "T20"
         )) {
-          this.io.to(`game-${this.gameCode}`).emit("wled:throw-t20", { gameCode: this.gameCode });
+          handleWLEDThrowT20(this.gameCode);
         }
       }
     }
@@ -588,6 +641,12 @@ class DartsGameManager {
   }
 
   async handleThrow(value, action = null) {
+    return this.enqueueRequest(async () => {
+      return await this._executeThrow(value, action);
+    });
+  }
+
+  async _executeThrow(value, action = null) {
     const currentUser = this.getCurrentUser();
     if (!currentUser || this.game.userWon || !currentUser.turn || this.game.active === false) {
       return { success: false, message: "Invalid game state" };
@@ -606,7 +665,7 @@ class DartsGameManager {
       handleTurnsSum(currentUser);
       await this.handlePoints(null, 0);
 
-      this.io.to(`game-${this.gameCode}`).emit("wled:throw-doors", { gameCode: this.gameCode });
+      handleWLEDThrowDoors(this.gameCode);
     } else if (value === "BACK") {
       return await this.handleBack();
     } else if (action === "DOUBLE" || action === "TRIPLE") {
@@ -660,7 +719,7 @@ class DartsGameManager {
       if (currentUser.turns[1] === "T20" &&
         currentUser.turns[2] === "T20" &&
         currentUser.turns[3] === "T20") {
-        this.io.to(`game-${this.gameCode}`).emit("wled:throw-180", { gameCode: this.gameCode });
+        handleWLEDThrow180(this.gameCode);
       }
 
       const nextUser = this.handleNextUser(currentUser);
@@ -677,6 +736,12 @@ class DartsGameManager {
   }
 
   async handleBack() {
+    return this.enqueueRequest(async () => {
+      return await this._executeBack();
+    });
+  }
+
+  async _executeBack() {
     if (!this.game) {
       return { success: false, message: "No active game" };
     }
@@ -715,9 +780,38 @@ class DartsGameManager {
     this.handleRecord("back");
     await this.updateGameState();
 
-    this.io.to(`game-${this.gameCode}`).emit("wled:effect-solid", { gameCode: this.gameCode });
+    handleWLEDEffectSolid(this.gameCode);
 
     return { success: true, game: this.game };
+  }
+
+  async enqueueRequest(requestFn) {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push({ requestFn, resolve, reject });
+      this.processQueue();
+    });
+  }
+
+  async processQueue() {
+    if (this.isProcessing || this.requestQueue.length === 0) {
+      return;
+    }
+
+    this.isProcessing = true;
+
+    while (this.requestQueue.length > 0) {
+      const { requestFn, resolve, reject } = this.requestQueue.shift();
+
+      try {
+        const result = await requestFn();
+        resolve(result);
+      } catch (error) {
+        logger.error(`Error processing queued request for ${this.gameCode}:`, { error: error.message });
+        reject(error);
+      }
+    }
+
+    this.isProcessing = false;
   }
 }
 

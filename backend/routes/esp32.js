@@ -10,6 +10,7 @@ const GeoAuthorizedDevice = require('../models/esp32/door/geoAuthorizedDevices')
 const ESP32Config = require('../models/esp32/esp32Config');
 const router = express.Router();
 const TelegramBot = require("node-telegram-bot-api");
+const { setWledGameCodeGetter } = require('../services/wledService');
 
 require('dotenv').config();
 
@@ -22,6 +23,8 @@ let wledGameCode = {
   code: "",
   joinedAt: null
 };
+
+setWledGameCodeGetter(() => wledGameCode);
 
 let firebaseApp = null;
 if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {

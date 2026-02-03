@@ -17,18 +17,47 @@ const getWLEDstate = async () => {
   }
 };
 
-const changeWLEDstate = async (data) => {
+let getWledGameCode = null;
+
+const setWledGameCodeGetter = (getter) => {
+  getWledGameCode = getter;
+};
+
+const changeWLEDstate = async (data, gameCode = null) => {
   try {
+    if (gameCode && getWledGameCode) {
+      const activeGame = getWledGameCode();
+      if (!activeGame.code || activeGame.code !== gameCode) {
+        return;
+      }
+    }
+
     const WLEDState = await getWLEDstate();
-    if (WLEDState.on === false) return;
+    if (WLEDState.on === false) {
+      return;
+    }
+
 
     const body = {
       on: true,
       bri: 255,
       transition: 7,
-      ...(data.color && { seg: [{ col: [[data.color.r, data.color.g, data.color.b]] }] }),
-      ...(data.effect && { seg: [{ fx: data.effect.fx, sx: data.effect.sx, ix: data.effect.ix, pal: data.effect.pal }] })
     };
+
+    if (data.color || data.effect) {
+      body.seg = [{}];
+
+      if (data.color) {
+        body.seg[0].col = [[data.color.r, data.color.g, data.color.b]];
+      }
+
+      if (data.effect) {
+        body.seg[0].fx = data.effect.fx;
+        body.seg[0].sx = data.effect.sx;
+        body.seg[0].ix = data.effect.ix;
+        body.seg[0].pal = data.effect.pal;
+      }
+    }
 
     await fetch(`${wledDomain}/json/state`, {
       method: "POST",
@@ -40,7 +69,7 @@ const changeWLEDstate = async (data) => {
   }
 };
 
-const handleWLEDEffectSolid = async () => {
+const handleWLEDEffectSolid = async (gameCode = null) => {
   try {
     if (timeoutId) clearTimeout(timeoutId);
 
@@ -54,13 +83,13 @@ const handleWLEDEffectSolid = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDGameEnd = async () => {
+const handleWLEDGameEnd = async (gameCode = null) => {
   try {
     const data = {
       color: { r: 255, g: 215, b: 0 },
@@ -72,18 +101,18 @@ const handleWLEDGameEnd = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await changeWLEDstate(data);
+      await changeWLEDstate(data, gameCode);
     }, 1000);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDThrowDoors = async () => {
+const handleWLEDThrowDoors = async (gameCode = null) => {
   try {
     const data = {
       color: { r: 0, g: 255, b: 0 },
@@ -95,18 +124,18 @@ const handleWLEDThrowDoors = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1500);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDThrowT20 = async () => {
+const handleWLEDThrowT20 = async (gameCode = null) => {
   try {
     const data = {
       effect: {
@@ -117,18 +146,18 @@ const handleWLEDThrowT20 = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1500);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDThrowD25 = async () => {
+const handleWLEDThrowD25 = async (gameCode = null) => {
   try {
     const data = {
       effect: {
@@ -139,18 +168,18 @@ const handleWLEDThrowD25 = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 3000);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDThrow180 = async () => {
+const handleWLEDThrow180 = async (gameCode = null) => {
   try {
     const data = {
       effect: {
@@ -161,18 +190,18 @@ const handleWLEDThrow180 = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 10000);
   } catch (err) {
     console.error(err);
   }
 };
 
-const handleWLEDOverthrow = async () => {
+const handleWLEDOverthrow = async (gameCode = null) => {
   try {
     const data = {
       color: { r: 255, g: 0, b: 0 },
@@ -184,50 +213,24 @@ const handleWLEDOverthrow = async () => {
       }
     };
 
-    await changeWLEDstate(data);
+    await changeWLEDstate(data, gameCode);
 
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(async () => {
-      await handleWLEDEffectSolid();
+      await handleWLEDEffectSolid(gameCode);
     }, 1000);
   } catch (err) {
     console.error(err);
   }
 };
 
-// Initialize WLED socket listeners
-const initializeWLEDListeners = (io) => {
-  io.on('connection', (socket) => {
-    socket.on('wled:effect-solid', async (data) => {
-      await handleWLEDEffectSolid();
-    });
-
-    socket.on('wled:game-end', async (data) => {
-      await handleWLEDGameEnd();
-    });
-
-    socket.on('wled:throw-doors', async (data) => {
-      await handleWLEDThrowDoors();
-    });
-
-    socket.on('wled:throw-t20', async (data) => {
-      await handleWLEDThrowT20();
-    });
-
-    socket.on('wled:throw-d25', async (data) => {
-      await handleWLEDThrowD25();
-    });
-
-    socket.on('wled:throw-180', async (data) => {
-      await handleWLEDThrow180();
-    });
-
-    socket.on('wled:overthrow', async (data) => {
-      await handleWLEDOverthrow();
-    });
-  });
-};
-
 module.exports = {
-  initializeWLEDListeners
+  setWledGameCodeGetter,
+  handleWLEDEffectSolid,
+  handleWLEDGameEnd,
+  handleWLEDThrowDoors,
+  handleWLEDThrowT20,
+  handleWLEDThrowD25,
+  handleWLEDThrow180,
+  handleWLEDOverthrow
 };

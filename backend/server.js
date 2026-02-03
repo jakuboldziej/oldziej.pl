@@ -20,7 +20,6 @@ const { createServer } = require('http')
 const { Server } = require("socket.io")
 const { instrument } = require("@socket.io/admin-ui");
 const { logger } = require("./middleware/logging");
-const { initializeWLEDListeners } = require("./services/wledService");
 
 const environment = process.env.NODE_ENV || 'production';
 const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
@@ -151,9 +150,6 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
 });
 
 logger.info("Using environment - ", environment)
-
-// Initialize WLED listeners
-initializeWLEDListeners(io);
 
 app.get('/api/health', async (req, res) => {
   res.status(200).json("Server alive");
