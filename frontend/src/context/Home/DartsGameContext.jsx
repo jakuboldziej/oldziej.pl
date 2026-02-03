@@ -31,6 +31,7 @@ export const DartsGameContextProvider = ({ children }) => {
   const handleShowRef = useRef(null);
   const pendingRequest = useRef(false);
   const lastRequestTime = useRef(0);
+  const lastSocketUpdate = useRef(0);
   const minRequestInterval = 100;
 
   const currentUser = useMemo(() => {
@@ -49,6 +50,10 @@ export const DartsGameContextProvider = ({ children }) => {
     window.addEventListener('storage', handleStorageChange);
 
     const interval = setInterval(() => {
+      if (Date.now() - lastSocketUpdate.current < 1000) {
+        return;
+      }
+
       const storedGame = localStorage.getItem('dartsGame');
       if (!storedGame || storedGame === 'null') {
         if (game !== null) {
@@ -83,6 +88,7 @@ export const DartsGameContextProvider = ({ children }) => {
     joinGameRoom(gameCode);
 
     const unsubscribeUpdates = subscribeToGameUpdates(gameCode, (updatedGame) => {
+      lastSocketUpdate.current = Date.now();
       const gameWithRecord = ensureGameRecord(updatedGame);
       setGame(gameWithRecord);
       localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
@@ -94,6 +100,7 @@ export const DartsGameContextProvider = ({ children }) => {
     });
 
     const unsubscribeGameEnd = subscribeToGameEnd((endedGame) => {
+      lastSocketUpdate.current = Date.now();
       const gameWithRecord = ensureGameRecord(endedGame);
       setGame(gameWithRecord);
       localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
@@ -101,6 +108,7 @@ export const DartsGameContextProvider = ({ children }) => {
     });
 
     const unsubscribeToPlayAgain = subscribeToPlayAgain((newGame) => {
+      lastSocketUpdate.current = Date.now();
       const gameWithRecord = ensureGameRecord(newGame);
       setGame(gameWithRecord);
       localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));

@@ -65,22 +65,44 @@ function DartsGame() {
     }
   }, [game?.users, game?.turn]);
 
+  const hasJoinedRoomRef = useRef(false);
+  const hasAttemptedRecovery = useRef(false);
+
   useEffect(() => {
     if (!game?.active) setShow(true);
 
     if (!game) {
+      hasJoinedRoomRef.current = false;
+
+      if (!hasAttemptedRecovery.current) {
+        hasAttemptedRecovery.current = true;
+        const storedGame = localStorage.getItem('dartsGame');
+        if (storedGame && storedGame !== 'null') {
+          try {
+            const parsedGame = JSON.parse(storedGame);
+            if (parsedGame && parsedGame._id) {
+              return;
+            }
+          } catch (e) {
+          }
+        }
+      }
+
       const timer = setTimeout(() => {
         setIsLoading(false);
       }, 500);
       return () => clearTimeout(timer);
     }
 
+    hasAttemptedRecovery.current = false;
     setIsLoading(false);
 
-    socket.emit("joinLiveGamePreview", JSON.stringify({
-      gameCode: game.gameCode
-    }));
-    socket.emit("updateLiveGamePreview", JSON.stringify(game));
+    if (!hasJoinedRoomRef.current) {
+      hasJoinedRoomRef.current = true;
+      socket.emit("joinLiveGamePreview", JSON.stringify({
+        gameCode: game.gameCode
+      }));
+    }
   }, [game]);
 
   if (isLoading) {

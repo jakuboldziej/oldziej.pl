@@ -169,7 +169,7 @@ function DartsPage() {
     });
 
     socket.on("gameEnded", (data) => {
-      const { userDisplayNames } = JSON.parse(data);
+      const { gameCode: endedGameCode, userDisplayNames } = JSON.parse(data);
 
       if (userDisplayNames.includes(currentUser.displayName)) {
         getDartsGames(currentUser.displayName, 10).then(fetchedGames => {
@@ -177,14 +177,29 @@ function DartsPage() {
           setGamesShown(sortedGames);
         });
 
-        setPlayerInGame(false);
-        localStorage.setItem('dartsGame', null);
+        const storedGame = localStorage.getItem('dartsGame');
+        if (storedGame && storedGame !== 'null') {
+          try {
+            const currentGame = JSON.parse(storedGame);
+            if (currentGame?.gameCode === endedGameCode) {
+              setPlayerInGame(false);
+              localStorage.setItem('dartsGame', null);
+            }
+          } catch (e) {
+          }
+        } else {
+          setPlayerInGame(false);
+        }
       }
     });
+
+    let isMounted = true;
 
     const fetchData = async () => {
       try {
         const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
+        if (!isMounted) return;
+
         let fetchAuthUser = await getAuthUser(currentUser.displayName);
         let fetchDartsUser = await getDartsUser(currentUser.displayName);
         const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
@@ -193,6 +208,8 @@ function DartsPage() {
         });
 
         const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
+        if (!isMounted) return;
+
         const sortedUsers = handleFilterUsers(filterUsersType, [...userFriends, fetchDartsUser]);
 
         setDartUsers(sortedUsers);
@@ -201,6 +218,8 @@ function DartsPage() {
         const gamesPlayed = await getStatisticsDartsGames();
         const overAllPoints = await getStatisticsOverAllPoints();
         const doorHits = await getStatisticsDoorHits();
+        if (!isMounted) return;
+
         setDartsStatistics({
           gamesPlayed: gamesPlayed,
           overAllPoints: overAllPoints,
@@ -208,6 +227,8 @@ function DartsPage() {
         });
 
         const activeGames = await getDartsGames(currentUser.displayName, 0, true);
+        if (!isMounted) return;
+
         const playerActiveGame = activeGames.find(game =>
           game.active === true &&
           game.users.some(user => user.displayName === currentUser.displayName)
@@ -218,16 +239,33 @@ function DartsPage() {
 
           setPlayerInGame(true);
           localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
-          ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
+          if (isMounted) {
+            ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
+          }
         } else {
-          localStorage.setItem('dartsGame', null);
-          setPlayerInGame(false);
+          const storedGame = localStorage.getItem('dartsGame');
+          if (!storedGame || storedGame === 'null') {
+            setPlayerInGame(false);
+          } else {
+            try {
+              const parsedGame = JSON.parse(storedGame);
+              if (parsedGame?.active) {
+                setPlayerInGame(true);
+              } else {
+                setPlayerInGame(false);
+                localStorage.setItem('dartsGame', null);
+              }
+            } catch (e) {
+              setPlayerInGame(false);
+              localStorage.setItem('dartsGame', null);
+            }
+          }
         }
 
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching', err);
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     }
     fetchData();
@@ -237,6 +275,7 @@ function DartsPage() {
     if (params && params.createNewGame) handleShow();
 
     return () => {
+      isMounted = false;
       socket.off("gameCreated");
       socket.off("gameEnded");
     };

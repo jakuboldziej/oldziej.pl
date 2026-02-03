@@ -143,7 +143,7 @@ const handleCheckoutTripleOut = (userCurrentTurn) => {
 
 // Handle points
 
-const handleOverthrow = (gameCode, currentUser, io) => {
+const handleOverthrow = (gameCode, currentUser, io, shouldEmit = true) => {
   const initialPoints = parseInt(currentUser.points) + calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
   currentUser.allGainedPoints -= currentUser.turnsSum;
@@ -154,9 +154,10 @@ const handleOverthrow = (gameCode, currentUser, io) => {
   currentUser.throws["overthrows"] += 1;
   currentUser.currentThrows["overthrows"] += 1;
 
-  // Emit overthrow event
-  io.to(`game-${gameCode}`).emit("userOverthrowClient", currentUser.displayName);
-  handleWLEDOverthrow(gameCode);
+  if (shouldEmit) {
+    io.to(`game-${gameCode}`).emit("userOverthrowClient", currentUser.displayName);
+    handleWLEDOverthrow(gameCode);
+  }
 }
 
 const handlePointsX01 = (game, currentUser, io) => {
@@ -170,9 +171,9 @@ const handlePointsX01 = (game, currentUser, io) => {
   }
 
   if (currentUser.points < 0) {
-    handleOverthrow(game.gameCode, currentUser, io);
+    handleOverthrow(game.gameCode, currentUser, io, false);
 
-    return { overthrow: true, gameEnd: false };
+    return { overthrow: true, gameEnd: false, shouldEmitOverthrow: true };
   } else if (currentUser.points === 0) {
     let result = { overthrow: false, gameEnd: true };
 
@@ -181,17 +182,20 @@ const handlePointsX01 = (game, currentUser, io) => {
     if (game.checkOut === "Triple Out") result = handleCheckoutTripleOut(currentUser.turns[currentUser.currentTurn]);
     if (game.checkOut === "Any Out") result = { overthrow: false, gameEnd: true };
 
-    if (result.overthrow === true) handleOverthrow(game.gameCode, currentUser, io);
+    if (result.overthrow === true) {
+      handleOverthrow(game.gameCode, currentUser, io, false);
+      result.shouldEmitOverthrow = true;
+    }
 
     return result;
   }
 
   if (game.checkOut === "Double Out" && currentUser.points < 2) {
-    handleOverthrow(game.gameCode, currentUser, io);
-    return { overthrow: true, gameEnd: false };
+    handleOverthrow(game.gameCode, currentUser, io, false);
+    return { overthrow: true, gameEnd: false, shouldEmitOverthrow: true };
   } else if (game.checkOut === "Triple Out" && currentUser.points < 3) {
-    handleOverthrow(game.gameCode, currentUser, io);
-    return { overthrow: true, gameEnd: false };
+    handleOverthrow(game.gameCode, currentUser, io, false);
+    return { overthrow: true, gameEnd: false, shouldEmitOverthrow: true };
   }
 
   return { overthrow: false, gameEnd: false };
@@ -350,7 +354,7 @@ class DartsGameManager {
     return this.game.users.find(user => user.turn);
   }
 
-  async updateGameState() {
+  async updateGameState(skipEmit = false) {
     try {
       const { userWon, ...restGameData } = this.game;
       await DartsGame.findOneAndUpdate(
@@ -363,7 +367,9 @@ class DartsGameManager {
         { new: true }
       );
 
-      await this.emitGameUpdate();
+      if (!skipEmit) {
+        await this.emitGameUpdate();
+      }
 
       return this.game;
     } catch (err) {
@@ -593,7 +599,8 @@ class DartsGameManager {
       await this.handlePodium();
       return true;
     } else {
-      await this.updateGameState();
+      this.handleRecord("save");
+      await this.updateGameState(true);
       return false;
     }
   }
@@ -630,6 +637,8 @@ class DartsGameManager {
       result = handlePointsReverseX01(this.game, currentUser);
     }
 
+    currentUser._lastPointsResult = result;
+
     handleAvgPointsPerTurn(currentUser, this.game);
 
     if (result.gameEnd) {
@@ -641,9 +650,7 @@ class DartsGameManager {
   }
 
   async handleThrow(value, action = null) {
-    return this.enqueueRequest(async () => {
-      return await this._executeThrow(value, action);
-    });
+    return await this._executeThrow(value, action);
   }
 
   async _executeThrow(value, action = null) {
@@ -663,7 +670,15 @@ class DartsGameManager {
       }
 
       handleTurnsSum(currentUser);
-      await this.handlePoints(null, 0);
+      const result = await this.handlePoints(null, 0);
+
+      if (result.gameEnd) {
+        return { success: true, gameEnd: true, game: this.game };
+      }
+      if (result.legEnded) {
+        await this.updateGameState();
+        return { success: true, gameEnd: false, legEnded: true, game: this.game };
+      }
 
       handleWLEDThrowDoors(this.gameCode);
     } else if (value === "BACK") {
@@ -683,7 +698,10 @@ class DartsGameManager {
         return { success: true, gameEnd: true, game: this.game };
       }
       if (result.legEnded) {
-        this.handleRecord("save");
+        if (result.shouldEmitOverthrow) {
+          this.io.to(`game-${this.gameCode}`).emit("userOverthrowClient", currentUser.displayName);
+          handleWLEDOverthrow(this.gameCode);
+        }
         await this.updateGameState();
         return { success: true, gameEnd: false, legEnded: true, game: this.game };
       }
@@ -703,7 +721,10 @@ class DartsGameManager {
         return { success: true, gameEnd: true, game: this.game };
       }
       if (result.legEnded) {
-        this.handleRecord("save");
+        if (result.shouldEmitOverthrow) {
+          this.io.to(`game-${this.gameCode}`).emit("userOverthrowClient", currentUser.displayName);
+          handleWLEDOverthrow(this.gameCode);
+        }
         await this.updateGameState();
         return { success: true, gameEnd: false, legEnded: true, game: this.game };
       }
@@ -729,6 +750,13 @@ class DartsGameManager {
       currentUser.currentTurn += 1;
     }
 
+    const pointsResult = currentUser._lastPointsResult;
+    if (pointsResult && pointsResult.shouldEmitOverthrow) {
+      this.io.to(`game-${this.gameCode}`).emit("userOverthrowClient", currentUser.displayName);
+      handleWLEDOverthrow(this.gameCode);
+    }
+    delete currentUser._lastPointsResult;
+
     this.handleRecord("save");
     await this.updateGameState();
 
@@ -736,9 +764,7 @@ class DartsGameManager {
   }
 
   async handleBack() {
-    return this.enqueueRequest(async () => {
-      return await this._executeBack();
-    });
+    return await this._executeBack();
   }
 
   async _executeBack() {
