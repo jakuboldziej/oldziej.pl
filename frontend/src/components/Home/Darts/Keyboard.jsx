@@ -1,8 +1,6 @@
-import { deleteDartsGame } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { useContext } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
-import { socket } from "@/lib/socketio";
 import { endGame } from "@/lib/dartsGameSocket";
 import { isInitialGameState } from '@/lib/recordUtils';
 
@@ -21,23 +19,15 @@ function Keyboard({ props }) {
     const updatedGame = { ...game };
     updatedGame.podium[1] = game.turn;
     updatedGame.active = false;
-    
-    if (game._id) {
-      await deleteDartsGame(game._id);
-    }
-    
+
     await endGame(game.gameCode, updatedGame);
   }
 
   const handleQuit = async () => {
     const updatedGame = { ...game };
     updatedGame.active = false;
-    updatedGame.podium[1] = null; 
-    
-    if (game._id) {
-      await deleteDartsGame(game._id);
-    }
-    
+    updatedGame.podium[1] = null;
+
     await endGame(game.gameCode, updatedGame);
   }
 

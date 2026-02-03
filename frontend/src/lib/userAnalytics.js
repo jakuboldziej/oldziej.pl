@@ -148,7 +148,7 @@ export const compareWithBest = (dartUser) => {
 
   const totalDarts = dartUser.throws.normal + dartUser.throws.doubles + dartUser.throws.triples + dartUser.throws.doors;
   const currentAvgPerDart = totalDarts > 0 ? dartUser.overAllPoints / totalDarts : 0;
-  
+
   return {
     avgPerDart: {
       current: currentAvgPerDart.toFixed(2),
@@ -159,5 +159,92 @@ export const compareWithBest = (dartUser) => {
       current: currentAvgPerDart * 3,
       best: dartUser.highestTurnPoints || 0
     }
+  };
+};
+
+export const analyzeDailyRewind = (games, dartUser) => {
+  if (!games || games.length === 0 || !dartUser) return null;
+
+  const today = new Date();
+  today.setDate();
+  today.setHours(0, 0, 0, 0);
+
+  const todaysGames = games.filter(game => {
+    const gameDate = new Date(game.created_at);
+    gameDate.setHours(0, 0, 0, 0);
+    return gameDate.getTime() === today.getTime();
+  });
+
+  if (todaysGames.length === 0) return null;
+
+  const currentUserStats = {
+    totalGames: todaysGames.length,
+    wins: 0,
+    losses: 0,
+    totalPoints: 0,
+    totalDarts: 0,
+    averages: [],
+    highestAvg: 0,
+    opponents: {}
+  };
+
+  todaysGames.forEach(game => {
+    const user = game.users?.find(u => u.displayName === dartUser.displayName);
+    if (!user) return;
+
+    const userAvg = parseFloat(user.avgPointsPerTurn) || 0;
+    currentUserStats.averages.push(userAvg);
+    currentUserStats.totalPoints += user.allGainedPoints || 0;
+
+    const userDarts = (user.currentThrows?.normal || 0) +
+      (user.currentThrows?.doubles || 0) +
+      (user.currentThrows?.triples || 0) +
+      (user.currentThrows?.doors || 0);
+    currentUserStats.totalDarts += userDarts;
+
+    if (userAvg > currentUserStats.highestAvg) {
+      currentUserStats.highestAvg = userAvg;
+    }
+
+    if (user.place === 1) {
+      currentUserStats.wins++;
+    } else if (user.place > 1) {
+      currentUserStats.losses++;
+    }
+
+    game.users.forEach(opponent => {
+      if (opponent.displayName === dartUser.displayName) return;
+
+      if (!currentUserStats.opponents[opponent.displayName]) {
+        currentUserStats.opponents[opponent.displayName] = {
+          games: 0,
+          wins: 0,
+          losses: 0
+        };
+      }
+
+      currentUserStats.opponents[opponent.displayName].games++;
+
+      if (user.place < opponent.place) {
+        currentUserStats.opponents[opponent.displayName].wins++;
+      } else if (user.place > opponent.place) {
+        currentUserStats.opponents[opponent.displayName].losses++;
+      }
+    });
+  });
+
+  const avgAverage = currentUserStats.averages.length > 0
+    ? (currentUserStats.averages.reduce((a, b) => a + b, 0) / currentUserStats.averages.length).toFixed(2)
+    : "0.00";
+
+  const winRate = currentUserStats.totalGames > 0
+    ? ((currentUserStats.wins / currentUserStats.totalGames) * 100).toFixed(1)
+    : "0.0";
+
+  return {
+    ...currentUserStats,
+    avgAverage,
+    winRate,
+    date: today
   };
 };

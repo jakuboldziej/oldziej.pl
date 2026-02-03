@@ -24,7 +24,6 @@ function CloudFoldersTable({ props }) {
   }
 
   const handleDeleteFolder = async () => {
-    // await deleteDartsGame(selectedFolder._id);
     // setDialogOpen(false);
     // setFolders((prev) => prev.filter((folder) => folder.displayName !== selectedFolder.displayName));
   }

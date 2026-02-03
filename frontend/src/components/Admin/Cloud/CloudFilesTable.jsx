@@ -24,7 +24,6 @@ function CloudFilesTable({ props }) {
   }
 
   const handleDeleteFile = async () => {
-    // await deleteDartsGame(selectedFile._id);
     // setDialogOpen(false);
     // setFiles((prev) => prev.filter((file) => file.displayName !== selectedFile.displayName));
   }

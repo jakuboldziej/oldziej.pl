@@ -29,6 +29,9 @@ export const DartsGameContextProvider = ({ children }) => {
   const [overthrow, setOverthrow] = useState(false);
   const subscribedGameCode = useRef(null);
   const handleShowRef = useRef(null);
+  const pendingRequest = useRef(false);
+  const lastRequestTime = useRef(0);
+  const minRequestInterval = 100;
 
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;
@@ -121,24 +124,24 @@ export const DartsGameContextProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onReconnected(async () => {
       if (game?.gameCode) {
-        
+
         try {
           const freshGame = await getDartsGame(game._id);
-          
+
           const gameWithRecord = ensureGameRecord(freshGame);
-          
+
           setGame(gameWithRecord);
           localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
-          
+
           joinGameRoom(game.gameCode);
-          
+
           import('@/lib/socketio').then(({ socket }) => {
             socket.emit("updateLiveGamePreview", JSON.stringify(gameWithRecord));
           });
-          
+
         } catch (error) {
           console.error('Failed to restore game from database:', error);
-          
+
           const gameToSync = ensureGameRecord({ ...game });
           joinGameRoom(game.gameCode);
           import('@/lib/socketio').then(({ socket }) => {
@@ -152,6 +155,12 @@ export const DartsGameContextProvider = ({ children }) => {
   }, [game]);
 
   const handleRound = async (value, handleShowP) => {
+    const now = Date.now();
+    if (pendingRequest.current || (now - lastRequestTime.current) < minRequestInterval) {
+      console.warn('Request throttled - too fast');
+      return;
+    }
+
     handleShowRef.current = handleShowP;
 
     if (!game?.gameCode) {
@@ -160,6 +169,9 @@ export const DartsGameContextProvider = ({ children }) => {
     }
 
     try {
+      pendingRequest.current = true;
+      lastRequestTime.current = now;
+
       let action = null;
       let throwValue = value;
 
@@ -169,11 +181,13 @@ export const DartsGameContextProvider = ({ children }) => {
         } else {
           setSpecialState([true, value]);
         }
+        pendingRequest.current = false;
         return;
       }
 
       if (value === "BACK") {
         await sendBack(game.gameCode);
+        pendingRequest.current = false;
         return;
       }
 
@@ -195,6 +209,8 @@ export const DartsGameContextProvider = ({ children }) => {
     } catch (error) {
       console.error("Error handling throw:", error);
       ShowNewToast("Error", error.message, "error");
+    } finally {
+      pendingRequest.current = false;
     }
   };
 

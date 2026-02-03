@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
 import { getAuthUser, getDartsUser, getESP32Availability, postDartsGame, postESP32JoinGame } from "@/lib/fetch";
+import { socket, ensureSocketConnection } from "@/lib/socketio";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
 import { Card, CardContent, CardHeader } from "@/components/ui/shadcn/card";
@@ -286,7 +287,24 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
       gameData._id = game._id;
       gameData["gameCode"] = game.gameCode;
+
+      await ensureSocketConnection();
+
       updateGameState(gameData);
+
+      localStorage.setItem("gameSettings", JSON.stringify({
+        users: usersPlaying,
+        gamemode: selectGameMode,
+        startPoints: selectStartPoints,
+        checkout: selectCheckOut,
+        sets: selectSets,
+        legs: selectLegs,
+        training: training
+      }));
+
+      socket.emit("joinLiveGamePreview", JSON.stringify({
+        gameCode: game.gameCode
+      }));
 
       if (WLEDon) {
         const res = await postESP32JoinGame(game.gameCode);
@@ -303,16 +321,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       }
 
       navigate("game");
-
-      localStorage.setItem("gameSettings", JSON.stringify({
-        users: usersPlaying,
-        gamemode: selectGameMode,
-        startPoints: selectStartPoints,
-        checkout: selectCheckOut,
-        sets: selectSets,
-        legs: selectLegs,
-        training: training
-      }));
     } catch (error) {
       console.error(error);
       ShowNewToast("Error starting game", error.message);
@@ -540,6 +548,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                             <SelectItem value="Any Out">Any Out</SelectItem>
                             <SelectItem value="Straight Out">Straight Out</SelectItem>
                             <SelectItem value="Double Out">Double Out</SelectItem>
+                            <SelectItem value="Triple Out">Triple Out</SelectItem>
                           </SelectGroup>
                         </SelectContent>
                       </Select>

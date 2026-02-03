@@ -1,8 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import Keyboard from "@/components/Home/Darts/Keyboard";
-import RedDot from "@/assets/images/icons/red_dot.png";
-import GreenDot from "@/assets/images/icons/green_dot.png";
 import GameSummary from "@/components/Home/Darts/GameSummary";
 import { totalThrows } from "@/components/Home/Darts/utils/userUtils";
 import { Link } from "react-router-dom";
@@ -19,12 +17,16 @@ import MostCommonCheckout from "@/components/Home/Darts/MostCommonCheckout";
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
   const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { game, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
+
+  // Scroll to user
+  const usersContainerRef = useRef(null);
 
   function handleShow() {
     setShow(true);
   }
-
-  const { game, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
 
   useEffect(() => {
     if (setHandleShow) {
@@ -37,15 +39,6 @@ function DartsGame() {
       setShow(false);
     }
   }, [game?.active]);
-
-  if (!game) {
-    return (
-      <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
-        <span className="text-4xl text-center">You are not currently in a game.</span>
-        <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New One</Link>
-      </div>
-    )
-  }
 
   useEffect(() => {
     let timer;
@@ -61,11 +54,8 @@ function DartsGame() {
     };
   }, [overthrow]);
 
-  // Scroll to user
-  const usersContainerRef = useRef(null);
-
   useEffect(() => {
-    const userWithTurn = game.users.find((user) => user.turn);
+    const userWithTurn = game?.users?.find((user) => user.turn);
 
     if (userWithTurn && usersContainerRef.current) {
       const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn._id}"]`);
@@ -73,18 +63,42 @@ function DartsGame() {
         userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-  }, [game.users, game.turn]);
+  }, [game?.users, game?.turn]);
 
   useEffect(() => {
     if (!game?.active) setShow(true);
 
-    if (!game) return;
+    if (!game) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+
+    setIsLoading(false);
 
     socket.emit("joinLiveGamePreview", JSON.stringify({
       gameCode: game.gameCode
     }));
     socket.emit("updateLiveGamePreview", JSON.stringify(game));
-  }, []);
+  }, [game]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
+        <span className="text-2xl">Loading game...</span>
+      </div>
+    );
+  }
+
+  if (!game) {
+    return (
+      <div className="flex flex-col gap-5 justify-center items-center h-screen text-white">
+        <span className="text-4xl text-center">You are not currently in a game.</span>
+        <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts">Create New One</Link>
+      </div>
+    )
+  }
 
   const keyboardProps = { handleShow }
 
@@ -107,7 +121,7 @@ function DartsGame() {
           <h5 style={{ color: '#E00000' }}>L: {game.legs}</h5>
           <h2 style={{ color: '#E00000' }}>Turn: {game.turn}</h2>
           <h5 style={{ color: '#E00000' }}>S: {game.sets}</h5>
-          <h2><img src={game.active ? GreenDot : RedDot} /></h2>
+          <h2>{game?.checkOut}</h2>
         </div>
         <div className="users" ref={usersContainerRef}>
           {game.users.map((user) => (
@@ -151,7 +165,7 @@ function DartsGame() {
         <MyAccordion title={`Live Data (${game.gameMode})`}>
           <UserDataTable users={game.users} game={game} />
         </MyAccordion>
-        <span className="text-white text-xs sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-1 sm:gap-2">
+        <span className="text-white text-xs sm:text-base text-center flex flex-row justify-center items-center gap-1 sm:gap-2">
           <Link
             to={`/darts/game/live?gameCode=${game.gameCode}`}
             target="_blank"

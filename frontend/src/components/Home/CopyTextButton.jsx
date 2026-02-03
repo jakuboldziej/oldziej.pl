@@ -12,7 +12,7 @@ const CopyTextButton = ({ children, textToCopy, toastTitle, toastDesc }) => {
 
   useEffect(() => {
     if (copied) {
-      ShowNewToast(toastTitle, toastDesc)
+      ShowNewToast(toastTitle, toastDesc, "info", 2000)
     }
   }, [copied]);
 

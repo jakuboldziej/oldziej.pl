@@ -9,9 +9,9 @@ import GamePodium from '@/components/Home/Darts/GamePreview/GamePodium';
 import HeadToHeadComparison from '@/components/Home/Darts/GamePreview/HeadToHeadComparison';
 import GameTimeline from '@/components/Home/Darts/GamePreview/GameTimeline';
 import PlayerStatistics from '@/components/Home/Darts/GamePreview/PlayerStatistics';
-import { 
-  analyzeGameRecords, 
-  compareUsers, 
+import {
+  analyzeGameRecords,
+  compareUsers,
   generateTimeline
 } from '@/lib/dartsAnalytics';
 
@@ -25,7 +25,7 @@ function DartsGamePreview() {
     const fetchGameData = async () => {
       try {
         const resGame = await getDartsGame(gameCode);
-        
+
         if (resGame && resGame.message && !resGame.users) {
           setError(resGame.message);
           setGame(null);
@@ -37,7 +37,7 @@ function DartsGamePreview() {
           setError("Game not found");
           setGame(null);
         }
-        
+
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching game:', err);
@@ -67,17 +67,17 @@ function DartsGamePreview() {
         <div className='dart-game-preview min-h-screen flex items-center justify-center text-white'>
           <div className='text-center'>
             <div className='mb-6'>
-              <svg 
-                className='w-24 h-24 mx-auto text-gray-400' 
-                fill='none' 
-                stroke='currentColor' 
+              <svg
+                className='w-24 h-24 mx-auto text-gray-400'
+                fill='none'
+                stroke='currentColor'
                 viewBox='0 0 24 24'
               >
-                <path 
-                  strokeLinecap='round' 
-                  strokeLinejoin='round' 
-                  strokeWidth={2} 
-                  d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' 
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
                 />
               </svg>
             </div>
@@ -85,8 +85,8 @@ function DartsGamePreview() {
             <p className='text-gray-400 mb-6'>
               {error || `The game with code "${gameCode}" doesn't exist or has been deleted.`}
             </p>
-            <a 
-              href='/darts' 
+            <a
+              href='/darts'
               className='inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors'
             >
               Back to Darts Games
@@ -132,7 +132,7 @@ function DartsGamePreview() {
 
         <GameTimeline timeline={timeline} />
 
-        <PlayerStatistics 
+        <PlayerStatistics
           sortedUsers={sortedUsers}
           game={game}
           analytics={analytics}

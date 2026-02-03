@@ -2,7 +2,7 @@ import { socket, ensureSocketConnection, trackRoom, untrackRoom } from '@/lib/so
 
 export const sendThrow = async (gameCode, value, action = null) => {
   await ensureSocketConnection();
-  
+
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error('Throw timeout - check your connection'));
@@ -27,7 +27,7 @@ export const sendThrow = async (gameCode, value, action = null) => {
 
 export const sendBack = async (gameCode) => {
   await ensureSocketConnection();
-  
+
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error('Back timeout - check your connection'));
@@ -156,6 +156,23 @@ export const joinGameRoom = (gameCode) => {
   }
   trackRoom(gameCode);
   socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode }));
+
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      console.warn(`Join confirmation timeout for game ${gameCode}`);
+      resolve(false);
+    }, 3000);
+
+    const handleJoined = (data) => {
+      if (data.gameCode === gameCode) {
+        clearTimeout(timeout);
+        socket.off("game:joined", handleJoined);
+        resolve(true);
+      }
+    };
+
+    socket.on("game:joined", handleJoined);
+  });
 };
 
 export const leaveGameRoom = (gameCode) => {

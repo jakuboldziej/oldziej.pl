@@ -5,7 +5,21 @@ import { checkoutCombinations } from "./utils/userUtils";
 import MyTooltip from "../MyComponents/MyTooltip";
 
 function MostCommonCheckout({ users, game, compact = false, showForUser = null }) {
-  const usersToShow = showForUser ? [users.find(u => u._id === showForUser || u.displayName === showForUser)] : users;
+  if (game.checkOut !== "Double Out" && game.checkOut !== "Straight Out") {
+    return null;
+  }
+
+  let usersToShow = users;
+
+  if (showForUser) {
+    usersToShow = [users.find(u => u._id === showForUser || u.displayName === showForUser)];
+  } else {
+    const currentUserIndex = users.findIndex(u => u.turn);
+    if (currentUserIndex !== -1) {
+      const nextUserIndex = (currentUserIndex + 1) % users.length;
+      usersToShow = [users[currentUserIndex], users[nextUserIndex]];
+    }
+  }
 
   const usersWithCheckouts = usersToShow?.filter(user => {
     const points = user?.points;
@@ -34,26 +48,23 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
 
   if (compact) {
     return (
-      <div className="flex flex-col gap-1.5 w-full">
+      <div className="flex flex-col items-center gap-2 w-full">
         {usersWithCheckouts.map((user, idx) => {
           const checkoutOptions = checkoutCombinations[user.points];
           const primaryCheckout = checkoutOptions[0];
           const colorClass = getCheckoutColor(user.points);
 
           return (
-            <div key={idx} className="flex items-center justify-between gap-1.5 text-white bg-gray-800 px-1.5 py-1.5 rounded border border-gray-700">
-              <div className="flex items-center gap-1 min-w-0 flex-shrink">
-                <Target className={colorClass.split(' ')[0]} size={14} />
-                <span className="text-[10px] font-semibold truncate max-w-[60px]">{user.displayName}</span>
-                <Badge variant="outline" className={`${colorClass} text-[9px] px-1 py-0 leading-tight`}>
-                  {user.points}
-                </Badge>
+            <div key={idx} className="w-2/3 flex items-center justify-between gap-2 text-white bg-gray-800 px-3 py-2 rounded border border-gray-700">
+              <div className="flex items-center gap-2 min-w-0 flex-shrink">
+                <Target className={colorClass.split(' ')[0]} size={18} />
+                <span className="text-xs sm:text-sm font-semibold truncate max-w-[80px]">{user.displayName}</span>
               </div>
-              <div className="flex items-center gap-0.5 flex-shrink-0">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {primaryCheckout.combo.map((dart, i) => (
                   <span key={i} className="flex items-center">
-                    {i > 0 && <span className="text-gray-500 mx-0.5 text-xs">→</span>}
-                    <Badge variant="secondary" className="text-[9px] font-mono px-1 py-0 leading-tight">
+                    {i > 0 && <span className="text-gray-500 mx-1 text-xs sm:text-sm">→</span>}
+                    <Badge variant="secondary" className="text-xs sm:text-sm font-mono px-2 py-0.5">
                       {formatDart(dart)}
                     </Badge>
                   </span>
@@ -91,9 +102,6 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
                       </MyTooltip>
                     )}
                   </div>
-                  <Badge variant="outline" className={`${colorClass} text-sm sm:text-lg px-2 sm:px-3 py-0.5 sm:py-1 flex-shrink-0`}>
-                    {user.points}
-                  </Badge>
                 </div>
 
                 <div className="space-y-2">

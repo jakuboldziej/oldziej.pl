@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import RedDot from "@/assets/images/icons/red_dot.png";
-import GreenDot from "@/assets/images/icons/green_dot.png";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../utils/gameUtils';
@@ -9,6 +7,8 @@ import { socket } from '@/lib/socketio';
 import { getLatestRecord } from '@/lib/recordUtils';
 
 function GameLivePreview({ props }) {
+  document.title = "Oldziej | Live Game";
+
   const { liveGame, setLiveGame, overthrow } = props;
   const [users, setUsers] = useState(liveGame.users);
   const [showDialog, setShowDialog] = useState(false);
@@ -88,7 +88,7 @@ function GameLivePreview({ props }) {
           <span className="truncate">{liveGame.gameMode}</span>
           {handleShowingSetsAndLegs() && <span className="hidden md:inline truncate">Sets: {liveGame.sets}</span>}
           <span className='flex items-center gap-1 truncate'>
-            <img className='h-[10px] sm:h-[12px] md:h-[15px]' src={liveGame.active ? GreenDot : RedDot} />
+            <span>{liveGame?.checkOut}</span>
           </span>
         </div>
         <div className='fixed top-12 sm:top-16 md:top-24 left-1/2 transform -translate-x-1/2 z-10 w-full max-w-4xl px-1 sm:px-2 md:px-4'>

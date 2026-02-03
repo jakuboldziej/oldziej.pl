@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 import DOMPurify from 'dompurify';
 
-function ShowNewToast(title, description, type = "info") {
+function ShowNewToast(title, description, type = "info", duration = 5000) {
   toast(title, {
     description: <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description) }} />,
     action: {
@@ -9,7 +9,7 @@ function ShowNewToast(title, description, type = "info") {
       onClick: () => { },
     },
     type: type,
-    duration: 5000
+    duration: duration
   })
 }
 
