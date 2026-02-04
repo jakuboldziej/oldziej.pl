@@ -12,6 +12,7 @@ function GameLivePreview({ props }) {
 
   const { liveGame, setLiveGame, overthrow } = props;
   const [users, setUsers] = useState(liveGame.users);
+  const [shownUsers, setShownUsers] = useState(liveGame.users.slice(0, 3));
   const [showDialog, setShowDialog] = useState(false);
   const [timePlayed, setTimePlayed] = useState(0);
 
@@ -19,6 +20,43 @@ function GameLivePreview({ props }) {
     const latestRecord = getLatestRecord(liveGame);
     if (latestRecord) {
       setUsers(latestRecord.users);
+
+      if (liveGame.users.length > 3) {
+        const currentUserIndex = latestRecord.users.findIndex((user) => user.turn === true);
+
+        let secondUserIndexChange = 1;
+        let thirdUserIndexChange = 2;
+        let secondUserIndex = (currentUserIndex + 1) % latestRecord.users.length;
+        let thirdUserIndex = (currentUserIndex + 2) % latestRecord.users.length;
+        let usersToBeShown = [
+          latestRecord.users[currentUserIndex],
+          latestRecord.users[secondUserIndex],
+          latestRecord.users[thirdUserIndex]
+        ];
+
+        console.log(liveGame.round === 1, currentUserIndex === 0, parseInt(latestRecord.users[currentUserIndex].points) === parseInt(liveGame.startPoints))
+
+        if (!(latestRecord.game.round === 1 && currentUserIndex === 0 && parseInt(latestRecord.users[currentUserIndex].points) === parseInt(liveGame.startPoints))) {
+          console.log("now")
+          secondUserIndexChange = -1
+          thirdUserIndexChange = 1;
+
+          secondUserIndex = (currentUserIndex + secondUserIndexChange) % latestRecord.users.length;
+          thirdUserIndex = (currentUserIndex + thirdUserIndexChange) % latestRecord.users.length;
+
+          usersToBeShown = [
+            latestRecord.users[secondUserIndex === -1 ? latestRecord.users.length - 1 : secondUserIndex],
+            latestRecord.users[currentUserIndex],
+            latestRecord.users[thirdUserIndex]
+          ];
+        }
+
+        console.log(currentUserIndex, secondUserIndex, thirdUserIndex, usersToBeShown)
+
+        setShownUsers(usersToBeShown);
+      } else {
+        setShownUsers(latestRecord.users);
+      }
     }
 
     if (!liveGame.active) {
@@ -96,7 +134,7 @@ function GameLivePreview({ props }) {
           <MostCommonCheckout users={users} game={liveGame} compact={true} />
         </div>
         <div ref={usersContainerRef} className='users-playing flex flex-wrap items-center justify-center gap-4 sm:gap-8 w-full pt-24 sm:pt-32 md:pt-40 min-h-screen'>
-          {users && users.map((user) => (
+          {shownUsers && shownUsers.map((user) => (
             <div key={user._id} data-userid={user._id} className='user transition-colors' style={userDynamicStyle(user)}>
               <div className="p-1">
                 <div className="relative flex flex-col aspect-auto items-center justify-center p-6 gap-8">

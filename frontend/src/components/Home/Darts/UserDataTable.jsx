@@ -1,8 +1,12 @@
 import MyTooltip from '../MyComponents/MyTooltip'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
 import { totalThrows } from './utils/userUtils';
+import { useEffect, useRef } from 'react';
 
 function UserDataTable({ users, game }) {
+  // Scroll to user
+  const usersContainerRef = useRef(null);
+
   const displayUserThrows = (user) => {
     if (!user || !user.currentThrows) {
       return <span>0</span>;
@@ -18,6 +22,17 @@ function UserDataTable({ users, game }) {
     )
   }
 
+  useEffect(() => {
+    const userWithTurn = game?.users?.find((user) => user.turn);
+
+    if (userWithTurn && usersContainerRef.current) {
+      const userElement = usersContainerRef.current.querySelector(`[data-userid="${userWithTurn._id}"]`);
+      if (userElement) {
+        userElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [game?.users, game?.turn]);
+
   const dynamicUserStyle = (user) => {
     let style = {};
     if (user?.turn) {
@@ -29,7 +44,7 @@ function UserDataTable({ users, game }) {
     return style;
   }
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full max-h-[300px] overflow-y-auto overflow-x-auto">
       <Table className="min-w-full">
         <TableHeader>
           <TableRow>
@@ -45,9 +60,9 @@ function UserDataTable({ users, game }) {
             <TableHead className="whitespace-nowrap">Sets</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody ref={usersContainerRef}>
           {users?.map(user => (
-            <TableRow key={user._id} style={dynamicUserStyle(user)}>
+            <TableRow data-userid={user._id} key={user._id} style={dynamicUserStyle(user)}>
               <TableCell className="whitespace-nowrap">{user?.displayName || 'Unknown'}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.points ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">{displayUserThrows(user)}</TableCell>
