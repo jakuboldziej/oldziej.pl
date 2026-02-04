@@ -13,6 +13,7 @@ import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { Copy } from "lucide-react";
 import { socket } from "@/lib/socketio";
 import MostCommonCheckout from "@/components/Home/Darts/MostCommonCheckout";
+import NumberTicker from "@/components/ui/magicui/number-ticker";
 
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
@@ -151,7 +152,12 @@ function DartsGame() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="relative w-[33%]">
-                    <span className="font-bold">{user.points}</span>
+                    <NumberTicker
+                      stiffness={300}
+                      startValue={parseInt(game.startPoints)}
+                      value={parseInt(user.points)}
+                      className="font-bold"
+                    />
                     <span className="darts-thrown">
                       <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon" />
                       {totalThrows(user)}

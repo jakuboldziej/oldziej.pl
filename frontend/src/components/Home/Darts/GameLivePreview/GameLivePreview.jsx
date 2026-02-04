@@ -5,6 +5,7 @@ import { handleTimePlayed } from '../utils/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
 import { socket } from '@/lib/socketio';
 import { getLatestRecord } from '@/lib/recordUtils';
+import NumberTicker from '@/components/ui/magicui/number-ticker';
 
 function GameLivePreview({ props }) {
   document.title = "Oldziej | Live Game";
@@ -100,7 +101,9 @@ function GameLivePreview({ props }) {
               <div className="p-1">
                 <div className="relative flex flex-col aspect-auto items-center justify-center p-6 gap-8">
                   <span className="text-5xl">{user.displayName}</span>
-                  <span className="text-6xl">{user.points}</span>
+                  <span className="text-6xl">
+                    <NumberTicker stiffness={300} startValue={parseInt(liveGame.startPoints)} value={parseInt(user.points)} className="font-bold" />
+                  </span>
                   {handleShowingSetsAndLegs() && <div className='absolute top-0 flex justify-around w-full'>
                     <span>L: {user.legs}</span>
                     <span>S: {user.sets}</span>
