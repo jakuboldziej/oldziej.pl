@@ -18,6 +18,14 @@ function GameHeader({ game }) {
             <span className='text-gray-400'>
               {new Date(game.created_at).toLocaleString()}
             </span>
+            {game.finished_at && (
+              <>
+                <span>-</span>
+                <span className='text-gray-400'>
+                  {new Date(game.finished_at).toLocaleString()}
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>

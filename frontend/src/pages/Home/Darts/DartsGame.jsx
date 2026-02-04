@@ -70,7 +70,11 @@ function DartsGame() {
   const hasAttemptedRecovery = useRef(false);
 
   useEffect(() => {
-    if (!game?.active) setShow(true);
+    if (game && !game.active) {
+      setShow(true);
+      setIsLoading(false);
+      return;
+    }
 
     if (!game) {
       hasJoinedRoomRef.current = false;
@@ -190,10 +194,11 @@ function DartsGame() {
         </div>
       </div>
       <div className="right-panel">
-        <MyAccordion title={`Live Data (${game.gameMode})`}>
+        <MyAccordion title={`Live Data (${game.gameMode}) ${game.training === true ? "(Training)" : ""}`}>
           <UserDataTable users={game.users} game={game} />
         </MyAccordion>
         <span className="text-white text-xs sm:text-base text-center flex flex-row justify-center items-center gap-1 sm:gap-2">
+          <span>{game.training === true ? "Training" : ""}</span>
           <Link
             to={`/darts/game/live?gameCode=${game.gameCode}`}
             target="_blank"

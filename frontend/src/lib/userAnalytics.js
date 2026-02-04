@@ -166,7 +166,6 @@ export const analyzeDailyRewind = (games, dartUser) => {
   if (!games || games.length === 0 || !dartUser) return null;
 
   const today = new Date();
-  today.setDate();
   today.setHours(0, 0, 0, 0);
 
   const todaysGames = games.filter(game => {
@@ -174,6 +173,7 @@ export const analyzeDailyRewind = (games, dartUser) => {
     gameDate.setHours(0, 0, 0, 0);
     return gameDate.getTime() === today.getTime();
   });
+
 
   if (todaysGames.length === 0) return null;
 

@@ -310,4 +310,63 @@ router.get('/dartsUsers/portfolio/:identifier', getDartsUser, async (req, res) =
   res.send({ gamesPlayed: res.user.gamesPlayed })
 });
 
+router.get('/dartsPage/:userDisplayName', authenticateUser, async (req, res) => {
+  try {
+    const userDisplayName = req.params.userDisplayName;
+    const friendsDisplayNames = req.query.friends ? req.query.friends.split(',') : [];
+
+    const [
+      recentGames,
+      allActiveGames,
+      currentDartsUser,
+      friendsDartsUsers,
+      gamesCount,
+      allDartsUsers
+    ] = await Promise.all([
+      DartsGame.find(
+        {
+          users: { $elemMatch: { displayName: userDisplayName } },
+          $or: [{ training: false }, { training: { $exists: false } }]
+        },
+        { record: 0 },
+        { limit: 10, sort: { created_at: -1 } }
+      ),
+      DartsGame.find(
+        {
+          users: { $elemMatch: { displayName: userDisplayName } },
+          active: true
+        },
+        { record: 0 }
+      ),
+      DartsUser.findOne({ displayName: userDisplayName }),
+      friendsDisplayNames.length > 0
+        ? DartsUser.find({ displayName: { $in: friendsDisplayNames }, visible: true })
+        : [],
+      DartsGame.countDocuments(),
+      DartsUser.find({}, { overAllPoints: 1, throws: 1 })
+    ]);
+
+    const overAllPoints = allDartsUsers.reduce((sum, user) => sum + (user.overAllPoints || 0), 0);
+    const doorHits = allDartsUsers.reduce((sum, user) => sum + (user.throws?.doors || 0), 0);
+
+    res.json({
+      recentGames,
+      activeGame: allActiveGames.find(game =>
+        game.active === true &&
+        game.users.some(user => user.displayName === userDisplayName)
+      ) || null,
+      currentDartsUser,
+      friendsDartsUsers,
+      statistics: {
+        gamesPlayed: gamesCount,
+        overAllPoints,
+        doorHits
+      }
+    });
+  } catch (err) {
+    logger.error("GET DartsPage", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router

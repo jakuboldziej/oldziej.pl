@@ -22,7 +22,7 @@ function RecentFormCard({ analytics, games }) {
         <div className='space-y-2'>
           {analytics.recentForm.last5Games.map((game, idx) => (
             <div key={game.gameCode} className='flex justify-between items-center bg-gray-900 p-2 rounded'>
-              <span className='text-sm text-gray-400'>Game #{games.length - idx}</span>
+              <span className='text-sm text-gray-400'>Game #{game.gameCode}</span>
               <div className='flex items-center gap-2'>
                 <span className='font-semibold'>{game.avg}</span>
                 {!game.active && game.place === 1 && (

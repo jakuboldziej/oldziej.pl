@@ -67,9 +67,6 @@ function DartsUser() {
       if (dartUser) {
         const userAnalytics = analyzeUserGames(resGames, dartUser);
         setAnalytics(userAnalytics);
-
-        const dailyStats = analyzeDailyRewind(resGames, dartUser);
-        setDailyRewind(dailyStats);
       }
 
       setIsLoadingGames(false);

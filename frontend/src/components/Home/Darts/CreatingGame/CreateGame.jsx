@@ -361,7 +361,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       let minutesPerStartPoints = 0;
       minutesPerStartPoints += selectStartPoints / 130;
 
-      if (usersPlaying.length > 0) minutes = (minutesPerStartPoints * selectLegs * selectSets) * usersPlaying.length;
+      const effectiveLegs = selectLegs || 1;
+      const effectiveSets = selectSets || 1;
+
+      if (usersPlaying.length > 0) minutes = (minutesPerStartPoints * effectiveLegs * effectiveSets) * usersPlaying.length;
       setEgt(minutes.toFixed());
     }
 

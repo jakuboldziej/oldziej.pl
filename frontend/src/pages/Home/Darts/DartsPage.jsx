@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import { useLocation } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
-import { getAuthUser, getDartsGames, getDartsUser, getStatisticsDartsGames, getStatisticsDoorHits, getStatisticsOverAllPoints } from "@/lib/fetch";
+import { getAuthUser, getDartsGames, getDartsPageData } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
@@ -197,45 +197,29 @@ function DartsPage() {
 
     const fetchData = async () => {
       try {
-        const fetchedGames = handleFilterGames(filterUsersType, await getDartsGames(currentUser.displayName, 10));
+        const fetchAuthUser = await getAuthUser(currentUser.displayName);
         if (!isMounted) return;
 
-        let fetchAuthUser = await getAuthUser(currentUser.displayName);
-        let fetchDartsUser = await getDartsUser(currentUser.displayName);
-        const fetchAuthUserFriends = fetchAuthUser.friends.map(async (friendsDisplayName) => {
-          const fetchDartsUser = await getDartsUser(friendsDisplayName);
-          return fetchDartsUser;
-        });
+        const friendsDisplayNames = fetchAuthUser.friends || [];
 
-        const userFriends = (await Promise.all(fetchAuthUserFriends)).filter((friend) => friend.visible === true);
+        const pageData = await getDartsPageData(currentUser.displayName, friendsDisplayNames);
         if (!isMounted) return;
 
-        const sortedUsers = handleFilterUsers(filterUsersType, [...userFriends, fetchDartsUser]);
+        const { recentGames, activeGame, currentDartsUser, friendsDartsUsers, statistics } = pageData;
 
+        const sortedGames = handleFilterGames(filterGamesType, recentGames);
+        setGamesShown(sortedGames);
+
+        const allUsers = currentDartsUser ? [currentDartsUser, ...friendsDartsUsers] : friendsDartsUsers;
+        const sortedUsers = handleFilterUsers(filterUsersType, allUsers);
         setDartUsers(sortedUsers);
-        setGamesShown(fetchedGames);
 
-        const gamesPlayed = await getStatisticsDartsGames();
-        const overAllPoints = await getStatisticsOverAllPoints();
-        const doorHits = await getStatisticsDoorHits();
-        if (!isMounted) return;
+        // Set statistics
+        setDartsStatistics(statistics);
 
-        setDartsStatistics({
-          gamesPlayed: gamesPlayed,
-          overAllPoints: overAllPoints,
-          doorHits: doorHits
-        });
-
-        const activeGames = await getDartsGames(currentUser.displayName, 0, null);
-        if (!isMounted) return;
-
-        const playerActiveGame = activeGames.find(game =>
-          game.active === true &&
-          game.users.some(user => user.displayName === currentUser.displayName)
-        );
-
-        if (playerActiveGame) {
-          localStorage.setItem('dartsGame', JSON.stringify(playerActiveGame));
+        // Handle active game
+        if (activeGame) {
+          localStorage.setItem('dartsGame', JSON.stringify(activeGame));
           setPlayerInGame(true);
           if (isMounted) {
             ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");

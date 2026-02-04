@@ -100,6 +100,18 @@ export const getDartsGame = async (identifier) => {
   return await gameResponse.json();
 }
 
+export const getDartsPageData = async (userDisplayName, friendsDisplayNames = []) => {
+  const friendsParam = friendsDisplayNames.length > 0 ? `?friends=${friendsDisplayNames.join(',')}` : '';
+
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsPage/${userDisplayName}${friendsParam}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
+
+  return await response.json();
+}
+
 // Darts - Users
 
 export const getDartsUsers = async () => {
