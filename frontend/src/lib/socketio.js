@@ -4,12 +4,12 @@ const socketIoUrl = import.meta.env.MODE === "development" ? import.meta.env.VIT
 
 export const socket = io(socketIoUrl, {
   autoConnect: false,
-  transports: ['websocket'],
+  transports: ['websocket', 'polling'],
   withCredentials: true,
   reconnection: true,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  reconnectionAttempts: 5,
+  reconnectionAttempts: Infinity,
   timeout: 20000
 });
 
@@ -63,6 +63,12 @@ socket.on('connect', () => {
   reconnectAttempts = 0;
   notifyReconnectionState({ isReconnecting: false, attempt: 0, maxAttempts: maxReconnectAttempts });
   
+  if (activeRooms.size > 0) {
+    activeRooms.forEach(roomId => {
+      socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode: roomId }));
+    });
+  }
+  
   if (wasReconnecting) {
     notifyReconnected();
   }
@@ -71,12 +77,14 @@ socket.on('connect', () => {
 socket.on('disconnect', (reason) => {
   isConnected = false;
 
-  if (reason === 'io server disconnect') {
-    socket.connect();
+  if (reason === 'io server disconnect' || reason === 'transport close' || reason === 'transport error') {
+    setTimeout(() => {
+      if (!socket.connected) {
+        socket.connect();
+      }
+    }, 1000);
   }
-});
-
-socket.on('connect_error', (error) => {
+});socket.on('connect_error', (error) => {
   reconnectAttempts++;
   console.error(`🔴 Connection error (attempt ${reconnectAttempts}/${maxReconnectAttempts}):`, error.message);
 
@@ -125,6 +133,8 @@ const startHeartbeat = () => {
   heartbeatInterval = setInterval(() => {
     if (socket.connected) {
       socket.emit('heartbeat');
+    } else {
+      socket.connect();
     }
   }, 30000); // 30 seconds
 };

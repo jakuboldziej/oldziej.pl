@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../utils/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
-import { socket } from '@/lib/socketio';
+import { socket, untrackRoom } from '@/lib/socketio';
 import { getLatestRecord } from '@/lib/recordUtils';
 import NumberTicker from '@/components/ui/magicui/number-ticker';
 
@@ -18,45 +18,41 @@ function GameLivePreview({ props }) {
 
   useEffect(() => {
     const latestRecord = getLatestRecord(liveGame);
-    if (latestRecord) {
-      setUsers(latestRecord.users);
 
-      if (liveGame.users.length > 3) {
-        const currentUserIndex = latestRecord.users.findIndex((user) => user.turn === true);
+    const usersToUse = latestRecord ? latestRecord.users : liveGame.users;
+    setUsers(usersToUse);
 
-        let secondUserIndexChange = 1;
-        let thirdUserIndexChange = 2;
-        let secondUserIndex = (currentUserIndex + 1) % latestRecord.users.length;
-        let thirdUserIndex = (currentUserIndex + 2) % latestRecord.users.length;
-        let usersToBeShown = [
-          latestRecord.users[currentUserIndex],
-          latestRecord.users[secondUserIndex],
-          latestRecord.users[thirdUserIndex]
+    if (liveGame.users.length > 3) {
+      const currentUserIndex = usersToUse.findIndex((user) => user.turn === true);
+
+      let secondUserIndexChange = 1;
+      let thirdUserIndexChange = 2;
+      let secondUserIndex = (currentUserIndex + 1) % usersToUse.length;
+      let thirdUserIndex = (currentUserIndex + 2) % usersToUse.length;
+      let usersToBeShown = [
+        usersToUse[currentUserIndex],
+        usersToUse[secondUserIndex],
+        usersToUse[thirdUserIndex]
+      ];
+
+      const roundToCheck = latestRecord ? latestRecord.game.round : liveGame.round;
+      if (!(roundToCheck === 1 && currentUserIndex === 0 && parseInt(usersToUse[currentUserIndex].points) === parseInt(liveGame.startPoints))) {
+        secondUserIndexChange = -1
+        thirdUserIndexChange = 1;
+
+        secondUserIndex = (currentUserIndex + secondUserIndexChange) % usersToUse.length;
+        thirdUserIndex = (currentUserIndex + thirdUserIndexChange) % usersToUse.length;
+
+        usersToBeShown = [
+          usersToUse[secondUserIndex === -1 ? usersToUse.length - 1 : secondUserIndex],
+          usersToUse[currentUserIndex],
+          usersToUse[thirdUserIndex]
         ];
-
-        console.log(liveGame.round === 1, currentUserIndex === 0, parseInt(latestRecord.users[currentUserIndex].points) === parseInt(liveGame.startPoints))
-
-        if (!(latestRecord.game.round === 1 && currentUserIndex === 0 && parseInt(latestRecord.users[currentUserIndex].points) === parseInt(liveGame.startPoints))) {
-          console.log("now")
-          secondUserIndexChange = -1
-          thirdUserIndexChange = 1;
-
-          secondUserIndex = (currentUserIndex + secondUserIndexChange) % latestRecord.users.length;
-          thirdUserIndex = (currentUserIndex + thirdUserIndexChange) % latestRecord.users.length;
-
-          usersToBeShown = [
-            latestRecord.users[secondUserIndex === -1 ? latestRecord.users.length - 1 : secondUserIndex],
-            latestRecord.users[currentUserIndex],
-            latestRecord.users[thirdUserIndex]
-          ];
-        }
-
-        console.log(currentUserIndex, secondUserIndex, thirdUserIndex, usersToBeShown)
-
-        setShownUsers(usersToBeShown);
-      } else {
-        setShownUsers(latestRecord.users);
       }
+
+      setShownUsers(usersToBeShown);
+    } else {
+      setShownUsers(usersToUse);
     }
 
     if (!liveGame.active) {
@@ -75,6 +71,9 @@ function GameLivePreview({ props }) {
 
     const hostDisconnectedFromGameClient = (disconnected) => {
       if (disconnected) {
+        if (liveGame?.gameCode) {
+          untrackRoom(liveGame.gameCode);
+        }
         setLiveGame(null);
       }
     }
@@ -86,7 +85,7 @@ function GameLivePreview({ props }) {
       socket.off('gameEndClient', gameEndClient);
       socket.off('hostDisconnectedFromGameClient', hostDisconnectedFromGameClient);
     }
-  }, [setLiveGame]);
+  }, [setLiveGame, liveGame?.gameCode]);
 
   // Scroll to user
   const usersContainerRef = useRef(null);
@@ -194,7 +193,12 @@ function GameLivePreview({ props }) {
               )}
               <span className='flex flex-col items-center gap-5 mt-5'>
                 <span className='text-sm text-slate-400'>Wait until host clicks play again button or</span>
-                <Button onClick={() => setLiveGame(null)} variant="outline_white">Join new game</Button>
+                <Button onClick={() => {
+                  if (liveGame?.gameCode) {
+                    untrackRoom(liveGame.gameCode);
+                  }
+                  setLiveGame(null);
+                }} variant="outline_white">Join new game</Button>
               </span>
             </div>
           </DialogHeader>

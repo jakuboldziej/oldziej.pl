@@ -151,8 +151,8 @@ function DartsGame() {
           <h2>{game?.checkOut}</h2>
         </div>
         <div className="users" ref={usersContainerRef}>
-          {game.users.map((user) => (
-            <Table className="user" data-userid={user._id} key={user._id} style={userDynamicStyle(user)}>
+          {game.users.map((user, index) => (
+            <Table className="user" data-userid={user._id} key={user._id || `user-${index}-${user.displayName}`} style={userDynamicStyle(user)}>
               <TableHeader>
                 <TableRow>
                   <TableHead className="relative w-[33%]">

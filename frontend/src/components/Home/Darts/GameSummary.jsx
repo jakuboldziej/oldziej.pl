@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, useRef } from 'react';
 import { DartsGameContext } from '@/context/Home/DartsGameContext';
 import { Link } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
-import { getESP32Availability, postDartsGame, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
+import { getESP32Availability, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
 import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './utils/gameUtils';
@@ -14,6 +14,47 @@ function GameSummary({ show, setShow }) {
   const { game, updateGameState, handleRound } = useContext(DartsGameContext);
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const gameRef = useRef(game);
+
+  useEffect(() => {
+    gameRef.current = game;
+  }, [game]);
+
+  useEffect(() => {
+    const handlePlayAgainResponse = async (data) => {
+      const newGame = JSON.parse(data);
+      const currentGame = gameRef.current;
+
+      if (currentGame && currentGame.gameCode && currentGame.gameCode !== newGame.gameCode) {
+        socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode: currentGame.gameCode }));
+      }
+
+      updateGameState(newGame);
+      localStorage.setItem("dartsGame", JSON.stringify(newGame));
+
+      socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode: newGame.gameCode }));
+
+      (async () => {
+        try {
+          const esp32Availability = await getESP32Availability();
+          if (esp32Availability.available) {
+            await postESP32JoinGame(newGame.gameCode);
+          }
+        } catch (err) {
+          console.error("ESP32 error:", err);
+        }
+      })();
+
+      setIsLoading(false);
+      setShow(false);
+    };
+
+    socket.on("playAgainButtonClient", handlePlayAgainResponse);
+
+    return () => {
+      socket.off("playAgainButtonClient", handlePlayAgainResponse);
+    };
+  }, [updateGameState, setShow]);
 
   function handleShow() {
     setShow(true);
@@ -23,99 +64,9 @@ function GameSummary({ show, setShow }) {
     setIsLoading(true);
 
     try {
-      const previousSettings = JSON.parse(localStorage.getItem("gameSettings"));
-
-      const throwsData = {
-        doors: 0,
-        doubles: 0,
-        triples: 0,
-        normal: 0,
-        overthrows: 0,
-      }
-
-      const updatedUsers = game.users.map((user) => {
-        user.points = game.startPoints;
-        user.allGainedPoints = 0;
-        user.turn = false;
-        user.turnsSum = 0;
-        user.currentTurn = 1;
-        user.place = 0;
-        user.turns = {
-          1: null,
-          2: null,
-          3: null
-        };
-        user.throws = { ...throwsData };
-        user.currentThrows = { ...throwsData };
-        user.legs = 0;
-        user.sets = 0;
-        user.totalLegsWon = 0;
-        user.avgPointsPerTurn = "0.00";
-        user.highestGameAvg = "0.00";
-        user.highestGameTurnPoints = 0;
-        user.gameCheckout = 0;
-
-        return user;
-      });
-
-      // game.users = updatedUsers.sort(() => Math.random() - 0.5);
-      game.users = updatedUsers.reverse();
-      game.users[0].turn = true;
-
-      const usersCopy = lodash.cloneDeep(game.users);
-      const gameCopy = lodash.cloneDeep(game);
-      const gameData = {
-        created_at: Date.now(),
-        active: true,
-        podium: {
-          1: null,
-          2: null,
-          3: null
-        },
-        userWon: "",
-        turn: usersCopy[0].displayName,
-        round: 1,
-        record: [{
-          game: {
-            round: 1,
-            turn: usersCopy[0].displayName
-          },
-          users: usersCopy
-        }],
-      }
-      const gameDataMerged = { ...gameCopy, ...gameData };
-
-      if (previousSettings && previousSettings.training === false) {
-        gameDataMerged.training = false;
-      } else {
-        gameDataMerged.training = true;
-      }
-
-      const { record, userWon, ...gameWithoutRecordAndUserWon } = gameDataMerged;
-      const newGameData = await postDartsGame(gameWithoutRecordAndUserWon);
-
-      gameDataMerged._id = newGameData._id;
-      gameDataMerged["gameCode"] = newGameData.gameCode;
-      updateGameState(gameDataMerged);
-
-      socket.emit("playAgainButtonServer", JSON.stringify({
-        oldGameCode: gameCopy.gameCode,
-        newGame: gameDataMerged
+      socket.emit("playAgainRequest", JSON.stringify({
+        gameCode: game.gameCode
       }));
-
-      socket.emit("joinLiveGamePreview", JSON.stringify({
-        gameCode: gameDataMerged.gameCode
-      }));
-
-      setShow(false);
-      setIsLoading(false);
-
-      // Check ESP32 availability asynchronously after closing modal
-      getESP32Availability().then(responseWLED => {
-        if (responseWLED.available === true) {
-          postESP32JoinGame(newGameData.gameCode).catch(err => console.error('ESP32 join error:', err));
-        }
-      }).catch(err => console.error('ESP32 availability check error:', err));
     } catch (err) {
       console.error('Play Again error:', err);
       setIsLoading(false);
@@ -153,22 +104,6 @@ function GameSummary({ show, setShow }) {
       setTimePlayed(formattedTime);
     }
   }, [show, game?.finished_at]);
-
-  useEffect(() => {
-    const externalKeyboardPlayAgainClient = (data) => {
-      const gameCode = JSON.parse(data);
-
-      if (gameCode === game.gameCode) {
-        handlePlayAgain();
-      }
-    }
-
-    socket.on("externalKeyboardPlayAgainClient", externalKeyboardPlayAgainClient);
-
-    return () => {
-      socket.off("externalKeyboardPlayAgainClient", externalKeyboardPlayAgainClient);
-    }
-  }, [game]);
 
   return (
     <Dialog open={show}>

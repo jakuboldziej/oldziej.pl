@@ -1,8 +1,8 @@
 import GameLivePreview from '@/components/Home/Darts/GameLivePreview/GameLivePreview';
 import JoiningLiveGame from '@/components/Home/Darts/GameLivePreview/JoiningLiveGame';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
-import { socket } from '@/lib/socketio';
-import React, { useEffect, useState, useContext } from 'react';
+import { socket, trackRoom, untrackRoom } from '@/lib/socketio';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { AuthContext } from '@/context/Home/AuthContext';
 
 function GameLivePreviewPage() {
@@ -10,6 +10,11 @@ function GameLivePreviewPage() {
 
   const [liveGame, setLiveGame] = useState(null);
   const [overthrow, setOverthrow] = useState(false);
+  const liveGameRef = useRef(null);
+
+  useEffect(() => {
+    liveGameRef.current = liveGame;
+  }, [liveGame]);
 
   // Overthrow effect
   useEffect(() => {
@@ -38,6 +43,7 @@ function GameLivePreviewPage() {
     const joinLiveGameFromQrCodeClient = (data) => {
       const joinData = JSON.parse(data);
       if (joinData.socketId === socket.id) {
+        trackRoom(joinData.game.gameCode);
         socket.emit("joinLiveGamePreview", JSON.stringify({
           gameCode: joinData.game.gameCode
         }));
@@ -50,6 +56,7 @@ function GameLivePreviewPage() {
       const { game, userDisplayNames } = JSON.parse(data);
 
       if (userDisplayNames.includes(currentUser.displayName)) {
+        trackRoom(game.gameCode);
         socket.emit("joinLiveGamePreview", JSON.stringify({
           gameCode: game.gameCode
         }));
@@ -61,6 +68,14 @@ function GameLivePreviewPage() {
     const playAgainButtonClient = (data) => {
       const gameData = JSON.parse(data);
 
+      if (liveGameRef.current && liveGameRef.current.gameCode && liveGameRef.current.gameCode !== gameData.gameCode) {
+        untrackRoom(liveGameRef.current.gameCode);
+        socket.emit("leaveLiveGamePreview", JSON.stringify({
+          gameCode: liveGameRef.current.gameCode
+        }));
+      }
+
+      trackRoom(gameData.gameCode);
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: gameData.gameCode
       }));

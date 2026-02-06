@@ -4,7 +4,7 @@ import { getDartsGame, joinDartsGame } from '@/lib/fetch';
 import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';
-import { socket } from '@/lib/socketio';
+import { socket, trackRoom } from '@/lib/socketio';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { Link, useSearchParams } from 'react-router-dom';
 
@@ -32,6 +32,7 @@ function JoiningLiveGame({ props }) {
     const response = await joinDartsGame(gameCode);
 
     if (response) {
+      trackRoom(response.gameCode);
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: response.gameCode
       }));

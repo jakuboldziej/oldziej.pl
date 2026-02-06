@@ -59,8 +59,16 @@ io.on('connection', (socket) => {
 
   socket.on("joinLiveGamePreview", (data) => {
     const joinData = JSON.parse(data);
+    const newRoom = `game-${joinData.gameCode}`;
 
-    socket.join(`game-${joinData.gameCode}`);
+    const currentRooms = Array.from(socket.rooms);
+    for (const room of currentRooms) {
+      if (room.startsWith('game-') && room !== newRoom) {
+        socket.leave(room);
+      }
+    }
+
+    socket.join(newRoom);
 
     socket.emit("game:joined", {
       gameCode: joinData.gameCode,
@@ -70,8 +78,9 @@ io.on('connection', (socket) => {
 
   socket.on("leaveLiveGamePreview", (data) => {
     const leaveData = JSON.parse(data);
+    const room = `game-${leaveData.gameCode}`;
 
-    socket.leave(`game-${leaveData.gameCode}`);
+    socket.leave(room);
   });
 
   socket.on("joinLiveGameFromQrCode", (data) => {
@@ -96,8 +105,11 @@ io.on('connection', (socket) => {
     // Clean up old game manager
     removeGameManager(oldGameCode);
 
-    io.to(`game-${oldGameCode}`).emit("playAgainButtonClient", JSON.stringify(newGame));
-    io.sockets.in(`game-${oldGameCode}`).socketsLeave(`game-${oldGameCode}`);
+    const oldRoom = `game-${oldGameCode}`;
+
+    io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(newGame));
+
+    io.sockets.in(oldRoom).socketsLeave(oldRoom);
   });
 
   socket.on("userOverthrow", (data) => {
@@ -153,10 +165,114 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("externalKeyboardPlayAgain", (data) => {
+  const createPlayAgainGame = async (gameCode, socket, eventName) => {
+    const currentGame = await DartsGame.findOne({ gameCode: gameCode });
+    if (!currentGame) {
+      socket.emit(`${eventName}:error`, { message: 'Game not found' });
+      return null;
+    }
+
+    const throwsData = {
+      doors: 0,
+      doubles: 0,
+      triples: 0,
+      normal: 0,
+      overthrows: 0,
+    };
+
+    const resetUsers = currentGame.users.map((user) => {
+      const userObj = typeof user.toObject === 'function' ? user.toObject() : { ...user };
+      return {
+        _id: userObj._id,
+        displayName: userObj.displayName,
+        visibleName: userObj.visibleName,
+        points: parseInt(currentGame.startPoints),
+        allGainedPoints: 0,
+        turn: false,
+        turnsSum: 0,
+        currentTurn: 1,
+        place: 0,
+        turns: { 1: null, 2: null, 3: null },
+        throws: { ...throwsData },
+        currentThrows: { ...throwsData },
+        legs: 0,
+        sets: 0,
+        totalLegsWon: 0,
+        avgPointsPerTurn: "0.00",
+        highestGameAvg: "0.00",
+        highestGameTurnPoints: 0,
+        gameCheckout: 0,
+      };
+    });
+
+    resetUsers.reverse();
+    resetUsers[0].turn = true;
+
+    let newGameCode;
+    do {
+      newGameCode = Math.floor(1000 + Math.random() * 9000).toString();
+    } while (await DartsGame.findOne({ gameCode: newGameCode }));
+
+    const initialRecord = [{
+      game: {
+        round: 1,
+        turn: resetUsers[0].displayName
+      },
+      users: resetUsers.map(user => ({ ...user }))
+    }];
+
+    const newGame = new DartsGame({
+      created_by: currentGame.created_by,
+      created_at: Date.now(),
+      users: resetUsers,
+      podiums: currentGame.podiums,
+      podium: { 1: null, 2: null, 3: null },
+      turn: resetUsers[0].displayName,
+      active: true,
+      gameMode: currentGame.gameMode,
+      startPoints: currentGame.startPoints,
+      checkOut: currentGame.checkOut,
+      sets: currentGame.sets,
+      legs: currentGame.legs,
+      round: 1,
+      gameCode: newGameCode,
+      training: currentGame.training,
+      record: initialRecord,
+    });
+
+    const savedGame = await newGame.save();
+
+    removeGameManager(gameCode);
+
+    const oldRoom = `game-${gameCode}`;
+
+    const socketsInRoom = io.sockets.adapter.rooms.get(oldRoom);
+
+    io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(savedGame));
+
+    return savedGame;
+  };
+
+  socket.on("externalKeyboardPlayAgain", async (data) => {
     const { gameCode } = JSON.parse(data);
 
-    io.to(`game-${gameCode}`).emit("externalKeyboardPlayAgainClient", JSON.stringify(gameCode));
+    try {
+      await createPlayAgainGame(gameCode, socket, 'externalKeyboardPlayAgain');
+    } catch (error) {
+      logger.error('[externalKeyboardPlayAgain] Error:', { error: error.message });
+      socket.emit('externalKeyboardPlayAgain:error', { message: error.message });
+    }
+  });
+
+  socket.on("playAgainRequest", async (data) => {
+    const { gameCode } = JSON.parse(data);
+
+    try {
+      await createPlayAgainGame(gameCode, socket, 'playAgainRequest');
+    } catch (error) {
+      logger.error('[playAgainRequest] Error:', { error: error.message });
+      socket.emit('playAgainRequest:error', { message: error.message });
+    }
   });
 
   // Darts Game Logic - Server-side game management
