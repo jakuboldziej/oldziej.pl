@@ -14,6 +14,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 
 function AuthUsersTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
+
   const navigate = useNavigate();
 
   const [authUsers, setAuthUsers] = useState(null);
@@ -84,18 +85,24 @@ function AuthUsersTable({ props }) {
               </TableHeader>
               <TableBody>
                 {authUsers.map((user) => (
-                  <TableRow key={user._id}>
+                  <TableRow onClick={() => navigate(`/user/${user.displayName}`)} className='hover:bg-slate-900 cursor-pointer' key={user._id}>
                     <TableCell className="font-medium">{user._id}</TableCell>
                     <TableCell>{user.displayName}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <div className='flex gap-1'>
                         {user.friendsCode}
-                        <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
-                          <MyTooltip title="Copy code to clipboard">
-                            <Copy height={15} />
-                          </MyTooltip>
-                        </CopyTextButton>
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
+                        >
+                          <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+                            <MyTooltip title="Copy code to clipboard">
+                              <Copy height={15} />
+                            </MyTooltip>
+                          </CopyTextButton>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{user.online ? "Yes" : "No"}</TableCell>
@@ -109,7 +116,6 @@ function AuthUsersTable({ props }) {
                         <DropdownMenuContent className='mr-5'>
                           <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => navigate(`/user/${user.displayName}`)}><User height={20} /> Profile</DropdownMenuItem>
                           {user.verified === false ? (
                             <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
                           ) : (

@@ -9,9 +9,12 @@ import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import CopyTextButton from '@/components/Home/CopyTextButton';
 import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
+import { useNavigate } from 'react-router';
 
 function DartsGamesTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
+
+  const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [dartsGames, setDartsGames] = useState([]);
@@ -37,7 +40,7 @@ function DartsGamesTable({ props }) {
 
   const handleScroll = (event) => {
     const { scrollTop, scrollHeight, clientHeight } = event.target;
-    if (scrollTop + clientHeight >= scrollHeight) {
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
       setCurrentPage((prevPage) => prevPage + 1);
     }
   };
@@ -108,7 +111,7 @@ function DartsGamesTable({ props }) {
               </TableHeader>
               <TableBody>
                 {visibleGames.map((game) => (
-                  <TableRow key={game._id}>
+                  <TableRow onClick={() => navigate(`/darts/games/${game.gameCode}`)} className='hover:bg-slate-900 cursor-pointer' key={game._id}>
                     <TableCell className="font-medium">{game._id}</TableCell>
                     <TableCell>{game.created_by}</TableCell>
                     <TableCell>
@@ -146,15 +149,21 @@ function DartsGamesTable({ props }) {
                     <TableCell>
                       <div className="flex gap-1">
                         {game.gameCode}
-                        <CopyTextButton
-                          textToCopy={game.gameCode}
-                          toastTitle="Code copied"
-                          toastDesc="Code copied to clipboard"
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onTouchStart={(e) => e.stopPropagation()}
                         >
-                          <MyTooltip title="Copy code to clipboard">
-                            <Copy height={15} />
-                          </MyTooltip>
-                        </CopyTextButton>
+                          <CopyTextButton
+                            textToCopy={game.gameCode}
+                            toastTitle="Code copied"
+                            toastDesc="Code copied to clipboard"
+                          >
+                            <MyTooltip title="Copy code to clipboard">
+                              <Copy height={15} />
+                            </MyTooltip>
+                          </CopyTextButton>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -179,8 +188,9 @@ function DartsGamesTable({ props }) {
             </Table>
             <ScrollBar orientation='horizontal' />
           </ScrollArea>
-        </div>
-      )}      <Dialog open={dialogOpen}>
+        </div >
+      )
+      } <Dialog open={dialogOpen}>
         <DialogContent>
           <DialogHeader className="text-white">
             <DialogTitle className='flex justify-center text-2xl'>Delete {selectedGame?.displayName}</DialogTitle>

@@ -30,6 +30,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [selectSets, setSelectSets] = useState(0);
   const [selectLegs, setSelectLegs] = useState(1);
   const [usersPodium, setUsersPodium] = useState("None");
+  const [isTraining, setIsTraining] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState('');
   const [showCustomPoints, setShowCustomPoints] = useState(false);
@@ -84,6 +85,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         setSelectCheckOut(previousSettings.checkout);
         setSelectLegs(previousSettings.legs);
         setSelectSets(previousSettings.sets);
+        setIsTraining(previousSettings?.training || false);
       } else {
         setUsersNotPlaying([fetchDartsUser, ...userFriends]);
       }
@@ -201,10 +203,15 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     setShowAddUser(false);
   }
 
-  const handleGameStart = async (training) => {
+  const handleGameStart = async () => {
     setLoading(true);
 
     try {
+      if (!isTraining && !currentUser.verified) {
+        ShowNewToast("Game settings", "You have to be verified to play official game");
+        return;
+      }
+
       const throwsData = {
         doors: 0,
         doubles: 0,
@@ -240,7 +247,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       }));
 
       if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
-      if (usersPlaying.length === 1 && training === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
+      if (usersPlaying.length === 1 && isTraining === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
       if (selectLegs === 0 && selectSets === 0) return ShowNewToast("Game settings", "You must set at least legs or sets to a value greater than 0");
       if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
 
@@ -276,7 +283,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         users: usersCopy
       }];
 
-      gameData.training = training === true;
+      gameData.training = isTraining === true;
 
       const { record, ...gameWithoutRecord } = gameData;
       const game = await postDartsGame(gameWithoutRecord);
@@ -295,7 +302,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         checkout: selectCheckOut,
         sets: selectSets,
         legs: selectLegs,
-        training: training
+        training: isTraining
       }));
 
       socket.emit("joinLiveGamePreview", JSON.stringify({
@@ -376,6 +383,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       checkout: selectCheckOut,
       sets: selectSets,
       legs: selectLegs,
+      training: isTraining,
     }));
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
@@ -451,20 +459,12 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               </CardContent>
             </Card>
             <div className="sticky-top top-0 flex flex-col items-center gap-3 text-white">
-              <Button variant="outline_red" className="glow-button-red" disabled={!currentUser.verified || loading} onClick={() => handleGameStart(false)}>
+              <Button variant="outline_green" className="glow-button-green" disabled={loading} onClick={() => handleGameStart()}>
                 {loading ? (
                   <span className="flex items-center gap-1"><Loader2Icon className="animate-spin" /> Loading</span>
 
                 ) : (
                   <span>Start</span>
-                )}
-              </Button>
-              <Button variant="outline_green" className="glow-button-green" disabled={loading} onClick={() => handleGameStart(true)}>
-                {loading ? (
-                  <span className="flex items-center gap-1"><Loader2Icon className="animate-spin" /> Loading</span>
-
-                ) : (
-                  <span>Training</span>
                 )}
               </Button>
               <span>EGT: {egt}</span>
@@ -485,6 +485,17 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               </CardHeader>
               <hr />
               <CardContent className="card-content">
+                <div className="flex items-center space-x-2 pb-[10px]">
+                  <Checkbox id="checkbox_training" checked={isTraining} onCheckedChange={() => setIsTraining(prev => !prev)} />
+                  <div className="grid gap-1.5 leading-none">
+                    <label
+                      htmlFor="checkbox_training"
+                      className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Training
+                    </label>
+                  </div>
+                </div>
                 <div className="selects">
                   <div className="text-xl">Podium</div>
                   <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium} modal={false}>

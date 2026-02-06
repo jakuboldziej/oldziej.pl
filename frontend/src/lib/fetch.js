@@ -573,6 +573,17 @@ export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName
   return user;
 }
 
+export const getFriendsPageData = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/auth/users/friends-page-data/${displayName}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+  return await response.json();
+}
+
 export const sendFriendsRequest = async (data) => {
   const currentUserDisplayName = data.currentUserDisplayName;
   const userFriendCode = data.userFriendCode;

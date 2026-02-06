@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const DartsGame = require('../models/dartsGame')
 const DartsUser = require('../models/dartsUser')
+const User = require('../models/user');
 const { Types } = require("mongoose")
 const authenticateUser = require("../middleware/auth")
 const { logger } = require("../middleware/logging")
@@ -313,7 +314,9 @@ router.get('/dartsUsers/portfolio/:identifier', getDartsUser, async (req, res) =
 router.get('/dartsPage/:userDisplayName', authenticateUser, async (req, res) => {
   try {
     const userDisplayName = req.params.userDisplayName;
-    const friendsDisplayNames = req.query.friends ? req.query.friends.split(',') : [];
+
+    const currentUser = await User.findOne({ displayName: userDisplayName }, { friends: 1 });
+    const friendsDisplayNames = currentUser?.friends || [];
 
     const [
       recentGames,

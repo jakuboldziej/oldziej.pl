@@ -76,7 +76,7 @@ const DartsUsersDialog = ({ setDartsUsers }) => {
                   <span className='flex flex-col gap-1'>
                     <DartsUsersDialogCompare title="gamesPlayed" firstData={selectedUser.gamesPlayed} secondData={modalDesc.gamesPlayed} />
                     <DartsUsersDialogCompare title="highestCheckout" firstData={selectedUser.highestCheckout} secondData={modalDesc.highestCheckout} />
-                    <DartsUsersDialogCompare title="highestEndingAvg" firstData={selectedUser.highestEndingAvg} secondData={modalDesc.highestEndingAvg} />
+                    <DartsUsersDialogCompare title="highestEndingAvg" firstData={parseFloat(selectedUser.highestEndingAvg)} secondData={parseFloat(modalDesc.highestEndingAvg)} />
                     <DartsUsersDialogCompare title="highestTurnPoints" firstData={selectedUser.highestTurnPoints} secondData={modalDesc.highestTurnPoints} />
                     <DartsUsersDialogCompare title="overAllPoints" firstData={selectedUser.overAllPoints} secondData={modalDesc.overAllPoints} />
                     <span className='border-t'>Podiums:</span>

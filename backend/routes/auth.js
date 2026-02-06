@@ -99,10 +99,10 @@ router.delete('/users/:displayName', authenticateUser, async (req, res) => {
       DoorUser.deleteOne({ displayName })
     ]);
 
-    logger.info("DELETE User - Cascade delete completed", { 
-      method: req.method, 
-      url: req.url, 
-      displayName 
+    logger.info("DELETE User - Cascade delete completed", {
+      method: req.method,
+      url: req.url,
+      displayName
     });
     res.json({ ok: true });
   } catch (err) {
@@ -112,6 +112,51 @@ router.delete('/users/:displayName', authenticateUser, async (req, res) => {
 });
 
 // Friends
+
+router.get('/users/friends-page-data/:displayName', authenticateUser, async (req, res) => {
+  try {
+    const currentUser = await User.findOne(
+      { displayName: req.params.displayName },
+      { password: 0 }
+    );
+
+    if (!currentUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const friends = await User.find(
+      { displayName: { $in: currentUser.friends } },
+      { _id: 1, displayName: 1, friends: 1, friendsCode: 1, online: 1 }
+    );
+
+    const pendingUsers = await User.find(
+      { _id: { $in: currentUser.friendsRequests.pending } },
+      { _id: 1, displayName: 1 }
+    );
+
+    const receivedUsers = await User.find(
+      { _id: { $in: currentUser.friendsRequests.received } },
+      { _id: 1, displayName: 1 }
+    );
+
+    res.json({
+      friendsCode: currentUser.friendsCode,
+      friends: friends.map(f => ({
+        _id: f._id,
+        displayName: f.displayName,
+        friends: f.friends,
+        friendsCode: f.friendsCode,
+        online: f.online
+      })),
+      friendsRequests: {
+        pending: pendingUsers.map(u => ({ _id: u._id, displayName: u.displayName })),
+        received: receivedUsers.map(u => ({ _id: u._id, displayName: u.displayName }))
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 router.get('/users/check-if-friends/:currentUserDisplayName/:userDisplayName', authenticateUser, async (req, res) => {
   try {
@@ -399,14 +444,14 @@ router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
 router.post("/register", registerLimiter, (req, res) => {
   const displayName = req.body.displayName?.trim();
   const email = req.body.email?.trim();
-  
+
   if (!displayName || displayName !== req.body.displayName) {
     logger.error("Register User - Invalid displayName", { method: req.method, url: req.url });
     return res.status(400).send({
       message: "DisplayName cannot have leading or trailing spaces"
     });
   }
-  
+
   bcrypt.hash(req.body.password, 10).then((hashedPassword) => {
     const user = new User({
       email: email,
@@ -452,7 +497,7 @@ router.post("/register", registerLimiter, (req, res) => {
 
 router.post("/login", loginLimiter, (req, res) => {
   const displayName = req.body.displayName?.trim();
-  
+
   User.findOne({ displayName }).then((user) => {
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
@@ -525,7 +570,7 @@ router.post("/refresh-token", async (req, res) => {
 
   try {
     const decoded = jwt.decode(authHeader);
-    
+
     if (!decoded || !decoded.userId) {
       return res.status(403).send({ message: "Invalid token" });
     }
@@ -568,11 +613,11 @@ router.post("/check-session", async (req, res) => {
 
   try {
     const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
-    
+
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
     const shouldRefresh = expiresIn < 7 * 24 * 60 * 60;
 
-    res.json({ 
+    res.json({
       ok: true,
       shouldRefresh,
       expiresIn

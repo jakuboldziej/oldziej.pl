@@ -80,7 +80,7 @@ function CreateGameDialogs({ props }) {
                 type="text"
                 placeholder="John Doe"
                 value={newUser}
-                onChange={(e) => setNewUser(e.target.value)}
+                onChange={(e) => setNewUser(e.target.value.trim())}
               />
             </div>
             <DialogFooter className="pt-6">

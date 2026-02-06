@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Input } from '@/components/ui/shadcn/input';
 import { AuthContext } from '@/context/Home/AuthContext';
-import { acceptFriendsRequest, cancelFriendsRequest, declineFriendsRequest, getAuthUser, removeFriend, sendFriendsRequest } from '@/lib/fetch';
-import { Copy, Loader2, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
+import { acceptFriendsRequest, cancelFriendsRequest, declineFriendsRequest, getAuthUser, getFriendsPageData, removeFriend, sendFriendsRequest } from '@/lib/fetch';
+import { Copy, Menu, User, UserMinus, UserRoundCheck, UserRoundX, UserX } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import RedDot from "@/assets/images/icons/red_dot.png";
 import GreenDot from "@/assets/images/icons/green_dot.png";
@@ -131,43 +131,23 @@ function Friends() {
     }
   }
 
-  const updateAuthUserFriends = async (first, authUserFriends, newFriend = false) => {
-    if (newFriend) authUserFriends.push(newFriend);
+  const updateOnlineFriends = (updatedOnlineFriends) => {
+    setAuthUser((prev) => {
+      if (!prev) return prev;
 
-    const updatedAuthUserFriends = authUserFriends.map(async (data) => {
-      const fetchFriend = await getAuthUser(first ? data : data.displayName);
+      const updatedFriends = prev.friends.map((friend) => ({
+        ...friend,
+        online: updatedOnlineFriends.some(
+          (onlineFriend) => onlineFriend.displayName === friend.displayName
+        )
+      }));
 
       return {
-        _id: fetchFriend._id,
-        displayName: fetchFriend.displayName,
-        friends: fetchFriend.friends,
-        friendsCode: fetchFriend.friendsCode,
-        online: fetchFriend.online
-      }
+        ...prev,
+        friends: updatedFriends
+      };
     });
-
-    return await Promise.all(updatedAuthUserFriends);
-  }
-
-  const updateOnlineFriends = async (updatedOnlineFriends) => {
-    const updatedOnline = authUser.friends.map((user) => {
-      const friend = updatedOnlineFriends.find((onlineFriend) => onlineFriend.displayName === user.displayName);
-      if (friend) {
-        return {
-          _id: friend._id,
-          displayName: friend.displayName,
-          friends: friend.friends,
-          online: friend.online
-        }
-      }
-      else return user;
-    });
-    const updatedFriends = await updateAuthUserFriends(false, updatedOnline);
-    setAuthUser((prev) => ({
-      ...prev,
-      friends: updatedFriends
-    }));
-  }
+  };
 
   // Listeners
 
@@ -297,18 +277,15 @@ function Friends() {
 
   useEffect(() => {
     const updateReceivedRequests = async () => {
-      let fetchAuthUser = await getAuthUser(currentUser.displayName);
-      const updatedReceivedRequests = fetchAuthUser.friendsRequests.received.map(async (userId) => {
-        const receivedFriend = await getAuthUser(userId);
-        return {
-          _id: receivedFriend._id,
-          displayName: receivedFriend.displayName,
-        }
-      });
+      const pageData = await getFriendsPageData(currentUser.displayName);
 
-      fetchAuthUser.friendsRequests.received = await Promise.all(updatedReceivedRequests);
-      fetchAuthUser.friends = authUser.friends;
-      setAuthUser(fetchAuthUser);
+      setAuthUser((prev) => ({
+        ...prev,
+        friendsRequests: {
+          ...prev.friendsRequests,
+          received: pageData.friendsRequests.received
+        }
+      }));
     }
     authUser?.displayName && listeners.friendsRequestsReceived > 0 && updateReceivedRequests();
   }, [listeners.friendsRequestsReceived, authUser?.displayName]);
@@ -316,30 +293,19 @@ function Friends() {
 
   useEffect(() => {
     const fetchData = async () => {
-      let fetchAuthUser = await getAuthUser(currentUser.displayName);
+      const pageData = await getFriendsPageData(currentUser.displayName);
 
-      const authUserFriends = await updateAuthUserFriends(true, fetchAuthUser.friends);
+      const friendsWithOnlineStatus = pageData.friends.map(friend => ({
+        ...friend,
+        online: onlineFriends.some(of => of.displayName === friend.displayName)
+      }));
 
-      // Getting friend requests
-      const updatedPendingRequests = fetchAuthUser.friendsRequests.pending.map(async (userId) => {
-        const pendingFriend = await getAuthUser(userId);
-        return {
-          _id: pendingFriend._id,
-          displayName: pendingFriend.displayName,
-        }
+      setAuthUser({
+        displayName: currentUser.displayName,
+        friendsCode: pageData.friendsCode,
+        friends: friendsWithOnlineStatus,
+        friendsRequests: pageData.friendsRequests
       });
-      const updatedReceivedRequests = fetchAuthUser.friendsRequests.received.map(async (userId) => {
-        const receivedFriend = await getAuthUser(userId);
-        return {
-          _id: receivedFriend._id,
-          displayName: receivedFriend.displayName,
-        }
-      });
-
-      fetchAuthUser.friendsRequests.pending = await Promise.all(updatedPendingRequests);
-      fetchAuthUser.friendsRequests.received = await Promise.all(updatedReceivedRequests);
-      fetchAuthUser.friends = authUserFriends;
-      setAuthUser(fetchAuthUser);
       setIsLoading(false);
     }
     fetchData();

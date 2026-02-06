@@ -43,10 +43,10 @@ export const analyzeGameRecords = (game) => {
           });
 
           stats.totalTurns++;
-          
+
           if (pointsGained > stats.bestTurn) stats.bestTurn = pointsGained;
           if (pointsGained < stats.worstTurn) stats.worstTurn = pointsGained;
-          
+
           stats.pointsPerRound.push(pointsGained);
           stats.avgPerRound.push(parseFloat(currUser.avgPointsPerTurn));
         }
@@ -60,7 +60,7 @@ export const analyzeGameRecords = (game) => {
       const mean = stats.pointsPerRound.reduce((a, b) => a + b, 0) / stats.pointsPerRound.length;
       const variance = stats.pointsPerRound.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / stats.pointsPerRound.length;
       stats.consistency = Math.sqrt(variance).toFixed(2);
-      
+
       if (stats.avgPerRound.length > 2) {
         const firstHalf = stats.avgPerRound.slice(0, Math.floor(stats.avgPerRound.length / 2));
         const secondHalf = stats.avgPerRound.slice(Math.floor(stats.avgPerRound.length / 2));
@@ -69,7 +69,7 @@ export const analyzeGameRecords = (game) => {
         stats.progressionRate = ((secondAvg - firstAvg) / firstAvg * 100).toFixed(1);
       }
     }
-    
+
     if (stats.worstTurn === Infinity) stats.worstTurn = 0;
   });
 
@@ -102,33 +102,38 @@ export const generateTimeline = (game) => {
     const prevRecord = game.record[i - 1];
     const currRecord = game.record[i];
     const isLastRecord = i === game.record.length - 1;
-    
-    currRecord.users.forEach((currUser, idx) => {
-      const prevUser = prevRecord.users[idx];
-      
+
+    currRecord.users.forEach((currUser) => {
+      const prevUser = prevRecord.users.find(u => u._id === currUser._id);
+
       const turnSwitchedAway = prevUser.turn && !currUser.turn;
-      const gameEndedOnThisTurn = isLastRecord && currUser.turn && currUser.currentTurn === 3;
-      
+
+      const prevPoints = Number(prevUser.points);
+      const currPoints = Number(currUser.points);
+
+      const playerFinishedNow = prevPoints > 0 && currPoints === 0;
+      const gameEndedOnThisTurn = isLastRecord && playerFinishedNow;
+
       if ((turnSwitchedAway || gameEndedOnThisTurn) && currUser.turns) {
-        const hasThrows = currUser.turns[1] !== null || currUser.turns[2] !== null || currUser.turns[3] !== null;
-        
+        const hasThrows =
+          currUser.turns[1] !== null ||
+          currUser.turns[2] !== null ||
+          currUser.turns[3] !== null;
+
         if (hasThrows) {
-          const pointsScored = typeof currUser.turnsSum === 'string' ? parseInt(currUser.turnsSum) : currUser.turnsSum;
-          const pointsBefore = typeof prevUser.points === 'string' ? parseInt(prevUser.points) : prevUser.points;
-          const pointsAfter = typeof currUser.points === 'string' ? parseInt(currUser.points) : currUser.points;
-          
           timeline.push({
             round: currRecord.game.round,
             player: currUser.displayName,
             throws: [currUser.turns[1], currUser.turns[2], currUser.turns[3]],
-            pointsScored: pointsScored,
-            pointsBefore: pointsBefore,
-            pointsAfter: pointsAfter,
-            avg: currUser.avgPointsPerTurn
+            pointsScored: Number(currUser.turnsSum),
+            pointsBefore: prevPoints,
+            pointsAfter: currPoints,
+            avg: currUser.avgPointsPerTurn,
           });
         }
       }
     });
+
   }
 
   return timeline;
@@ -136,7 +141,7 @@ export const generateTimeline = (game) => {
 
 export const calculateEfficiency = (user) => {
   const totalDarts = user.throws.normal + user.throws.doubles + user.throws.triples + user.throws.doors;
-  
+
   if (totalDarts === 0) return {
     pointsPerDart: 0,
     dartsPerPoint: 0,
@@ -160,7 +165,7 @@ export const calculateEfficiency = (user) => {
 export const getScoringBreakdown = (user) => {
   const { throws } = user;
   const total = throws.normal + throws.doubles + throws.triples + throws.doors;
-  
+
   if (total === 0) return null;
 
   return {

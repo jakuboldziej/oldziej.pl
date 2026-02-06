@@ -13,10 +13,14 @@ import { Link } from "react-router-dom";
 import Loading from "@/components/Home/Loading";
 import DartsGamesList from "@/components/Home/Darts/DartsGamesList";
 import { socket } from '@/lib/socketio';
+import { SocketIoContext } from "@/context/Home/SocketIoContext";
+import GreenDot from "@/assets/images/icons/green_dot.png";
+import RedDot from "@/assets/images/icons/red_dot.png";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
   const { currentUser } = useContext(AuthContext);
+  const { onlineFriends } = useContext(SocketIoContext);
 
   const location = useLocation();
 
@@ -297,8 +301,20 @@ function DartsPage() {
               <Loading />
             )
               : dartUsers.map((dartUser) => (
-                <a href={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
-                  <span className="elementInfo username">{dartUser.displayName}</span>
+                <Link to={`/darts/users/${dartUser.displayName}`} key={dartUser._id} className="element">
+                  <span className="elementInfo !w-[8%]">
+                    <img
+                      src={
+                        onlineFriends.some((friend) => friend.displayName === dartUser.displayName) ||
+                          dartUser.displayName === currentUser.displayName
+                          ? GreenDot
+                          : RedDot
+                      }
+                    />
+                  </span>
+                  <span className="elementInfo username !w-[70px]">
+                    {dartUser.displayName}
+                  </span>
                   <span className="elementInfo">
                     <img width="25" height="25" src="https://img.icons8.com/color/25/first-place-ribbon.png" alt="first-place-ribbon" />
                     {dartUser.podiums["firstPlace"]}
@@ -306,10 +322,6 @@ function DartsPage() {
                   <span className="elementInfo">
                     <img width="25" height="25" src="https://img.icons8.com/color/25/second-place-ribbon.png" alt="first-place-ribbon" />
                     {dartUser.podiums["secondPlace"]}
-                  </span>
-                  <span className="elementInfo">
-                    <img width="25" height="25" src="https://img.icons8.com/color/25/third-place-ribbon.png" alt="first-place-ribbon" />
-                    {dartUser.podiums["thirdPlace"]}
                   </span>
                   <MyTooltip title="Doors Hit">
                     <span className="elementInfo">
@@ -341,7 +353,7 @@ function DartsPage() {
                       <h6 style={{ fontSize: 13 }}>{dartUser.highestCheckout}</h6>
                     </span>
                   </MyTooltip>
-                </a>
+                </Link>
               ))}
           </CardContent>
         </Card>

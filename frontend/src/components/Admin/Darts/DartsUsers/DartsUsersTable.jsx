@@ -7,9 +7,12 @@ import { totalThrows } from '../../../Home/Darts/utils/userUtils';
 import { Button } from '@/components/ui/shadcn/button';
 import { DartsUsersContext } from './DartsUsersContext';
 import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
+import { useNavigate } from 'react-router';
 
 const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
   const { setDialogOpen, setSelectedUser, setModalType, setModalDesc } = useContext(DartsUsersContext);
+
+  const navigate = useNavigate();
 
   const handleDialogOpen = async (user, type) => {
     setDialogOpen(true);
@@ -122,7 +125,7 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
           </TableHeader>
           <TableBody>
             {dartsUsers.map((user) => (
-              <TableRow key={user._id}>
+              <TableRow onClick={() => navigate(`/darts/users/${user.displayName}`)} className='hover:bg-slate-900 cursor-pointer' key={user._id}>
                 <TableCell className="font-medium">{user._id}</TableCell>
                 <TableCell>{user.displayName}</TableCell>
                 <TableCell>{user.highestCheckout}</TableCell>

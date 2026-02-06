@@ -9,7 +9,7 @@ function ShowNewToast(title, description, type = "info", duration = 5000) {
       onClick: () => { },
     },
     type: type,
-    duration: duration
+    duration: duration,
   })
 }
 
