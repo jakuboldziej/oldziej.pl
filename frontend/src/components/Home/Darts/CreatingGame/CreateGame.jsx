@@ -408,7 +408,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         <DrawerTrigger asChild>
           {children}
         </DrawerTrigger>
-        <DrawerContent className="create-game-modal border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DrawerContent className="create-game-modal border-slate-200 bg-white dark:border-slate-800 h-[calc(100dvh-100px)] sm:h-full dark:bg-slate-950" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DrawerHeader>
             <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
           </DrawerHeader>

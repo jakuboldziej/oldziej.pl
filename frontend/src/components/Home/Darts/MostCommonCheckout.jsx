@@ -48,14 +48,14 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
 
   if (compact) {
     return (
-      <div className="flex flex-col items-center gap-2 w-full">
+      <div className="flex flex-col items-center gap-2 w-full]">
         {usersWithCheckouts.map((user, idx) => {
           const checkoutOptions = checkoutCombinations[user.points];
           const primaryCheckout = checkoutOptions[0];
           const colorClass = getCheckoutColor(user.points);
 
           return (
-            <div key={idx} className="w-2/3 flex items-center justify-between gap-2 text-white bg-gray-800/50 px-3 py-2 rounded">
+            <div key={idx} className="w-full max-w-[395px] flex items-center justify-between gap-2 text-white bg-gray-800/50 px-3 py-2 rounded">
               <div className="flex items-center gap-2 min-w-0 flex-shrink">
                 <Target className={colorClass.split(' ')[0]} size={18} />
                 <span className="text-xs sm:text-sm font-semibold truncate max-w-[80px]">{user.displayName}</span>

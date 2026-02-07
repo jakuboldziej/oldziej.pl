@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../utils/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
@@ -18,36 +18,42 @@ function GameLivePreview({ props }) {
 
   useEffect(() => {
     const latestRecord = getLatestRecord(liveGame);
-
     const usersToUse = latestRecord ? latestRecord.users : liveGame.users;
     setUsers(usersToUse);
 
-    if (liveGame.users.length > 3) {
+    if (liveGame.users.length > 3 || (liveGame.users.length > 2 && window.innerWidth < 1028)) {
       const currentUserIndex = usersToUse.findIndex((user) => user.turn === true);
+      let usersToBeShown = [];
 
-      let secondUserIndexChange = 1;
-      let thirdUserIndexChange = 2;
-      let secondUserIndex = (currentUserIndex + 1) % usersToUse.length;
-      let thirdUserIndex = (currentUserIndex + 2) % usersToUse.length;
-      let usersToBeShown = [
-        usersToUse[currentUserIndex],
-        usersToUse[secondUserIndex],
-        usersToUse[thirdUserIndex]
-      ];
-
-      const roundToCheck = latestRecord ? latestRecord.game.round : liveGame.round;
-      if (!(roundToCheck === 1 && currentUserIndex === 0 && parseInt(usersToUse[currentUserIndex].points) === parseInt(liveGame.startPoints))) {
-        secondUserIndexChange = -1
-        thirdUserIndexChange = 1;
-
-        secondUserIndex = (currentUserIndex + secondUserIndexChange) % usersToUse.length;
-        thirdUserIndex = (currentUserIndex + thirdUserIndexChange) % usersToUse.length;
-
+      if (window.innerWidth < 1028) {
+        const nextUserIndex = (currentUserIndex + 1) % usersToUse.length;
         usersToBeShown = [
-          usersToUse[secondUserIndex === -1 ? usersToUse.length - 1 : secondUserIndex],
           usersToUse[currentUserIndex],
-          usersToUse[thirdUserIndex]
+          usersToUse[nextUserIndex]
         ];
+      } else {
+        const roundToCheck = latestRecord ? latestRecord.game.round : liveGame.round;
+
+        const isStartOfGame = roundToCheck === 1 &&
+          currentUserIndex === 0 &&
+          parseInt(usersToUse[currentUserIndex].points) === parseInt(liveGame.startPoints);
+
+        if (isStartOfGame) {
+          usersToBeShown = [
+            usersToUse[currentUserIndex],
+            usersToUse[(currentUserIndex + 1) % usersToUse.length],
+            usersToUse[(currentUserIndex + 2) % usersToUse.length]
+          ];
+        } else {
+          const prevIndex = (currentUserIndex - 1 + usersToUse.length) % usersToUse.length;
+          const nextIndex = (currentUserIndex + 1) % usersToUse.length;
+
+          usersToBeShown = [
+            usersToUse[prevIndex],
+            usersToUse[currentUserIndex],
+            usersToUse[nextIndex]
+          ];
+        }
       }
 
       setShownUsers(usersToBeShown);
@@ -59,8 +65,9 @@ function GameLivePreview({ props }) {
       const formattedTime = handleTimePlayed(liveGame.created_at, liveGame.finished_at || 0);
       setTimePlayed(formattedTime);
       setShowDialog(true);
+    } else {
+      setShowDialog(false);
     }
-    else setShowDialog(false);
   }, [liveGame]);
 
   useEffect(() => {
@@ -171,6 +178,9 @@ function GameLivePreview({ props }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className='text-center text-3xl'>This game has ended</DialogTitle>
+            <DialogDescription className="sr-only">
+              Game over summary and final scores.
+            </DialogDescription>
             <div className="summary flex flex-col items-center gap-5 text-white">
               {liveGame.podium[1] !== null ? (
                 <>

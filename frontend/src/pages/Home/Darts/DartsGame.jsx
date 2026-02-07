@@ -148,7 +148,7 @@ function DartsGame() {
           <h5 style={{ color: '#E00000' }}>L: {game.legs}</h5>
           <h2 style={{ color: '#E00000' }}>Turn: {game.turn}</h2>
           <h5 style={{ color: '#E00000' }}>S: {game.sets}</h5>
-          <h2>{game?.checkOut}</h2>
+          <h2 className="hidden sm:block">{game?.checkOut}</h2>
         </div>
         <div className="users" ref={usersContainerRef}>
           {game.users.map((user, index) => (

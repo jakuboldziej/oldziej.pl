@@ -165,10 +165,11 @@ io.on('connection', (socket) => {
     }
   });
 
-  const createPlayAgainGame = async (gameCode, socket, eventName) => {
-    const currentGame = await DartsGame.findOne({ gameCode: gameCode });
+  const createPlayAgainGame = async (gameData, socket, eventName) => {
+    const currentGame = gameData;
+
     if (!currentGame) {
-      socket.emit(`${eventName}:error`, { message: 'Game not found' });
+      socket.emit(`${eventName}:error`, { message: 'Game data missing' });
       return null;
     }
 
@@ -242,11 +243,9 @@ io.on('connection', (socket) => {
 
     const savedGame = await newGame.save();
 
-    removeGameManager(gameCode);
+    removeGameManager(currentGame.gameCode);
 
-    const oldRoom = `game-${gameCode}`;
-
-    const socketsInRoom = io.sockets.adapter.rooms.get(oldRoom);
+    const oldRoom = `game-${currentGame.gameCode}`;
 
     io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(savedGame));
 
@@ -254,10 +253,10 @@ io.on('connection', (socket) => {
   };
 
   socket.on("externalKeyboardPlayAgain", async (data) => {
-    const { gameCode } = JSON.parse(data);
+    const { gameData } = JSON.parse(data);
 
     try {
-      await createPlayAgainGame(gameCode, socket, 'externalKeyboardPlayAgain');
+      await createPlayAgainGame(gameData, socket, 'externalKeyboardPlayAgain');
     } catch (error) {
       logger.error('[externalKeyboardPlayAgain] Error:', { error: error.message });
       socket.emit('externalKeyboardPlayAgain:error', { message: error.message });
@@ -265,10 +264,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on("playAgainRequest", async (data) => {
-    const { gameCode } = JSON.parse(data);
+    const { gameData } = JSON.parse(data);
 
     try {
-      await createPlayAgainGame(gameCode, socket, 'playAgainRequest');
+      await createPlayAgainGame(gameData, socket, 'playAgainRequest');
     } catch (error) {
       logger.error('[playAgainRequest] Error:', { error: error.message });
       socket.emit('playAgainRequest:error', { message: error.message });

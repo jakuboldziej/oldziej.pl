@@ -65,7 +65,7 @@ function GameSummary({ show, setShow }) {
 
     try {
       socket.emit("playAgainRequest", JSON.stringify({
-        gameCode: game.gameCode
+        gameData: game
       }));
     } catch (err) {
       console.error('Play Again error:', err);

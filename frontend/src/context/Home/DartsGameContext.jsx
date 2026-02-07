@@ -10,7 +10,7 @@ import {
   sendThrow,
   sendBack
 } from '@/lib/dartsGameSocket';
-import { onReconnected } from '@/lib/socketio';
+import { onReconnected, ensureSocketConnection } from '@/lib/socketio';
 import { getDartsGame } from '@/lib/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { ensureGameRecord } from '@/lib/recordUtils';
@@ -43,6 +43,44 @@ export const DartsGameContextProvider = ({ children }) => {
     if (!game || !game.users) return null;
     return game.users.find(user => user.turn);
   }, [game]);
+
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && game?._id) {
+        try {
+          const freshGame = await getDartsGame(game._id);
+
+          if (freshGame.message || freshGame.error) {
+            return;
+          }
+
+          if (freshGame) {
+            const gameWithRecord = ensureGameRecord(freshGame);
+
+            setGame(gameWithRecord);
+            localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+
+            await ensureSocketConnection();
+            joinGameRoom(game.gameCode);
+
+            import('@/lib/socketio').then(({ socket }) => {
+              socket.emit("updateLiveGamePreview", JSON.stringify(gameWithRecord));
+            });
+          }
+        } catch (error) {
+          console.error("Failed to sync on visibility change:", error);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleVisibilityChange);
+    };
+  }, [game?._id, game?.gameCode]);
 
   useEffect(() => {
     const fetchFullGameIfNeeded = async () => {
