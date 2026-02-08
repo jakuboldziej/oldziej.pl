@@ -224,16 +224,18 @@ router.post('/', authenticateUser, async (req, res) => {
           typeof user === 'string' ? user : user.displayName
         );
 
-        await sendPushNotifications(
-          assignedDisplayNames,
-          'Nowe zadanie!',
-          `${creatorName} przypisał Ci nowe zadanie: ${body.title}`,
-          {
-            choreId: newChore._id.toString(),
-            type: 'post_chore',
-            title: body.title
-          }
-        );
+        if (res.authUser.displayName !== creatorName) {
+          await sendPushNotifications(
+            assignedDisplayNames,
+            'Nowe zadanie!',
+            `${creatorName} przypisał Ci nowe zadanie: ${body.title}`,
+            {
+              choreId: newChore._id.toString(),
+              type: 'post_chore',
+              title: body.title
+            }
+          );
+        }
       } catch (notificationError) {
         console.error('Failed to send push notifications:', notificationError);
       }
@@ -274,22 +276,24 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
         if (updatedChore.usersList.length > 1) {
           try {
             const owner = await User.findById(updatedChore.ownerId);
-            const ownerName = owner ? owner.displayName : 'Ktoś';
+            const creatorName = owner ? owner.displayName : 'Ktoś';
 
             const allDisplayNames = updatedChore.usersList.map(user =>
               typeof user === 'string' ? user : user.displayName
             );
 
-            await sendPushNotifications(
-              allDisplayNames,
-              'Zadanie ukończone!',
-              `Wszyscy ukończyli zadanie: ${updatedChore.title}`,
-              {
-                choreId: updatedChore._id.toString(),
-                type: 'complete_chore',
-                title: updatedChore.title
-              }
-            );
+            if (res.authUser.displayName !== creatorName) {
+              await sendPushNotifications(
+                allDisplayNames,
+                'Zadanie ukończone!',
+                `Wszyscy ukończyli zadanie: ${updatedChore.title}`,
+                {
+                  choreId: updatedChore._id.toString(),
+                  type: 'complete_chore',
+                  title: updatedChore.title
+                }
+              );
+            }
           } catch (notificationError) {
             console.error('Failed to send completion notification:', notificationError);
           }
@@ -325,16 +329,18 @@ router.delete("/:choreId", authenticateUser, async (req, res) => {
           typeof user === 'string' ? user : user.displayName
         );
 
-        await sendPushNotifications(
-          assignedDisplayNames,
-          'Usunięto zadanie!',
-          `${creatorName} usunął zadanie: ${deletedChore.title}`,
-          {
-            choreId: deletedChore._id.toString(),
-            type: 'delete_chore',
-            title: deletedChore.title
-          }
-        );
+        if (res.authUser.displayName !== creatorName) {
+          await sendPushNotifications(
+            assignedDisplayNames,
+            'Usunięto zadanie!',
+            `${creatorName} usunął zadanie: ${deletedChore.title}`,
+            {
+              choreId: deletedChore._id.toString(),
+              type: 'delete_chore',
+              title: deletedChore.title
+            }
+          );
+        }
       } catch (notificationError) {
         console.error('Failed to send push notifications:', notificationError);
       }
