@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 
-function OverallStatsCards({ dartUser, calculateTotalThrows, calculateAvgPerDart }) {
+function OverallStatsCards({ dartUser }) {
   return (
     <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-8'>
       {/* Podiums Card */}
@@ -91,15 +91,6 @@ function OverallStatsCards({ dartUser, calculateTotalThrows, calculateAvgPerDart
                 <span className='text-gray-400'>Points</span>
               </div>
               <span className='text-xl font-bold'>{dartUser.overAllPoints.toLocaleString()}</span>
-            </div>
-          </MyTooltip>
-          <MyTooltip title="Average Per Dart">
-            <div className='flex justify-between items-center'>
-              <div className='flex items-center gap-2'>
-                <img width="25" height="25" src="https://img.icons8.com/fluency/25/average-2.png" alt="average" />
-                <span className='text-gray-400'>Avg/Dart</span>
-              </div>
-              <span className='text-xl font-bold'>{calculateAvgPerDart()}</span>
             </div>
           </MyTooltip>
         </CardContent>

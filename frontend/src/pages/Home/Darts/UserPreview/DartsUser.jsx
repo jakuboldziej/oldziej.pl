@@ -95,12 +95,6 @@ function DartsUser() {
     return dartUser.throws.normal + dartUser.throws.doubles + dartUser.throws.triples + dartUser.throws.doors;
   };
 
-  const calculateAvgPerDart = () => {
-    const total = calculateTotalThrows();
-    if (total === 0) return "0.00";
-    return (dartUser.overAllPoints / total).toFixed(2);
-  };
-
   return (
     <div className='dart-user p-6 text-white max-w-7xl mx-auto'>
       <div className='header mb-8'>
@@ -130,8 +124,6 @@ function DartsUser() {
 
           <OverallStatsCards
             dartUser={dartUser}
-            calculateTotalThrows={calculateTotalThrows}
-            calculateAvgPerDart={calculateAvgPerDart}
           />
 
           <ThrowStatsCard dartUser={dartUser} calculateTotalThrows={calculateTotalThrows} />

@@ -104,12 +104,6 @@ function DartsGamePreview() {
     return a.place - b.place;
   });
 
-  const calculateAvgPerDart = (user) => {
-    const totalDarts = user.throws.normal + user.throws.doubles + user.throws.triples + user.throws.doors;
-    if (totalDarts === 0) return "0.00";
-    return (user.allGainedPoints / totalDarts).toFixed(2);
-  };
-
   const analytics = analyzeGameRecords(game);
   const comparison = compareUsers(game);
   const timeline = generateTimeline(game);
@@ -136,7 +130,6 @@ function DartsGamePreview() {
           sortedUsers={sortedUsers}
           game={game}
           analytics={analytics}
-          calculateAvgPerDart={calculateAvgPerDart}
         />
       </div>
     </>

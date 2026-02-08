@@ -6,7 +6,7 @@ import PlayerEfficiency from './PlayerEfficiency';
 import PlayerHistory from './PlayerHistory';
 import { calculateEfficiency, getScoringBreakdown } from '@/lib/dartsAnalytics';
 
-function PlayerCard({ user, game, analytics, calculateAvgPerDart }) {
+function PlayerCard({ user, game, analytics }) {
   const efficiency = calculateEfficiency(user);
   const scoringBreakdown = getScoringBreakdown(user);
   const userAnalytics = analytics?.[user.displayName];
@@ -37,19 +37,18 @@ function PlayerCard({ user, game, analytics, calculateAvgPerDart }) {
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          <PlayerOverview 
-            user={user} 
-            game={game} 
-            calculateAvgPerDart={calculateAvgPerDart}
+          <PlayerOverview
+            user={user}
+            game={game}
             scoringBreakdown={scoringBreakdown}
           />
-          
-          <PlayerEfficiency 
+
+          <PlayerEfficiency
             efficiency={efficiency}
             userAnalytics={userAnalytics}
           />
-          
-          <PlayerHistory 
+
+          <PlayerHistory
             userAnalytics={userAnalytics}
           />
         </Tabs>

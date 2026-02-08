@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn
 import { ScrollArea } from '@/components/ui/shadcn/scroll-area';
 import PlayerCard from './PlayerCard';
 
-function PlayerStatistics({ sortedUsers, game, analytics, calculateAvgPerDart }) {
+function PlayerStatistics({ sortedUsers, game, analytics }) {
   return (
     <Card className='bg-gray-800 border-gray-700'>
       <CardHeader>
@@ -17,7 +17,6 @@ function PlayerStatistics({ sortedUsers, game, analytics, calculateAvgPerDart })
                 user={user}
                 game={game}
                 analytics={analytics}
-                calculateAvgPerDart={calculateAvgPerDart}
               />
             ))}
           </div>

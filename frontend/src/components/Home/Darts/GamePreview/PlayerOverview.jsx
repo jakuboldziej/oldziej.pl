@@ -1,21 +1,22 @@
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { TabsContent } from '@/components/ui/shadcn/tabs';
 
-function PlayerOverview({ user, game, calculateAvgPerDart, scoringBreakdown }) {
+function PlayerOverview({ user, game, scoringBreakdown }) {
+  console.log(user)
   return (
     <TabsContent value="overview" className="space-y-4">
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-        <MyTooltip title="Average per throw">
-          <div className='text-center bg-gray-800 p-3 rounded'>
-            <p className='text-gray-400 text-xs mb-1'>Avg/Dart</p>
-            <p className='text-lg font-bold'>{calculateAvgPerDart(user)}</p>
-          </div>
-        </MyTooltip>
-
         <MyTooltip title="Average per turn">
           <div className='text-center bg-gray-800 p-3 rounded'>
             <p className='text-gray-400 text-xs mb-1'>Avg/Turn</p>
             <p className='text-lg font-bold'>{user.avgPointsPerTurn || "0.00"}</p>
+          </div>
+        </MyTooltip>
+
+        <MyTooltip title="Highest Turn Points">
+          <div className='text-center bg-gray-800 p-3 rounded'>
+            <p className='text-gray-400 text-xs mb-1'>Highest Turn Points</p>
+            <p className='text-lg font-bold'>{user.highestGameTurnPoints || "0.00"}</p>
           </div>
         </MyTooltip>
 
