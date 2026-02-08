@@ -5,7 +5,6 @@ function MySelect({ children, placeholder }) {
   // const form = useForm();
 
   // const onSubmit = (data) => {
-  //   console.log(data);
   // }
 
   return (
@@ -14,7 +13,7 @@ function MySelect({ children, placeholder }) {
     //     <FormField control={form.control} name={placeholder} render={({ field }) => (
     //       <FormItem>
     //         <FormLabel>{placeholder}</FormLabel>
-    <Select onValueChange={(value) => console.log(value)}>
+    <Select>
       <SelectTrigger className="text-white">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

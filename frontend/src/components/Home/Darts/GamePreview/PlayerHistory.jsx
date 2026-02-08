@@ -17,7 +17,7 @@ function PlayerHistory({ userAnalytics }) {
                   <div className='flex gap-2'>
                     {Object.values(turn.throws).map((t, i) => (
                       <div key={i} className='bg-gray-900 px-2 py-1 rounded min-w-[40px] text-center'>
-                        <p className='text-sm'>{t || '-'}</p>
+                        <p className='text-sm'>{t}</p>
                       </div>
                     ))}
                   </div>

@@ -35,6 +35,7 @@ export const analyzeUserGames = (games, dartUser) => {
     analytics.efficiency.dartsPerPoint = (totalDarts / dartUser.overAllPoints).toFixed(2);
     const wastedDarts = dartUser.throws.doors + (dartUser.throws.overthrows || 0);
     analytics.efficiency.accuracy = (((totalDarts - wastedDarts) / totalDarts) * 100).toFixed(1);
+    analytics.efficiency.doorsRate = ((dartUser.throws.doors / dartUser.gamesPlayed)).toFixed(2);
     analytics.efficiency.wastedDarts = wastedDarts;
   }
 

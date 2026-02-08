@@ -164,8 +164,8 @@ function DartsUser() {
                   )}
                 </div>
               </CardHeader>
-              <ScrollArea className='h-[600px]' onScroll={handleScroll}>
-                <CardContent className="info p-0 pr-3">
+              <ScrollArea className='h-[600px] overflow-y-auto' style={{ WebkitOverflowScrolling: "touch" }} onScroll={handleScroll}>
+                <CardContent className="info p-0 pr-3 md:pr-3">
                   <DartsGamesList games={gamesShown} isLoading={isLoadingGames} />
                 </CardContent>
               </ScrollArea>

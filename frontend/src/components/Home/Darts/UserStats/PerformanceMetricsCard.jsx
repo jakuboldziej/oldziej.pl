@@ -46,6 +46,16 @@ function PerformanceMetricsCard({ analytics }) {
             <span className='text-2xl font-bold'>{analytics.checkoutStats.checkoutRate}</span>
           </div>
         </MyTooltip>
+
+        <MyTooltip title="Doors per game">
+          <div className='flex justify-between items-center'>
+            <div className='flex items-center gap-2'>
+              <img width="25" height="25" src="https://img.icons8.com/officel/25/door.png" alt="door" />
+              <span className='text-gray-400'>Doors Rate</span>
+            </div>
+            <span className='text-2xl font-bold'>{analytics.efficiency.doorsRate}</span>
+          </div>
+        </MyTooltip>
       </CardContent>
     </Card>
   );

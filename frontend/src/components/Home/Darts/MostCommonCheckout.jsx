@@ -9,26 +9,49 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
     return null;
   }
 
-  let usersToShow = users;
+  const isEligible = (u) => {
+    const p = parseInt(u?.points);
+    return p >= 2 && p <= 170 && checkoutCombinations[p];
+  };
+
+  const usersWithCheckouts = users?.filter(isEligible) || [];
+  const currentIndex = users.findIndex(u => u.turn);
+  const currentUser = users[currentIndex];
+
+  const getNextEligible = (startIndex, excludeId = null) => {
+    for (let i = 0; i < users.length; i++) {
+      const idx = (startIndex + i) % users.length;
+      const user = users[idx];
+      if (isEligible(user) && user._id !== excludeId) {
+        return user;
+      }
+    }
+    return null;
+  };
+
+  let usersToShow = [];
 
   if (showForUser) {
-    usersToShow = [users.find(u => u._id === showForUser || u.displayName === showForUser)];
-  } else {
-    const currentUserIndex = users.findIndex(u => u.turn);
-    if (currentUserIndex !== -1 && users.length > 1) {
-      const nextUserIndex = (currentUserIndex + 1) % users.length;
-      usersToShow = [users[currentUserIndex], users[nextUserIndex]];
+    const foundUser = users.find(u => u._id === showForUser || u.displayName === showForUser);
+    usersToShow = foundUser ? [foundUser] : [];
+  }
+  else if (usersWithCheckouts.length > 0 && usersWithCheckouts.length <= 2) {
+    usersToShow = usersWithCheckouts;
+  }
+  else if (usersWithCheckouts.length > 2) {
+    const primary = isEligible(currentUser) ? currentUser : getNextEligible(currentIndex + 1);
+
+    if (primary) {
+      usersToShow.push(primary);
+      const primaryIdx = users.findIndex(u => u._id === primary._id);
+      const secondary = getNextEligible(primaryIdx + 1, primary._id);
+      if (secondary) usersToShow.push(secondary);
     }
   }
 
-  const usersWithCheckouts = usersToShow?.filter(user => {
-    const points = user?.points;
-    return points >= 2 && points <= 170 && checkoutCombinations[points];
-  }) || [];
+  const finalDisplay = usersToShow.filter(isEligible);
 
-  if (usersWithCheckouts.length === 0) {
-    return null;
-  }
+  if (finalDisplay.length === 0) return null;
 
   const formatDart = (dart) => {
     if (dart.startsWith('T')) return `T${dart.slice(1)}`;
@@ -49,8 +72,9 @@ function MostCommonCheckout({ users, game, compact = false, showForUser = null }
   if (compact) {
     return (
       <div className="flex flex-col items-center gap-2 w-full]">
-        {usersWithCheckouts.map((user, idx) => {
-          const checkoutOptions = checkoutCombinations[user.points];
+        {usersToShow.length > 0 && usersToShow.map((user, idx) => {
+          const checkoutOptions = checkoutCombinations[parseInt(user.points)];
+          if (!checkoutOptions) return;
           const primaryCheckout = checkoutOptions[0];
           const colorClass = getCheckoutColor(user.points);
 
