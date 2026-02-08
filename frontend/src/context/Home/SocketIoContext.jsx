@@ -64,9 +64,9 @@ export const SocketIoContextProvider = ({ children }) => {
       const isUserFriendsWithCurrentUser = authUser.friends.find((friendsDisplayName) => friendsDisplayName === updatedUser.displayName);
       if (isUserFriendsWithCurrentUser) {
         if (isUserOnline) {
-          ShowNewToast(updatedUser.displayName, "Just went online.");
+          ShowNewToast(updatedUser.displayName, "Is online.");
         } else {
-          ShowNewToast(updatedUser.displayName, "Just went offline.");
+          ShowNewToast(updatedUser.displayName, "Is offline.");
         }
       }
     }

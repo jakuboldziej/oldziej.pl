@@ -139,33 +139,39 @@ const DartsUsersTable = ({ dartsUsers, setDartsUsers }) => {
                 <TableCell>{totalThrows(user, false)}</TableCell>
                 <TableCell>{user.visible ? "Yes" : "No"}</TableCell>
                 <TableCell className='text-right'>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost'><Grip /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className='mr-5'>
-                      <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleVisibleUser(user)}
-                      >
-                        {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
-                        {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDialogOpen(user, "sync")}
-                      >
-                        <FolderSync height={20} />
-                        <span>Sync data</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDialogOpen(user, "reset")}
-                      >
-                        <Trash height={20} />
-                        <span>Reset data</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant='ghost'><Grip /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className='mr-5'>
+                        <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleVisibleUser(user)}
+                        >
+                          {user.visible ? <EyeOff height={20} /> : <Eye height={20} />}
+                          {user.visible ? <span>Hide in darts</span> : <span>Show in darts</span>}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDialogOpen(user, "sync")}
+                        >
+                          <FolderSync height={20} />
+                          <span>Sync data</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDialogOpen(user, "reset")}
+                        >
+                          <Trash height={20} />
+                          <span>Reset data</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

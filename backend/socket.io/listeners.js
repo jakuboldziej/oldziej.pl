@@ -369,6 +369,10 @@ io.on('connection', (socket) => {
     addingOnlineUser(data, socket.id, io);
   });
 
+  socket.on("user:logout", () => {
+    scheduleUserOffline(socket.id, io, 0);
+  });
+
   // ESP 32 
 
   // Wifi connection

@@ -167,20 +167,26 @@ function DartsGamesTable({ props }) {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost">
-                            <Grip />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="mr-5">
-                          <DropdownMenuLabel>{game.gameCode}</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDialogOpen(game)}>
-                            <Trash height={20} /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost">
+                              <Grip />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="mr-5">
+                            <DropdownMenuLabel>{game.gameCode}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleDialogOpen(game)}>
+                              <Trash height={20} /> Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

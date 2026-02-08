@@ -101,43 +101,82 @@ export const generateTimeline = (game) => {
   for (let i = 1; i < game.record.length; i++) {
     const prevRecord = game.record[i - 1];
     const currRecord = game.record[i];
-    const isLastRecord = i === game.record.length - 1;
 
     currRecord.users.forEach((currUser) => {
-      const prevUser = prevRecord.users.find(u => u._id === currUser._id);
-
-      const turnSwitchedAway = prevUser.turn && !currUser.turn;
+      const prevUser = prevRecord.users.find((u) => u._id === currUser._id);
+      if (!prevUser) return;
 
       const prevPoints = Number(prevUser.points);
       const currPoints = Number(currUser.points);
 
-      const playerFinishedNow = prevPoints > 0 && currPoints === 0;
-      const gameEndedOnThisTurn = isLastRecord && playerFinishedNow;
+      const prevThrows = prevUser.turns || {};
+      const currThrows = currUser.turns || {};
 
-      if ((turnSwitchedAway || gameEndedOnThisTurn) && currUser.turns) {
-        const hasThrows =
-          currUser.turns[1] !== null ||
-          currUser.turns[2] !== null ||
-          currUser.turns[3] !== null;
+      const wasPlayersTurnBefore =
+        prevRecord.game.turn === currUser.displayName;
+      const isPlayersTurnNow =
+        currRecord.game.turn === currUser.displayName;
 
-        if (hasThrows) {
-          timeline.push({
-            round: currRecord.game.round,
-            player: currUser.displayName,
-            throws: [currUser.turns[1], currUser.turns[2], currUser.turns[3]],
-            pointsScored: Number(currUser.turnsSum),
-            pointsBefore: prevPoints,
-            pointsAfter: currPoints,
-            avg: currUser.avgPointsPerTurn,
-          });
-        }
+      const turnSwitchedAway = wasPlayersTurnBefore && !isPlayersTurnNow;
+
+      const playerFinishedNow =
+        wasPlayersTurnBefore && prevPoints > 0 && currPoints === 0;
+
+      if (!turnSwitchedAway && !playerFinishedNow) return;
+
+      const roundChanged =
+        prevRecord.game.round !== currRecord.game.round;
+
+      const currThrowsAllNull =
+        currThrows[1] === null &&
+        currThrows[2] === null &&
+        currThrows[3] === null;
+
+      // sprawdzamy overthrow: czy licznik overthrows wzrósł
+      const prevOverthrows =
+        (prevUser.throws && prevUser.throws.overthrows) ??
+        (prevUser.currentThrows && prevUser.currentThrows.overthrows) ??
+        0;
+      const currOverthrows =
+        (currUser.throws && currUser.throws.overthrows) ??
+        (currUser.currentThrows && currUser.currentThrows.overthrows) ??
+        0;
+
+      const overthrowHappened = currOverthrows > prevOverthrows;
+
+      let throwsSource = currThrows;
+      let pointsScoredSource = Number(currUser.turnsSum);
+      let avgSource = currUser.avgPointsPerTurn;
+
+      // przypadek: zmiana rundy, rzuty w curr wyzerowane -> ostatnia tura jest w prevRecord
+      if (turnSwitchedAway && roundChanged && currThrowsAllNull && !overthrowHappened) {
+        throwsSource = prevThrows;
+        pointsScoredSource = Number(prevUser.turnsSum);
+        avgSource = prevUser.avgPointsPerTurn;
       }
-    });
 
+      // przypadek: overthrow – brak rzutów w turns, ale overthrows wzrósł
+      if (currThrowsAllNull && overthrowHappened) {
+        throwsSource = { 1: 'OVER', 2: null, 3: null };
+        // punkty się nie zmieniają, więc pointsScoredSource zostaje jak jest (zwykle 0)
+      }
+
+      timeline.push({
+        round: prevRecord.game.round,
+        player: currUser.displayName,
+        throws: [throwsSource[1], throwsSource[2], throwsSource[3]],
+        pointsScored: pointsScoredSource,
+        pointsBefore: prevPoints,
+        pointsAfter: currPoints,
+        avg: avgSource,
+      });
+    });
   }
 
   return timeline;
 };
+
+
 
 export const calculateEfficiency = (user) => {
   const totalDarts = user.throws.normal + user.throws.doubles + user.throws.triples + user.throws.doors;

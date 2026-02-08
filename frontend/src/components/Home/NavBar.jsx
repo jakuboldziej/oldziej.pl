@@ -2,11 +2,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/shadcn/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/shadcn/sheet";
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "@/context/Home/AuthContext";
 import { Contact, Settings, Target } from "lucide-react";
 import { Badge } from "../ui/shadcn/badge";
 import { SocketIoContext } from "@/context/Home/SocketIoContext";
+import { socket } from '@/lib/socketio';
 
 function NavBar() {
   const { listeners } = useContext(SocketIoContext);
@@ -17,6 +18,8 @@ function NavBar() {
 
   const logout = () => {
     signOut();
+    socket.emit("user:logout");
+
     navigate('/auth');
     setCurrentUser(null);
     setSheetOpen(false);

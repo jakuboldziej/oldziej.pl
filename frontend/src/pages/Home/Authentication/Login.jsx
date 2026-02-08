@@ -59,8 +59,11 @@ function Login() {
       role: response.role
     });
 
-    if (searchParams.get("returnUrl")) {
-      navigate(decodeURIComponent(searchParams.get("returnUrl")), { replace: true });
+    const returnUrl = searchParams.get("returnUrl");
+    const decoded = returnUrl ? decodeURIComponent(returnUrl) : null;
+
+    if (decoded && decoded.startsWith("/") && decoded.length > 1) {
+      navigate(decoded, { replace: true });
     } else {
       navigate("/", { replace: true });
     }

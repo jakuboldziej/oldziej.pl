@@ -109,21 +109,27 @@ function AuthUsersTable({ props }) {
                     <TableCell>{user.verified ? "Yes" : "No"}</TableCell>
                     <TableCell>{user.role}</TableCell>
                     <TableCell className='text-right'>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant='ghost'><Grip /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className='mr-5'>
-                          <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {user.verified === false ? (
-                            <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
-                          ) : (
-                            <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldOff height={20} /> Disprove</DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant='ghost'><Grip /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className='mr-5'>
+                            <DropdownMenuLabel>{user.displayName}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {user.verified === false ? (
+                              <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldCheck height={20} /> Verify</DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem onClick={() => handleVerified(user)}><ShieldOff height={20} /> Disprove</DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleDialogOpen(user)}><Trash height={20} /> Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -40,10 +40,11 @@ function AppRoutesHome() {
   ];
 
   const ProtectedRoute = ({ children }) => {
+    const safePath = location.pathname && location.pathname !== "/" ? location.pathname : "/";
+
     return (
       <RequireAuth
-        fallbackPath={`/auth?returnUrl=${encodeURIComponent(location.pathname)}`}
-      >
+        fallbackPath={`/auth?returnUrl=${encodeURIComponent(safePath)}`}      >
         {children}
       </RequireAuth>
     );
@@ -127,7 +128,7 @@ function AppRoutesHome() {
           </Route>
         </Route>
         <Route path="user">
-          <Route index element={<ProtectedRoute><Navigate to={`/user/${currentUser?.displayName}`} replace /></ProtectedRoute>} />
+          <Route path="user" element={<ProtectedRoute><User /></ProtectedRoute>} />
           <Route path=":displayName" element={<ProtectedRoute><User /></ProtectedRoute>} />
           <Route path="friends" element={<ProtectedRoute><OnlyVerifiedAccess><Friends /></OnlyVerifiedAccess></ProtectedRoute>} />
           <Route path="settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />

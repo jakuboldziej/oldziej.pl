@@ -32,18 +32,24 @@ const addingOnlineUser = (data, socketId, io) => {
     }));
   } else {
     existingUser.socketId = socketId;
+
+    io.to(socketId).emit('onlineUsersListener', JSON.stringify({
+      updatedOnlineUsers: onlineUsers,
+      updatedUser: {
+        _id: emit.user._id,
+        displayName: emit.user.displayName
+      },
+      isUserOnline: true
+    }));
   }
 
-  // Clearing the Timeout
   if (disconnectTimeouts[emit.user._id]) {
     clearTimeout(disconnectTimeouts[emit.user._id]);
     delete disconnectTimeouts[emit.user._id];
   }
 }
 
-const scheduleUserOffline = (socketId, io) => {
-  const delay = 30000;
-
+const scheduleUserOffline = (socketId, io, delay = 15000 /* 15 seconds */) => {
   const user = onlineUsers.find((user) => user.socketId === socketId);
 
   if (user) {
