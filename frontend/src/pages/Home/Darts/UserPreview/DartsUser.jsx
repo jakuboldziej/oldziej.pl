@@ -48,6 +48,7 @@ function DartsUser() {
       setAnalytics(userAnalytics);
 
       const dailyStats = analyzeDailyRewind(resGames, resUser);
+      console.log(dailyStats)
       setDailyRewind(dailyStats);
 
       setIsLoading(false);

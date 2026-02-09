@@ -12,7 +12,7 @@ function DailyRewind({ dailyRewind, currentUser, username }) {
         <CardTitle className='text-2xl flex items-center gap-2'>
           <span>📅</span>
           <span>Today's Rewind</span>
-          <Badge variant="outline" className='ml-2'>
+          <Badge variant="outline" className='ml-2 text-white border-white/20'>
             {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </Badge>
         </CardTitle>
@@ -24,11 +24,11 @@ function DailyRewind({ dailyRewind, currentUser, username }) {
             <p className='text-3xl font-bold'>{dailyRewind.totalGames}</p>
           </div>
           <div className='bg-gray-800/50 p-4 rounded-lg text-center'>
-            <p className='text-gray-400 text-sm mb-1'>Win Rate</p>
-            <p className='text-3xl font-bold text-green-400'>{dailyRewind.winRate}%</p>
+            <p className='text-gray-400 text-sm mb-1'>Games won</p>
+            <p className='text-3xl font-bold text-green-400'>{dailyRewind.gamesWon}</p>
           </div>
           <div className='bg-gray-800/50 p-4 rounded-lg text-center'>
-            <p className='text-gray-400 text-sm mb-1'>Average</p>
+            <p className='text-gray-400 text-sm mb-1'>Average Avg</p>
             <p className='text-3xl font-bold text-blue-400'>{dailyRewind.avgAverage}</p>
           </div>
           <div className='bg-gray-800/50 p-4 rounded-lg text-center'>
@@ -45,33 +45,41 @@ function DailyRewind({ dailyRewind, currentUser, username }) {
             </h3>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3'>
               {Object.entries(dailyRewind.opponents).map(([opponentName, stats]) => (
-                <div key={opponentName} className='bg-gray-800/50 p-4 rounded-lg'>
-                  <div className='flex justify-between items-start mb-2'>
-                    <p className='font-semibold text-lg'>{opponentName}</p>
-                    <Badge variant={stats.wins > stats.losses ? "default" : "destructive"}>
+                <div key={opponentName} className='bg-gray-800/50 p-4 rounded-lg border border-white/5 flex flex-col h-full'>
+                  <div className='flex justify-between items-start mb-1'>
+                    <div>
+                      <p className='font-semibold text-lg leading-tight'>{opponentName}</p>
+                      {stats.opponentGameWins > 0 && (
+                        <p className='text-[10px] text-yellow-500 font-bold uppercase flex items-center gap-1 mt-0.5'>
+                          🏆 {stats.opponentGameWins} Game Win{stats.opponentGameWins > 1 ? 's' : ''}
+                        </p>
+                      )}
+                    </div>
+                    <Badge variant={stats.winsAgainst > stats.lossesAgainst ? "default" : "destructive"}>
                       {stats.games} games
                     </Badge>
                   </div>
-                  <div className='flex justify-around mt-3'>
+
+                  <div className='flex justify-around my-4'>
                     <div className='text-center'>
-                      <p className='text-gray-400 text-xs mb-1'>Wins</p>
-                      <p className='text-xl font-bold text-green-400'>{stats.wins}</p>
+                      <p className='text-gray-400 text-xs mb-1'>Above Them</p>
+                      <p className='text-xl font-bold text-green-400'>{stats.winsAgainst}</p>
                     </div>
-                    <div className='text-gray-400 text-2xl'>-</div>
+                    <div className='text-gray-400 text-2xl flex items-center'>:</div>
                     <div className='text-center'>
-                      <p className='text-gray-400 text-xs mb-1'>Losses</p>
-                      <p className='text-xl font-bold text-red-400'>{stats.losses}</p>
+                      <p className='text-gray-400 text-xs mb-1'>Below Them</p>
+                      <p className='text-xl font-bold text-red-400'>{stats.lossesAgainst}</p>
                     </div>
                   </div>
-                  {stats.wins + stats.losses === stats.games && (
-                    <div className='mt-2 text-center'>
-                      <p className='text-sm text-gray-400'>
-                        Win Rate: <span className='font-bold text-white'>
-                          {stats.games > 0 ? ((stats.wins / stats.games) * 100).toFixed(0) : 0}%
-                        </span>
-                      </p>
+
+                  <div className='mt-auto'>
+                    <div className='flex justify-center gap-1 items-center text-sm text-gray-400'>
+                      <span>Win Rate:</span>
+                      <span className='font-bold text-white'>
+                        {stats.games > 0 ? ((stats.winsAgainst / stats.games) * 100).toFixed(0) : 0}%
+                      </span>
                     </div>
-                  )}
+                  </div>
                 </div>
               ))}
             </div>

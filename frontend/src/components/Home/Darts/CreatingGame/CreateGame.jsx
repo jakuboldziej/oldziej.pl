@@ -15,6 +15,7 @@ import { AuthContext } from "@/context/Home/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
 import { Lightbulb, LightbulbOff, Loader2Icon, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/shadcn/switch";
+import SelectingUsers from "./SelectingUsers";
 
 function CreateGame({ children, drawerOpen, setDrawerOpen }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
@@ -427,35 +428,16 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               </CardHeader>
               <hr />
               <CardContent className="card-content p-0">
-                <div className="text-xl py-3">Not Playing</div>
-                <div className="users">
-                  {usersNotPlaying.length > 0 ? usersNotPlaying.map((user) => (
-                    <div onClick={() => handleAddPlayer(user)} className="user text-white" style={handleNotPlayingStyle()} key={user._id}>
-                      <span>{user.displayName}</span>
-                    </div>
-                  )) : null}
-                </div>
-                <div className="text-xl py-3 flex items-center gap-5">Playing
-                  <div className="items-top flex space-x-2">
-                    <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
-                    <div className="grid gap-1.5 leading-none">
-                      <label
-                        htmlFor="checkbox"
-                        className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Random
-                      </label>
-                    </div>
-                  </div>
-                </div>
-                <div className="users overflow-y-auto">
-                  {usersPlaying?.length > 0 ? usersPlaying.map((user) => (
-                    <div onClick={() => handleRemovePlayer(user)} className="user playing flex justify-between" key={user._id}>
-                      <span>{user.displayName}</span>
-                      {user.temporary && <span><Trash2 /></span>}
-                    </div>
-                  )) : null}
-                </div>
+                <SelectingUsers
+                  mode="single"
+                  usersNotPlaying={usersNotPlaying}
+                  usersPlaying={usersPlaying}
+                  handleAddPlayer={handleAddPlayer}
+                  handleNotPlayingStyle={handleNotPlayingStyle}
+                  randomizePlayers={randomizePlayers}
+                  setRandomizePlayers={setRandomizePlayers}
+                  handleRemovePlayer={handleRemovePlayer}
+                />
               </CardContent>
             </Card>
             <div className="sticky-top top-0 flex flex-col items-center gap-3 text-white">

@@ -166,15 +166,14 @@ export const compareWithBest = (dartUser) => {
 export const analyzeDailyRewind = (games, dartUser) => {
   if (!games || games.length === 0 || !dartUser) return null;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayStr = new Date().toDateString();
 
   const todaysGames = games.filter(game => {
-    const gameDate = new Date(game.created_at);
-    gameDate.setHours(0, 0, 0, 0);
-    return gameDate.getTime() === today.getTime();
-  });
+    const userDisplayNames = game.users.map(user => user.displayName);
+    const gameDateStr = new Date(game.created_at).toDateString();
 
+    return gameDateStr === todayStr && userDisplayNames.includes(dartUser.displayName);
+  });
 
   if (todaysGames.length === 0) return null;
 
@@ -209,7 +208,7 @@ export const analyzeDailyRewind = (games, dartUser) => {
 
     if (user.place === 1) {
       currentUserStats.wins++;
-    } else if (user.place > 1) {
+    } else {
       currentUserStats.losses++;
     }
 
@@ -219,17 +218,26 @@ export const analyzeDailyRewind = (games, dartUser) => {
       if (!currentUserStats.opponents[opponent.displayName]) {
         currentUserStats.opponents[opponent.displayName] = {
           games: 0,
-          wins: 0,
-          losses: 0
+          winsAgainst: 0,
+          lossesAgainst: 0,
+          opponentGameWins: 0
         };
       }
 
-      currentUserStats.opponents[opponent.displayName].games++;
+      const oppStats = currentUserStats.opponents[opponent.displayName];
+      oppStats.games++;
 
-      if (user.place < opponent.place) {
-        currentUserStats.opponents[opponent.displayName].wins++;
-      } else if (user.place > opponent.place) {
-        currentUserStats.opponents[opponent.displayName].losses++;
+      const userRank = user.place === 0 ? 999 : user.place;
+      const opponentRank = opponent.place === 0 ? 999 : opponent.place;
+
+      if (userRank < opponentRank) {
+        oppStats.winsAgainst++;
+      } else if (userRank > opponentRank) {
+        oppStats.lossesAgainst++;
+      }
+
+      if (opponent.place === 1) {
+        oppStats.opponentGameWins++;
       }
     });
   });
@@ -238,14 +246,10 @@ export const analyzeDailyRewind = (games, dartUser) => {
     ? (currentUserStats.averages.reduce((a, b) => a + b, 0) / currentUserStats.averages.length).toFixed(2)
     : "0.00";
 
-  const winRate = currentUserStats.totalGames > 0
-    ? ((currentUserStats.wins / currentUserStats.totalGames) * 100).toFixed(1)
-    : "0.0";
-
   return {
     ...currentUserStats,
     avgAverage,
-    winRate,
-    date: today
+    gamesWon: currentUserStats.wins,
+    date: new Date()
   };
 };
