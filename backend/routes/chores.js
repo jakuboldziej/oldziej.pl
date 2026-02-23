@@ -6,9 +6,7 @@ const ChoresUser = require('../models/chores/choresUser');
 const { logger } = require("../middleware/logging");
 const { Expo } = require('expo-server-sdk');
 const {
-  calculateNextDueDate,
   validateIntervalData,
-  getChoreStatus
 } = require('../lib/intervalUtils');
 
 const router = express.Router()
@@ -136,16 +134,7 @@ router.get('/', authenticateUser, async (req, res) => {
 
     const chores = await Chore.find(filters).sort({});
 
-    const choresWithStatus = chores.map(chore => {
-      const choreObj = chore.toObject();
-      const status = getChoreStatus(choreObj);
-      return {
-        ...choreObj,
-        intervalStatus: status
-      };
-    });
-
-    res.json(choresWithStatus);
+    res.json(chores);
   } catch (err) {
     res.json({ message: err.message });
   }
@@ -165,16 +154,7 @@ router.get('/:displayName', authenticateUser, async (req, res) => {
       ]
     });
 
-    const choresWithStatus = chores.map(chore => {
-      const choreObj = chore.toObject();
-      const status = getChoreStatus(choreObj);
-      return {
-        ...choreObj,
-        intervalStatus: status
-      };
-    });
-
-    res.json(choresWithStatus);
+    res.json(chores);
   } catch (err) {
     res.json({ message: err.message });
   }
@@ -206,9 +186,7 @@ router.post('/', authenticateUser, async (req, res) => {
         choreData.customDays = body.customDays;
       }
 
-      choreData.nextDueDate = body.nextDueDate
-        ? new Date(body.nextDueDate)
-        : calculateNextDueDate(body.intervalType, body.customDays, new Date(), true);
+      choreData.lastResetDate = new Date();
     }
 
     const chore = new Chore(choreData);

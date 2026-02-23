@@ -46,9 +46,10 @@ const ChoresSchema = new mongoose.Schema({
     max: 365,
     required: false
   },
-  nextDueDate: {
+  lastResetDate: {
     type: Date,
-    required: false
+    required: false,
+    default: Date.now
   },
   lastCompletedDate: {
     type: Date,

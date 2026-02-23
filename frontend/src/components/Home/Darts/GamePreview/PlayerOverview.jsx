@@ -2,7 +2,6 @@ import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import { TabsContent } from '@/components/ui/shadcn/tabs';
 
 function PlayerOverview({ user, game, scoringBreakdown }) {
-  console.log(user)
   return (
     <TabsContent value="overview" className="space-y-4">
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>

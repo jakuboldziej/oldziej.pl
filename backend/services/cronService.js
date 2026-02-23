@@ -1,11 +1,10 @@
 const cron = require('node-cron');
 const Chore = require('../models/chores/chore');
 const {
-  isChoreOverdue,
+  shouldResetChore,
   resetChoreForNextInterval
 } = require('../lib/intervalUtils');
 const { logger } = require('../middleware/logging');
-
 class CronService {
   constructor() {
     this.jobs = new Map();
@@ -44,40 +43,35 @@ class CronService {
     const currentDate = new Date();
 
     try {
-      const repeatableChores = await Chore.find({
-        isRepeatable: true,
-        nextDueDate: { $exists: true, $ne: null }
-      });
+      const repeatableChores = await Chore.find({ isRepeatable: true });
 
       let resetCount = 0;
 
       for (const chore of repeatableChores) {
-        if (isChoreOverdue(chore, currentDate)) {
-          const resetData = resetChoreForNextInterval(chore);
+        if (shouldResetChore(chore, currentDate)) {
+          const resetData = resetChoreForNextInterval(chore.toObject(), currentDate);
 
           await Chore.findByIdAndUpdate(chore._id, {
             usersList: resetData.usersList,
             finished: resetData.finished,
-            nextDueDate: resetData.nextDueDate
+            lastResetDate: resetData.lastResetDate
           });
 
           resetCount++;
-          logger.info('CronService: Reset overdue chore', {
+          logger.info('CronService: Reset chore for new interval', {
             choreId: chore._id,
-            title: chore.title,
-            oldDueDate: chore.nextDueDate,
-            newDueDate: resetData.nextDueDate
+            title: chore.title
           });
         }
       }
 
       if (resetCount > 0) {
-        logger.info(`CronService: Reset ${resetCount} overdue repeatable chores`);
+        logger.info(`CronService: Reset ${resetCount} repeatable chores`);
       }
 
       return resetCount;
     } catch (error) {
-      logger.error('CronService: Error resetting overdue chores', { error: error.message });
+      logger.error('CronService: Error resetting chores', { error: error.message });
       throw error;
     }
   }
