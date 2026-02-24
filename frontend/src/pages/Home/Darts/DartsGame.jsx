@@ -14,13 +14,18 @@ import { Copy } from "lucide-react";
 import { socket } from "@/lib/socketio";
 import MostCommonCheckout from "@/components/Home/Darts/MostCommonCheckout";
 import NumberTicker from "@/components/ui/magicui/number-ticker";
+import { AuthContext } from "@/context/Home/AuthContext";
 
 function DartsGame() {
   document.title = "Oldziej | Darts Game";
+
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const { game, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
+  const { currentUser } = useContext(AuthContext);
+
+  const isCurrentUserInGame = game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName);
 
   // Scroll to user
   const usersContainerRef = useRef(null);
@@ -218,7 +223,11 @@ function DartsGame() {
         <div className="w-full">
           <MostCommonCheckout users={game.users} game={game} compact={true} />
         </div>
-        <Keyboard props={keyboardProps} />
+        {isCurrentUserInGame ? (
+          <Keyboard props={keyboardProps} />
+        ) : (
+          <div className="text-slate-600">Spectating mode</div>
+        )}
       </div>
 
       <GameSummary show={show} setShow={setShow} />

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
 import { getAuthUser, getDartsGames, getDartsPageData } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
@@ -23,6 +23,7 @@ function DartsPage() {
   const { onlineFriends } = useContext(SocketIoContext);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
@@ -283,11 +284,15 @@ function DartsPage() {
             variant="outline_red"
             className="glow-button-red"
             onClick={(e) => {
-              e.currentTarget.blur();
-              setDrawerOpen(true);
+              if (playerInGame) {
+                navigate('/darts/game');
+              } else {
+                e.currentTarget.blur();
+                setDrawerOpen(true);
+              }
             }}
           >
-            Create
+            {playerInGame ? "Join Active Game" : "Create"}
           </Button>
         </CreateGame>
       </div>

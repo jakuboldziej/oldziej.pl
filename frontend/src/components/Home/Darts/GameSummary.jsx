@@ -9,12 +9,17 @@ import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './utils/gameUtils';
 import { isInitialGameState } from '@/lib/recordUtils';
+import { AuthContext } from '@/context/Home/AuthContext';
 
 function GameSummary({ show, setShow }) {
   const { game, updateGameState, handleRound } = useContext(DartsGameContext);
+  const { currentUser } = useContext(AuthContext);
+
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const gameRef = useRef(game);
+
+  const isCurrentUserInGame = game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName);
 
   useEffect(() => {
     gameRef.current = game;
@@ -155,7 +160,7 @@ function GameSummary({ show, setShow }) {
           <span className='flex flex-col items-center gap-5 mt-5'>
             <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={handleBackToDarts}>Create New Game</Link>
             <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={handleBackToDarts}>Back to Darts</Link>
-            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={isLoading}>
+            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={isLoading || !isCurrentUserInGame}>
               {isLoading ? 'Loading...' : 'Play Again'}
             </Button>
             <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>

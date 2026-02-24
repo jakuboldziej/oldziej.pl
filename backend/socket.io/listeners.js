@@ -206,7 +206,8 @@ io.on('connection', (socket) => {
       };
     });
 
-    resetUsers.reverse();
+    resetUsers.unshift(resetUsers.pop());
+
     resetUsers[0].turn = true;
 
     let newGameCode;

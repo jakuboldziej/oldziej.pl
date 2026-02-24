@@ -1,6 +1,6 @@
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useEffect, useState, useContext } from 'react';
-import { getDartsGames, getDartsUser } from '@/lib/fetch';
+import { getDartsGame, getDartsGames, getDartsUser } from '@/lib/fetch';
 import { UserBarChart } from './UserBarChart';
 import Loading from '@/components/Home/Loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
@@ -17,9 +17,14 @@ import GameModeCard from '@/components/Home/Darts/UserStats/GameModeCard';
 import CheckoutStatsCard from '@/components/Home/Darts/UserStats/CheckoutStatsCard';
 import OverallStatsCards from '@/components/Home/Darts/UserStats/OverallStatsCards';
 import ThrowStatsCard from '@/components/Home/Darts/UserStats/ThrowStatsCard';
+import { Badge } from '@/components/ui/shadcn/badge';
+import GreenDot from "@/assets/images/icons/green_dot.png";
+import { ensureGameRecord } from '@/lib/recordUtils';
 
 function DartsUser() {
   const { username } = useParams();
+  const navigate = useNavigate();
+
   const { currentUser } = useContext(AuthContext);
 
   document.title = `Oldziej | ${username}`
@@ -95,10 +100,36 @@ function DartsUser() {
     return dartUser.throws.normal + dartUser.throws.doubles + dartUser.throws.triples + dartUser.throws.doors;
   };
 
+  const handleActiveGameClick = async (e, game) => {
+    e.preventDefault();
+
+    try {
+      const fullGame = await getDartsGame(game._id);
+      const gameWithRecord = ensureGameRecord(fullGame);
+      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+      navigate('/darts/game');
+    } catch (error) {
+      console.error('Error fetching game:', error);
+      const gameWithRecord = ensureGameRecord(game);
+      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+      navigate('/darts/game');
+    }
+  };
+
   return (
     <div className='dart-user p-6 text-white max-w-7xl mx-auto'>
-      <div className='header mb-8'>
+      <div className='header mb-8 flex justify-center items-center gap-4'>
         <h1 className='text-4xl font-bold mb-2'>{username}</h1>
+        {games && games.find((g) => g.active === true) && (
+          <Badge
+            variant="default"
+            className="flex gap-2 cursor-pointer"
+            onClick={(e) => handleActiveGameClick(e, games.find((g) => g.active === true))}
+          >
+            <img src={GreenDot} />
+            <span>In game</span>
+          </Badge>
+        )}
       </div>
       {isLoading ? (
         <Loading />

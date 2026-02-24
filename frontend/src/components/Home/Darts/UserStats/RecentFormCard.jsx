@@ -20,7 +20,7 @@ function RecentFormCard({ analytics, games }) {
           <p className='text-3xl font-bold'>{analytics.recentForm.avgLast5}</p>
         </div>
         <div className='space-y-2'>
-          {analytics.recentForm.last5Games.map((game, idx) => (
+          {analytics.recentForm.last5Games.map((game) => (
             <div key={game.gameCode} className='flex justify-between items-center bg-gray-900 p-2 rounded'>
               <span className='text-sm text-gray-400'>Game #{game.gameCode}</span>
               <div className='flex items-center gap-2'>
