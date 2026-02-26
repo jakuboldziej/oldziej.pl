@@ -6,6 +6,11 @@ const ChoresUserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  dailyStreak: {
+    type: Number,
+    required: false,
+    default: 0
+  },
   pushToken: {
     type: String,
     default: null

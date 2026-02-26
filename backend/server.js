@@ -129,6 +129,9 @@ app.use('/api/ftp', ftpRouter);
 const choresRouter = require('./routes/chores');
 app.use('/api/chores', choresRouter);
 
+const choresUsersRouter = require('./routes/choresUser');
+app.use('/api/choresUsers', choresUsersRouter);
+
 const emailsRouter = require('./routes/emails');
 app.use('/api/emails', emailsRouter);
 

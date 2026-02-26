@@ -7,6 +7,11 @@ const ChoresSchema = new mongoose.Schema({
     required: true
   },
   usersList: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'ChoresUser',
+      required: true
+    },
     displayName: {
       type: String,
       required: true
