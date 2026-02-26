@@ -28,7 +28,7 @@ class CronService {
 
   startChoreResetJob() {
     // '*/10 * * * * *' 10 seconds | '0 0 * * *' every day at midnight
-    const job = cron.schedule('*/10 * * * * *', async () => {
+    const job = cron.schedule('0 0 * * *', async () => {
       try {
         await this.resetOverdueRepeatableChores();
       } catch (error) {
