@@ -6,6 +6,7 @@ const {
 } = require('../lib/intervalUtils');
 const { logger } = require('../middleware/logging');
 const ChoresUser = require('../models/chores/choresUser');
+const { io } = require('../server');
 
 class CronService {
   constructor() {
@@ -26,7 +27,8 @@ class CronService {
   }
 
   startChoreResetJob() {
-    const job = cron.schedule('0 0 * * *', async () => {
+    // '*/10 * * * * *' 10 seconds | '0 0 * * *' every day at midnight
+    const job = cron.schedule('*/10 * * * * *', async () => {
       try {
         await this.resetOverdueRepeatableChores();
       } catch (error) {
@@ -53,6 +55,7 @@ class CronService {
       await this.updateDailyStreaks(repeatableChores);
 
       let resetCount = 0;
+      const affectedUsers = new Set();
 
       for (const chore of repeatableChores) {
         if (shouldResetChore(chore, currentDate)) {
@@ -64,9 +67,21 @@ class CronService {
             lastResetDate: resetData.lastResetDate
           });
 
+          chore.usersList.forEach(user => {
+            affectedUsers.add(user.userId.toString());
+          });
+
           resetCount++;
         }
       }
+
+      const affectedUsersArray = Array.from(affectedUsers);
+
+      io.emit("dailyChoresReset", {
+        message: "Daily chores reset",
+        date: currentDate,
+        affectedUsers: affectedUsersArray
+      });
 
       return resetCount;
     } catch (error) {
