@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/shadcn/card';
 import { Badge } from '@/components/ui/shadcn/badge';
 
-function DailyRewind({ dailyRewind, currentUser, username }) {
-  if (!dailyRewind || !currentUser || currentUser.displayName !== username) {
+function DailyRewind({ dailyRewind, username }) {
+  if (!dailyRewind || !username) {
     return null;
   }
 

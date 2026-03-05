@@ -134,7 +134,7 @@ export const getPerformanceTrend = (games, dartUser) => {
 
     return {
       gameCode: game.gameCode,
-      date: game.created_at,
+      date: game.createdAt || game.created_at,
       avg: parseFloat(user.avgPointsPerTurn) || 0,
       points: user.allGainedPoints,
       place: user.place
@@ -170,7 +170,7 @@ export const analyzeDailyRewind = (games, dartUser) => {
 
   const todaysGames = games.filter(game => {
     const userDisplayNames = game.users.map(user => user.displayName);
-    const gameDateStr = new Date(game.created_at).toDateString();
+    const gameDateStr = new Date(game.createdAt || game.created_at).toDateString();
 
     return gameDateStr === todayStr && userDisplayNames.includes(dartUser.displayName);
   });

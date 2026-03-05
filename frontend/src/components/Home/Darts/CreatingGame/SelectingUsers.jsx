@@ -10,7 +10,8 @@ function SelectingUsers(props) {
     handleNotPlayingStyle,
     randomizePlayers,
     setRandomizePlayers,
-    handleRemovePlayer
+    handleRemovePlayer,
+    createType
   } = props;
 
   if (mode === "single") {
@@ -26,17 +27,19 @@ function SelectingUsers(props) {
         </div>
         <div className="text-xl py-3 flex items-center gap-5">
           Playing ({usersPlaying?.length})
-          <div className="items-top flex space-x-2">
-            <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
-            <div className="grid gap-1.5 leading-none">
-              <label
-                htmlFor="checkbox"
-                className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Random
-              </label>
+          {createType !== "TOURNEY" && (
+            <div className="items-top flex space-x-2">
+              <Checkbox id="checkbox" defaultChecked={randomizePlayers} onCheckedChange={() => setRandomizePlayers(prev => !prev)} />
+              <div className="grid gap-1.5 leading-none">
+                <label
+                  htmlFor="checkbox"
+                  className="text-lg font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Random
+                </label>
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div className="users max-h-[350px] overflow-y-auto pr-2">
           {usersPlaying?.length > 0 ? usersPlaying.map((user) => (

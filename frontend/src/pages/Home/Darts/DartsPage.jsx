@@ -16,6 +16,7 @@ import { socket } from '@/lib/socketio';
 import { SocketIoContext } from "@/context/Home/SocketIoContext";
 import GreenDot from "@/assets/images/icons/green_dot.png";
 import RedDot from "@/assets/images/icons/red_dot.png";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/shadcn/dialog";
 
 function DartsPage() {
   document.title = "Oldziej | Darts";
@@ -26,12 +27,14 @@ function DartsPage() {
   const navigate = useNavigate();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [createNewGameType, setCreateNewGameType] = useState("");
+  const [createGameDialogOpen, setCreateGameDialogOpen] = useState(false);
   const [playerInGame, setPlayerInGame] = useState(false);
   const [games, setGames] = useState([]);
   const [gamesShown, setGamesShown] = useState([]);
   const [dartUsers, setDartUsers] = useState([]);
   const [filterUsersType, setFilterUsersType] = useState("firstPlace");
-  const [filterGamesType, setFilterGamesType] = useState("created_at");
+  const [filterGamesType, setFilterGamesType] = useState("createdAt");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [dartsStatistics, setDartsStatistics] = useState(null);
@@ -97,10 +100,10 @@ function DartsPage() {
     let sortedGames;
 
     switch (action) {
-      case "created_at":
+      case "createdAt":
         sortedGames = gamesToFilter.slice().sort((a, b) => {
-          const firstData = a.created_at;
-          const secondData = b.created_at;
+          const firstData = a.createdAt || a.created_at;
+          const secondData = b.createdAt || b.created_at;
           return secondData - firstData;
         });
         break;
@@ -279,7 +282,7 @@ function DartsPage() {
   return (
     <div className="darts-page">
       <div className="flex justify-center">
-        <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
+        {/* <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
           <Button
             variant="outline_red"
             className="glow-button-red"
@@ -294,7 +297,22 @@ function DartsPage() {
           >
             {playerInGame ? "Join Active Game" : "Create"}
           </Button>
-        </CreateGame>
+        </CreateGame> */}
+
+        <Button
+          variant="outline_red"
+          className="glow-button-red"
+          onClick={(e) => {
+            if (playerInGame) {
+              navigate('/darts/game');
+            } else {
+              setCreateGameDialogOpen(true);
+            }
+          }}
+        >
+          {playerInGame ? "Join Active Game" : "Create"}
+        </Button>
+
       </div>
       <div className="cards">
         <Card className="my-card friends">
@@ -405,6 +423,40 @@ function DartsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={createGameDialogOpen} onOpenChange={setCreateGameDialogOpen}>
+        <DialogContent className="w-fit">
+          <DialogHeader>
+            <DialogTitle className='text-center text-2xl'>Create Darts Game</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="hidden">Create Darts Game</DialogDescription>
+          <div className="text-white flex items-center justify-center gap-4">
+            <div
+              className="cursor-pointer w-28 h-28 rounded-lg hover:bg-red-400 bg-red-500 flex items-center justify-center"
+              onClick={() => {
+                setCreateNewGameType("X01");
+                setCreateGameDialogOpen(false);
+                setDrawerOpen(true);
+              }}
+            >
+              XO1
+            </div>
+            <div
+              className="cursor-pointer w-28 h-28 rounded-lg hover:bg-yellow-400 bg-yellow-500 flex items-center justify-center"
+              onClick={() => {
+                setCreateNewGameType("TOURNEY");
+                setCreateGameDialogOpen(false);
+                setDrawerOpen(true);
+              }}
+            >
+              TOURNEY
+            </div>
+          </div>
+
+        </DialogContent>
+      </Dialog>
+
+      <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} createType={createNewGameType} />
     </div>
   )
 }

@@ -486,7 +486,7 @@ router.get("/check-availability/:gameCode", authenticateUser, async (req, res) =
     }
 
     if (wledGameCode.code) {
-      const DartsGame = require('../models/dartsGame');
+      const DartsGame = require('../models/darts/dartsGame');
       const currentGame = await DartsGame.findOne({ gameCode: wledGameCode.code });
 
       if (!currentGame || currentGame.active === false) {

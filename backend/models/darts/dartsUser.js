@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { dartsConn } = require("../server")
+const { dartsConn } = require("../../server")
 
 const dartsUserSchema = new mongoose.Schema({
   displayName: {
@@ -56,6 +56,8 @@ const dartsUserSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   }
-})
+}, {
+  timestamps: true
+});
 
 module.exports = dartsConn.model('DartsUser', dartsUserSchema)

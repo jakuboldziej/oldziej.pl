@@ -11,6 +11,8 @@ const esp32ConfigSchema = new mongoose.Schema({
     type: Object,
     required: true
   }
-}, { timestamps: true });
+}, {
+  timestamps: true
+});
 
 module.exports = esp32Conn.model('ESP32Config', esp32ConfigSchema);

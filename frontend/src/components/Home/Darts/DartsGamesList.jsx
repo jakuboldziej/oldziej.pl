@@ -78,8 +78,8 @@ function DartsGamesList({ games, isLoading }) {
                 {game.users.length}
               </span>
             </MyTooltip>
-            <MyTooltip title={new Date(game.created_at).toLocaleString()}>
-              <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
+            <MyTooltip title={new Date(game.createdAt || game.created_at).toLocaleString()}>
+              <span className="timedate">{new Date(game.createdAt || game.created_at).toLocaleDateString()}</span>
             </MyTooltip>
           </Link>
           :
@@ -119,8 +119,8 @@ function DartsGamesList({ games, isLoading }) {
                 {game.users.length}
               </span>
             </MyTooltip>
-            <MyTooltip title={new Date(game.created_at).toLocaleString()}>
-              <span className="timedate">{new Date(game.created_at).toLocaleDateString()}</span>
+            <MyTooltip title={new Date(game.createdAt || game.created_at).toLocaleString()}>
+              <span className="timedate">{new Date(game.createdAt || game.created_at).toLocaleDateString()}</span>
             </MyTooltip>
           </Link>
       ))}

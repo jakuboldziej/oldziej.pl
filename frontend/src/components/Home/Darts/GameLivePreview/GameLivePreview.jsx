@@ -62,7 +62,7 @@ function GameLivePreview({ props }) {
     }
 
     if (!liveGame.active) {
-      const formattedTime = handleTimePlayed(liveGame.created_at, liveGame.finished_at || 0);
+      const formattedTime = handleTimePlayed(liveGame.createdAt || liveGame.created_at, liveGame.finished_at || 0);
       setTimePlayed(formattedTime);
       setShowDialog(true);
     } else {

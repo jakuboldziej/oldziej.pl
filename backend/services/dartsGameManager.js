@@ -1,5 +1,5 @@
-const DartsGame = require('../models/dartsGame');
-const DartsUser = require('../models/dartsUser');
+const DartsGame = require('../models/darts/dartsGame');
+const DartsUser = require('../models/darts/dartsUser');
 const { logger } = require('../middleware/logging');
 const {
   handleWLEDEffectSolid,
@@ -10,6 +10,7 @@ const {
   handleWLEDThrow180,
   handleWLEDOverthrow
 } = require('./wledService');
+const dartsTournamentManager = require('./dartsTournamentManager');
 
 // Game state manager - stores active games in memory
 const activeGames = new Map();
@@ -392,6 +393,12 @@ class DartsGameManager {
 
       this.io.to(`game-${this.gameCode}`).emit("updateLiveGamePreviewClient", gameString);
 
+      if (this.game.tournamentId) {
+        this.io.to(`tournament-spectator-${this.game.tournamentId}`).emit("tournamentGameUpdate", {
+          gameCode: this.gameCode,
+          gameState: this.game
+        });
+      }
     } catch (error) {
       logger.error(`Error emitting game update for ${this.gameCode}:`, { error: error.message });
       if (retryCount < this.maxRetries) {
@@ -579,6 +586,15 @@ class DartsGameManager {
     };
 
     await this.updateGameState();
+
+    if (this.game.tournamentId && this.game.tournamentMatchId) {
+      await dartsTournamentManager.advanceTournamentBracket(
+        this.game.tournamentId,
+        this.game.tournamentMatchId,
+        currentUser.displayName,
+        this.io
+      );
+    }
 
     this.io.to(`game-${this.gameCode}`).emit("gameEndClient", JSON.stringify(this.game));
     handleWLEDGameEnd(this.gameCode);

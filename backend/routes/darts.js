@@ -1,12 +1,14 @@
 const express = require("express")
 const router = express.Router()
-const DartsGame = require('../models/dartsGame')
-const DartsUser = require('../models/dartsUser')
+const DartsGame = require('../models/darts/dartsGame')
+const DartsUser = require('../models/darts/dartsUser')
 const User = require('../models/user');
 const { Types } = require("mongoose")
 const authenticateUser = require("../middleware/auth")
 const { logger } = require("../middleware/logging")
 const { io } = require('../server')
+const dartsTournamentManager = require('../services/dartsTournamentManager');
+const DartsTournament = require('../models/darts/dartsTournament');
 
 const getDartsUser = async (req, res, next) => {
   let user;
@@ -47,7 +49,7 @@ const getDartsGame = async (req, res, next) => {
   next();
 }
 
-const generateUniqueGameCode = async () => {
+export const generateUniqueGameCode = async () => {
   let gameCode;
 
   do {
@@ -64,7 +66,6 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
   try {
     const dartsGame = new DartsGame({
       created_by: body.created_by,
-      created_at: body.created_at,
       users: body.users,
       podiums: body.podiums,
       podium: {
@@ -118,7 +119,7 @@ router.get('/dartsGames', authenticateUser, async (req, res) => {
 
     const projection = excludeRecord ? { record: 0 } : null;
 
-    const dartsGames = await DartsGame.find(filter, projection, { limit: limit, sort: { created_at: -1 } });
+    const dartsGames = await DartsGame.find(filter, projection, { limit: limit, sort: { createdAt: -1, created_at: -1 } });
     res.json(dartsGames)
   } catch (err) {
     res.json({ message: err.message })
@@ -234,6 +235,35 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
   }
 });
 
+// Darts Tornament
+
+router.post('/dartsTournament/create', authenticateUser, async (req, res) => {
+  try {
+    const { name, settings, adminId, participants } = req.body;
+    const tournament = new DartsTournament({
+      name,
+      settings,
+      participants,
+      admin: adminId
+    });
+    await tournament.save();
+
+    await dartsTournamentManager.generateBracket(tournament._id);
+    res.status(201).json(tournament);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.get('/dartsTournament/:id/games', authenticateUser, async (req, res) => {
+  try {
+    const games = await DartsGame.find({ tournamentId: req.params.id });
+    res.json(games);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Utils
 
 router.post('/game/join/:gameCode', async (req, res) => {
@@ -332,7 +362,7 @@ router.get('/dartsPage/:userDisplayName', authenticateUser, async (req, res) => 
           $or: [{ training: false }, { training: { $exists: false } }]
         },
         { record: 0 },
-        { limit: 10, sort: { created_at: -1 } }
+        { limit: 10, sort: { createdAt: -1, created_at: -1 } }
       ),
       DartsGame.find(
         {

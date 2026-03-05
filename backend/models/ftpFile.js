@@ -34,6 +34,8 @@ const FtpFileSchema = new mongoose.Schema({
     required: true,
     default: []
   },
+}, {
+  timestamps: true
 });
 
 module.exports = ftpConn.model('FtpFile', FtpFileSchema)

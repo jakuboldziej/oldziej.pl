@@ -11,7 +11,6 @@ export const postDartsGame = async (gameData) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsGames`, {
     method: "POST",
     body: JSON.stringify({
-      created_at: gameData.created_at,
       created_by: gameData.created_by,
       users: gameData.users,
       podiums: gameData.podiums,

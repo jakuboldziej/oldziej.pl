@@ -2,7 +2,7 @@ const { io } = require('../server');
 const { addingOnlineUser, scheduleUserOffline } = require('./utils');
 const { getGameManager, removeGameManager } = require('../services/dartsGameManager');
 const { logger } = require('../middleware/logging');
-const DartsGame = require('../models/dartsGame');
+const DartsGame = require('../models/darts/dartsGame');
 
 const socketAuthMiddleware = (socket, next) => {
   const handshake = socket.handshake;
@@ -225,7 +225,6 @@ io.on('connection', (socket) => {
 
     const newGame = new DartsGame({
       created_by: currentGame.created_by,
-      created_at: Date.now(),
       users: resetUsers,
       podiums: currentGame.podiums,
       podium: { 1: null, 2: null, 3: null },
@@ -362,6 +361,13 @@ io.on('connection', (socket) => {
       console.error("Error ending game:", error);
       socket.emit("game:end-result", JSON.stringify({ success: false, message: error.message }));
     }
+  });
+
+  // Darts Tournament
+
+  socket.on("joinTournamentControl", (tournamentId) => {
+    socket.join(`tournament-spectator-${tournamentId}`);
+    logger.info(`GM joined spectator room for tournament: ${tournamentId}`);
   });
 
   // Handling Online Users

@@ -115,8 +115,8 @@ function DartsGamesTable({ props }) {
                     <TableCell className="font-medium">{game._id}</TableCell>
                     <TableCell>{game.created_by}</TableCell>
                     <TableCell>
-                      <MyTooltip title={handleDisplayDate(game.created_at)}>
-                        <span className="timedate">{handleDisplayDate(game.created_at)}</span>
+                      <MyTooltip title={handleDisplayDate(game.createdAt || game.created_at)}>
+                        <span className="timedate">{handleDisplayDate(game.createdAt || game.created_at)}</span>
                       </MyTooltip>
                     </TableCell>
                     <TableCell>

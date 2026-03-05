@@ -1,14 +1,10 @@
 const mongoose = require("mongoose")
-const { dartsConn } = require("../server")
+const { dartsConn } = require("../../server")
 
 const dartsGameSchema = new mongoose.Schema({
   created_by: {
     type: String,
     required: true
-  },
-  created_at: {
-    type: Date,
-    required: true,
   },
   finished_at: {
     type: Date,
@@ -74,7 +70,18 @@ const dartsGameSchema = new mongoose.Schema({
   legStarterIndex: {
     type: Number,
     required: false
-  }
+  },
+  tournamentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DartsTournament',
+    default: null
+  },
+  tournamentMatchId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
+  },
+}, {
+  timestamps: true
 });
 
 module.exports = dartsConn.model('DartsGame', dartsGameSchema)

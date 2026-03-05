@@ -41,6 +41,8 @@ const FtpFolderSchema = new mongoose.Schema({
     required: false,
     default: "folder"
   }
+}, {
+  timestamps: true
 });
 
 const environment = process.env.NODE_ENV || 'production';

@@ -13,11 +13,11 @@ import ShowNewToast from "../../MyComponents/ShowNewToast";
 
 import { AuthContext } from "@/context/Home/AuthContext";
 import CreateGameDialogs from "./CreateGameDialogs";
-import { Lightbulb, LightbulbOff, Loader2Icon, Trash2 } from "lucide-react";
+import { Lightbulb, LightbulbOff, Loader2Icon } from "lucide-react";
 import { Switch } from "@/components/ui/shadcn/switch";
 import SelectingUsers from "./SelectingUsers";
 
-function CreateGame({ children, drawerOpen, setDrawerOpen }) {
+function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
   const [usersNotPlaying, setUsersNotPlaying] = useState([]);
   const [usersPlaying, setUsersPlaying] = useState([]);
   const [userPodiumsCount, setUserPodiumsCount] = useState([]);
@@ -66,17 +66,17 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
 
       if (previousSettings) {
         const previousSettingsUsers = previousSettings.users.filter((user) => user.visible === true);
-        const previousSettingsUsernames = previousSettingsUsers.map(user => user.displayName);
+        const previousSettingsUsernames = createType === "TOURNEY" ? [] : previousSettingsUsers.map(user => user.displayName);
 
         const usersWithUser = [fetchDartsUser, ...userFriends];
         const usersNotPlaying = usersWithUser.filter(user => !previousSettingsUsernames.includes(user.displayName));
-        const usersPlaying = usersWithUser.filter(user => previousSettingsUsernames.includes(user.displayName));
+        const previousUsersPlaying = usersWithUser.filter(user => previousSettingsUsernames.includes(user.displayName));
 
         setUsersNotPlaying(usersNotPlaying);
-        setUsersPlaying(usersPlaying);
+        setUsersPlaying(previousUsersPlaying);
 
         setSelectGameMode(previousSettings.gamemode);
-        if (usersPlaying.length > 0) setUsersPodium(1);
+        if (previousUsersPlaying.length > 0) setUsersPodium(1);
         if (['101', '201', '301', '401', '501', '601', '701', '801', '901', '1001'].filter(number => number === previousSettings.startPoints)[0]) {
           setSelectStartPoints(previousSettings.startPoints);
         } else {
@@ -213,116 +213,15 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         return;
       }
 
-      const throwsData = {
-        doors: 0,
-        doubles: 0,
-        triples: 0,
-        normal: 0,
-        overthrows: 0,
-      }
-
-      let updatedUsers = usersPlaying.map((user) => ({
-        _id: user._id,
-        displayName: user.displayName,
-        points: selectStartPoints,
-        allGainedPoints: 0,
-        turn: false,
-        turnsSum: 0,
-        currentTurn: 1,
-        place: 0,
-        turns: {
-          1: null,
-          2: null,
-          3: null
-        },
-        throws: { ...throwsData },
-        currentThrows: { ...throwsData },
-        legs: 0,
-        sets: 0,
-        totalLegsWon: 0,
-        avgPointsPerTurn: "0.00",
-        highestGameAvg: "0.00",
-        highestGameTurnPoints: 0,
-        gameCheckout: 0,
-        temporary: user.temporary || false
-      }));
-
       if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
-      if (usersPlaying.length === 1 && isTraining === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
+      if (createType === "TOURNEY") {
+        if (usersPlaying.length < 4) return ShowNewToast("Game settings", "You have to select at least 4 players to play");
+      } else {
+        if (usersPlaying.length === 1 && isTraining === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
+      }
       if (selectLegs === 0 && selectSets === 0) return ShowNewToast("Game settings", "You must set at least legs or sets to a value greater than 0");
-      if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
 
-      const gameData = {
-        created_by: currentUser.displayName,
-        created_at: Date.now(),
-        users: updatedUsers,
-        podiums: usersPodium,
-        podium: {
-          1: null,
-          2: null,
-          3: null
-        },
-        turn: updatedUsers[0].displayName,
-        active: true,
-        gameMode: selectGameMode,
-        startPoints: selectStartPoints,
-        checkOut: selectCheckOut,
-        sets: selectGameMode === "X01" ? selectSets : 1,
-        legs: selectGameMode === "X01" ? selectLegs : 1,
-        round: 1,
-      }
-
-      updatedUsers[0].turn = true;
-      const usersCopy = lodash.cloneDeep(updatedUsers);
-      const gameCopy = lodash.pick(gameData, ['round', 'turn']);
-
-      gameData.record = [{
-        game: {
-          round: gameCopy.round,
-          turn: gameCopy.turn
-        },
-        users: usersCopy
-      }];
-
-      gameData.training = isTraining === true;
-
-      const { record, ...gameWithoutRecord } = gameData;
-      const game = await postDartsGame(gameWithoutRecord);
-
-      gameData._id = game._id;
-      gameData["gameCode"] = game.gameCode;
-
-      await ensureSocketConnection();
-
-      updateGameState(gameData);
-
-      localStorage.setItem("gameSettings", JSON.stringify({
-        users: usersPlaying,
-        gamemode: selectGameMode,
-        startPoints: selectStartPoints,
-        checkout: selectCheckOut,
-        sets: selectSets,
-        legs: selectLegs,
-        training: isTraining
-      }));
-
-      socket.emit("joinLiveGamePreview", JSON.stringify({
-        gameCode: game.gameCode
-      }));
-
-      if (WLEDon) {
-        const res = await postESP32JoinGame(game.gameCode);
-        if (res.message) {
-          ShowNewToast("ESP32 error", res.message, "error");
-          if (res.message.includes("does not match")) {
-            ShowNewToast(
-              "WLED Stuck?",
-              "WLED might be stuck on an old game. Try force resetting from ESP32 settings.",
-              "warning"
-            );
-          }
-        }
-      }
+      handleCreateNewGameLogic();
 
       navigate("game");
     } catch (error) {
@@ -330,6 +229,115 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
       ShowNewToast("Error starting game", error.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  const handleCreateNewGameLogic = async () => {
+    const throwsData = {
+      doors: 0,
+      doubles: 0,
+      triples: 0,
+      normal: 0,
+      overthrows: 0,
+    }
+
+    let updatedUsers = usersPlaying.map((user) => ({
+      _id: user._id,
+      displayName: user.displayName,
+      points: selectStartPoints,
+      allGainedPoints: 0,
+      turn: false,
+      turnsSum: 0,
+      currentTurn: 1,
+      place: 0,
+      turns: {
+        1: null,
+        2: null,
+        3: null
+      },
+      throws: { ...throwsData },
+      currentThrows: { ...throwsData },
+      legs: 0,
+      sets: 0,
+      totalLegsWon: 0,
+      avgPointsPerTurn: "0.00",
+      highestGameAvg: "0.00",
+      highestGameTurnPoints: 0,
+      gameCheckout: 0,
+      temporary: user.temporary || false
+    }));
+
+    if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
+
+    const gameData = {
+      created_by: currentUser.displayName,
+      users: updatedUsers,
+      podiums: usersPodium,
+      podium: {
+        1: null,
+        2: null,
+        3: null
+      },
+      turn: updatedUsers[0].displayName,
+      active: true,
+      gameMode: selectGameMode,
+      startPoints: selectStartPoints,
+      checkOut: selectCheckOut,
+      sets: selectGameMode === "X01" ? selectSets : 1,
+      legs: selectGameMode === "X01" ? selectLegs : 1,
+      round: 1,
+    }
+
+    updatedUsers[0].turn = true;
+    const usersCopy = lodash.cloneDeep(updatedUsers);
+    const gameCopy = lodash.pick(gameData, ['round', 'turn']);
+
+    gameData.record = [{
+      game: {
+        round: gameCopy.round,
+        turn: gameCopy.turn
+      },
+      users: usersCopy
+    }];
+
+    gameData.training = isTraining === true;
+
+    const { record, ...gameWithoutRecord } = gameData;
+    const game = await postDartsGame(gameWithoutRecord);
+
+    gameData._id = game._id;
+    gameData["gameCode"] = game.gameCode;
+
+    await ensureSocketConnection();
+
+    updateGameState(gameData);
+
+    localStorage.setItem("gameSettings", JSON.stringify({
+      users: usersPlaying,
+      gamemode: selectGameMode,
+      startPoints: selectStartPoints,
+      checkout: selectCheckOut,
+      sets: selectSets,
+      legs: selectLegs,
+      training: isTraining
+    }));
+
+    socket.emit("joinLiveGamePreview", JSON.stringify({
+      gameCode: game.gameCode
+    }));
+
+    if (WLEDon) {
+      const res = await postESP32JoinGame(game.gameCode);
+      if (res.message) {
+        ShowNewToast("ESP32 error", res.message, "error");
+        if (res.message.includes("does not match")) {
+          ShowNewToast(
+            "WLED Stuck?",
+            "WLED might be stuck on an old game. Try force resetting from ESP32 settings.",
+            "warning"
+          );
+        }
+      }
     }
   }
 
@@ -377,15 +385,17 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
     }
 
     estimatedGameTime();
-    localStorage.setItem("gameSettings", JSON.stringify({
-      users: usersPlaying,
-      gamemode: selectGameMode,
-      startPoints: selectStartPoints,
-      checkout: selectCheckOut,
-      sets: selectSets,
-      legs: selectLegs,
-      training: isTraining,
-    }));
+    if (createType !== "TOURNEY") {
+      localStorage.setItem("gameSettings", JSON.stringify({
+        users: usersPlaying,
+        gamemode: selectGameMode,
+        startPoints: selectStartPoints,
+        checkout: selectCheckOut,
+        sets: selectSets,
+        legs: selectLegs,
+        training: isTraining,
+      }));
+    }
   }, [usersPlaying, selectCheckOut, selectLegs, selectSets, selectStartPoints, selectGameMode, usersPodium]);
 
   const dialogProps = {
@@ -411,9 +421,9 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
         </DrawerTrigger>
         <DrawerContent className="create-game-modal border-slate-200 bg-white dark:border-slate-800 h-[calc(100dvh-100px)] sm:h-full dark:bg-slate-950" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DrawerHeader>
-            <DrawerTitle className="text-white border-b-2 border-green pb-3">Create New Game</DrawerTitle>
+            <DrawerTitle className="text-white border-b-2 border-green pb-3">{createType === "TOURNEY" ? "Create New Tournament" : "Create New Game"}</DrawerTitle>
           </DrawerHeader>
-          <DrawerDescription className="hidden">Create new game</DrawerDescription>
+          <DrawerDescription className="hidden">{createType === "TOURNEY" ? "Create New Tournament" : "Create New Game"}</DrawerDescription>
           <div className="settings !py-3 overflow-y-auto">
             <Card className="usersCard">
               <CardHeader className="text-lg flex flex-row items-center justify-between">
@@ -437,6 +447,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
                   randomizePlayers={randomizePlayers}
                   setRandomizePlayers={setRandomizePlayers}
                   handleRemovePlayer={handleRemovePlayer}
+                  createType={createType}
                 />
               </CardContent>
             </Card>
@@ -467,29 +478,36 @@ function CreateGame({ children, drawerOpen, setDrawerOpen }) {
               </CardHeader>
               <hr />
               <CardContent className="card-content">
-                <div className="flex items-center space-x-2 pb-[10px]">
-                  <Checkbox id="checkbox_training" checked={isTraining} onCheckedChange={() => setIsTraining(prev => !prev)} />
-                  <div className="grid gap-1.5 leading-none">
-                    <label
-                      htmlFor="checkbox_training"
-                      className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Training
-                    </label>
+                {createType !== "TOURNEY" && (
+                  <div className="flex items-center space-x-2 pb-[10px]">
+                    <Checkbox id="checkbox_training" checked={isTraining} onCheckedChange={() => setIsTraining(prev => !prev)} />
+                    <div className="grid gap-1.5 leading-none">
+                      <label
+                        htmlFor="checkbox_training"
+                        className="text-xl font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      >
+                        Training
+                      </label>
+                    </div>
                   </div>
-                </div>
+                )}
+
                 <div className="selects">
-                  <div className="text-xl">Podium</div>
-                  <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium} modal={false}>
-                    <SelectTrigger className="text-white">
-                      <SelectValue placeholder="Select Podium" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {usersPlaying?.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
+                  {createType !== "TOURNEY" && (
+                    <>
+                      <div className="text-xl">Podium</div>
+                      <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium} modal={false}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Podium" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {usersPlaying?.length > 0 ? userPodiumsCount : <SelectItem value="None" disabled>None</SelectItem>}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  )}
                   <div className="text-xl">Gamemode</div>
                   <Select onValueChange={(value) => setSelectGameMode(value)} value={selectGameMode} modal={false}>
                     <SelectTrigger className="text-white">

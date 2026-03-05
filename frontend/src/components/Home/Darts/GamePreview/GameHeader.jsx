@@ -16,7 +16,7 @@ function GameHeader({ game }) {
             </Badge>
             {game.training && <Badge variant="outline">Training</Badge>}
             <span className='text-gray-400'>
-              {new Date(game.created_at).toLocaleString()}
+              {new Date(game.createdAt || game.created_at).toLocaleString()}
             </span>
             {game.finished_at && (
               <>

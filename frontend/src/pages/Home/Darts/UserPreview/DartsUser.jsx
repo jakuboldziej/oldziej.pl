@@ -135,7 +135,7 @@ function DartsUser() {
         <Loading />
       ) :
         <div className='darts-page'>
-          <DailyRewind dailyRewind={dailyRewind} currentUser={currentUser} username={username} />
+          <DailyRewind dailyRewind={dailyRewind} username={username} />
 
           {analytics && (
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-8'>
