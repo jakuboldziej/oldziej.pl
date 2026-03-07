@@ -1,4 +1,4 @@
-import { createContext, useEffect, useMemo, useState, useRef } from 'react';
+import { createContext, useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import {
   subscribeToGameUpdates,
   subscribeToOverthrows,
@@ -301,9 +301,9 @@ export const DartsGameContextProvider = ({ children }) => {
     localStorage.setItem("dartsGame", JSON.stringify(gameP));
   };
 
-  const setHandleShow = (handleShowFn) => {
+  const setHandleShow = useCallback((handleShowFn) => {
     handleShowRef.current = handleShowFn;
-  };
+  }, []);
 
   const contextParams = {
     game,

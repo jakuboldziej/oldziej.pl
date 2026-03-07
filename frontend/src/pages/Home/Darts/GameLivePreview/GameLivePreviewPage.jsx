@@ -1,5 +1,6 @@
 import GameLivePreview from '@/components/Home/Darts/GameLivePreview/GameLivePreview';
 import JoiningLiveGame from '@/components/Home/Darts/GameLivePreview/JoiningLiveGame';
+import { getDartsGame } from '@/lib/fetch';
 import { socket, trackRoom, untrackRoom } from '@/lib/socketio';
 import React, { useEffect, useState, useRef } from 'react';
 
@@ -48,7 +49,6 @@ function GameLivePreviewPage() {
       setLiveGame(game);
     };
 
-
     const handleTransition = (data) => {
       const game = typeof data === 'string' ? JSON.parse(data) : data;
       handleInitialJoin(game);
@@ -78,10 +78,17 @@ function GameLivePreviewPage() {
       if (data?.nextGame) handleInitialJoin(data.nextGame);
     });
 
-    const urlGameCode = new URLSearchParams(window.location.search).get("gameCode");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlGameCode = urlParams.get("gameCode");
+
     if (urlGameCode) {
       getDartsGame(urlGameCode).then((game) => {
-        if (game) handleInitialJoin(game);
+        if (game) {
+          handleInitialJoin(game);
+
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        }
       });
     }
 

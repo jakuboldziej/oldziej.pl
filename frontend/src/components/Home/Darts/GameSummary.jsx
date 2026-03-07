@@ -18,6 +18,7 @@ function GameSummary({ show, setShow }) {
 
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [noMoreMatches, setNoMoreMatches] = useState(false);
 
   const gameRef = useRef(game);
 
@@ -77,6 +78,8 @@ function GameSummary({ show, setShow }) {
     const tournamentNextGameLoaded = async ({ nextGame }) => {
       const gameWithRecord = ensureGameRecord(nextGame);
 
+      updateGameState(gameWithRecord);
+
       localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
 
       socket.emit("joinLiveGamePreview", JSON.stringify({
@@ -86,10 +89,16 @@ function GameSummary({ show, setShow }) {
       navigate("/darts/game");
     };
 
+    const tournamentNoNextGame = async () => {
+      setNoMoreMatches(true);
+    }
+
     socket.on("tournament:nextGame", tournamentNextGameLoaded);
+    socket.on("tournament:noNextGame", tournamentNoNextGame);
 
     return () => {
       socket.off("tournament:nextGame", tournamentNextGameLoaded);
+      socket.off("tournament:noNextGame", tournamentNoNextGame);
     };
   }, []);
 
@@ -111,6 +120,7 @@ function GameSummary({ show, setShow }) {
   }
 
   const handleNextGame = async () => {
+    setShow(false);
     socket.emit("tournamentNextGame", {
       tournamentCode: game.tournamentId.tournamentCode,
       currentGameCode: game.gameCode
@@ -210,9 +220,9 @@ function GameSummary({ show, setShow }) {
                   variant="outline_red"
                   className="glow-button-red"
                   onClick={handleNextGame}
-                  disabled={isCurrentRoundFinished || !canUserInteract}
+                  disabled={noMoreMatches || isCurrentRoundFinished || !canUserInteract}
                 >
-                  Next game
+                  {noMoreMatches || isCurrentRoundFinished ? "Tournament Finished" : "Next game"}
                 </Button>
               </>
             ) : (

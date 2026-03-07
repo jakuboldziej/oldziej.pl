@@ -404,7 +404,7 @@ io.on('connection', (socket) => {
 
       const nextMatch = matchesInRound.find(m => m.status === 'active');
       if (!nextMatch) {
-        socket.emit("tournamentNoNextGame");
+        io.to(`game-${currentGameCode}`).emit("tournament:noNextGame");
         return;
       }
 

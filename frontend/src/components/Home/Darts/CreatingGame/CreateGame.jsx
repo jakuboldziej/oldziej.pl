@@ -216,7 +216,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
 
       if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
       if (createType === "TOURNEY") {
-        if (usersPlaying.length < 4) return ShowNewToast("Game settings", "You have to select at least 4 players to play");
+        if (selectTourneyType === "bracket" && usersPlaying.length < 4) return ShowNewToast("Game settings", "You have to select at least 4 players to play");
+        else if (selectTourneyType === "ffa" && usersPlaying.length < 3) return ShowNewToast("Game settings", "You have to select at least 3 players to play");
       } else {
         if (usersPlaying.length === 1 && isTraining === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
       }

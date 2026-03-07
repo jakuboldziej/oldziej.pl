@@ -87,23 +87,35 @@ class DartsTournamentManager {
       if (!tournament) throw new Error("DartsTournament not found");
 
       const players = tournament.participants;
-      const matchDocs = [];
+      const pairings = [];
 
       for (let i = 0; i < players.length; i++) {
         for (let j = i + 1; j < players.length; j++) {
-          const newMatch = new DartsTournamentMatch({
-            round: 1,
-            matchIndex: matchDocs.length,
-            player1: players[i],
-            player2: players[j],
-            status: 'active'
-          });
-
-          const newGame = await this._initializeGameForMatch(tournament, newMatch);
-          newMatch.gameId = newGame._id;
-
-          matchDocs.push(newMatch);
+          pairings.push([players[i], players[j]]);
         }
+      }
+
+      const shuffledPairings = pairings.sort(() => Math.random() - 0.5);
+
+      const matchDocs = [];
+
+      for (let i = 0; i < shuffledPairings.length; i++) {
+        const [playerA, playerB] = shuffledPairings[i];
+
+        const p1Starts = Math.random() > 0.5;
+
+        const newMatch = new DartsTournamentMatch({
+          round: 1,
+          matchIndex: i,
+          player1: p1Starts ? playerA : playerB,
+          player2: p1Starts ? playerB : playerA,
+          status: 'active'
+        });
+
+        const newGame = await this._initializeGameForMatch(tournament, newMatch);
+        newMatch.gameId = newGame._id;
+
+        matchDocs.push(newMatch);
       }
 
       const savedMatches = await DartsTournamentMatch.insertMany(matchDocs);
