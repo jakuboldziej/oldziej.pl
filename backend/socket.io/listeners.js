@@ -3,6 +3,7 @@ const { addingOnlineUser, scheduleUserOffline } = require('./utils');
 const { getGameManager, removeGameManager } = require('../services/dartsGameManager');
 const { logger } = require('../middleware/logging');
 const DartsGame = require('../models/darts/dartsGame');
+const DartsTournament = require('../models/darts/dartsTournament');
 
 const socketAuthMiddleware = (socket, next) => {
   const handshake = socket.handshake;
@@ -365,9 +366,59 @@ io.on('connection', (socket) => {
 
   // Darts Tournament
 
-  socket.on("joinTournamentControl", (tournamentId) => {
-    socket.join(`tournament-spectator-${tournamentId}`);
-    logger.info(`GM joined spectator room for tournament: ${tournamentId}`);
+  socket.on("joinTournamentControl", (tournamentCode) => {
+    socket.join(`tournament-spectator-${tournamentCode}`);
+
+    logger.info(`User joined spectator room for tournament: ${tournamentCode}`);
+  });
+
+  socket.on("leaveTournamentControl", (tournamentCode) => {
+    socket.leave(`tournament-spectator-${tournamentCode}`);
+
+    logger.info(`Socket ${socket.id} left tournament ${tournamentCode}`);
+  });
+
+  socket.on("tournamentNextGame", async ({ tournamentCode, currentGameCode }) => {
+    try {
+      const tournament = await DartsTournament.findOne({ tournamentCode })
+
+      if (!tournament) return;
+
+      const rounds = tournament.matches.map(m => m.round);
+      const currentRound = Math.min(
+        ...rounds.filter(r =>
+          tournament.matches.some(m => m.round === r && m.status !== 'completed')
+        )
+      );
+
+      const matchesInRound = tournament.matches.filter(
+        m => m.round === currentRound && m.player1 && m.player2 && m.gameId
+      );
+
+      matchesInRound.forEach(match => {
+        if (match.status !== 'completed') {
+          match.status = 'active';
+        }
+      });
+      await Promise.all(matchesInRound.map(m => m.save()));
+
+      const nextMatch = matchesInRound.find(m => m.status === 'active');
+      if (!nextMatch) {
+        socket.emit("tournamentNoNextGame");
+        return;
+      }
+
+      nextMatch.status = "active";
+      await nextMatch.save();
+
+      const nextGame = await DartsGame.findById(nextMatch.gameId);
+
+      io.to(`game-${currentGameCode}`).emit("tournament:nextGame", {
+        nextGame
+      });
+    } catch (err) {
+      console.error(err);
+    }
   });
 
   // Handling Online Users
@@ -406,6 +457,12 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', (reason) => {
     activeConnections.delete(socket.id);
+
+    // Leave all tournament rooms
+    socket.rooms.forEach(room => {
+      socket.leave(room);
+    });
+
     scheduleUserOffline(socket.id, io);
   });
 

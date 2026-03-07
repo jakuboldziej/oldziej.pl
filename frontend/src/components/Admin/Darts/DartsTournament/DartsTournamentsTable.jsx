@@ -2,42 +2,41 @@ import { Button } from '@/components/ui/shadcn/button';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/shadcn/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/shadcn/table';
-import { deleteDartsGame, getDartsGames } from '@/lib/fetch';
+import { deleteDartsTournament, getDartsTournaments } from '@/lib/fetch';
 import { Copy, Grip, Trash, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import Loading from '../../Home/Loading';
 import MyTooltip from '@/components/Home/MyComponents/MyTooltip';
 import CopyTextButton from '@/components/Home/CopyTextButton';
 import { ScrollArea, ScrollBar } from '@/components/ui/shadcn/scroll-area';
 import { useNavigate } from 'react-router';
+import Loading from '@/components/Home/Loading';
 
-function DartsGamesTable({ props }) {
+function DartsTournamentsTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
 
   const navigate = useNavigate();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [dartsGames, setDartsGames] = useState([]);
+  const [dartsTournaments, setDartsTournaments] = useState([]);
   const [isLoading, setIsLoading] = useState({
     data: true,
     delete: false
   });
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedGame, setSelectedGame] = useState(null);
+  const [selectedTournament, setSelectedTournament] = useState(null);
 
-  const handleDialogOpen = (game) => {
+  const handleDialogOpen = (tournament) => {
     setDialogOpen(true);
-    setSelectedGame(game);
+    setSelectedTournament(tournament);
   }
 
-  const handleDeleteGame = async () => {
+  const handleDeleteTournament = async () => {
     try {
       setIsLoading((prev) => ({ ...prev, delete: true }));
 
-      await deleteDartsGame(selectedGame._id);
-
+      await deleteDartsTournament(selectedTournament._id);
       setDialogOpen(false);
-      setDartsGames((prev) => prev.filter((game) => game._id !== selectedGame._id));
+      setDartsTournaments((prev) => prev.filter((tournament) => tournament._id !== selectedTournament._id));
     } catch (error) {
       console.error(error);
     } finally {
@@ -45,9 +44,9 @@ function DartsGamesTable({ props }) {
     }
   }
 
-  const handleDisplayDate = (gameDate) => {
-    if (gameDate === undefined) return "";
-    return new Date(gameDate).toLocaleString();
+  const handleDisplayDate = (tournamentDate) => {
+    if (tournamentDate === undefined) return "";
+    return new Date(tournamentDate).toLocaleString();
   }
 
   const handleScroll = (event) => {
@@ -57,27 +56,27 @@ function DartsGamesTable({ props }) {
     }
   };
 
-  const fetchMoreGames = async () => {
+  const fetchMoreTournaments = async () => {
     try {
-      const fetchedGames = await getDartsGames(null, 10 * currentPage, null);
-      setDartsGames(fetchedGames);
+      const fetchedTournaments = await getDartsTournaments(null, 10 * currentPage, null);
+      setDartsTournaments(fetchedTournaments);
     } catch (err) {
-      console.error('Error fetching more games', err);
+      console.error('Error fetching more tournaments', err);
     }
   };
 
   useEffect(() => {
     if (currentPage > 1) {
-      fetchMoreGames();
+      fetchMoreTournaments();
     }
   }, [currentPage]);
 
   useEffect(() => {
-    const fetchInitialDartsGames = async () => {
+    const fetchInitialDartsTournaments = async () => {
       setIsLoading((prev) => ({ ...prev, data: true }));
       try {
-        const fetchedDartsGames = await getDartsGames(null, 10, null);
-        setDartsGames(fetchedDartsGames);
+        const fetchedDartsTournaments = await getDartsTournaments(null, 10, null);
+        setDartsTournaments(fetchedDartsTournaments);
       } catch (err) {
         console.error('Error fetching', err);
       } finally {
@@ -85,13 +84,13 @@ function DartsGamesTable({ props }) {
       }
     }
 
-    if (refreshingData === true || dartsGames.length === 0) {
-      fetchInitialDartsGames();
+    if (refreshingData === true || dartsTournaments.length === 0) {
+      fetchInitialDartsTournaments();
       setRefreshingData(false);
     }
   }, [refreshingData]);
 
-  const visibleGames = dartsGames.length > 0 && dartsGames.slice(0, 10 * currentPage);
+  const visibleTournaments = dartsTournaments.length > 0 && dartsTournaments.slice(0, 10 * currentPage);
 
   return (
     <>
@@ -104,38 +103,34 @@ function DartsGamesTable({ props }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[100px]">ID</TableHead>
-                  <TableHead>Created by</TableHead>
-                  <TableHead>Game code</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Tournament Code</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Admin</TableHead>
+                  <TableHead>Settings</TableHead>
+                  <TableHead>Participants</TableHead>
+                  <TableHead>Matches</TableHead>
                   <TableHead>Created at</TableHead>
-                  <TableHead>Finished at</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Podiums</TableHead>
-                  <TableHead className="text-center">Podium</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead>Game mode</TableHead>
-                  <TableHead>Start points</TableHead>
-                  <TableHead>Checkout</TableHead>
-                  <TableHead>Sets</TableHead>
-                  <TableHead>Legs</TableHead>
-                  <TableHead>Training</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleGames.length > 0 && visibleGames.map((game) => (
-                  <TableRow onClick={() => navigate(`/darts/games/${game.gameCode}`)} className='hover:bg-slate-900 cursor-pointer' key={game._id}>
-                    <TableCell className="font-medium">{game._id}</TableCell>
-                    <TableCell>{game.created_by}</TableCell>
+                {visibleTournaments.length > 0 && visibleTournaments.map((tournament) => (
+                  <TableRow onClick={() => navigate(`/darts/tournament/${tournament.tournamentCode}`)} className='hover:bg-slate-900 cursor-pointer' key={tournament._id}>
+                    <TableCell className="font-medium">{tournament._id}</TableCell>
+                    <TableCell>{tournament.name}</TableCell>
+                    <TableCell>{tournament.settings.type}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
-                        {game.gameCode}
+                        {tournament.tournamentCode}
                         <div
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                           onTouchStart={(e) => e.stopPropagation()}
                         >
                           <CopyTextButton
-                            textToCopy={game.gameCode}
+                            textToCopy={tournament.tournamentCode}
                             toastTitle="Code copied"
                             toastDesc="Code copied to clipboard"
                           >
@@ -146,37 +141,33 @@ function DartsGamesTable({ props }) {
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell>{tournament.status}</TableCell>
+                    <TableCell>{tournament.admin}</TableCell>
                     <TableCell>
-                      <MyTooltip title={handleDisplayDate(game.createdAt || game.created_at)}>
-                        <span className="timedate">{handleDisplayDate(game.createdAt || game.created_at)}</span>
+                      <MyTooltip
+                        title={Object.entries(tournament.settings).map(([key, value]) => (
+                          <div key={key}>
+                            <strong>{key}:</strong> {String(value)}
+                          </div>
+                        ))}
+                      >
+                        <span>Settings</span>
                       </MyTooltip>
                     </TableCell>
                     <TableCell>
-                      <MyTooltip title={handleDisplayDate(game.finished_at)}>
-                        <span className="timedate">{handleDisplayDate(game.finished_at)}</span>
+                      <MyTooltip title={tournament.participants.map((participant) => participant).join(", ")} >
+                        <span>Participants</span>
                       </MyTooltip>
                     </TableCell>
                     <TableCell>
-                      <MyTooltip title={game.users.map((user) => user.displayName).join(", ")}>
-                        <span>{game.users.length}</span>
+                      <MyTooltip title={tournament.matches.map((match) => `R: ${match.round} M: ${match.matchIndex}`).join(", ")} >
+                        <span>Matches</span>
                       </MyTooltip>
                     </TableCell>
-                    <TableCell>{game.podiums}</TableCell>
-                    <TableCell className="text-center flex items-center justify-center gap-1">
-                      {game.podium[1] && <span>1. {game.podium[1]}</span>}
-                      {game.podium[2] && <span>2. {game.podium[2]}</span>}
-                      {game.podium[3] && <span>3. {game.podium[3]}</span>}
-                    </TableCell>
-                    <TableCell>{game.active ? "Yes" : "No"}</TableCell>
-                    <TableCell>{game.gameMode}</TableCell>
-                    <TableCell>{game.startPoints}</TableCell>
-                    <TableCell>{game.checkOut}</TableCell>
-                    <TableCell>{game.sets}</TableCell>
-                    <TableCell>{game.legs}</TableCell>
                     <TableCell>
-                      <span className={game.training ? "text-yellow-500" : ""}>
-                        {game.training ? "Yes" : "No"}
-                      </span>
+                      <MyTooltip title={handleDisplayDate(tournament.createdAt || tournament.created_at)}>
+                        <span className="timedate">{handleDisplayDate(tournament.createdAt || tournament.created_at)}</span>
+                      </MyTooltip>
                     </TableCell>
                     <TableCell className="text-right">
                       <div
@@ -191,9 +182,9 @@ function DartsGamesTable({ props }) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="mr-5">
-                            <DropdownMenuLabel>{game.gameCode}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{tournament.tournamentCode}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => handleDialogOpen(game)}>
+                            <DropdownMenuItem onClick={() => handleDialogOpen(tournament)}>
                               <Trash height={20} /> Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -211,17 +202,17 @@ function DartsGamesTable({ props }) {
       } <Dialog open={dialogOpen}>
         <DialogContent>
           <DialogHeader className="text-white">
-            <DialogTitle className='flex justify-center text-2xl'>Delete {selectedGame?.displayName}</DialogTitle>
+            <DialogTitle className='flex justify-center text-2xl'>Delete {selectedTournament?.displayName}</DialogTitle>
             <DialogClose onClick={() => setDialogOpen(false)}>
               <X className="absolute right-2 top-2" />
             </DialogClose>
             <DialogDescription>
-              Are you sure you want to delete game with ID: {selectedGame?._id}?
+              Are you sure you want to delete tournament with ID: {selectedTournament?._id}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
             <Button variant='outline_red' disabled={isLoading.delete} onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_green' disabled={isLoading.delete} onClick={handleDeleteGame}>Delete</Button>
+            <Button variant='outline_green' disabled={isLoading.delete} onClick={handleDeleteTournament}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -229,4 +220,4 @@ function DartsGamesTable({ props }) {
   )
 }
 
-export default DartsGamesTable;
+export default DartsTournamentsTable;

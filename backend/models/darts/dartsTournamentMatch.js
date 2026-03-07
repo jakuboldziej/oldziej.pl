@@ -1,17 +1,15 @@
 const mongoose = require("mongoose")
 const { dartsConn } = require("../../server")
 
-const dartsTournamentMatch = new mongoose.Schema({
+const DartsTournamentMatch = new mongoose.Schema({
   round: Number,
   matchIndex: Number,
   player1: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'DartsUser',
+    type: String,
     default: null
   },
   player2: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'DartsUser',
+    type: String,
     default: null
   },
   gameId: {
@@ -20,8 +18,7 @@ const dartsTournamentMatch = new mongoose.Schema({
     default: null
   },
   winner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'DartsUser',
+    type: String,
     default: null
   },
   status: {
@@ -33,4 +30,4 @@ const dartsTournamentMatch = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = dartsConn.model('DartsTournamentMatch', dartsTournamentMatch)
+module.exports = dartsConn.model('DartsTournamentMatch', DartsTournamentMatch)

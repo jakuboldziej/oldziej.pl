@@ -1,132 +1,106 @@
 import GameLivePreview from '@/components/Home/Darts/GameLivePreview/GameLivePreview';
 import JoiningLiveGame from '@/components/Home/Darts/GameLivePreview/JoiningLiveGame';
-import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { socket, trackRoom, untrackRoom } from '@/lib/socketio';
-import React, { useEffect, useState, useContext, useRef } from 'react';
-import { AuthContext } from '@/context/Home/AuthContext';
+import React, { useEffect, useState, useRef } from 'react';
 
 function GameLivePreviewPage() {
-  const { currentUser } = useContext(AuthContext);
-
   const [liveGame, setLiveGame] = useState(null);
   const [overthrow, setOverthrow] = useState(false);
-  const liveGameRef = useRef(null);
+  const joinedRoomRef = useRef(null);
 
-  useEffect(() => {
-    liveGameRef.current = liveGame;
-  }, [liveGame]);
+  const handleInitialJoin = (game) => {
+    if (!game?.gameCode) return;
 
-  // Overthrow effect
-  useEffect(() => {
-    let timer;
-
-    if (overthrow) {
-      timer = setTimeout(() => {
-        setOverthrow(false);
-      }, 1000);
+    if (joinedRoomRef.current === game.gameCode) {
+      setLiveGame(game);
+      return;
     }
 
-    return () => {
-      clearTimeout(timer);
-    };
+    if (joinedRoomRef.current) {
+      socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode: joinedRoomRef.current }));
+      untrackRoom(joinedRoomRef.current);
+    }
+
+    socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode: game.gameCode }));
+    trackRoom(game.gameCode);
+    joinedRoomRef.current = game.gameCode;
+
+    setLiveGame(game);
+  };
+
+  useEffect(() => {
+    let timer;
+    if (overthrow) timer = setTimeout(() => setOverthrow(false), 1000);
+    return () => clearTimeout(timer);
   }, [overthrow]);
 
-  // Socket.io
   useEffect(() => {
     socket.connect();
 
-    const updateLiveGamePreviewClient = (data) => {
-      const gameData = JSON.parse(data);
-      setLiveGame(gameData);
-    }
+    const handleUpdate = (data) => {
+      const game = typeof data === 'string' ? JSON.parse(data) : data;
 
-    const joinLiveGameFromQrCodeClient = (data) => {
+      if (joinedRoomRef.current && game.gameCode !== joinedRoomRef.current) {
+        console.warn("Ignored update for different game:", game.gameCode);
+        return;
+      }
+
+      setLiveGame(game);
+    };
+
+
+    const handleTransition = (data) => {
+      const game = typeof data === 'string' ? JSON.parse(data) : data;
+      handleInitialJoin(game);
+    };
+
+    const overthrowHandler = (userDisplayName) => setOverthrow(userDisplayName);
+
+    const hostDisconnect = (disconnected) => {
+      if (disconnected && joinedRoomRef.current) {
+        socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode: joinedRoomRef.current }));
+        untrackRoom(joinedRoomRef.current);
+        joinedRoomRef.current = null;
+      }
+      setLiveGame(null);
+    };
+
+    socket.on("updateLiveGamePreviewClient", handleUpdate);
+    socket.on("gameCreated", handleTransition);
+    socket.on("playAgainButtonClient", handleTransition);
+    socket.on("userOverthrowClient", overthrowHandler);
+    socket.on("hostDisconnectedFromGameClient", hostDisconnect);
+    socket.on("joinLiveGameFromQrCodeClient", (data) => {
       const joinData = JSON.parse(data);
-      if (joinData.socketId === socket.id) {
-        trackRoom(joinData.game.gameCode);
-        socket.emit("joinLiveGamePreview", JSON.stringify({
-          gameCode: joinData.game.gameCode
-        }));
+      if (joinData.socketId === socket.id) handleInitialJoin(joinData.game);
+    });
+    socket.on("tournament:nextGame", (data) => {
+      if (data?.nextGame) handleInitialJoin(data.nextGame);
+    });
 
-        setLiveGame(joinData.game);
-      }
+    const urlGameCode = new URLSearchParams(window.location.search).get("gameCode");
+    if (urlGameCode) {
+      getDartsGame(urlGameCode).then((game) => {
+        if (game) handleInitialJoin(game);
+      });
     }
-
-    const gameCreated = (data) => {
-      const { game, userDisplayNames } = JSON.parse(data);
-
-      if (userDisplayNames.includes(currentUser.displayName)) {
-        trackRoom(game.gameCode);
-        socket.emit("joinLiveGamePreview", JSON.stringify({
-          gameCode: game.gameCode
-        }));
-
-        setLiveGame(game);
-      }
-    }
-
-    const playAgainButtonClient = (data) => {
-      const gameData = JSON.parse(data);
-
-      if (liveGameRef.current && liveGameRef.current.gameCode && liveGameRef.current.gameCode !== gameData.gameCode) {
-        untrackRoom(liveGameRef.current.gameCode);
-        socket.emit("leaveLiveGamePreview", JSON.stringify({
-          gameCode: liveGameRef.current.gameCode
-        }));
-      }
-
-      trackRoom(gameData.gameCode);
-      socket.emit("joinLiveGamePreview", JSON.stringify({
-        gameCode: gameData.gameCode
-      }));
-
-      setLiveGame(gameData);
-
-      ShowNewToast("Live Game Preview", "Host clicked play again button and started a new game!")
-    }
-
-    const handleOverthrowEffect = (userDisplayName) => {
-      setOverthrow(userDisplayName);
-    }
-
-    const hostDisconnectedFromGameClient = (disconnected) => {
-      if (disconnected) {
-        setLiveGame(null);
-        ShowNewToast("Live Game Preview", "Host disconnected from the game.")
-      }
-    }
-
-    socket.on("gameCreated", gameCreated);
-    socket.on("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
-    socket.on("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
-    socket.on("playAgainButtonClient", playAgainButtonClient);
-    socket.on("userOverthrowClient", handleOverthrowEffect);
-    socket.on("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
 
     return () => {
-      socket.off("gameCreated", gameCreated);
-      socket.off("updateLiveGamePreviewClient", updateLiveGamePreviewClient);
-      socket.off("joinLiveGameFromQrCodeClient", joinLiveGameFromQrCodeClient);
-      socket.off("playAgainButtonClient", playAgainButtonClient);
-      socket.off("userOverthrowClient", handleOverthrowEffect);
-      socket.off("hostDisconnectedFromGameClient", hostDisconnectedFromGameClient);
-    }
+      socket.off("updateLiveGamePreviewClient", handleUpdate);
+      socket.off("gameCreated", handleTransition);
+      socket.off("playAgainButtonClient", handleTransition);
+      socket.off("userOverthrowClient", overthrowHandler);
+      socket.off("hostDisconnectedFromGameClient", hostDisconnect);
+      socket.off("joinLiveGameFromQrCodeClient");
+      socket.off("tournament:nextGame");
+    };
   }, []);
 
-  const componentsProps = {
-    liveGame,
-    setLiveGame,
-    overthrow
-  }
-  return (
-    <>
-      {liveGame ? (
-        <GameLivePreview props={componentsProps} />
-      ) : (
-        <JoiningLiveGame props={componentsProps} />
-      )}
-    </>
-  )
+  return liveGame ? (
+    <GameLivePreview props={{ liveGame, setLiveGame, overthrow }} />
+  ) : (
+    <JoiningLiveGame props={{ liveGame, setLiveGame, overthrow }} />
+  );
 }
 
-export default GameLivePreviewPage
+export default GameLivePreviewPage;

@@ -18,7 +18,10 @@ function AuthUsersTable({ props }) {
   const navigate = useNavigate();
 
   const [authUsers, setAuthUsers] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState({
+    data: true,
+    delete: false
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -28,9 +31,17 @@ function AuthUsersTable({ props }) {
   }
 
   const handleDeleteUser = async () => {
-    await handleDeleteAuthUser(selectedUser);
-    setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
-    setDialogOpen(false);
+    try {
+      setIsLoading((prev) => ({ ...prev, delete: true }));
+
+      await handleDeleteAuthUser(selectedUser);
+      setAuthUsers((prev) => prev.filter((user) => user.displayName !== selectedUser.displayName));
+      setDialogOpen(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading((prev) => ({ ...prev, delete: false }));
+    }
   }
 
   const handleVerified = async (user) => {
@@ -45,14 +56,14 @@ function AuthUsersTable({ props }) {
   }
 
   const fetchAuthUsers = async () => {
-    setIsLoading(true);
+    setIsLoading((prev) => ({ ...prev, data: true }));
     try {
       const resUsers = await getAuthUsers();
       setAuthUsers(resUsers);
     } catch (err) {
       console.error('Error fetching', err);
     } finally {
-      setIsLoading(false);
+      setIsLoading((prev) => ({ ...prev, data: false }));
     }
   }
 
@@ -65,7 +76,7 @@ function AuthUsersTable({ props }) {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading.data ? (
         <Loading />
       ) : (
         <div className="w-full overflow-x-auto">
@@ -150,8 +161,8 @@ function AuthUsersTable({ props }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
-            <Button variant='outline_green' onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_red' onClick={handleDeleteUser}>Delete</Button>
+            <Button variant='outline_green' disabled={isLoading.delete} onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_red' disabled={isLoading.delete} onClick={handleDeleteUser}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

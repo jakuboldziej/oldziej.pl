@@ -1,25 +1,37 @@
 import { useContext, useEffect, useState, useRef } from 'react';
 import { DartsGameContext } from '@/context/Home/DartsGameContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { getESP32Availability, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
-import lodash from 'lodash';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './utils/gameUtils';
-import { isInitialGameState } from '@/lib/recordUtils';
+import { ensureGameRecord, isInitialGameState } from '@/lib/recordUtils';
 import { AuthContext } from '@/context/Home/AuthContext';
 
 function GameSummary({ show, setShow }) {
-  const { game, updateGameState, handleRound } = useContext(DartsGameContext);
+  const { game, setGame, updateGameState, handleRound } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
+
+  const navigate = useNavigate();
 
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
   const gameRef = useRef(game);
 
-  const isCurrentUserInGame = game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName);
+  const canUserInteract = game &&
+    currentUser &&
+    (game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName) || game?.tournamentId?.admin === currentUser.displayName);
+
+  const currentMatch = game.tournamentId?.matches?.find(m => m.gameId === game._id);
+
+  const isCurrentRoundFinished = currentMatch
+    ? game.tournamentId.matches
+      .filter(m => m.round === currentMatch.round)
+      .every(m => m.status === 'completed')
+    : false;
 
   useEffect(() => {
     gameRef.current = game;
@@ -61,6 +73,26 @@ function GameSummary({ show, setShow }) {
     };
   }, [updateGameState, setShow]);
 
+  useEffect(() => {
+    const tournamentNextGameLoaded = async ({ nextGame }) => {
+      const gameWithRecord = ensureGameRecord(nextGame);
+
+      localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
+
+      socket.emit("joinLiveGamePreview", JSON.stringify({
+        gameCode: nextGame.gameCode
+      }));
+
+      navigate("/darts/game");
+    };
+
+    socket.on("tournament:nextGame", tournamentNextGameLoaded);
+
+    return () => {
+      socket.off("tournament:nextGame", tournamentNextGameLoaded);
+    };
+  }, []);
+
   function handleShow() {
     setShow(true);
   }
@@ -78,12 +110,18 @@ function GameSummary({ show, setShow }) {
     }
   }
 
+  const handleNextGame = async () => {
+    socket.emit("tournamentNextGame", {
+      tournamentCode: game.tournamentId.tournamentCode,
+      currentGameCode: game.gameCode
+    });
+  }
+
   const handleDisabledBack = () => {
     if (game.training || game.podium[1] === null || isInitialGameState(game)) return true;
   }
 
   const handleSummaryBackButton = async () => {
-    // Backend now handles all state restoration via handleBack
     await handleRound("BACK", handleShow);
 
     setShow(false);
@@ -96,6 +134,7 @@ function GameSummary({ show, setShow }) {
       }));
 
       localStorage.setItem("dartsGame", null);
+      setGame(null);
 
       await postESP32LeaveGame(game.gameCode);
     } catch (err) {
@@ -158,12 +197,34 @@ function GameSummary({ show, setShow }) {
             <span className='text-xl text-red-500'>This game was abandoned</span>
           )}
           <span className='flex flex-col items-center gap-5 mt-5'>
-            <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={handleBackToDarts}>Create New Game</Link>
-            <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={handleBackToDarts}>Back to Darts</Link>
-            <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={isLoading || !isCurrentUserInGame}>
-              {isLoading ? 'Loading...' : 'Play Again'}
-            </Button>
-            <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack()}>Back</Button>
+            {game.tournamentId ? (
+              <>
+                <Link
+                  className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`}
+                  to={`/darts/tournament/${game.tournamentId?.tournamentCode}`}
+                  onClick={handleBackToDarts}
+                >
+                  Back to Tournament
+                </Link>
+                <Button
+                  variant="outline_red"
+                  className="glow-button-red"
+                  onClick={handleNextGame}
+                  disabled={isCurrentRoundFinished || !canUserInteract}
+                >
+                  Next game
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link className={`${buttonVariants({ variant: "outline_red" })} glow-button-red`} state={{ createNewGame: true }} to="/darts" onClick={handleBackToDarts}>Create New Game</Link>
+                <Link className={`${buttonVariants({ variant: "outline_green" })} glow-button-green`} to="/darts" onClick={handleBackToDarts}>Back to Darts</Link>
+                <Button variant="outline_white" className="glow-button-white" onClick={handlePlayAgain} disabled={isLoading || !canUserInteract}>
+                  {isLoading ? 'Loading...' : 'Play Again'}
+                </Button>
+                <Button variant="outline_red" className="glow-button-red" onClick={handleSummaryBackButton} disabled={handleDisabledBack() || !canUserInteract}>Back</Button>
+              </>
+            )}
           </span>
         </div>
       </DialogContent>

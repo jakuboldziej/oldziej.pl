@@ -29,7 +29,7 @@ function CloudFoldersTable({ props }) {
   }
 
   const fetchFolders = async () => {
-    setIsLoading(true);
+    setIsLoading((prev) => ({ ...prev, data: true }));
     try {
       const fetchedFolders = await getFolders();
       const foldersWithOwners = await Promise.all(
@@ -47,7 +47,7 @@ function CloudFoldersTable({ props }) {
     } catch (err) {
       console.error('Error fetching', err);
     } finally {
-      setIsLoading(false);
+      setIsLoading((prev) => ({ ...prev, data: false }));
     }
   }
 
@@ -60,7 +60,7 @@ function CloudFoldersTable({ props }) {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading.data ? (
         <Loading />
       ) : (
         <div className="w-full overflow-x-auto">
@@ -138,8 +138,8 @@ function CloudFoldersTable({ props }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
-            <Button variant='outline_red' onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_green' onClick={handleDeleteFolder}>Delete</Button>
+            <Button variant='outline_red' disabled={isLoading.delete} onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_green' disabled={isLoading.delete} onClick={handleDeleteFolder}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

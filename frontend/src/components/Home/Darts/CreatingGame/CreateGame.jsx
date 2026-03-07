@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getAuthUser, getDartsUser, getESP32Availability, postDartsGame, postESP32JoinGame } from "@/lib/fetch";
+import { getAuthUser, getDartsUser, getESP32Availability, postDartsGame, postDartsTournament, postESP32JoinGame } from "@/lib/fetch";
 import { socket, ensureSocketConnection } from "@/lib/socketio";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
@@ -31,6 +31,7 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
   const [selectSets, setSelectSets] = useState(0);
   const [selectLegs, setSelectLegs] = useState(1);
   const [usersPodium, setUsersPodium] = useState("None");
+  const [selectTourneyType, setSelectTourneyType] = useState("bracket");
   const [isTraining, setIsTraining] = useState(false);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState('');
@@ -221,9 +222,14 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
       }
       if (selectLegs === 0 && selectSets === 0) return ShowNewToast("Game settings", "You must set at least legs or sets to a value greater than 0");
 
-      handleCreateNewGameLogic();
+      if (createType === "TOURNEY") {
+        const newTournamentCode = await handleCreateNewTournament();
+        navigate(`tournament/${newTournamentCode}`);
+      } else if (createType === "X01") {
+        handleCreateNewGame();
+        navigate("game");
+      }
 
-      navigate("game");
     } catch (error) {
       console.error(error);
       ShowNewToast("Error starting game", error.message);
@@ -232,7 +238,30 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
     }
   }
 
-  const handleCreateNewGameLogic = async () => {
+  const handleCreateNewTournament = async () => {
+    const tournamentData = {
+      name: `${currentUser.displayName}'s Tournament`,
+      admin: currentUser.displayName,
+      participants: usersPlaying.map((user) => user.displayName),
+      status: "in_progress",
+      settings: {
+        type: selectTourneyType,
+        gameMode: selectGameMode,
+        startPoints: selectStartPoints,
+        checkOut: selectCheckOut,
+        legs: selectLegs,
+        sets: selectSets
+      },
+    };
+
+    const newTournament = await postDartsTournament(tournamentData);
+
+    await ensureSocketConnection();
+
+    return newTournament.tournamentCode;
+  }
+
+  const handleCreateNewGame = async () => {
     const throwsData = {
       doors: 0,
       doubles: 0,
@@ -283,8 +312,8 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
       gameMode: selectGameMode,
       startPoints: selectStartPoints,
       checkOut: selectCheckOut,
-      sets: selectGameMode === "X01" ? selectSets : 1,
-      legs: selectGameMode === "X01" ? selectLegs : 1,
+      legs: selectLegs,
+      sets: selectSets,
       round: 1,
     }
 
@@ -493,7 +522,22 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
                 )}
 
                 <div className="selects">
-                  {createType !== "TOURNEY" && (
+                  {createType === "TOURNEY" ? (
+                    <>
+                      <div className="text-xl">Type</div>
+                      <Select onValueChange={(value) => setSelectTourneyType(value)} value={selectTourneyType} modal={false}>
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="bracket">Bracket</SelectItem>
+                            <SelectItem value="ffa">FFA</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </>
+                  ) : (
                     <>
                       <div className="text-xl">Podium</div>
                       <Select onValueChange={(value) => setUsersPodium(value)} value={usersPodium} modal={false}>

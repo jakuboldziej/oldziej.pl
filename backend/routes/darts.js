@@ -9,6 +9,9 @@ const { logger } = require("../middleware/logging")
 const { io } = require('../server')
 const dartsTournamentManager = require('../services/dartsTournamentManager');
 const DartsTournament = require('../models/darts/dartsTournament');
+const { generateUniqueDartsCode } = require("../lib/dartsUtils");
+const DartsTournamentMatch = require("../models/darts/dartsTournamentMatch");
+const { recalcUsersStats, recalcUserStats } = require("../lib/dartsStatsUtil");
 
 const getDartsUser = async (req, res, next) => {
   let user;
@@ -39,7 +42,7 @@ const getDartsGame = async (req, res, next) => {
     }
 
     if (!game) {
-      return res.status(404).json({ message: "Game code is wrong." });
+      return res.status(404).json({ message: "Game not found!" });
     }
 
     res.game = game;
@@ -49,13 +52,25 @@ const getDartsGame = async (req, res, next) => {
   next();
 }
 
-export const generateUniqueGameCode = async () => {
-  let gameCode;
+const getDartsTournament = async (req, res, next) => {
+  try {
+    let tournament;
 
-  do {
-    gameCode = Math.floor(1000 + Math.random() * 9000);
-  } while (await DartsGame.findOne({ gameCode: gameCode.toString() }));
-  return gameCode.toString();
+    if (Types.ObjectId.isValid(req.params.identifier)) {
+      tournament = await DartsTournament.findById(req.params.identifier);
+    } else {
+      tournament = await DartsTournament.findOne({ tournamentCode: req.params.identifier });
+    }
+
+    if (!tournament) {
+      return res.status(404).json({ message: "Tournament not found!" });
+    }
+
+    res.tournament = tournament;
+    next();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 }
 
 // Darts Games
@@ -81,7 +96,7 @@ router.post('/dartsGames', authenticateUser, async (req, res) => {
       sets: body.sets,
       legs: body.legs,
       round: 1,
-      gameCode: await generateUniqueGameCode(),
+      gameCode: await generateUniqueDartsCode(),
       training: body.training || false
     });
 
@@ -153,12 +168,127 @@ router.patch("/dartsGames/:identifier", authenticateUser, getDartsGame, async (r
 
 router.delete('/dartsGames/:identifier', authenticateUser, getDartsGame, async (req, res) => {
   try {
-    await DartsGame.deleteOne({ _id: res.game._id });
+    const game = res.game;
+
+    if (!game) {
+      return res.status(404).json({ message: "Game not found" });
+    }
+
+    const affectedUsers = game.users.map(u => u.displayName);
+
+    await DartsGame.deleteOne({ _id: game._id });
+
+    await recalcUsersStats(affectedUsers);
 
     logger.info("DELETE DartsGame", { method: req.method, url: req.url, data: res.game });
     res.json({ message: 'Game deleted successfully' });
   } catch (err) {
     logger.error("DELETE DartsGame", { method: req.method, url: req.url, error: err.message });
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Darts Tournament
+
+router.post('/dartsTournaments', authenticateUser, async (req, res) => {
+  try {
+    const { settings } = req.body;
+    const tournament = new DartsTournament({
+      ...req.body,
+      tournamentCode: `T-${await generateUniqueDartsCode()}`,
+    });
+    await tournament.save();
+
+    let tournemantWithMatches;
+
+    if (settings.type === "bracket") tournemantWithMatches = await dartsTournamentManager.generateBracket(tournament._id);
+    if (settings.type === "ffa") tournemantWithMatches = await dartsTournamentManager.generateFFAMatches(tournament._id);
+    else {
+      res.status({ message: "Settings Type wrong" });
+    }
+
+    if (!tournemantWithMatches) throw new Error("Failed generating dartsTournament");
+
+    res.status(201).json(tournemantWithMatches);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.get('/dartsTournaments', authenticateUser, async (req, res) => {
+  try {
+    let filter = {};
+    const userDisplayName = req.query.user
+    const limit = req.query.limit
+
+    if (userDisplayName) filter.participants = { $elemMatch: { displayName: userDisplayName } };
+
+    const dartsTournaments = await DartsTournament.find(filter, null, { limit: limit, sort: { createdAt: -1, created_at: -1 } });
+    res.json(dartsTournaments)
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+});
+
+router.get('/dartsTournaments/:identifier', authenticateUser, getDartsTournament, async (req, res) => {
+  res.json(res.tournament)
+});
+
+router.get('/dartsTournaments/:id/games', authenticateUser, async (req, res) => {
+  try {
+    const games = await DartsGame.find({ tournamentId: req.params.id });
+    res.json(games);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.delete('/dartsTournaments/:identifier', authenticateUser, getDartsTournament, async (req, res) => {
+  try {
+    const tournament = res.tournament;
+
+    const matches = await DartsTournamentMatch.find({
+      _id: { $in: tournament.matches }
+    });
+
+    const gameIds = matches
+      .map(m => m.gameId)
+      .filter(id => id !== null);
+
+    const affectedUsers = new Set();
+
+    for (const match of matches) {
+      if (match.gameId) {
+        const game = await DartsGame.findById(match.gameId);
+
+        if (game) {
+          game.users.forEach(u => affectedUsers.add(u.displayName));
+        }
+      }
+    }
+
+    if (gameIds.length > 0) {
+      await DartsGame.deleteMany({ _id: { $in: gameIds } });
+    }
+
+    await recalcUsersStats([...affectedUsers]);
+
+    await DartsTournamentMatch.deleteMany({
+      _id: { $in: tournament.matches }
+    });
+
+    await DartsTournament.deleteOne({ _id: tournament._id });
+
+    logger.info("DELETE DartsTournament", {
+      method: req.method,
+      url: req.url,
+      tournamentId: tournament._id
+    });
+
+    res.json({ message: "Tournament deleted successfully" });
+
+  } catch (err) {
+    logger.error("DELETE DartsTournament", { method: req.method, url: req.url, error: err.message });
     res.status(400).json({ message: err.message });
   }
 });
@@ -235,35 +365,6 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
   }
 });
 
-// Darts Tornament
-
-router.post('/dartsTournament/create', authenticateUser, async (req, res) => {
-  try {
-    const { name, settings, adminId, participants } = req.body;
-    const tournament = new DartsTournament({
-      name,
-      settings,
-      participants,
-      admin: adminId
-    });
-    await tournament.save();
-
-    await dartsTournamentManager.generateBracket(tournament._id);
-    res.status(201).json(tournament);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-router.get('/dartsTournament/:id/games', authenticateUser, async (req, res) => {
-  try {
-    const games = await DartsGame.find({ tournamentId: req.params.id });
-    res.json(games);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 // Utils
 
 router.post('/game/join/:gameCode', async (req, res) => {
@@ -275,6 +376,91 @@ router.post('/game/join/:gameCode', async (req, res) => {
     return res.json(game);
   } catch (err) {
     return res.json({ message: err.message });
+  }
+});
+
+router.post('/utils/recalcUsersStats', authenticateUser, async (req, res) => {
+  try {
+    const body = req.body;
+
+    const response = await recalcUsersStats(body.displayNames);
+
+    return res.json({ successful: response });
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
+
+router.post('/utils/recalcUserStats', authenticateUser, async (req, res) => {
+  try {
+    const body = req.body;
+
+    const response = await recalcUserStats(body.displayName);
+
+    return res.json({ successful: response });
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
+
+router.get('/utils/dartsPage/:userDisplayName', authenticateUser, async (req, res) => {
+  try {
+    const userDisplayName = req.params.userDisplayName;
+
+    const currentUser = await User.findOne({ displayName: userDisplayName }, { friends: 1 });
+    const friendsDisplayNames = currentUser?.friends || [];
+
+    const [
+      recentGames,
+      allActiveGames,
+      currentDartsUser,
+      friendsDartsUsers,
+      gamesCount,
+      allDartsUsers
+    ] = await Promise.all([
+      DartsGame.find(
+        {
+          users: { $elemMatch: { displayName: userDisplayName } },
+          $or: [{ training: false }, { training: { $exists: false } }]
+        },
+        { record: 0 },
+        { limit: 10, sort: { createdAt: -1, created_at: -1 } }
+      ),
+      DartsGame.find(
+        {
+          users: { $elemMatch: { displayName: userDisplayName } },
+          active: true
+        },
+        { record: 0 }
+      ),
+      DartsUser.findOne({ displayName: userDisplayName }),
+      friendsDisplayNames.length > 0
+        ? DartsUser.find({ displayName: { $in: friendsDisplayNames }, visible: true })
+        : [],
+      DartsGame.countDocuments(),
+      DartsUser.find({}, { overAllPoints: 1, throws: 1 })
+    ]);
+
+    const overAllPoints = allDartsUsers.reduce((sum, user) => sum + (user.overAllPoints || 0), 0);
+    const doorHits = allDartsUsers.reduce((sum, user) => sum + (user.throws?.doors || 0), 0);
+
+    res.json({
+      recentGames,
+      activeGame: allActiveGames.find(game =>
+        game.active === true &&
+        game.users.some(user => user.displayName === userDisplayName)
+      ) || null,
+      currentDartsUser,
+      friendsDartsUsers,
+      statistics: {
+        gamesPlayed: gamesCount,
+        overAllPoints,
+        doorHits
+      }
+    });
+  } catch (err) {
+    logger.error("GET DartsPage", { method: req.method, url: req.url, error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -339,67 +525,6 @@ router.get('/statistics/top3doorhitters', async (req, res) => {
 // Get gamesPlayed for portfolio
 router.get('/dartsUsers/portfolio/:identifier', getDartsUser, async (req, res) => {
   res.send({ gamesPlayed: res.user.gamesPlayed })
-});
-
-router.get('/dartsPage/:userDisplayName', authenticateUser, async (req, res) => {
-  try {
-    const userDisplayName = req.params.userDisplayName;
-
-    const currentUser = await User.findOne({ displayName: userDisplayName }, { friends: 1 });
-    const friendsDisplayNames = currentUser?.friends || [];
-
-    const [
-      recentGames,
-      allActiveGames,
-      currentDartsUser,
-      friendsDartsUsers,
-      gamesCount,
-      allDartsUsers
-    ] = await Promise.all([
-      DartsGame.find(
-        {
-          users: { $elemMatch: { displayName: userDisplayName } },
-          $or: [{ training: false }, { training: { $exists: false } }]
-        },
-        { record: 0 },
-        { limit: 10, sort: { createdAt: -1, created_at: -1 } }
-      ),
-      DartsGame.find(
-        {
-          users: { $elemMatch: { displayName: userDisplayName } },
-          active: true
-        },
-        { record: 0 }
-      ),
-      DartsUser.findOne({ displayName: userDisplayName }),
-      friendsDisplayNames.length > 0
-        ? DartsUser.find({ displayName: { $in: friendsDisplayNames }, visible: true })
-        : [],
-      DartsGame.countDocuments(),
-      DartsUser.find({}, { overAllPoints: 1, throws: 1 })
-    ]);
-
-    const overAllPoints = allDartsUsers.reduce((sum, user) => sum + (user.overAllPoints || 0), 0);
-    const doorHits = allDartsUsers.reduce((sum, user) => sum + (user.throws?.doors || 0), 0);
-
-    res.json({
-      recentGames,
-      activeGame: allActiveGames.find(game =>
-        game.active === true &&
-        game.users.some(user => user.displayName === userDisplayName)
-      ) || null,
-      currentDartsUser,
-      friendsDartsUsers,
-      statistics: {
-        gamesPlayed: gamesCount,
-        overAllPoints,
-        doorHits
-      }
-    });
-  } catch (err) {
-    logger.error("GET DartsPage", { method: req.method, url: req.url, error: err.message });
-    res.status(500).json({ message: err.message });
-  }
 });
 
 module.exports = router

@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import CreateGame from "@/components/Home/Darts/CreatingGame/CreateGame";
 import { useLocation, useNavigate } from "react-router";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
-import { getAuthUser, getDartsGames, getDartsPageData } from "@/lib/fetch";
+import { getAuthUser, getDartsGame, getDartsGames, getDartsPageData } from "@/lib/fetch";
 import { Button } from "@/components/ui/shadcn/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/shadcn/card";
 import { ScrollArea } from "@/components/ui/shadcn/scroll-area";
@@ -39,13 +39,15 @@ function DartsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [dartsStatistics, setDartsStatistics] = useState(null);
 
-  const handleShow = () => {
+  const handleDrawerOpen = (type) => {
     if (!playerInGame) {
+      setCreateNewGameType(type);
+      setCreateGameDialogOpen(false);
       setDrawerOpen(true);
     } else {
       ShowNewToast("Live game going", "You are already in a game <a class='underline text-white' href='/darts/game'>Join Game</a>");
     }
-  }
+  };
 
   const handleFilterUsers = (action, users) => {
     let sortedUsers;
@@ -234,12 +236,16 @@ function DartsPage() {
           }
         } else {
           const storedGame = localStorage.getItem('dartsGame');
-          if (!storedGame || storedGame === 'null') {
+          const parsedStoredGame = JSON.parse(storedGame);
+
+
+          if (!parsedStoredGame || parsedStoredGame === 'null') {
             setPlayerInGame(false);
           } else {
             try {
-              const parsedGame = JSON.parse(storedGame);
-              if (parsedGame?.active) {
+              const gameExists = await getDartsGame(parsedStoredGame._id);
+
+              if (!gameExists?.message && parsedStoredGame?.active) {
                 setPlayerInGame(true);
               } else {
                 setPlayerInGame(false);
@@ -262,7 +268,8 @@ function DartsPage() {
 
     // Create New Game Auto
     const params = location.state;
-    if (params && params.createNewGame) handleShow();
+    if (params && params.createNewGame) handleDrawerOpen("X01");
+    else if (params && params.createNewTournament) handleDrawerOpen("TOURNEY");
 
     return () => {
       isMounted = false;
@@ -282,23 +289,6 @@ function DartsPage() {
   return (
     <div className="darts-page">
       <div className="flex justify-center">
-        {/* <CreateGame drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
-          <Button
-            variant="outline_red"
-            className="glow-button-red"
-            onClick={(e) => {
-              if (playerInGame) {
-                navigate('/darts/game');
-              } else {
-                e.currentTarget.blur();
-                setDrawerOpen(true);
-              }
-            }}
-          >
-            {playerInGame ? "Join Active Game" : "Create"}
-          </Button>
-        </CreateGame> */}
-
         <Button
           variant="outline_red"
           className="glow-button-red"
@@ -433,21 +423,13 @@ function DartsPage() {
           <div className="text-white flex items-center justify-center gap-4">
             <div
               className="cursor-pointer w-28 h-28 rounded-lg hover:bg-red-400 bg-red-500 flex items-center justify-center"
-              onClick={() => {
-                setCreateNewGameType("X01");
-                setCreateGameDialogOpen(false);
-                setDrawerOpen(true);
-              }}
+              onClick={() => handleDrawerOpen("X01")}
             >
               XO1
             </div>
             <div
               className="cursor-pointer w-28 h-28 rounded-lg hover:bg-yellow-400 bg-yellow-500 flex items-center justify-center"
-              onClick={() => {
-                setCreateNewGameType("TOURNEY");
-                setCreateGameDialogOpen(false);
-                setDrawerOpen(true);
-              }}
+              onClick={() => handleDrawerOpen("TOURNEY")}
             >
               TOURNEY
             </div>

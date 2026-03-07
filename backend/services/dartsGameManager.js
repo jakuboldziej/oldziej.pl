@@ -392,13 +392,6 @@ class DartsGameManager {
       const gameString = JSON.stringify(this.game);
 
       this.io.to(`game-${this.gameCode}`).emit("updateLiveGamePreviewClient", gameString);
-
-      if (this.game.tournamentId) {
-        this.io.to(`tournament-spectator-${this.game.tournamentId}`).emit("tournamentGameUpdate", {
-          gameCode: this.gameCode,
-          gameState: this.game
-        });
-      }
     } catch (error) {
       logger.error(`Error emitting game update for ${this.gameCode}:`, { error: error.message });
       if (retryCount < this.maxRetries) {

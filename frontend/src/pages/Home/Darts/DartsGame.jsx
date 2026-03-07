@@ -3,10 +3,10 @@ import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import Keyboard from "@/components/Home/Darts/Keyboard";
 import GameSummary from "@/components/Home/Darts/GameSummary";
 import { totalThrows } from "@/components/Home/Darts/utils/userUtils";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MyAccordion from "@/components/Home/MyComponents/MyAccordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/shadcn/table";
-import { buttonVariants } from "@/components/ui/shadcn/button";
+import { Button, buttonVariants } from "@/components/ui/shadcn/button";
 import UserDataTable from "@/components/Home/Darts/UserDataTable";
 import CopyTextButton from "@/components/Home/CopyTextButton";
 import MyTooltip from "@/components/Home/MyComponents/MyTooltip";
@@ -22,16 +22,31 @@ function DartsGame() {
   const [show, setShow] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { game, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
+  const navigate = useNavigate();
+
+  const { game, setGame, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
 
-  const isCurrentUserInGame = game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName);
+  const canUserInteract = game &&
+    currentUser &&
+    (game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName) || game?.tournamentId?.admin === currentUser.displayName);
 
   // Scroll to user
   const usersContainerRef = useRef(null);
 
   function handleShow() {
     setShow(true);
+  }
+
+  const handleGameLeave = () => {
+    socket.emit("hostDisconnectedFromGame", JSON.stringify({
+      gameCode: game.gameCode
+    }));
+
+    localStorage.setItem("dartsGame", null);
+    setGame(null);
+
+    navigate("/darts");
   }
 
   useEffect(() => {
@@ -199,7 +214,7 @@ function DartsGame() {
         </div>
       </div>
       <div className="right-panel">
-        <MyAccordion title={`Live Data (${game.gameMode}) ${game.training === true ? "(Training)" : ""}`}>
+        <MyAccordion title={`Live ${game.tournamentId !== null && "Tourney"} Data (${game.gameMode}) ${game.training === true ? "(Training)" : ""}`}>
           <UserDataTable users={game.users} game={game} />
         </MyAccordion>
         <span className="text-white text-xs sm:text-base text-center flex flex-row justify-center items-center gap-1 sm:gap-2">
@@ -223,10 +238,13 @@ function DartsGame() {
         <div className="w-full">
           <MostCommonCheckout users={game.users} game={game} compact={true} />
         </div>
-        {isCurrentUserInGame ? (
+        {canUserInteract ? (
           <Keyboard props={keyboardProps} />
         ) : (
-          <div className="text-slate-600">Spectating mode</div>
+          <div className="flex flex-col gap-3">
+            <div className="text-slate-600">Spectating mode</div>
+            <Button variant="outline_white" className="glow-button-white w-fit" onClick={() => handleGameLeave()}>Leave spectate</Button>
+          </div>
         )}
       </div>
 

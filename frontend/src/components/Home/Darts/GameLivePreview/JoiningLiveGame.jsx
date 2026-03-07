@@ -1,15 +1,15 @@
 import { Button } from '@/components/ui/shadcn/button';
 import { Input } from '@/components/ui/shadcn/input';
-import { getDartsGame, joinDartsGame } from '@/lib/fetch';
+import { joinDartsGame } from '@/lib/fetch';
 import React, { useContext, useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import ShowNewToast from '../../MyComponents/ShowNewToast';
-import { socket, trackRoom } from '@/lib/socketio';
+import { socket } from '@/lib/socketio';
 import { SocketIoContext } from '@/context/Home/SocketIoContext';
 import { Link, useSearchParams } from 'react-router-dom';
 
 function JoiningLiveGame({ props }) {
-  const { setLiveGame } = props;
+  const { liveGame, setLiveGame } = props;
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -27,32 +27,35 @@ function JoiningLiveGame({ props }) {
   }
 
   const handleJoinLiveGame = async (gameCode = null) => {
-    if (!gameCode) return ShowNewToast("Live Game Preview", "Game code is missing.")
+    if (!gameCode) return ShowNewToast("Live Game Preview", "Game code is missing.");
+
+    if (liveGame?.gameCode) {
+      socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode: liveGame.gameCode }));
+    }
 
     const response = await joinDartsGame(gameCode);
 
     if (response) {
-      trackRoom(response.gameCode);
-      socket.emit("joinLiveGamePreview", JSON.stringify({
-        gameCode: response.gameCode
-      }));
+      socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode: response.gameCode }));
 
       setLiveGame(response);
       ShowNewToast("Live Game Preview", `You joined live game preview hosted by ${response.created_by}!`);
     } else {
       ShowNewToast("Live Game Preview", "Game code is not valid.");
     }
-  }
+  };
 
   useEffect(() => {
-    const gameCode = searchParams.get("gameCode")
-
+    const gameCode = searchParams.get("gameCode");
     if (!gameCode) return;
 
     handleJoinLiveGame(gameCode);
 
-    searchParams.delete("gameCode");
-    setSearchParams(searchParams);
+    return () => {
+      if (gameCode) {
+        socket.emit("leaveLiveGamePreview", JSON.stringify({ gameCode }));
+      }
+    };
   }, [searchParams]);
 
   useEffect(() => {

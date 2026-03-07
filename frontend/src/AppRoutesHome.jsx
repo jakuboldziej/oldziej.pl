@@ -26,6 +26,7 @@ import GameLivePreviewPage from './pages/Home/Darts/GameLivePreview/GameLivePrev
 import JoinFromAnotherDevice from './pages/Home/Darts/GameLivePreview/JoinFromAnotherDevice';
 import SuccessPage from './pages/Home/User/SuccessPage';
 import MergedAuth from './pages/Home/Authentication/MergedAuth';
+import DartsTournamentHome from './pages/Home/Darts/DartsTournament/DartsTournamentHome';
 
 function AppRoutesHome() {
   const { currentUser } = useContext(AuthContext);
@@ -35,8 +36,7 @@ function AppRoutesHome() {
 
   const listOfNonNavbarComponents = [
     "/darts/game",
-    "/darts/game/live",
-    "/darts/game/join-game-from-qrcode"
+    "/darts/tournament"
   ];
 
   const ProtectedRoute = ({ children }) => {
@@ -108,6 +108,10 @@ function AppRoutesHome() {
         </Route>
         <Route path="darts">
           <Route index element={<ProtectedRoute><DartsPage /></ProtectedRoute>} />
+          <Route path='tournament'>
+            <Route index element={<Navigate to="/darts" replace />} />
+            <Route path=":tournamentCode" element={<ProtectedRoute><DartsTournamentHome /></ProtectedRoute>} />
+          </Route>
           <Route path='game'>
             <Route index element={<ProtectedRoute><DartsGame /></ProtectedRoute>} />
             <Route path='live' element={<GameLivePreviewPage />} />

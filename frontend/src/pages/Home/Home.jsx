@@ -81,7 +81,7 @@ function Home() {
               </div>
             )}
             <div className="flex justify-center pb-6">
-              <Link className={`${buttonVariants({ variant: "outline_white" })} glow-button-white`} state={{ createNewGame: true }} to="/darts">Play now!</Link>
+              <Link className={`${buttonVariants({ variant: "outline_white" })} glow-button-white`} to="/darts">Play now!</Link>
             </div>
           </div>
         </Card>

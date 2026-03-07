@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/shadcn/button';
 import { handleTimePlayed } from '../utils/gameUtils';
 import MostCommonCheckout from '../MostCommonCheckout';
-import { socket, untrackRoom } from '@/lib/socketio';
+import { socket, trackRoom, untrackRoom } from '@/lib/socketio';
 import { getLatestRecord } from '@/lib/recordUtils';
 import NumberTicker from '@/components/ui/magicui/number-ticker';
 

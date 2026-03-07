@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { dartsConn } = require("../../server")
 
-const dartsGameSchema = new mongoose.Schema({
+const DartsGame = new mongoose.Schema({
   created_by: {
     type: String,
     required: true
@@ -20,7 +20,8 @@ const dartsGameSchema = new mongoose.Schema({
   },
   podium: {
     type: Object,
-    required: true
+    required: false,
+    default: { 1: null, 2: null, 3: null }
   },
   turn: {
     type: String,
@@ -78,10 +79,21 @@ const dartsGameSchema = new mongoose.Schema({
   },
   tournamentMatchId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'DartsTournamentMatch',
     default: null
   },
 }, {
   timestamps: true
 });
 
-module.exports = dartsConn.model('DartsGame', dartsGameSchema)
+DartsGame.pre(/^find/, function (next) {
+  this.populate({
+    path: 'tournamentId',
+    populate: {
+      path: 'matches'
+    }
+  });
+  next();
+});
+
+module.exports = dartsConn.model('DartsGame', DartsGame)

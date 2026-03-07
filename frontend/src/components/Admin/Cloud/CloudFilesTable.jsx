@@ -14,7 +14,10 @@ function CloudFilesTable({ props }) {
   const { refreshingData, setRefreshingData } = props;
 
   const [files, setFiles] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState({
+    data: true,
+    delete: false
+  });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -29,7 +32,7 @@ function CloudFilesTable({ props }) {
   }
 
   const fetchFiles = async () => {
-    setIsLoading(true);
+    setIsLoading((prev) => ({ ...prev, data: true }));
     try {
       const fetchedFiles = await getFiles();
       const filesWithOwners = await Promise.all(
@@ -47,7 +50,7 @@ function CloudFilesTable({ props }) {
     } catch (err) {
       console.error('Error fetching', err);
     } finally {
-      setIsLoading(false);
+      setIsLoading((prev) => ({ ...prev, data: false }));
     }
   }
 
@@ -64,7 +67,7 @@ function CloudFilesTable({ props }) {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading.data ? (
         <Loading />
       ) : (
         <div className="w-full overflow-x-auto">
@@ -152,8 +155,8 @@ function CloudFilesTable({ props }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="text-white">
-            <Button variant='outline_red' onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button variant='outline_green' onClick={handleDeleteFile}>Delete</Button>
+            <Button variant='outline_red' disabled={isLoading.delete} onClick={() => setDialogOpen(false)}>Cancel</Button>
+            <Button variant='outline_green' disabled={isLoading.delete} onClick={handleDeleteFile}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

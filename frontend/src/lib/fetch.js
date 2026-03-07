@@ -102,13 +102,87 @@ export const getDartsGame = async (identifier) => {
 export const getDartsPageData = async (userDisplayName, friendsDisplayNames = []) => {
   const friendsParam = friendsDisplayNames.length > 0 ? `?friends=${friendsDisplayNames.join(',')}` : '';
 
-  const response = await fetch(`${mongodbApiUrl}/darts/dartsPage/${userDisplayName}${friendsParam}`, {
+  const response = await fetch(`${mongodbApiUrl}/darts/utils/dartsPage/${userDisplayName}${friendsParam}`, {
     headers: {
       "Authorization": Cookies.get("_auth")
     }
   });
 
   return await response.json();
+}
+
+// Darts - Tournaments
+
+export const postDartsTournament = async (tournamentData) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsTournaments`, {
+    method: "POST",
+    body: JSON.stringify(tournamentData),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const patchDartsTournament = async (tournamentData) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/dartsTournaments/${tournamentData._id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      ...tournamentData
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const deleteDartsTournament = async (tournamentId) => {
+  await fetch(`${mongodbApiUrl}/darts/dartsTournaments/${tournamentId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
+}
+
+export const getDartsTournaments = async (userDisplayName = null, limit = 0) => {
+  let url = `${mongodbApiUrl}/darts/dartsTournaments`;
+
+  const queryParams = [];
+  if (limit) {
+    queryParams.push(`limit=${limit}`);
+  }
+  if (userDisplayName) {
+    queryParams.push(`user=${userDisplayName}`);
+  }
+
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join('&')}`;
+  }
+
+  const gamesResponse = await fetch(url, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  }
+  );
+
+  return await gamesResponse.json();
+}
+
+export const getDartsTournament = async (identifier) => {
+  const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsTournaments/${identifier}`, {
+    headers: {
+      "Authorization": Cookies.get("_auth")
+    }
+  });
+
+  return await gameResponse.json();
 }
 
 // Darts - Users
@@ -180,6 +254,36 @@ export const joinDartsGame = async (gameCode) => {
   });
 
   return await gameResponse.json();
+}
+
+export const recalcUsersStats = async (displayNames) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/utils/recalcUsersStats`, {
+    method: "POST",
+    body: JSON.stringify({
+      displayNames
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
+export const recalcUserStats = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/utils/recalcUserStats`, {
+    method: "POST",
+    body: JSON.stringify({
+      displayName
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
 }
 
 // Cloud
