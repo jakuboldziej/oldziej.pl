@@ -4,6 +4,7 @@ const { getGameManager, removeGameManager } = require('../services/dartsGameMana
 const { logger } = require('../middleware/logging');
 const DartsGame = require('../models/darts/dartsGame');
 const DartsTournament = require('../models/darts/dartsTournament');
+const dartsTournamentManager = require('../services/dartsTournamentManager');
 
 const socketAuthMiddleware = (socket, next) => {
   const handshake = socket.handshake;
@@ -419,6 +420,17 @@ io.on('connection', (socket) => {
     } catch (err) {
       console.error(err);
     }
+  });
+
+  socket.on("tournamentBack", async ({ tournamentId, matchId }) => {
+    const updatedTournament =
+      await dartsTournamentManager.revertTournamentMatch(
+        tournamentId,
+        matchId
+      );
+
+    io.to(`tournament-spectator-${updatedTournament.tournamentCode}`)
+      .emit("tournamentUpdated", updatedTournament);
   });
 
   // Handling Online Users

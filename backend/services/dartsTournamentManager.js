@@ -6,7 +6,6 @@ const DartsTournamentMatch = require('../models/darts/dartsTournamentMatch');
 const { generateUniqueDartsCode, generateTempUserId } = require('../lib/dartsUtils');
 
 class DartsTournamentManager {
-
   _getNextPowerOfTwo(num) {
     return Math.pow(2, Math.ceil(Math.log2(num)));
   }
@@ -170,6 +169,45 @@ class DartsTournamentManager {
     }
   }
 
+  async revertTournamentMatch(tournamentId, matchId) {
+    try {
+      const tournament = await DartsTournament
+        .findById(tournamentId)
+        .populate("matches");
+
+      if (!tournament) throw new Error("Tournament not found");
+
+      const match = tournament.matches.find(
+        m => m._id.toString() === matchId.toString()
+      );
+
+      if (!match) throw new Error("Match not found");
+
+      const winner = match.winner;
+
+      match.winner = null;
+      match.status = "active";
+
+      await match.save();
+
+      if (tournament.settings.type === "bracket") {
+        await this._revertBracketWinner(tournament, match, winner);
+      }
+
+      if (tournament.settings.type === "ffa") {
+        await this._revertFFAStandings(tournament, match, winner);
+      }
+
+      await tournament.save();
+
+      return tournament;
+
+    } catch (error) {
+      logger.error("Error reverting tournament match", { error: error.message });
+      throw error;
+    }
+  }
+
   async _pushWinnerToNextRound(tournament, currentMatch) {
     const currentRound = currentMatch.round;
     const nextRound = currentRound + 1;
@@ -277,6 +315,43 @@ class DartsTournamentManager {
     await tieMatch.save();
 
     tournament.matches.push(tieMatch._id);
+    await tournament.save();
+  }
+
+  async _revertBracketWinner(tournament, match, winner) {
+    const nextRound = match.round + 1;
+    const nextMatchIndex = Math.floor(match.matchIndex / 2);
+
+    const nextMatch = tournament.matches.find(
+      m => m.round === nextRound && m.matchIndex === nextMatchIndex
+    );
+
+    if (!nextMatch) return;
+
+    if (nextMatch.player1 === winner) nextMatch.player1 = null;
+    if (nextMatch.player2 === winner) nextMatch.player2 = null;
+
+    if (nextMatch.gameId) {
+      await DartsGame.deleteOne({ _id: nextMatch.gameId });
+      nextMatch.gameId = null;
+    }
+
+    nextMatch.status = "pending";
+    nextMatch.winner = null;
+
+    await nextMatch.save();
+  }
+
+  async _revertFFAStandings(tournament, match, winner) {
+    const p1 = tournament.standings.find(s => s.player === match.player1);
+    const p2 = tournament.standings.find(s => s.player === match.player2);
+
+    if (p1) p1.matchesPlayed -= 1;
+    if (p2) p2.matchesPlayed -= 1;
+
+    const winPlayer = tournament.standings.find(s => s.player === winner);
+    if (winPlayer) winPlayer.wins -= 1;
+
     await tournament.save();
   }
 

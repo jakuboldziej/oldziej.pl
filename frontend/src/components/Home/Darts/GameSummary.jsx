@@ -137,6 +137,21 @@ function GameSummary({ show, setShow }) {
     setShow(false);
   }
 
+  const handleTournamentBack = async () => {
+    try {
+      await handleRound("BACK", handleShow);
+
+      socket.emit("tournamentBack", {
+        tournamentId: game.tournamentId._id,
+        matchId: currentMatch._id
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setShow(false);
+    }
+  };
+
   const handleBackToDarts = async () => {
     try {
       socket.emit("hostDisconnectedFromGame", JSON.stringify({
@@ -224,6 +239,7 @@ function GameSummary({ show, setShow }) {
                 >
                   {noMoreMatches || isCurrentRoundFinished ? "Tournament Finished" : "Next game"}
                 </Button>
+                <Button variant="outline_red" className="glow-button-red" onClick={handleTournamentBack} disabled={handleDisabledBack() || !canUserInteract}>Back</Button>
               </>
             ) : (
               <>
