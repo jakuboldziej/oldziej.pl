@@ -50,7 +50,7 @@ const recalcUserStats = async (displayName) => {
         highestTurnPoints = foundUser.highestGameTurnPoints;
 
       if (foundUser.allGainedPoints)
-        overAllPoints += foundUser.allGainedPoints;
+        overAllPoints += parseInt(foundUser.allGainedPoints);
 
       if (game.podium?.[1] === displayName) podiums.firstPlace++;
       if (game.podium?.[2] === displayName) podiums.secondPlace++;

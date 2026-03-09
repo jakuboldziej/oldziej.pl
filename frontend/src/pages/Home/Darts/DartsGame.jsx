@@ -157,7 +157,6 @@ function DartsGame() {
       boxShadow: overthrow === user.displayName ? '0 0 30px #E00000' : null,
     }
   }
-
   return (
     <div className="darts-wrapper">
       <div className="stats">

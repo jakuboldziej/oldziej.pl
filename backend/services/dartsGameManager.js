@@ -17,6 +17,8 @@ const activeGames = new Map();
 
 // Utility functions
 const calculatePoints = (turnValue) => {
+  if (!turnValue) return 0;
+
   const isNumericRegex = /^\d+$/;
   if (!isNumericRegex.test(turnValue) && turnValue) {
     if (turnValue[0] === "D") {
@@ -26,13 +28,17 @@ const calculatePoints = (turnValue) => {
       return parseInt(turnValue.slice(1)) * 3;
     }
   }
-  return turnValue ? parseInt(turnValue) : turnValue;
+  return parseInt(turnValue) || 0;
 };
 
 const handleTurnsSum = (currentUser) => {
+  if (currentUser.turnsSum === undefined || currentUser.turnsSum === null || isNaN(currentUser.turnsSum)) {
+    currentUser.turnsSum = 0;
+  }
+
   const currentTurn = currentUser.turns[currentUser.currentTurn];
   const turnValue = calculatePoints(currentTurn) || 0;
-  currentUser.turnsSum += turnValue;
+  currentUser.turnsSum += parseInt(turnValue);
 };
 
 const updateHighestTurnPoints = (currentUser) => {
@@ -147,7 +153,7 @@ const handleCheckoutTripleOut = (userCurrentTurn) => {
 const handleOverthrow = (gameCode, currentUser, io, shouldEmit = true) => {
   const initialPoints = parseInt(currentUser.points) + calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
 
-  currentUser.allGainedPoints -= currentUser.turnsSum;
+  currentUser.allGainedPoints -= parseInt(currentUser.turnsSum);
   currentUser.points = initialPoints;
   currentUser.turnsSum = 0;
   currentUser.currentTurn = 3;
@@ -165,7 +171,7 @@ const handlePointsX01 = (game, currentUser, io) => {
   const currentTurnValue = currentUser.turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
-  currentUser.allGainedPoints = parseInt(game.startPoints) - currentUser.points;
+  currentUser.allGainedPoints = parseInt(game.startPoints) - parseInt(currentUser.points);
 
   if (currentUser.currentTurn === 3 && currentUser.points >= 0) {
     updateHighestTurnPoints(currentUser);
@@ -207,7 +213,7 @@ const handlePointsReverseX01 = (game, currentUser) => {
   const currentTurnValue = turns[currentUser.currentTurn];
 
   currentUser.points -= calculatePoints(currentTurnValue);
-  currentUser.allGainedPoints = parseInt(game.startPoints) - currentUser.points;
+  currentUser.allGainedPoints = parseInt(game.startPoints) - parseInt(currentUser.points);
 
   if (currentUser.points <= 0) {
     return { gameEnd: true };
@@ -491,7 +497,14 @@ class DartsGameManager {
   async updateUsersData() {
     try {
       await Promise.all(this.game.users.map(async (user) => {
-        if (parseInt(this.game.legs) === 1 && parseInt(this.game.sets) === 1) user.highestGameAvg = user.avgPointsPerTurn;
+
+        if (parseInt(this.game.legs) === 1 && parseInt(this.game.sets) === 1) {
+          user.highestGameAvg = user.avgPointsPerTurn;
+        }
+
+        if (this.game.gameMode === "X01" && user.place === 1) {
+          user.gameCheckout = calculatePoints(user.turns[1]) + calculatePoints(user.turns[2]) + calculatePoints(user.turns[3]);
+        }
 
         if (user.temporary || user.verified === false) {
           return;
@@ -506,36 +519,33 @@ class DartsGameManager {
           return;
         }
 
-        // Update podium counts if user placed
         if (user.place === 1) {
           dartUser.podiums.firstPlace += 1;
           dartUser.markModified('podiums');
-        }
-        if (user.place === 2) {
+        } else if (user.place === 2) {
           dartUser.podiums.secondPlace += 1;
           dartUser.markModified('podiums');
-        }
-        if (user.place === 3) {
+        } else if (user.place === 3) {
           dartUser.podiums.thirdPlace += 1;
           dartUser.markModified('podiums');
         }
 
-        dartUser.throws["doors"] += user.throws["doors"];
-        dartUser.throws["doubles"] += user.throws["doubles"];
-        dartUser.throws["triples"] += user.throws["triples"];
-        dartUser.throws["normal"] += user.throws["normal"];
-
+        dartUser.throws["doors"] += parseInt(user.throws["doors"]);
+        dartUser.throws["doubles"] += parseInt(user.throws["doubles"]);
+        dartUser.throws["triples"] += parseInt(user.throws["triples"]);
+        dartUser.throws["normal"] += parseInt(user.throws["normal"]);
         dartUser.markModified('throws');
 
         if (this.game.gameMode === "X01") {
-          dartUser.throws["overthrows"] += user.throws["overthrows"];
+          dartUser.throws["overthrows"] += parseInt(user.throws["overthrows"]) || 0;
           dartUser.markModified('throws');
-          dartUser.overAllPoints += user.allGainedPoints;
+
+          const pointsToAdd = parseInt(user.allGainedPoints) || 0;
+          if (!isNaN(pointsToAdd)) {
+            dartUser.overAllPoints = (dartUser.overAllPoints || 0) + pointsToAdd;
+          }
 
           if (user.place === 1) {
-            const gameCheckout = calculatePoints(user.turns[1]) + calculatePoints(user.turns[2]) + calculatePoints(user.turns[3]);
-            user.gameCheckout = gameCheckout;
-
             if (user.gameCheckout > dartUser.highestCheckout) {
               dartUser.highestCheckout = user.gameCheckout;
             }
@@ -550,7 +560,6 @@ class DartsGameManager {
         }
 
         dartUser.gamesPlayed += 1;
-
         await dartUser.save();
       }));
     } catch (error) {

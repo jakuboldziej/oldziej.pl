@@ -42,9 +42,4 @@ const DartsTournament = new mongoose.Schema({
   timestamps: true
 });
 
-DartsTournament.pre(/^find/, function (next) {
-  this.populate('matches');
-  next();
-});
-
 module.exports = dartsConn.model('DartsTournament', DartsTournament)

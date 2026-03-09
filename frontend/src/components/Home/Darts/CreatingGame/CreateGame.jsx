@@ -215,17 +215,22 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
       }
 
       if (usersPlaying.length === 0) return ShowNewToast("Game settings", "You have to select users to play");
+
       if (createType === "TOURNEY") {
-        if (selectTourneyType === "bracket" && usersPlaying.length < 4) return ShowNewToast("Game settings", "You have to select at least 4 players to play");
-        else if (selectTourneyType === "ffa" && usersPlaying.length < 3) return ShowNewToast("Game settings", "You have to select at least 3 players to play");
+        if (selectTourneyType === "bracket" && usersPlaying.length < 3) {
+          return ShowNewToast("Game settings", "You have to select at least 3 players to play a bracket tourney");
+        }
+        else if (selectTourneyType === "ffa" && usersPlaying.length < 3) {
+          return ShowNewToast("Game settings", "You have to select at least 3 players to play FFA");
+        }
       } else {
         if (usersPlaying.length === 1 && isTraining === false) return ShowNewToast("Game settings", "You have to select at least 2 players to play");
       }
+
       if (selectLegs === 0 && selectSets === 0) return ShowNewToast("Game settings", "You must set at least legs or sets to a value greater than 0");
 
       if (createType === "TOURNEY") {
         const newTournamentCode = await handleCreateNewTournament();
-        navigate(`tournament/${newTournamentCode}`);
       } else if (createType === "X01") {
         handleCreateNewGame();
         navigate("game");

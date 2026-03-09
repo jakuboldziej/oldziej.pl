@@ -203,6 +203,22 @@ function DartsPage() {
       }
     });
 
+    socket.on("tournamentCreated", (data) => {
+      const { tournamentCode, userDisplayNames, tournamentAdmin } = JSON.parse(data);
+
+      if (userDisplayNames.includes(currentUser.displayName) || tournamentAdmin === currentUser.displayName) {
+        navigate(`tournament/${tournamentCode}`);
+      }
+    });
+
+    socket.on("tournamentEnded", (data) => {
+      const { tournamentCode, userDisplayNames } = JSON.parse(data);
+
+      if (userDisplayNames.includes(currentUser.displayName)) {
+
+      }
+    });
+
     let isMounted = true;
 
     const fetchData = async () => {
@@ -275,6 +291,8 @@ function DartsPage() {
       isMounted = false;
       socket.off("gameCreated");
       socket.off("gameEnded");
+      socket.off("tournamentCreated");
+      socket.off("tournamentEnded");
     };
   }, []);
 

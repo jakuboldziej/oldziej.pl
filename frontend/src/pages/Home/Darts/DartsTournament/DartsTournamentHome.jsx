@@ -1,11 +1,13 @@
-import { getDartsTournament } from '@/lib/fetch';
+import { getDartsGame, getDartsTournament } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
-import React, { useEffect, useState, useMemo, useContext } from 'react';
+import React, { useEffect, useState, useMemo, useContext, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Users, Shield } from 'lucide-react';
+import { Users, Shield, Cog } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
 import { AuthContext } from '@/context/Home/AuthContext';
 import MatchCard from '@/components/Admin/Darts/DartsTournament/MatchCard';
+import TournamentStatsTable from '@/components/Home/Darts/DartsTournament/TournamentStatsTable';
+import { ensureGameRecord } from '@/lib/recordUtils';
 
 function DartsTournamentHome() {
   const { currentUser } = useContext(AuthContext);
@@ -57,6 +59,52 @@ function DartsTournamentHome() {
 
   }, [matches, tournament, isFFA]);
 
+  const tournamentStats = useMemo(() => {
+    if (!tournament || !matches.length) return [];
+
+    const stats = {};
+
+    tournament.participants.forEach(p => {
+      stats[p] = {
+        player: p,
+        wins: 0,
+        matchesPlayed: 0,
+        highestCheckout: 0,
+        highestAvg: 0
+      };
+    });
+
+    matches.forEach(m => {
+      if (m.status === "completed") {
+        if (m.winner && stats[m.winner]) {
+          stats[m.winner].wins++;
+        }
+
+        const gameData = m.gameId;
+
+        if (gameData && gameData.users) {
+          gameData.users.forEach(u => {
+            if (stats[u.displayName]) {
+              stats[u.displayName].matchesPlayed++;
+
+              const gameAvg = parseFloat(u.avgPointsPerTurn || 0);
+              if (gameAvg > stats[u.displayName].highestAvg) {
+                stats[u.displayName].highestAvg = gameAvg;
+              }
+
+              const gameCheckout = u.gameCheckout || 0;
+              if (gameCheckout > stats[u.displayName].highestCheckout) {
+                stats[u.displayName].highestCheckout = gameCheckout;
+              }
+            }
+          });
+        }
+      }
+    });
+
+    return Object.values(stats).sort((a, b) => b.wins - a.wins || b.highestAvg - a.highestAvg);
+  }, [matches, tournament]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -67,7 +115,6 @@ function DartsTournamentHome() {
         setMatches(fetchedTournament.matches);
 
         socket.emit("joinTournamentControl", fetchedTournament.tournamentCode);
-
       } catch (error) {
         console.error(error);
       } finally {
@@ -77,14 +124,16 @@ function DartsTournamentHome() {
 
     fetchData();
 
-    socket.on("tournamentUpdated", (updatedData) => {
-      setTournament(updatedData);
-      setMatches(updatedData.matches);
-    });
+    const tournamentUpdated = async (data) => {
+      setTournament(data);
+      setMatches(data.matches);
+    }
+
+    socket.on("tournamentUpdated", tournamentUpdated);
 
     return () => {
       socket.emit("leaveTournamentControl", tournamentCode);
-      socket.off("tournamentUpdated");
+      socket.off("tournamentUpdated", tournamentUpdated);
     };
   }, [tournamentCode]);
 
@@ -102,6 +151,22 @@ function DartsTournamentHome() {
     m.status === 'active' &&
     (m.player1 === currentUser.displayName || m.player2 === currentUser.displayName)
   );
+
+  const handleActiveGameClick = useCallback(async (e, activeGame) => {
+    e.preventDefault();
+    console.log(activeGame)
+
+    try {
+      if (activeGame && (!activeGame.status === 'active' && !activeGame.status === 'completed')) return;
+
+      const fullGame = await getDartsGame(activeGame.gameId.gameCode);
+      const gameWithRecord = ensureGameRecord(fullGame);
+      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
+      navigate('/darts/game');
+    } catch (error) {
+      console.error('Error fetching game:', error);
+    }
+  }, [myActiveMatch, navigate]);
 
   if (isLoading) {
     return (
@@ -145,20 +210,13 @@ function DartsTournamentHome() {
           <div className='flex flex-col gap-3'>
             <h3 className="text-green-400 font-bold uppercase italic">Your match is live!</h3>
             <p className="text-sm">You are playing against {myActiveMatch.player1 === currentUser.displayName ? myActiveMatch.player2 : myActiveMatch.player1}</p>
-            <Button className="w-fit" onClick={() => navigate('/darts/game')}>Join game</Button>
+            <Button className="w-fit" onClick={(e) => handleActiveGameClick(e, myActiveMatch)}>Join game</Button>
           </div>
-          <button
-            onClick={() => navigate(`/game/${myActiveMatch.gameId?.gameCode}`)}
-            className="bg-green-500 hover:bg-green-400 text-black font-bold py-2 px-6 rounded transition-all"
-          >
-            JOIN NOW
-          </button>
         </div>
       )}
 
       <main className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3 overflow-x-auto pb-6">
-
           {isBracket && (
             <div className="flex gap-12 min-w-[800px]">
               {rounds.map((roundMatches, roundIdx) => (
@@ -170,7 +228,12 @@ function DartsTournamentHome() {
                   {roundMatches
                     .sort((a, b) => a.matchIndex - b.matchIndex)
                     .map((match, mIdx) => (
-                      <MatchCard key={mIdx} match={match} navigate={navigate} />
+                      <MatchCard
+                        key={mIdx}
+                        match={match}
+                        navigate={navigate}
+                        handleActiveGameClick={handleActiveGameClick}
+                      />
                     ))}
                 </div>
               ))}
@@ -182,11 +245,19 @@ function DartsTournamentHome() {
               {matches
                 .sort((a, b) => a.matchIndex - b.matchIndex)
                 .map((match, mIdx) => (
-                  <MatchCard key={mIdx} match={match} navigate={navigate} />
+                  <MatchCard
+                    key={mIdx}
+                    match={match}
+                    navigate={navigate}
+                    handleActiveGameClick={handleActiveGameClick}
+                  />
                 ))}
             </div>
           )}
 
+          <section className="mt-12">
+            <TournamentStatsTable stats={tournamentStats} />
+          </section>
         </div>
 
         <aside className="space-y-6">
@@ -212,40 +283,6 @@ function DartsTournamentHome() {
               <p className="text-sm text-gray-400">
                 {standings[0].wins} wins
               </p>
-            </div>
-          )}
-
-          {isFFA && standings.length > 0 && (
-            <div className="bg-gray-900/50 border border-gray-800 p-4 rounded-xl">
-              <h3 className="text-sm font-bold uppercase mb-4 text-green-400">
-                Leaderboard
-              </h3>
-
-              <table className="w-full text-sm">
-                <thead className="text-gray-500 text-xs uppercase">
-                  <tr>
-                    <th className="text-left">Player</th>
-                    <th>W</th>
-                    <th>P</th>
-                    <th>%</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {standings.map((p, i) => (
-                    <tr
-                      key={p.player}
-                      className={`border-t border-gray-800 ${i === 0 ? "text-green-400 font-bold" : ""
-                        }`}
-                    >
-                      <td>{p.player}</td>
-                      <td className="text-center">{p.wins}</td>
-                      <td className="text-center">{p.matchesPlayed}</td>
-                      <td className="text-center">{p.winRate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
 

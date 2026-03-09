@@ -381,7 +381,10 @@ io.on('connection', (socket) => {
 
   socket.on("tournamentNextGame", async ({ tournamentCode, currentGameCode }) => {
     try {
-      const tournament = await DartsTournament.findOne({ tournamentCode })
+      const tournament = await DartsTournament.findOne({ tournamentCode }).populate({
+        path: "matches",
+        select: "status round player1 player2 winner gameId"
+      });
 
       if (!tournament) return;
 
@@ -405,7 +408,6 @@ io.on('connection', (socket) => {
 
       const nextMatch = matchesInRound.find(m => m.status === 'active');
       if (!nextMatch) {
-        io.to(`game-${currentGameCode}`).emit("tournament:noNextGame");
         return;
       }
 

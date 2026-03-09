@@ -88,11 +88,10 @@ const DartsGame = new mongoose.Schema({
 
 DartsGame.pre(/^find/, function (next) {
   this.populate({
-    path: 'tournamentId',
-    populate: {
-      path: 'matches'
-    }
+    path: "tournamentId",
+    select: "tournamentCode status admin matches"
   });
+
   next();
 });
 

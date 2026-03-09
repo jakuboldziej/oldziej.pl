@@ -1,10 +1,10 @@
-import { useContext, useEffect, useState, useRef } from 'react';
+import { useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { DartsGameContext } from '@/context/Home/DartsGameContext';
 import { Link, useNavigate } from 'react-router-dom';
 import UserDataTable from './UserDataTable';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/shadcn/dialog';
 import { Button, buttonVariants } from '@/components/ui/shadcn/button';
-import { getESP32Availability, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
+import { getDartsTournament, getESP32Availability, postESP32JoinGame, postESP32LeaveGame } from '@/lib/fetch';
 import { socket } from '@/lib/socketio';
 import { handleTimePlayed } from './utils/gameUtils';
 import { ensureGameRecord, isInitialGameState } from '@/lib/recordUtils';
@@ -18,7 +18,8 @@ function GameSummary({ show, setShow }) {
 
   const [timePlayed, setTimePlayed] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [noMoreMatches, setNoMoreMatches] = useState(false);
+  const [tournamentMatches, setTournamentMatches] = useState([]);
+  const [tournamentStatus, setTournamentStatus] = useState("");
 
   const gameRef = useRef(game);
 
@@ -26,13 +27,31 @@ function GameSummary({ show, setShow }) {
     currentUser &&
     (game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName) || game?.tournamentId?.admin === currentUser.displayName);
 
-  const currentMatch = game.tournamentId?.matches?.find(m => m.gameId === game._id);
+  const currentMatch = tournamentMatches.length > 0 && tournamentMatches.find(m => String(m.gameId?._id) === String(game._id));
 
   const isCurrentRoundFinished = currentMatch
-    ? game.tournamentId.matches
+    ? tournamentMatches
       .filter(m => m.round === currentMatch.round)
-      .every(m => m.status === 'completed')
+      .every(m => m.status === "completed")
     : false;
+
+  const isTournamentOver = isCurrentRoundFinished && tournamentStatus === "completed";
+
+  const fetchTournamentData = useCallback(async () => {
+    try {
+      const response = await getDartsTournament(game.tournamentId._id);
+      setTournamentMatches(response.matches);
+      setTournamentStatus(response.status);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [game]);
+
+  useEffect(() => {
+    if (game?.tournamentId?._id) {
+      fetchTournamentData();
+    }
+  }, [game?.tournamentId?._id]);
 
   useEffect(() => {
     gameRef.current = game;
@@ -67,20 +86,27 @@ function GameSummary({ show, setShow }) {
       setShow(false);
     };
 
-    socket.on("playAgainButtonClient", handlePlayAgainResponse);
+    const tournamentUpdated = async () => {
+      fetchTournamentData();
+    }
 
-    return () => {
-      socket.off("playAgainButtonClient", handlePlayAgainResponse);
-    };
-  }, [updateGameState, setShow]);
-
-  useEffect(() => {
     const tournamentNextGameLoaded = async ({ nextGame }) => {
       const gameWithRecord = ensureGameRecord(nextGame);
 
       updateGameState(gameWithRecord);
 
       localStorage.setItem("dartsGame", JSON.stringify(gameWithRecord));
+
+      (async () => {
+        try {
+          const esp32Availability = await getESP32Availability();
+          if (esp32Availability.available) {
+            await postESP32JoinGame(nextGame.gameCode);
+          }
+        } catch (err) {
+          console.error("ESP32 error:", err);
+        }
+      })();
 
       socket.emit("joinLiveGamePreview", JSON.stringify({
         gameCode: nextGame.gameCode
@@ -89,18 +115,16 @@ function GameSummary({ show, setShow }) {
       navigate("/darts/game");
     };
 
-    const tournamentNoNextGame = async () => {
-      setNoMoreMatches(true);
-    }
-
+    socket.on("playAgainButtonClient", handlePlayAgainResponse);
+    socket.on("tournamentUpdated", tournamentUpdated);
     socket.on("tournament:nextGame", tournamentNextGameLoaded);
-    socket.on("tournament:noNextGame", tournamentNoNextGame);
 
     return () => {
+      socket.off("playAgainButtonClient", handlePlayAgainResponse);
+      socket.off("tournamentUpdated", tournamentUpdated);
       socket.off("tournament:nextGame", tournamentNextGameLoaded);
-      socket.off("tournament:noNextGame", tournamentNoNextGame);
     };
-  }, []);
+  }, [updateGameState, setShow]);
 
   function handleShow() {
     setShow(true);
@@ -129,6 +153,8 @@ function GameSummary({ show, setShow }) {
 
   const handleDisabledBack = () => {
     if (game.training || game.podium[1] === null || isInitialGameState(game)) return true;
+
+    if (game.tournamentId && isTournamentOver) return true;
   }
 
   const handleSummaryBackButton = async () => {
@@ -182,42 +208,22 @@ function GameSummary({ show, setShow }) {
         <hr />
         <div className='text-white summary flex flex-col items-center'>
           {game.podium[1] !== null ? (
-            !game.training ? (
-              <div className='flex flex-col items-center gap-5'>
-                <div className="podium">
-                  <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                  <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                  <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-                </div>
-                <div className="flex gap-4">
-                  <span>Time played: {timePlayed}</span>
-                  <span>Start Points: {game.startPoints}</span>
-                </div>
-                <span>
-                  Gamemode: {game.gameMode}
-                  {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
-                </span>
+            <div className="training-stats flex flex-col items-center gap-5 w-full px-2">
+              <div className="podium">
+                <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
+                <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
+                <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
               </div>
-            )
-              : (
-                <div className="training-stats flex flex-col items-center gap-5 w-full px-2">
-                  <span className='text-lg font-bold'>Training Stats</span>
-                  <div className="podium">
-                    <span className="place seconds-place">{game.podium[2] ? game.podium[2] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/second-place-ribbon.png" alt="second-place-ribbon" /></span>
-                    <span className="place first-place">{game.podium[1] ? game.podium[1] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/first-place-ribbon.png" alt="first-place-ribbon" /></span>
-                    <span className="place third-place">{game.podium[3] ? game.podium[3] : 'None'}<img width="48" height="48" src="https://img.icons8.com/color/48/third-place-ribbon.png" alt="third-place-ribbon" /></span>
-                  </div>
-                  <div className="flex flex-wrap gap-4 justify-center text-center">
-                    <span>Time played: {timePlayed}</span>
-                    <span>Start Points: {game.startPoints}</span>
-                  </div>
-                  <span className="text-center">
-                    Gamemode: {game.gameMode}
-                    {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
-                  </span>
-                  <UserDataTable users={game.users} game={game} />
-                </div>
-              )
+              <div className="flex flex-wrap gap-4 justify-center text-center">
+                <span>Time played: {timePlayed}</span>
+                <span>Start Points: {game.startPoints}</span>
+              </div>
+              <span className="text-center">
+                Gamemode: {game.gameMode}
+                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+              </span>
+              <UserDataTable users={game.users} game={game} />
+            </div>
           ) : (
             <span className='text-xl text-red-500'>This game was abandoned</span>
           )}
@@ -235,11 +241,18 @@ function GameSummary({ show, setShow }) {
                   variant="outline_red"
                   className="glow-button-red"
                   onClick={handleNextGame}
-                  disabled={noMoreMatches || isCurrentRoundFinished || !canUserInteract}
+                  disabled={isTournamentOver || !canUserInteract}
                 >
-                  {noMoreMatches || isCurrentRoundFinished ? "Tournament Finished" : "Next game"}
+                  {isTournamentOver ? "Tournament Finished" : "Next game"}
                 </Button>
-                <Button variant="outline_red" className="glow-button-red" onClick={handleTournamentBack} disabled={handleDisabledBack() || !canUserInteract}>Back</Button>
+                <Button
+                  variant="outline_red"
+                  className="glow-button-red"
+                  onClick={handleTournamentBack}
+                  disabled={handleDisabledBack() || !canUserInteract}
+                >
+                  Back
+                </Button>
               </>
             ) : (
               <>

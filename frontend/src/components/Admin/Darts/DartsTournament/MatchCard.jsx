@@ -1,33 +1,16 @@
-import { getDartsGame } from '@/lib/fetch';
 import React from 'react';
 import { Trophy, Play } from 'lucide-react';
-import { ensureGameRecord } from '@/lib/recordUtils';
 
-function MatchCard({ match, navigate }) {
+function MatchCard({ match, navigate, handleActiveGameClick }) {
   const isCompleted = match.status === 'completed';
   const isActive = match.status === 'active';
-
-  const handleActiveGameClick = async (e) => {
-    e.preventDefault();
-
-    try {
-      if (!isActive && !isCompleted) return;
-
-      const fullGame = await getDartsGame(match.gameId);
-      const gameWithRecord = ensureGameRecord(fullGame);
-      localStorage.setItem('dartsGame', JSON.stringify(gameWithRecord));
-      navigate('/darts/game');
-    } catch (error) {
-      console.error('Error fetching game:', error);
-    }
-  };
 
   return (
     <div
       className={`p-3 rounded-lg border mb-4 transition-all ${isActive ? 'cursor-pointer  border-green-500 bg-green-500/10 shadow-lg' :
         isCompleted ? 'cursor-pointer border-gray-800 bg-gray-900/40 opacity-70' : 'border-gray-800 bg-gray-900/20'
         }`}
-      onClick={(e) => handleActiveGameClick(e)}
+      onClick={(e) => handleActiveGameClick(e, match)}
     >
       <div className="space-y-1">
         <div className="flex justify-between items-center">

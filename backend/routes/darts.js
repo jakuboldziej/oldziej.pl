@@ -52,19 +52,29 @@ const getDartsGame = async (req, res, next) => {
   next();
 }
 
-const getDartsTournament = async (req, res, next) => {
+async function getDartsTournament(req, res, next) {
+  const { identifier } = req.params;
+
   try {
-    let tournament;
+    const tournament = await DartsTournament.findOne({
+      $or: [
+        { tournamentCode: identifier },
+        { _id: identifier.match(/^[0-9a-fA-F]{24}$/) ? identifier : null }
+      ]
+    }).lean();
 
-    if (Types.ObjectId.isValid(req.params.identifier)) {
-      tournament = await DartsTournament.findById(req.params.identifier);
-    } else {
-      tournament = await DartsTournament.findOne({ tournamentCode: req.params.identifier });
-    }
+    if (!tournament) return res.status(404).json({ message: 'Tournament not found' });
 
-    if (!tournament) {
-      return res.status(404).json({ message: "Tournament not found!" });
-    }
+    const matches = await DartsTournamentMatch.find({
+      _id: { $in: tournament.matches }
+    })
+      .populate({
+        path: "gameId",
+        select: "users gameCode active"
+      })
+      .lean();
+
+    tournament.matches = matches;
 
     res.tournament = tournament;
     next();
@@ -208,6 +218,12 @@ router.post('/dartsTournaments', authenticateUser, async (req, res) => {
     }
 
     if (!tournemantWithMatches) throw new Error("Failed generating dartsTournament");
+
+    io.emit("tournamentCreated", JSON.stringify({
+      tournamentCode: tournemantWithMatches.tournamentCode,
+      userDisplayNames: tournemantWithMatches.participants,
+      tournamentAdmin: tournemantWithMatches.admin
+    }));
 
     res.status(201).json(tournemantWithMatches);
   } catch (err) {

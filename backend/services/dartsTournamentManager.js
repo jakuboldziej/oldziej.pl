@@ -3,7 +3,7 @@ const { logger } = require('../middleware/logging');
 const DartsGame = require('../models/darts/dartsGame');
 const DartsUser = require('../models/darts/dartsUser');
 const DartsTournamentMatch = require('../models/darts/dartsTournamentMatch');
-const { generateUniqueDartsCode, generateTempUserId } = require('../lib/dartsUtils');
+const { generateUniqueDartsCode, generateTempUserId, getInitialUserGameState } = require('../lib/dartsUtils');
 
 class DartsTournamentManager {
   _getNextPowerOfTwo(num) {
@@ -12,7 +12,7 @@ class DartsTournamentManager {
 
   async generateBracket(tournamentId) {
     try {
-      const tournament = await DartsTournament.findById(tournamentId).populate('participants');
+      const tournament = await DartsTournament.findById(tournamentId);
       if (!tournament) throw new Error("DartsTournament not found");
 
       const players = tournament.participants.sort(() => Math.random() - 0.5);
@@ -137,16 +137,19 @@ class DartsTournamentManager {
 
   async advanceTournamentBracket(tournamentId, matchId, winnerDisplayName, io) {
     try {
-      const tournament = await DartsTournament.findById(tournamentId)
+      const tournament = await DartsTournament.findById(tournamentId);
 
       if (!tournament) throw new Error("DartsTournament not found");
 
-      const match = tournament.matches.find(m => m._id.toString() === matchId.toString());
+      const match = await DartsTournamentMatch.findById(matchId);
       if (!match) throw new Error("Match not found");
 
       match.winner = winnerDisplayName;
       match.status = 'completed';
       await match.save();
+
+      const game = await DartsGame.findById(match.gameId);
+      if (!game) throw new Error("Game not found");
 
       if (tournament.settings.type === 'bracket') {
         await this._pushWinnerToNextRound(tournament, match);
@@ -155,10 +158,17 @@ class DartsTournamentManager {
         await this._processFFAMatchCompletion(tournament);
       }
 
-      const updatedTournament = await DartsTournament.findById(tournamentId);
+      const updatedTournament = await DartsTournament.findById(tournamentId).populate({
+        path: 'matches',
+        populate: { path: 'gameId' }
+      });
 
       if (io) {
-        io.to(`tournament-spectator-${tournamentId.tournamentCode}`).emit(
+        io.to(`tournament-spectator-${updatedTournament.tournamentCode}`).emit(
+          "tournamentUpdated",
+          updatedTournament
+        );
+        io.to(`game-${game.gameCode}`).emit(
           "tournamentUpdated",
           updatedTournament
         );
@@ -173,7 +183,10 @@ class DartsTournamentManager {
     try {
       const tournament = await DartsTournament
         .findById(tournamentId)
-        .populate("matches");
+        .populate({
+          path: 'matches',
+          populate: { path: 'gameId' }
+        })
 
       if (!tournament) throw new Error("Tournament not found");
 
@@ -231,40 +244,36 @@ class DartsTournamentManager {
         .every(m => m.status === 'completed');
 
       if (allCurrentRoundFinished) {
-        logger.info(`Round ${currentRound} finished. Initializing Round ${nextRound}...`);
+        const nextRoundMatches = tournament.matches.filter(m => m.round === nextRound);
 
-        const matchesToActivate = tournament.matches.filter(m => m.round === nextRound);
-
-        for (const match of matchesToActivate) {
+        for (const match of nextRoundMatches) {
           if (match.player1 && match.player2 && match.status === 'pending') {
             match.status = 'active';
             const newGame = await this._initializeGameForMatch(tournament, match);
             match.gameId = newGame._id;
             await match.save();
           }
-          else if (match.player1 && !match.player2 && currentMatch.round > 1) {
-            logger.info(`Walkover detected for match ${match._id} in round ${match.round}`);
-
-            match.status = 'completed';
-            match.winner = match.player1 || match.player2;
-            await match.save();
-
-            await this._pushWinnerToNextRound(tournament, match);
+          else if (match.player1 && !match.player2 && match.status === 'pending') {
           }
         }
       }
-
-      await tournament.save();
     } else {
-      tournament.status = 'completed';
-      await tournament.save();
-      logger.info(`DartsTournament ${tournament._id} completed! Final Winner: ${currentMatch.winner}`);
+      if (tournament.status !== 'completed') {
+        tournament.status = 'completed';
+        await tournament.save();
+      }
     }
   }
 
   async _processFFAMatchCompletion(tournament) {
+    const freshTournament = await DartsTournament
+      .findById(tournament._id)
+      .populate({
+        path: "matches",
+        select: "status player1 player2 winner"
+      });
 
-    const allFinished = tournament.matches.every(m => m.status === 'completed');
+    const allFinished = freshTournament.matches.every(m => m.status === 'completed');
 
     if (!allFinished) return;
 
@@ -359,29 +368,12 @@ class DartsTournamentManager {
     let p1 = await DartsUser.findOne({ displayName: match.player1 });
     let p2 = await DartsUser.findOne({ displayName: match.player2 });
 
-    if (!p1) p1 = { displayName: match.player1, _id: generateTempUserId() }
-    if (!p2) p2 = { displayName: match.player2, _id: generateTempUserId() }
+    if (!p1) p1 = { displayName: match.player1 || "Player 1", _id: generateTempUserId() };
+    if (!p2) p2 = { displayName: match.player2 || "Player 2", _id: generateTempUserId() };
 
-    const gameUsers = [p1, p2].map((user, index) => {
-      let returnData = {
-        _id: user._id,
-        displayName: user.displayName,
-        points: tournament.settings.startPoints,
-        turn: index === 0,
-        currentTurn: 1,
-        turns: { 1: null, 2: null, 3: null },
-        throws: { doors: 0, doubles: 0, triples: 0, normal: 0, overthrows: 0 },
-        currentThrows: { doors: 0, doubles: 0, triples: 0, normal: 0, overthrows: 0 },
-        place: 0,
-        legs: 0,
-        sets: 0,
-        avgPointsPerTurn: "0.00"
-      };
-
-      if (user._id.includes("temp")) returnData.temporary = true;
-
-      return returnData;
-    });
+    const gameUsers = [p1, p2].map((user, index) =>
+      getInitialUserGameState(user, tournament.settings.startPoints, index === 0)
+    );
 
     const newGame = new DartsGame({
       gameCode: await generateUniqueDartsCode(),
@@ -393,6 +385,8 @@ class DartsTournamentManager {
       created_by: tournament.admin,
       podiums: 1,
       users: gameUsers,
+      legStarterIndex: 0,
+      record: [],
       turn: p1.displayName,
       round: 1,
       active: true,
