@@ -29,14 +29,13 @@ class CronService {
   startChoreResetJob() {
     // '*/10 * * * * *' 10 seconds | '0 0 * * *' every day at midnight
     const job = cron.schedule('0 0 * * *', async () => {
-      try {
-        await this.resetOverdueRepeatableChores();
-      } catch (error) {
-        logger.error('CronService: Error in chore reset job', { error: error.message });
+      await this.resetOverdueRepeatableChores();
+    },
+      {
+        scheduled: false,
+        timezone: "Europe/Warsaw"
       }
-    }, {
-      scheduled: false
-    });
+    );
 
     this.jobs.set('choreReset', job);
     job.start();
@@ -100,26 +99,30 @@ class CronService {
         if (!user.userId) continue;
 
         const userIdStr = user.userId.toString();
-
         if (!userMap.has(userIdStr)) {
           userMap.set(userIdStr, []);
         }
-
         userMap.get(userIdStr).push(user.finished);
       }
     }
 
     for (const [userId, finishedList] of userMap.entries()) {
-      const finishedAll = finishedList.every(Boolean);
+      const finishedAll = finishedList.length > 0 && finishedList.every(status => status === true);
 
       if (finishedAll) {
-        await ChoresUser.findOneAndUpdate({ authUserId: userId }, {
-          $inc: { dailyStreak: 1 }
-        });
+        logger.info(`CronService: Incrementing streak for user ${userId}`);
+        await ChoresUser.findOneAndUpdate(
+          { authUserId: userId },
+          { $inc: { dailyStreak: 1 } },
+          { upsert: true, new: true }
+        );
       } else {
-        await ChoresUser.findOneAndUpdate({ authUserId: userId }, {
-          $set: { dailyStreak: 0 }
-        });
+        logger.info(`CronService: Resetting streak to 0 for user ${userId}`);
+        await ChoresUser.findOneAndUpdate(
+          { authUserId: userId },
+          { $set: { dailyStreak: 0 } },
+          { upsert: true }
+        );
       }
     }
   }

@@ -55,7 +55,7 @@ app.use(helmet({
   xssFilter: true,
 }));
 
-app.set('trust proxy', true);
+app.set('trust proxy', 'loopback');
 
 app.use(xssClean());
 app.use(mongoSanitize());
