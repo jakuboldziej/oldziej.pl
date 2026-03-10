@@ -5,7 +5,7 @@ import { endGame } from "@/lib/dartsGameSocket";
 import { isInitialGameState } from '@/lib/recordUtils';
 
 function Keyboard({ props }) {
-  const { game, handleRound, specialState, updateGameState } = useContext(DartsGameContext);
+  const { game, handleRound, specialState } = useContext(DartsGameContext);
   const { handleShow } = props;
 
   const handleClick = (value) => {

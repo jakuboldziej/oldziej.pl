@@ -5,6 +5,7 @@ const { logger } = require('../middleware/logging');
 const DartsGame = require('../models/darts/dartsGame');
 const DartsTournament = require('../models/darts/dartsTournament');
 const dartsTournamentManager = require('../services/dartsTournamentManager');
+const { getInitialUsersGameState } = require('../lib/dartsUtils');
 
 const socketAuthMiddleware = (socket, next) => {
   const handshake = socket.handshake;
@@ -175,42 +176,13 @@ io.on('connection', (socket) => {
       return null;
     }
 
-    const throwsData = {
-      doors: 0,
-      doubles: 0,
-      triples: 0,
-      normal: 0,
-      overthrows: 0,
-    };
+    const rawUsers = currentGame.users.map(user =>
+      typeof user.toObject === "function" ? user.toObject() : user
+    );
 
-    const resetUsers = currentGame.users.map((user) => {
-      const userObj = typeof user.toObject === 'function' ? user.toObject() : { ...user };
-      return {
-        _id: userObj._id,
-        displayName: userObj.displayName,
-        visibleName: userObj.visibleName,
-        points: parseInt(currentGame.startPoints),
-        allGainedPoints: 0,
-        turn: false,
-        turnsSum: 0,
-        currentTurn: 1,
-        place: 0,
-        turns: { 1: null, 2: null, 3: null },
-        throws: { ...throwsData },
-        currentThrows: { ...throwsData },
-        legs: 0,
-        sets: 0,
-        totalLegsWon: 0,
-        avgPointsPerTurn: "0.00",
-        highestGameAvg: "0.00",
-        highestGameTurnPoints: 0,
-        gameCheckout: 0,
-      };
-    });
+    rawUsers.unshift(rawUsers.pop());
 
-    resetUsers.unshift(resetUsers.pop());
-
-    resetUsers[0].turn = true;
+    const resetUsers = getInitialUsersGameState(rawUsers, currentGame.startPoints, false);
 
     let newGameCode;
     do {
@@ -248,7 +220,6 @@ io.on('connection', (socket) => {
     removeGameManager(currentGame.gameCode);
 
     const oldRoom = `game-${currentGame.gameCode}`;
-
     io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(savedGame));
 
     return savedGame;

@@ -154,7 +154,6 @@ function DartsTournamentHome() {
 
   const handleActiveGameClick = useCallback(async (e, activeGame) => {
     e.preventDefault();
-    console.log(activeGame)
 
     try {
       if (activeGame && (!activeGame.status === 'active' && !activeGame.status === 'completed')) return;
@@ -292,12 +291,7 @@ function DartsTournamentHome() {
                 <Shield size={16} /> Admin Panel
               </h3>
               <div className="flex flex-col gap-2">
-                <button className="w-full text-left p-2 hover:bg-red-900/40 text-xs rounded border border-red-900/50 transition-colors">
-                  Pause Tournament
-                </button>
-                <button className="w-full text-left p-2 hover:bg-red-900/40 text-xs rounded border border-red-900/50 transition-colors">
-                  Reset Current Round
-                </button>
+
               </div>
             </div>
           )}

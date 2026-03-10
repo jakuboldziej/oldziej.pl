@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { DartsGameContext } from "@/context/Home/DartsGameContext";
 import lodash, { uniqueId } from 'lodash';
-import { getAuthUser, getDartsUser, getESP32Availability, postDartsGame, postDartsTournament, postESP32JoinGame } from "@/lib/fetch";
+import { getAuthUser, getDartsUser, getESP32Availability, getInitialUsersGameState, postDartsGame, postDartsTournament, postESP32JoinGame } from "@/lib/fetch";
 import { socket, ensureSocketConnection } from "@/lib/socketio";
 import { Button } from "@/components/ui/shadcn/button";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/shadcn/drawer";
@@ -268,41 +268,11 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
   }
 
   const handleCreateNewGame = async () => {
-    const throwsData = {
-      doors: 0,
-      doubles: 0,
-      triples: 0,
-      normal: 0,
-      overthrows: 0,
-    }
-
-    let updatedUsers = usersPlaying.map((user) => ({
-      _id: user._id,
-      displayName: user.displayName,
-      points: selectStartPoints,
-      allGainedPoints: 0,
-      turn: false,
-      turnsSum: 0,
-      currentTurn: 1,
-      place: 0,
-      turns: {
-        1: null,
-        2: null,
-        3: null
-      },
-      throws: { ...throwsData },
-      currentThrows: { ...throwsData },
-      legs: 0,
-      sets: 0,
-      totalLegsWon: 0,
-      avgPointsPerTurn: "0.00",
-      highestGameAvg: "0.00",
-      highestGameTurnPoints: 0,
-      gameCheckout: 0,
-      temporary: user.temporary || false
-    }));
-
-    if (randomizePlayers) updatedUsers = updatedUsers.sort(() => Math.random() - 0.5);
+    const updatedUsers = await getInitialUsersGameState(
+      usersPlaying,
+      selectStartPoints,
+      randomizePlayers
+    );
 
     const gameData = {
       created_by: currentUser.displayName,
@@ -323,7 +293,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
       round: 1,
     }
 
-    updatedUsers[0].turn = true;
     const usersCopy = lodash.cloneDeep(updatedUsers);
     const gameCopy = lodash.pick(gameData, ['round', 'turn']);
 
@@ -344,7 +313,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
     gameData["gameCode"] = game.gameCode;
 
     await ensureSocketConnection();
-
     updateGameState(gameData);
 
     localStorage.setItem("gameSettings", JSON.stringify({

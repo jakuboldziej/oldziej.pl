@@ -14,6 +14,7 @@ import { onReconnected, ensureSocketConnection } from '@/lib/socketio';
 import { getDartsGame } from '@/lib/fetch';
 import ShowNewToast from '@/components/Home/MyComponents/ShowNewToast';
 import { ensureGameRecord } from '@/lib/recordUtils';
+import useKeepAwake from '@/hooks/useKeepAwake';
 
 export const DartsGameContext = createContext();
 
@@ -31,13 +32,16 @@ export const DartsGameContextProvider = ({ children }) => {
   });
   const [specialState, setSpecialState] = useState([false, ""]);
   const [overthrow, setOverthrow] = useState(false);
+
+  useKeepAwake(game?.active);
+
   const subscribedGameCode = useRef(null);
   const handleShowRef = useRef(null);
   const pendingRequest = useRef(false);
   const lastRequestTime = useRef(0);
   const lastSocketUpdate = useRef(0);
-  const minRequestInterval = 100;
   const hasFetchedFullGame = useRef(false);
+  const minRequestInterval = 100;
 
   const currentUser = useMemo(() => {
     if (!game || !game.users) return null;

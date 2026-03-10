@@ -286,6 +286,23 @@ export const recalcUserStats = async (displayName) => {
   return await response.json();
 }
 
+export const getInitialUsersGameState = async (users, startPoints, randomize = false) => {
+  const response = await fetch(`${mongodbApiUrl}/darts/utils/getInitialUsersGameState`, {
+    method: "POST",
+    body: JSON.stringify({
+      users,
+      startPoints,
+      randomize
+    }),
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": Cookies.get("_auth")
+    },
+  });
+
+  return await response.json();
+}
+
 // Cloud
 
 // Cloud - Users

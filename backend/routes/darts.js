@@ -9,7 +9,7 @@ const { logger } = require("../middleware/logging")
 const { io } = require('../server')
 const dartsTournamentManager = require('../services/dartsTournamentManager');
 const DartsTournament = require('../models/darts/dartsTournament');
-const { generateUniqueDartsCode } = require("../lib/dartsUtils");
+const { generateUniqueDartsCode, getInitialUsersGameState } = require("../lib/dartsUtils");
 const DartsTournamentMatch = require("../models/darts/dartsTournamentMatch");
 const { recalcUsersStats, recalcUserStats } = require("../lib/dartsStatsUtil");
 
@@ -414,6 +414,18 @@ router.post('/utils/recalcUserStats', authenticateUser, async (req, res) => {
     const response = await recalcUserStats(body.displayName);
 
     return res.json({ successful: response });
+  } catch (err) {
+    return res.json({ message: err.message });
+  }
+});
+
+router.post('/utils/getInitialUsersGameState', authenticateUser, async (req, res) => {
+  try {
+    const { users, startPoints, randomize } = req.body;
+
+    const response = getInitialUsersGameState(users, startPoints, randomize);
+
+    return res.json(response);
   } catch (err) {
     return res.json({ message: err.message });
   }

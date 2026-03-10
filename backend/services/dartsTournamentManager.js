@@ -3,7 +3,7 @@ const { logger } = require('../middleware/logging');
 const DartsGame = require('../models/darts/dartsGame');
 const DartsUser = require('../models/darts/dartsUser');
 const DartsTournamentMatch = require('../models/darts/dartsTournamentMatch');
-const { generateUniqueDartsCode, generateTempUserId, getInitialUserGameState } = require('../lib/dartsUtils');
+const { generateUniqueDartsCode, generateTempUserId, getInitialUsersGameState } = require('../lib/dartsUtils');
 
 class DartsTournamentManager {
   _getNextPowerOfTwo(num) {
@@ -371,9 +371,7 @@ class DartsTournamentManager {
     if (!p1) p1 = { displayName: match.player1 || "Player 1", _id: generateTempUserId() };
     if (!p2) p2 = { displayName: match.player2 || "Player 2", _id: generateTempUserId() };
 
-    const gameUsers = [p1, p2].map((user, index) =>
-      getInitialUserGameState(user, tournament.settings.startPoints, index === 0)
-    );
+    const gameUsers = getInitialUsersGameState([p1, p2], tournament.settings.startPoints, false);
 
     const newGame = new DartsGame({
       gameCode: await generateUniqueDartsCode(),
@@ -387,7 +385,7 @@ class DartsTournamentManager {
       users: gameUsers,
       legStarterIndex: 0,
       record: [],
-      turn: p1.displayName,
+      turn: gameUsers[0].displayName,
       round: 1,
       active: true,
       tournamentId: tournament._id,
