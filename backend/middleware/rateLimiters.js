@@ -7,6 +7,9 @@ const createRateLimiter = (maxAttempts, windowMs, message) => {
     message: { message }, // Custom message
     standardHeaders: true, // Include rate limit headers
     legacyHeaders: false, // Disable deprecated headers
+    validate: {
+      trustProxy: false
+    }
   });
 };
 
