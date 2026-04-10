@@ -13,13 +13,15 @@ import ImgPromaxSport from "@/assets/images/Portfolio/ProjectsImages/promaxsport
 import ImgPromaxSportMobile from "@/assets/images/Portfolio/ProjectsImages/promaxsport_mobile.png"
 import ImgMyo from "@/assets/images/Portfolio/ProjectsImages/myo.png"
 import ImgMyoMobile from "@/assets/images/Portfolio/ProjectsImages/myo_mobile.png"
+import ImgMilitaryEagle from "@/assets/images/Portfolio/ProjectsImages/military-eagle.png"
+import ImgMilitaryEagleMobile from "@/assets/images/Portfolio/ProjectsImages/military-eagle_mobile.png"
 import MagicUiIcon from "@/assets/images/icons/magicui_icon.png"
 import LucideIcon from "@/assets/images/icons/lucide_icon.svg"
 import { useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { SquareArrowOutUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/shadcn/button';
-import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiGoogleanalytics, SiIcons8, SiLeaflet, SiMongodb, SiReact, SiResend, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiTailwindcss } from '@icons-pack/react-simple-icons';
+import { SiBootstrap, SiChartdotjs, SiExpress, SiFirebase, SiFramer, SiGoogleanalytics, SiIcons8, SiLeaflet, SiMongodb, SiNextdotjs, SiReact, SiResend, SiSanity, SiSass, SiShadcnui, SiSimpleicons, SiSocketdotio, SiStripe, SiTailwindcss, SiZod } from '@icons-pack/react-simple-icons';
 import { PortfolioContext } from '@/context/Portfolio/PortfolioContext';
 import { scrollToTop } from '@/components/Portfolio/utils';
 
@@ -117,6 +119,21 @@ function Project() {
         <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
         <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
         <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />,
+        <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />
+      ]);
+    } else if (projectName === "military-eagle") {
+      setMainImage(isMobile ? ImgMilitaryEagleMobile : ImgMilitaryEagle);
+      setMainLink({ text: "military-eagle.com", href: 'https://military-eagle.com' });
+      setDesignedBy('Jakub Ołdziejewski');
+      setTechStackIcons([
+        <SiNextdotjs key={'#FFFFFF'} title="Next.js 16" width={46} height={46} fill='#FFFFFF' />,
+        <SiReact key={'#61DAFB'} title="React 19" width={46} height={46} fill='#61DAFB' />,
+        <SiTailwindcss key={'#06B6D4'} title="Tailwind CSS" width={46} height={46} fill='#06B6D4' />,
+        <SiFramer key={'#0055FF'} title="Framer Motion" width={46} height={46} fill='#0055FF' />,
+        <SiMongodb key={'#47A248'} title="MongoDB" width={46} height={46} fill='#47A248' />,
+        <SiSanity key={'#F03E2F'} title="Sanity CMS" width={46} height={46} fill='#F03E2F' />,
+        <SiStripe key={'#008CDD'} title="Stripe" width={46} height={46} fill='#008CDD' />,
+        <SiZod key={'#3E67B1'} title="Zod" width={46} height={46} fill='#3E67B1' />,
         <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />
       ]);
     } else {
