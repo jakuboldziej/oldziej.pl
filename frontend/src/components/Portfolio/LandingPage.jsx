@@ -2,8 +2,43 @@ import React, { useContext } from 'react'
 import { FadeText } from '@/components/ui/magicui/fade-text'
 import { motion } from "framer-motion"
 import BoxReveal from '@/components/ui/magicui/box-reveal'
-import TypingAnimation from '@/components/ui/magicui/typing-animation'
 import { PortfolioContext } from '@/context/Portfolio/PortfolioContext'
+
+const ReliableTypingAnimation = ({ text, className }) => {
+  const characters = text.split("");
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        delayChildren: 0.8,
+        staggerChildren: 0.033,
+      },
+    },
+  };
+
+  const childVariants = {
+    hidden: { opacity: 0, display: "none" },
+    visible: { opacity: 1, display: "inline" },
+  };
+
+  return (
+    <motion.div
+      className={className}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+    >
+      {characters.map((char, index) => (
+        <motion.span key={index} variants={childVariants}>
+          {char}
+        </motion.span>
+      ))}
+    </motion.div>
+  );
+};
 
 function LandingPage({ landingPageRef }) {
   const { lang, langText } = useContext(PortfolioContext);
@@ -18,20 +53,15 @@ function LandingPage({ landingPageRef }) {
             Full-stack Developer
           </BoxReveal>
         </div>
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          viewport={{ once: true }}
-          className='flex justify-center'
-        >
+
+        <div className='flex justify-center'>
           {langText.landingPage &&
-            <TypingAnimation
-              className={`${lang === "en" ? 'w-[40.5rem] min-h-[288px]' : 'w-[42rem] min-h-[336px]'}  px-[4vw] sm:px-0 text-3xl sm:text-4xl sm:leading-[3rem]`}
-              duration={55}
-              text={langText.landingPage.desc} />
+            <ReliableTypingAnimation
+              className={`${lang === "en" ? 'w-[40.5rem] min-h-[288px]' : 'w-[42rem] min-h-[336px]'}  px-[4vw] sm:px-0 text-3xl sm:text-4xl sm:leading-[3rem] text-center`}
+              text={langText.landingPage.desc}
+            />
           }
-        </motion.div>
+        </div>
       </div>
     </section>
   )

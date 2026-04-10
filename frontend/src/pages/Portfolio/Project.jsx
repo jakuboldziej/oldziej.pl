@@ -1,6 +1,6 @@
 import MyParticles from '@/components/Portfolio/MyParticles'
 import Navbar from '@/components/Portfolio/Navbar'
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import ImgMmagusiak from "@/assets/images/Portfolio/ProjectsImages/mmagusiak.png"
 import ImgMmagusiakMobile from "@/assets/images/Portfolio/ProjectsImages/mmagusiak_mobile.png"
 import ImgDarts from "@/assets/images/Portfolio/ProjectsImages/darts.png"
@@ -11,6 +11,8 @@ import ImgCloud from "@/assets/images/Portfolio/ProjectsImages/cloud.png"
 import ImgCloudMobile from "@/assets/images/Portfolio/ProjectsImages/cloud_mobile.png"
 import ImgPromaxSport from "@/assets/images/Portfolio/ProjectsImages/promaxsport.png"
 import ImgPromaxSportMobile from "@/assets/images/Portfolio/ProjectsImages/promaxsport_mobile.png"
+import ImgMyo from "@/assets/images/Portfolio/ProjectsImages/myo.png"
+import ImgMyoMobile from "@/assets/images/Portfolio/ProjectsImages/myo_mobile.png"
 import MagicUiIcon from "@/assets/images/icons/magicui_icon.png"
 import LucideIcon from "@/assets/images/icons/lucide_icon.svg"
 import { useContext, useEffect, useLayoutEffect, useState } from 'react';
@@ -25,12 +27,16 @@ function Project() {
   const { langText } = useContext(PortfolioContext);
   const { projectName } = useParams();
 
+  const navigate = useNavigate();
+
   const isMobile = window.innerWidth < 640;
 
   const [mainImage, setMainImage] = useState(null);
   const [mainLink, setMainLink] = useState({ text: '', href: '' });
   const [designedBy, setDesignedBy] = useState('');
   const [techStackIcons, setTechStackIcons] = useState([]);
+
+  const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
     if (projectName === "promaxsport") {
@@ -102,6 +108,19 @@ function Project() {
         <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
         <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />
       ]);
+    } else if (projectName === "myopilatesstudio") {
+      setMainImage(isMobile ? ImgMyoMobile : ImgMyo);
+      setMainLink({ text: "myopilatesstudio.pl", href: 'https://myopilatesstudio.pl' });
+      setDesignedBy('Jakub Ołdziejewski');
+      setTechStackIcons([
+        <SiReact key={'#61DAFB'} width={46} height={46} fill='#61DAFB' />,
+        <SiTailwindcss key={'#06B6D4'} width={46} height={46} fill='#06B6D4' />,
+        <SiFramer key={'#0055FF'} width={46} height={46} fill='#0055FF' />,
+        <SiGoogleanalytics key={'#E37400'} width={46} height={46} fill='#E37400' />,
+        <img key='lucide-react' title='lucide-react' alt='lucide-react' src={LucideIcon} width={46} height={46} />
+      ]);
+    } else {
+      setIsNotFound(true);
     }
   }, [projectName]);
 
@@ -112,6 +131,22 @@ function Project() {
   useLayoutEffect(() => {
     scrollToTop(0, 'instant');
   }, [])
+
+  if (isNotFound) {
+    return (
+      <div className='project-portfolio rubik'>
+        <Navbar isNotHome={true} isProjects={true} />
+        <MyParticles />
+        <div className="flex-1 flex items-center justify-center min-h-[70vh] text-white flex-col gap-4">
+          <h1 className="text-4xl font-bold">404</h1>
+          <p className="text-xl text-muted-foreground">Nie znaleziono takiego projektu.</p>
+          <Button variant="outline_lime" onClick={(e) => navigate("/projects")}>{langText.experience?.button || 'Projects'}</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mainImage) return null;
 
   return (
     <div className='project-portfolio rubik'>
