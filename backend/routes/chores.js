@@ -257,7 +257,6 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
           try {
             const owner = await User.findById(updatedChore.ownerId);
             const creatorName = owner ? owner.displayName : 'Ktoś';
-
             const allDisplayNames = updatedChore.usersList.map(user =>
               typeof user === 'string' ? user : user.displayName
             );
@@ -278,7 +277,8 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
             console.error('Failed to send completion notification:', notificationError);
           }
         }
-      } else {
+
+      } else if (!allUsersFinished && updatedChore.finished) {
         updatedChore.finished = false;
         await updatedChore.save();
       }
@@ -288,7 +288,7 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
     res.json(updatedChore);
   } catch (err) {
     logger.error("PATCH Chore", { method: req.method, url: req.url, error: err.message });
-    return res.json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 });
 

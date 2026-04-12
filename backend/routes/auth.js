@@ -523,10 +523,18 @@ router.post("/login", loginLimiter, (req, res) => {
         { expiresIn: "30d" }
       );
 
-      logger.info("Login User", { method: req.method, url: req.url, data: user });
+      const sanitizedUserForLogs = {
+        _id: user._id,
+        displayName: user.displayName,
+        role: user.role,
+        verified: user.verified
+      };
+
+      logger.info("Login User", { method: req.method, url: req.url, data: sanitizedUserForLogs });
       res.status(200).send({
         message: "Login Successful",
         token,
+        userId: user._id,
         verified: user.verified,
         role: user.role,
         friendsRequestsReceived: user.friendsRequests?.received?.length || 0,
