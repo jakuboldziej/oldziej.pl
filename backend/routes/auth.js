@@ -75,7 +75,7 @@ router.patch("/users/:displayName", getAuthUser, async (req, res) => {
       { new: true }
     );
     if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     logger.info("PATCH User", { method: req.method, url: req.url, data: updatedUser });
@@ -121,7 +121,7 @@ router.get('/users/friends-page-data/:displayName', authenticateUser, async (req
     );
 
     if (!currentUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(401).json({ message: 'User not found' });
     }
 
     const friends = await User.find(
@@ -499,9 +499,16 @@ router.post("/login", loginLimiter, (req, res) => {
   const displayName = req.body.displayName?.trim();
 
   User.findOne({ displayName }).then((user) => {
+    if (!user) {
+      logger.error("Login User - Not Found", { method: req.method, url: req.url });
+      return res.status(401).send({
+        message: "User not found",
+      });
+    }
+
     bcrypt.compare(req.body.password, user.password).then((passwordCheck) => {
       if (!passwordCheck) {
-        return res.send({
+        return res.status(401).send({
           message: "Wrong password",
         });
       }
@@ -522,18 +529,18 @@ router.post("/login", loginLimiter, (req, res) => {
         token,
         verified: user.verified,
         role: user.role,
-        friendsRequestsReceived: user.friendsRequests.received.length,
+        friendsRequestsReceived: user.friendsRequests?.received?.length || 0,
       });
     }).catch((error) => {
-      logger.error("Login User", { method: req.method, url: req.url, error: error.message });
+      logger.error("Login User - Bcrypt Error", { method: req.method, url: req.url, error: error.message });
       res.status(500).send({
         message: "An error occurred while processing your request.",
       });
     });
   }).catch((error) => {
-    logger.error("Login User", { method: req.method, url: req.url, error: error.message });
-    res.send({
-      message: "User not found",
+    logger.error("Login User - DB Error", { method: req.method, url: req.url, error: error.message });
+    res.status(500).send({
+      message: "Database error occurred",
     });
   });
 });
@@ -541,7 +548,7 @@ router.post("/login", loginLimiter, (req, res) => {
 router.patch("/change-password", changePasswordLimiter, authenticateUser, async (req, res) => {
   try {
     const user = await User.findOne({ displayName: req.body.displayName });
-    if (!user) return res.status(404).send({ message: "User not found." });
+    if (!user) return res.status(401).send({ message: "User not found." });
 
     const passwordMatch = await bcrypt.compare(req.body.currentPassword, user.password);
     if (!passwordMatch) {
@@ -577,7 +584,7 @@ router.post("/refresh-token", async (req, res) => {
 
     const user = await User.findById(decoded.userId);
     if (!user) {
-      return res.status(404).send({ message: "User not found" });
+      return res.status(401).send({ message: "User not found" });
     }
 
     const newToken = jwt.sign(

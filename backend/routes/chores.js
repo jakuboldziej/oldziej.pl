@@ -106,6 +106,10 @@ router.get('/', authenticateUser, async (req, res) => {
 
     if (req.query.displayName) {
       filters.displayName = req.query.displayName;
+    } else if (res.authUser && res.authUser.displayName) {
+      filters.displayName = res.authUser.displayName;
+    } else {
+      return res.status(401).json({ message: "Brak identyfikatora użytkownika." });
     }
 
     if (req.query.ownerId) {
@@ -116,12 +120,10 @@ router.get('/', authenticateUser, async (req, res) => {
       filters.finished = req.query.finished === 'true';
     }
 
-    // Get chores where user is in usersList
     if (req.query.assignedTo) {
       filters['usersList.displayName'] = { $in: [req.query.assignedTo] };
     }
 
-    // Get chores where user is owner OR in usersList
     if (req.query.userInvolved) {
       const user = await User.findOne({ displayName: req.query.userInvolved });
       if (user) {
@@ -134,9 +136,9 @@ router.get('/', authenticateUser, async (req, res) => {
 
     const chores = await Chore.find(filters).sort({});
 
-    res.json(chores);
+    res.status(200).json(chores);
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
