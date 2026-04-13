@@ -8,6 +8,8 @@ const { logger } = require('../middleware/logging');
 const ChoresUser = require('../models/chores/choresUser');
 const { io } = require('../server');
 
+const { sendPushNotifications } = require('./notificationService');
+
 class CronService {
   constructor() {
     this.jobs = new Map();
@@ -15,6 +17,7 @@ class CronService {
 
   startAllJobs() {
     this.startChoreResetJob();
+    this.startEveningReminderJob();
     logger.info('CronService: All cron jobs started');
   }
 
@@ -24,6 +27,58 @@ class CronService {
       logger.info(`CronService: Stopped job ${name}`);
     });
     this.jobs.clear();
+  }
+
+  startEveningReminderJob() {
+    // 0 22 * * * every day at 22:00
+    const job = cron.schedule('0 22 * * *', async () => {
+      await this.sendEveningReminders();
+    },
+      {
+        scheduled: false,
+        timezone: "Europe/Warsaw"
+      }
+    );
+
+    this.jobs.set('eveningReminder', job);
+    job.start();
+    logger.info('CronService: Evening reminder job started (runs at 22:00)');
+  }
+
+  async sendEveningReminders() {
+    try {
+      const dailyChores = await Chore.find({
+        isRepeatable: true,
+        intervalType: 'daily'
+      });
+
+      if (!dailyChores.length) return;
+
+      const usersToNotifySet = new Set();
+
+      for (const chore of dailyChores) {
+        for (const user of chore.usersList) {
+          if (user.finished === false && user.displayName) {
+            usersToNotifySet.add(user.displayName);
+          }
+        }
+      }
+
+      const displayNamesArray = Array.from(usersToNotifySet);
+
+      if (displayNamesArray.length > 0) {
+        logger.info(`CronService: Sending evening reminders to ${displayNamesArray.length} users.`);
+
+        await sendPushNotifications(
+          displayNamesArray,
+          'Zadania czekają! 🧹',
+          'Masz jeszcze nieukończone zadania na dzisiaj! Dokończ je, aby nie stracić passy (🔥).',
+          { type: 'evening_reminder' }
+        );
+      }
+    } catch (error) {
+      logger.error('CronService: Error sending evening reminders', { error: error.message });
+    }
   }
 
   startChoreResetJob() {

@@ -4,99 +4,14 @@ const Chore = require('../models/chores/chore')
 const User = require('../models/user');
 const ChoresUser = require('../models/chores/choresUser');
 const { logger } = require("../middleware/logging");
-const { Expo } = require('expo-server-sdk');
 const {
   validateIntervalData,
 } = require('../lib/intervalUtils');
 
-const router = express.Router()
+const { sendPushNotifications } = require('../services/notificationService');
 
-let expo = new Expo({
-  accessToken: process.env.EXPO_CHORES_ACCESS_TOKEN,
-  useFcmV1: true
-});
+const router = express.Router();
 
-const sendPushNotifications = async (userDisplayNames, title, body, data = {}) => {
-  try {
-    const users = await User.find({ displayName: { $in: userDisplayNames } });
-    const userIds = users.map(user => user._id.toString());
-
-    const choresUsers = await ChoresUser.find({
-      authUserId: { $in: userIds },
-      pushToken: { $ne: null, $exists: true }
-    });
-
-    if (choresUsers.length === 0) {
-      console.warn('No users with push tokens found');
-      return;
-    }
-
-    let messages = [];
-    for (let choresUser of choresUsers) {
-      if (!Expo.isExpoPushToken(choresUser.pushToken)) {
-        console.error(`Push token ${choresUser.pushToken} is not a valid Expo push token`);
-        continue;
-      }
-
-      messages.push({
-        to: choresUser.pushToken,
-        sound: 'default',
-        title: title,
-        body: body,
-        data: data,
-        badge: 1,
-        priority: 'high',
-        ttl: 86400,
-        channelId: 'myNotificationChannel',
-        categoryId: 'chore_notification',
-        android: {
-          channelId: 'myNotificationChannel',
-          sound: 'default',
-          priority: 'max',
-          sticky: true,
-          vibrate: [0, 250, 250, 250],
-          color: '#FF231F7C',
-          icon: './assets/icon.png',
-          largeIcon: './assets/icon.png',
-          style: {
-            type: 'bigText',
-            text: body
-          }
-        },
-        ios: {
-          sound: 'default',
-          badge: 1,
-          priority: 'high',
-          subtitle: 'ChoresApp',
-          _displayInForeground: true,
-          interruptionLevel: 'active',
-          relevanceScore: 1.0
-        }
-      });
-    }
-
-    if (messages.length === 0) {
-      console.warn('No valid push tokens to send to');
-      return;
-    }
-
-    let chunks = expo.chunkPushNotifications(messages);
-    let tickets = [];
-
-    for (let chunk of chunks) {
-      try {
-        let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-        tickets.push(...ticketChunk);
-      } catch (error) {
-        console.error('Error sending push notification chunk:', error);
-      }
-    }
-
-    return tickets;
-  } catch (error) {
-    console.error('Error in sendPushNotifications:', error);
-  }
-};
 
 // Chores
 
@@ -104,38 +19,24 @@ router.get('/', authenticateUser, async (req, res) => {
   try {
     const filters = {};
 
-    if (req.query.displayName) {
-      filters.displayName = req.query.displayName;
-    } else if (res.authUser && res.authUser.displayName) {
-      filters.displayName = res.authUser.displayName;
-    } else {
-      return res.status(401).json({ message: "Brak identyfikatora użytkownika." });
+    if (req.query.userInvolved) {
+      const user = await User.findOne({ displayName: req.query.userInvolved });
+      if (user) {
+        filters.$or = [
+          { ownerId: user._id },
+          { 'usersList.displayName': req.query.userInvolved }
+        ];
+      }
     }
-
-    if (req.query.ownerId) {
-      filters.ownerId = req.query.ownerId;
+    else if (res.authUser && res.authUser.displayName) {
+      filters.ownerId = res.authUser._id;
     }
 
     if (req.query.finished !== undefined) {
       filters.finished = req.query.finished === 'true';
     }
 
-    if (req.query.assignedTo) {
-      filters['usersList.displayName'] = { $in: [req.query.assignedTo] };
-    }
-
-    if (req.query.userInvolved) {
-      const user = await User.findOne({ displayName: req.query.userInvolved });
-      if (user) {
-        filters.$or = [
-          { ownerId: user._id.toString() },
-          { 'usersList.displayName': { $in: [req.query.userInvolved] } }
-        ];
-      }
-    }
-
-    const chores = await Chore.find(filters).sort({});
-
+    const chores = await Chore.find(filters);
     res.status(200).json(chores);
   } catch (err) {
     res.status(500).json({ message: err.message });
