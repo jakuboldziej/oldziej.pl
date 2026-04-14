@@ -27,7 +27,7 @@ export const postDartsGame = async (gameData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -42,7 +42,7 @@ export const patchDartsGame = async (gameData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -53,7 +53,7 @@ export const deleteDartsGame = async (gameId) => {
   await fetch(`${mongodbApiUrl}/darts/dartsGames/${gameId}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
 }
@@ -81,7 +81,7 @@ export const getDartsGames = async (userDisplayName = null, limit = 0, trainingF
 
   const gamesResponse = await fetch(url, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   }
   );
@@ -92,7 +92,7 @@ export const getDartsGames = async (userDisplayName = null, limit = 0, trainingF
 export const getDartsGame = async (identifier) => {
   const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsGames/${identifier}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
 
@@ -104,7 +104,7 @@ export const getDartsPageData = async (userDisplayName, friendsDisplayNames = []
 
   const response = await fetch(`${mongodbApiUrl}/darts/utils/dartsPage/${userDisplayName}${friendsParam}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
 
@@ -119,7 +119,7 @@ export const postDartsTournament = async (tournamentData) => {
     body: JSON.stringify(tournamentData),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -134,7 +134,7 @@ export const patchDartsTournament = async (tournamentData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -145,7 +145,7 @@ export const deleteDartsTournament = async (tournamentId) => {
   await fetch(`${mongodbApiUrl}/darts/dartsTournaments/${tournamentId}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
 }
@@ -167,7 +167,7 @@ export const getDartsTournaments = async (userDisplayName = null, limit = 0) => 
 
   const gamesResponse = await fetch(url, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   }
   );
@@ -178,7 +178,7 @@ export const getDartsTournaments = async (userDisplayName = null, limit = 0) => 
 export const getDartsTournament = async (identifier) => {
   const gameResponse = await fetch(`${mongodbApiUrl}/darts/dartsTournaments/${identifier}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
 
@@ -190,7 +190,7 @@ export const getDartsTournament = async (identifier) => {
 export const getDartsUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
   const users = await usersResponse.json();
@@ -200,7 +200,7 @@ export const getDartsUsers = async () => {
 export const getDartsUser = async (identifier) => {
   const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${identifier}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     }
   });
   const user = await userResponse.json();
@@ -215,7 +215,7 @@ export const patchDartsUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -226,7 +226,7 @@ export const deleteDartsUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/darts/dartsUsers/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
   return await response.json();
@@ -240,7 +240,7 @@ export const postDartsUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -264,7 +264,7 @@ export const recalcUsersStats = async (displayNames) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -279,7 +279,7 @@ export const recalcUserStats = async (displayName) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -296,7 +296,7 @@ export const getInitialUsersGameState = async (users, startPoints, randomize = f
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -310,7 +310,7 @@ export const getInitialUsersGameState = async (users, startPoints, randomize = f
 export const getFtpUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/ftp/users`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   const users = await usersResponse.json();
@@ -320,7 +320,7 @@ export const getFtpUsers = async () => {
 export const getFtpUser = async (identifier) => {
   const userResponse = await fetch(`${mongodbApiUrl}/ftp/users/${encodeURIComponent(identifier.trim())}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   const user = await userResponse.json();
@@ -337,7 +337,7 @@ export const postFtpUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -348,7 +348,7 @@ export const deleteFtpUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/users/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
   return await response.json();
@@ -362,7 +362,7 @@ export const patchFtpUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 }
@@ -383,7 +383,7 @@ export const getFiles = async (userId = null) => {
 
   const response = await fetch(url, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -393,7 +393,7 @@ export const getFiles = async (userId = null) => {
 export const getFile = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -405,7 +405,7 @@ export const uploadFile = async (data) => {
     method: "POST",
     body: data,
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   const uploadedFile = await uploadResponse.json();
@@ -420,7 +420,7 @@ export const uploadFile = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -431,7 +431,7 @@ export const deleteFile = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/files/${id}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -446,7 +446,7 @@ export const patchFile = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -465,7 +465,7 @@ export const postFolder = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -489,7 +489,7 @@ export const getFolders = async (userId = null, folderName = null) => {
 
   const response = await fetch(url, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -499,7 +499,7 @@ export const getFolders = async (userId = null, folderName = null) => {
 export const getFolder = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -510,7 +510,7 @@ export const deleteFolder = async (id) => {
   const response = await fetch(`${mongodbApiUrl}/ftp/folders/${id}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
   return await response.json();
@@ -524,7 +524,7 @@ export const patchFolder = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
   return await response.json();
@@ -533,11 +533,11 @@ export const patchFolder = async (data) => {
 // Cloud - Utils
 
 export const renderFile = async (filename) => {
-  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}?token=${`Bearer ${Cookies.get("_auth")}`}`);
+  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}?token=${`Bearer ${getApiToken()}`}`);
 };
 
 export const downloadFile = (filename) => {
-  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}?token=${`Bearer ${Cookies.get("_auth")}`}`;
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}?token=${`Bearer ${getApiToken()}`}`;
 }
 
 // Auth
@@ -547,7 +547,7 @@ export const downloadFile = (filename) => {
 export const getAuthUsers = async () => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   const users = await usersResponse.json();
@@ -574,7 +574,7 @@ export const patchAuthUser = async (userData) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 }
@@ -583,7 +583,7 @@ export const deleteAuthUser = async (displayName) => {
   const response = await fetch(`${mongodbApiUrl}/auth/users/${encodeURIComponent(displayName.trim())}`, {
     method: "DELETE",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
   return await response.json();
@@ -629,7 +629,7 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
     });
 
@@ -640,7 +640,7 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
     });
 
@@ -651,7 +651,7 @@ export const changeDisplaynameUser = async (userData) => {
       }),
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
     });
   } catch (e) {
@@ -674,7 +674,7 @@ export const changePassword = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -686,7 +686,7 @@ export const changePassword = async (data) => {
 export const checkIfCurrentUserIsFriendsWithUser = async (currentUserDisplayName, userDisplayName) => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-if-friends/${currentUserDisplayName}/${userDisplayName}`, {
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   const user = await usersResponse.json();
@@ -698,7 +698,7 @@ export const getFriendsPageData = async (displayName) => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -716,7 +716,7 @@ export const sendFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -735,7 +735,7 @@ export const acceptFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -754,7 +754,7 @@ export const declineFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -773,7 +773,7 @@ export const cancelFriendsRequest = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   })
 
@@ -792,7 +792,7 @@ export const removeFriend = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -837,7 +837,7 @@ export const checkSession = async () => {
   const response = await fetch(`${mongodbApiUrl}/auth/check-session`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -848,7 +848,7 @@ export const refreshToken = async () => {
   const response = await fetch(`${mongodbApiUrl}/auth/refresh-token`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -880,7 +880,7 @@ export const sendChangeEmail = async (data) => {
     }),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -924,7 +924,7 @@ export const getESP32State = async () => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -935,7 +935,7 @@ export const getESP32Info = async () => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -946,7 +946,7 @@ export const getESP32Effects = async () => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -957,7 +957,7 @@ export const getESP32Palettes = async () => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -969,7 +969,7 @@ export const patchESP32State = async (data) => {
     body: JSON.stringify(data),
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -982,7 +982,7 @@ export const getESP32Availability = async (gameCode) => {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
   return await response.json();
@@ -993,7 +993,7 @@ export const postESP32JoinGame = async (gameCode) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -1005,7 +1005,7 @@ export const postESP32LeaveGame = async (gameCode) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -1017,7 +1017,7 @@ export const postESP32ForceReset = async () => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${Cookies.get("_auth")}`
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -1042,7 +1042,7 @@ export const getValidationConfig = async () => {
     const response = await fetch(`${mongodbApiUrl}/esp32/door/validation-config`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
     });
 
@@ -1059,7 +1059,7 @@ export const postValidationActive = async (active) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
       body: JSON.stringify({
         active
@@ -1079,7 +1079,7 @@ export const patchValidationConfig = async (updatedConfig) => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
       body: JSON.stringify({
         updatedConfig
@@ -1100,7 +1100,7 @@ export const getKeypadStrokes = async () => {
     const response = await fetch(`${mongodbApiUrl}/esp32/door/keypad/get-keypad-strokes`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       },
     });
 
@@ -1119,7 +1119,7 @@ export const postKeypadStroke = async (keyStroke) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        "Authorization": `Bearer ${Cookies.get("_auth")}`
+        "Authorization": `Bearer ${getApiToken()}`
       }
     });
 

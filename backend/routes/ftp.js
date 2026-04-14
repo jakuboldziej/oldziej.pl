@@ -94,19 +94,30 @@ const getFtpUser = async (req, res, next) => {
   next();
 }
 
+const verifyOwnership = (req, res, next) => {
+  const currentUserId = res.authUser._id.toString();
+
+  const requestUserId = req.query.userId || req.body.ownerId;
+
+  if (requestUserId && requestUserId !== currentUserId) {
+    return res.status(403).json({ message: "Brak uprawnień. Nie możesz operować na koncie innego użytkownika." });
+  }
+  next();
+};
+
 // Files
 
 // upload file
-router.post('/upload', authenticateUser, upload.single('file'), (req, res) => {
+router.post('/upload', authenticateUser, verifyOwnership, upload.single('file'), (req, res) => {
   res.json({ file: req.file })
 })
 
 // create fileObject
-router.post('/files', authenticateUser, async (req, res) => {
+router.post('/files', authenticateUser, verifyOwnership, async (req, res) => {
   try {
     const newFtpFile = new FtpFile({
       fileId: req.body.fileId,
-      ownerId: req.body.ownerId,
+      ownerId: res.authUser._id.toString(),
       favorite: req.body.favorite,
       lastModified: req.body.lastModified,
       folders: req.body.folders
@@ -125,15 +136,12 @@ router.post('/files', authenticateUser, async (req, res) => {
 // get multiple files
 router.get('/files', authenticateUser, async (req, res) => {
   try {
-    let filter = {};
-    if (req.query.userId) filter.ownerId = req.query.userId;
-    const ftpFiles = await FtpFile.find(filter);
+    const ftpFiles = await FtpFile.find({ ownerId: res.authUser._id.toString() });
 
     if (!ftpFiles || ftpFiles.length === 0) {
       return res.json([]);
     } else {
       const mergedFiles = await mergeFtpFiles(ftpFiles);
-
       res.json(mergedFiles);
     }
   } catch (err) {
@@ -144,14 +152,14 @@ router.get('/files', authenticateUser, async (req, res) => {
 // get one file
 router.get('/files/:id', authenticateUser, async (req, res) => {
   try {
-    const ftpFile = await FtpFile.findOne({ _id: req.params.id });
+    const ftpFile = await FtpFile.findOne({
+      _id: req.params.id,
+      ownerId: res.authUser._id.toString()
+    });
+
+    if (!ftpFile) return res.status(404).json({ err: 'Brak pliku lub odmowa dostępu.' });
 
     const mergedFile = await mergeFtpFile(ftpFile);
-
-    if (!mergedFile || mergedFile.length === 0) {
-      return res.status(404).json({ err: 'No file.' })
-    }
-
     res.json(mergedFile);
   } catch (err) {
     res.json({ err: err.message })
@@ -162,12 +170,17 @@ router.get('/files/:id', authenticateUser, async (req, res) => {
 router.patch('/files/:id', authenticateUser, async (req, res) => {
   try {
     const newName = req.body.newFileName;
-
     const updateFile = req.body.data.file;
-    const updatedFtpFile = await FtpFile.findOneAndUpdate({ _id: req.params.id }, {
-      favorite: updateFile.favorite,
-      folders: updateFile.folders
-    })
+
+    const updatedFtpFile = await FtpFile.findOneAndUpdate(
+      { _id: req.params.id, ownerId: res.authUser._id.toString() },
+      {
+        favorite: updateFile.favorite,
+        folders: updateFile.folders
+      }
+    )
+
+    if (!updatedFtpFile) return res.status(404).json({ err: "Brak dostępu lub plik nie istnieje." });
 
     const objectId = new Types.ObjectId(updatedFtpFile.fileId);
 
@@ -187,17 +200,20 @@ router.patch('/files/:id', authenticateUser, async (req, res) => {
 // delete file
 router.delete('/files/:id', authenticateUser, async (req, res) => {
   try {
-    const ftpFile = await FtpFile.findOne({ _id: req.params.id });
+    const ftpFile = await FtpFile.findOne({
+      _id: req.params.id,
+      ownerId: res.authUser._id.toString()
+    });
+
+    if (!ftpFile) return res.status(404).json({ err: "Brak dostępu lub plik nie istnieje." });
 
     const file = (await bucket.find({ _id: new Types.ObjectId(ftpFile.fileId) }).toArray())[0];
 
     if (file) {
       bucket.delete(file._id);
       await FtpFile.findOneAndDelete({ _id: req.params.id })
-
       res.json({ ok: true })
-    }
-    else {
+    } else {
       res.json({ ok: false })
     };
 
@@ -209,11 +225,14 @@ router.delete('/files/:id', authenticateUser, async (req, res) => {
 // render file
 router.get('/files/render/:filename', authenticateUser, async (req, res) => {
   try {
-    let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
+    let file = (await bucket.find({
+      filename: req.params.filename,
+      "metadata.ownerId": res.authUser._id.toString()
+    }).toArray())[0];
+
     if (!file || file.length === 0) return res.redirect('https://home.oldziej.pl/ftp');
 
     res.setHeader('Content-Type', file.contentType);
-
     const stream = bucket.openDownloadStreamByName(file.filename);
     stream.pipe(res);
   } catch (err) {
@@ -224,11 +243,14 @@ router.get('/files/render/:filename', authenticateUser, async (req, res) => {
 // download file
 router.get('/files/download/:filename', authenticateUser, async (req, res) => {
   try {
-    let file = (await bucket.find({ filename: req.params.filename }).toArray())[0];
-    if (!file || file.length === 0) return res.status(404).json({ err: 'No file.' });
+    let file = (await bucket.find({
+      filename: req.params.filename,
+      "metadata.ownerId": res.authUser._id.toString()
+    }).toArray())[0];
+
+    if (!file || file.length === 0) return res.status(404).json({ err: 'Brak pliku lub odmowa dostępu.' });
 
     res.set('Content-Type', file.contentType);
-
     const encodedFilename = encodeURIComponent(req.params.filename);
     res.set('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
 
@@ -244,11 +266,10 @@ router.get('/files/download/:filename', authenticateUser, async (req, res) => {
 // get folders
 router.get('/folders', authenticateUser, async (req, res) => {
   try {
-    let filter = {};
-    if (req.query.userId) filter["ownerId"] = req.query.userId;
+    let filter = { ownerId: res.authUser._id.toString() };
     if (req.query.folderName) filter["name"] = req.query.folderName;
-    let folders = await FtpFolder.find(filter);
 
+    let folders = await FtpFolder.find(filter);
     res.json(folders);
   } catch (err) {
     res.json({ err: err.message })
@@ -258,8 +279,12 @@ router.get('/folders', authenticateUser, async (req, res) => {
 // get one folder
 router.get('/folders/:id', authenticateUser, async (req, res) => {
   try {
-    let folder = await FtpFolder.findOne({ _id: req.params.id });
+    let folder = await FtpFolder.findOne({
+      _id: req.params.id,
+      ownerId: res.authUser._id.toString()
+    });
 
+    if (!folder) return res.status(404).json({ err: 'Brak folderu lub odmowa dostępu.' });
     res.json(folder);
   } catch (err) {
     res.json({ err: err.message })
@@ -270,13 +295,12 @@ router.get('/folders/:id', authenticateUser, async (req, res) => {
 router.post('/folders', authenticateUser, async (req, res) => {
   const ftpFolder = new FtpFolder({
     name: req.body.name,
-    ownerId: req.body.ownerId,
+    ownerId: res.authUser._id.toString(),
     uploadDate: req.body.uploadDate
   });
 
   try {
     const newFtpFolder = await ftpFolder.save();
-
     res.json(newFtpFolder)
   } catch (err) {
     res.status(400).json({ message: err.message })
@@ -287,13 +311,20 @@ router.post('/folders', authenticateUser, async (req, res) => {
 router.patch('/folders/:id', authenticateUser, async (req, res) => {
   try {
     const updateFolder = req.body.data.folder;
-    await FtpFolder.updateOne({ _id: req.params.id }, {
-      name: updateFolder.name,
-      shared: updateFolder.shared,
-      files: updateFolder.files,
-      folders: updateFolder.folders,
-      favorite: updateFolder.favorite
-    })
+    const result = await FtpFolder.updateOne(
+      { _id: req.params.id, ownerId: res.authUser._id.toString() },
+      {
+        name: updateFolder.name,
+        shared: updateFolder.shared,
+        files: updateFolder.files,
+        folders: updateFolder.folders,
+        favorite: updateFolder.favorite
+      }
+    )
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ err: 'Brak folderu lub odmowa dostępu.' });
+    }
 
     res.json(updateFolder);
   } catch (err) {
@@ -304,10 +335,16 @@ router.patch('/folders/:id', authenticateUser, async (req, res) => {
 // delete folder
 router.delete('/folders/:id', authenticateUser, async (req, res) => {
   try {
-    const fetchedFolder = await FtpFolder.findOneAndDelete({ _id: req.params.id });
+    const fetchedFolder = await FtpFolder.findOneAndDelete({
+      _id: req.params.id,
+      ownerId: res.authUser._id.toString()
+    });
+
+    if (!fetchedFolder) return res.status(404).json({ err: 'Brak folderu lub odmowa dostępu.' });
 
     fetchedFolder.files.map(async (fileId) => {
-      let fetchedFile = await FtpFile.findOne({ fileId: fileId });
+      let fetchedFile = await FtpFile.findOne({ fileId: fileId, ownerId: res.authUser._id.toString() });
+      if (!fetchedFile) return;
 
       fetchedFile.folders = fetchedFile.folders.filter((folderId) => folderId !== req.params.id);
 

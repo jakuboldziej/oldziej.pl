@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
 import Loading from "@/components/Home/Loading";
+import { setApiToken } from "@/lib/tokenManager";
 
 function Login() {
   document.title = "Oldziej | Login";
@@ -40,6 +41,8 @@ function Login() {
       setIsLoading(false);
       return;
     }
+
+    setApiToken(response.token);
 
     signIn({
       auth: {

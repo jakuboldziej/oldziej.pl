@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/shadcn/label";
 import { Input } from "@/components/ui/shadcn/input";
 import { Button } from "@/components/ui/shadcn/button";
 import Loading from "@/components/Home/Loading";
+import { setApiToken } from "@/lib/tokenManager";
 
 function Register() {
   document.title = "Oldziej | Register";
@@ -81,6 +82,8 @@ function Register() {
         password,
         friendsCode
       });
+
+      setApiToken(userRes.token);
 
       signIn({
         auth: {

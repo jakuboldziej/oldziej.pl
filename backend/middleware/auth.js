@@ -11,6 +11,8 @@ const authenticateUser = async (req, res, next) => {
     return res.status(401).send({ message: "Not authorized. No token provided." });
   }
 
+  console.log(authHeader, authQuery)
+
   try {
     let token;
 
@@ -21,7 +23,15 @@ const authenticateUser = async (req, res, next) => {
         return res.status(401).send({ message: "Not authorized. Malformed token format." });
       }
     } else if (authQuery) {
-      token = authQuery;
+      if (authQuery.startsWith("Bearer ")) {
+        token = authQuery.split(" ")[1];
+      } else {
+        token = authQuery;
+      }
+    }
+
+    if (!token || token === 'undefined' || token === 'null') {
+      return res.status(401).send({ message: "Not authorized. Token is missing or invalid." });
     }
 
     if (process.env.SERVICE_API_KEY && token === process.env.SERVICE_API_KEY) {
