@@ -533,11 +533,11 @@ export const patchFolder = async (data) => {
 // Cloud - Utils
 
 export const renderFile = async (filename) => {
-  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}?token=${`Bearer ${getApiToken()}`}`);
+  window.open(`${mongodbApiUrl}/ftp/files/render/${filename}?token=${Cookies.get("_auth")}`);
 };
 
 export const downloadFile = (filename) => {
-  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}?token=${`Bearer ${getApiToken()}`}`;
+  window.location.href = `${mongodbApiUrl}/ftp/files/download/${filename}?token=${Cookies.get("_auth")}`;
 }
 
 // Auth

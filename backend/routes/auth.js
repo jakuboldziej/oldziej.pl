@@ -622,12 +622,18 @@ router.post("/refresh-token", async (req, res) => {
 router.post("/check-session", async (req, res) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).send({ message: "Not authorized." });
   }
 
+  const token = authHeader.split(" ")[1];
+
+  if (!token || token === 'undefined' || token === 'null') {
+    return res.status(401).send({ message: "Invalid token." });
+  }
+
   try {
-    const decoded = jwt.verify(authHeader, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
     const shouldRefresh = expiresIn < 7 * 24 * 60 * 60;
