@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
-const { ftpConn } = require("../server")
+const { ftpConn } = require("../server");
+
+const FtpFile = require("./ftpFile"); 
 
 const FtpUserSchema = new mongoose.Schema({
   displayName: {
@@ -15,27 +17,15 @@ const FtpUserSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const environment = process.env.NODE_ENV || 'production';
-const backendDomain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
-
 FtpUserSchema.post('findOneAndDelete', async function (doc) {
-  let url = `${backendDomain}/api/ftp/files?userId=${doc._id}`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${process.env.JWT_SECRET}`
-    },
-  });
-  const fetchedUserFiles = await response.json();
+  if (!doc) return;
 
-  fetchedUserFiles.files.map(async (file) => {
-    await fetch(`${backendDomain}/api/ftp/files/${file._id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${process.env.JWT_SECRET}`
-      },
-    });
-  })
+  try {
+    await FtpFile.deleteMany({ userId: doc._id });
+    console.log(`Cascade: Deleted all files for user ${doc._id}`);
+  } catch (error) {
+    console.error("Error during FtpUser cascade file deletion:", error);
+  }
 });
 
-module.exports = ftpConn.model('FtpUser', FtpUserSchema)
+module.exports = ftpConn.model('FtpUser', FtpUserSchema);

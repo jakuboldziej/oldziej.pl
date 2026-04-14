@@ -1,4 +1,4 @@
-const { ftpConn } = require("../server")
+const { ftpConn } = require("../server");
 const { mongoose } = require("mongoose");
 
 const FtpFolderSchema = new mongoose.Schema({
@@ -45,15 +45,21 @@ const FtpFolderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-const environment = process.env.NODE_ENV || 'production';
-const backendDomain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
-
 FtpFolderSchema.post('findOneAndDelete', async function (doc) {
-  doc.folders.map(async (folderId) => {
-    await fetch(`${backendDomain}/api/ftp/folders/${folderId}`, {
-      method: "DELETE"
-    });
-  });
+  if (!doc || !doc.folders || doc.folders.length === 0) return;
+
+  const FtpFolder = this.model('FtpFolder');
+
+  try {
+    await Promise.all(
+      doc.folders.map(async (folderId) => {
+        await FtpFolder.findByIdAndDelete(folderId);
+      })
+    );
+    console.log(`Cascade: Deleted ${doc.folders.length} subfolders for folder ${doc._id}`);
+  } catch (error) {
+    console.error("Error during FtpFolder cascade subfolder deletion:", error);
+  }
 });
 
-module.exports = ftpConn.model('FtpFolder', FtpFolderSchema)
+module.exports = ftpConn.model('FtpFolder', FtpFolderSchema);

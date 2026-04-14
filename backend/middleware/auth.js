@@ -24,6 +24,10 @@ const authenticateUser = async (req, res, next) => {
       token = authQuery;
     }
 
+    if (!token || token === 'undefined' || token === 'null') {
+      return res.status(401).send({ message: "Not authorized. Token is missing or invalid." });
+    }
+
     if (process.env.SERVICE_API_KEY && token === process.env.SERVICE_API_KEY) {
       res.authUser = { _id: "123", displayName: "admin", role: "admin" };
       return next();
