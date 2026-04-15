@@ -56,7 +56,7 @@ FtpFolderSchema.post('findOneAndDelete', async function (doc) {
         await FtpFolder.findByIdAndDelete(folderId);
       })
     );
-    console.log(`Cascade: Deleted ${doc.folders.length} subfolders for folder ${doc._id}`);
+    console.info(`Cascade: Deleted ${doc.folders.length} subfolders for folder ${doc._id}`);
   } catch (error) {
     console.error("Error during FtpFolder cascade subfolder deletion:", error);
   }

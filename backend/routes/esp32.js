@@ -429,8 +429,7 @@ router.post("/leave-game/:gameCode", authenticateUser, async (req, res) => {
 
 router.post("/force-reset-wled", authenticateUser, async (req, res) => {
   try {
-    const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-    if (decoded.userEmail !== process.env.ADMIN_EMAIL) {
+    if (res.authUser.email !== process.env.ADMIN_EMAIL && res.authUser.role !== "admin") {
       return res.status(401).json({ success: false, message: "Not authorized" });
     }
 
@@ -468,11 +467,11 @@ router.post("/force-reset-wled", authenticateUser, async (req, res) => {
 router.get("/check-availability/:gameCode", authenticateUser, async (req, res) => {
   try {
     const gameCode = req.params?.gameCode;
-
     let available = false;
 
-    const decoded = jwt.verify(req.headers.authorization, process.env.JWT_SECRET);
-    if (decoded.userEmail !== process.env.ADMIN_EMAIL) return res.json({ available: false });
+    if (res.authUser.email !== process.env.ADMIN_EMAIL && res.authUser.role !== "admin") {
+      return res.json({ available: false });
+    }
 
     const TWELVE_HOURS = 12 * 60 * 60 * 1000;
     if (wledGameCode.code && wledGameCode.joinedAt) {

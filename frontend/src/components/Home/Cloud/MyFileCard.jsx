@@ -37,7 +37,7 @@ function MyFileCard(props) {
           <div className={`hidden ${filesViewType === "list" ? "sm:flex" : "hidden"} items-center gap-4`}>
             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
             <span>{formatDataSize(file.length)}</span>
-            <CopyTextButton
+            {/* <CopyTextButton
               textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
               toastTitle="Link Copied"
               toastDesc="Link copied to clipboard"
@@ -45,7 +45,7 @@ function MyFileCard(props) {
               <MyTooltip title="Copy link to clipboard">
                 <Share2 />
               </MyTooltip>
-            </CopyTextButton>
+            </CopyTextButton> */}
           </div>
 
           <CustomFileDropdown {...dropdownProps} />

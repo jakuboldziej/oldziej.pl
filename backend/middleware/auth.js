@@ -11,8 +11,6 @@ const authenticateUser = async (req, res, next) => {
     return res.status(401).send({ message: "Not authorized. No token provided." });
   }
 
-  console.log(authHeader, authQuery)
-
   try {
     let token;
 

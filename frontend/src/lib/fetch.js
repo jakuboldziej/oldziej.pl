@@ -1,8 +1,8 @@
 import { calcStorageUsage } from "@/components/Home/Cloud/utils";
 import Cookies from "js-cookie";
+import { getApiToken } from "./tokenManager";
 
-export const mongodbApiUrl = import.meta.env.MODE === "development" ? "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
-
+export const mongodbApiUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL + "/api" : import.meta.env.VITE_BACKEND_DOMAIN + "/api";
 // Darts
 
 // Darts - Games

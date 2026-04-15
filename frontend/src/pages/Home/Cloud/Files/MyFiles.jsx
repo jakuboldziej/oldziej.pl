@@ -385,6 +385,7 @@ function MyFiles() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
+    disabled: fileStatus.uploading === true
   });
 
   return (

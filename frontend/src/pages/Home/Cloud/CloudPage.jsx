@@ -100,6 +100,7 @@ function CloudPage() {
       formData.append('folder', ftpUser.main_folder);
 
       const response = await uploadFile(formData);
+
       setRecentFile(response.file);
     } catch (error) {
       ShowNewToast("Error uploading file", error, "warning");
@@ -325,6 +326,7 @@ function CloudPage() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
+    disabled: fileStatus.uploading === true
   });
 
   return (
@@ -405,7 +407,7 @@ function CloudPage() {
                           <div className='attrs flex justify-evenly items-center'>
                             <span>{file.filename.split('.').pop().toUpperCase()} file</span>
                             <span>{formatDataSize(file.length)}</span>
-                            <CopyTextButton
+                            {/* <CopyTextButton
                               textToCopy={`${mongodbApiUrl}/ftp/files/render/${file.filename}`}
                               toastTitle="Link Copied"
                               toastDesc="Link copied to clipboard"
@@ -413,7 +415,7 @@ function CloudPage() {
                               <MyTooltip title="Copy link to clipboard">
                                 <Share2 />
                               </MyTooltip>
-                            </CopyTextButton>
+                            </CopyTextButton> */}
 
                             <CustomFileDropdown {...dropdownProps} file={file} />
                           </div>
