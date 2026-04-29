@@ -12,7 +12,7 @@ import ProjectCard from './ProjectCard'
 function ExperienceProjects() {
   return (
     <div className='projects flex flex-wrap justify-center gap-10 w-full h-full'>
-      <ProjectCard image={MilitaryEagle} link='https://miltary-eagle.com' linkText="miltary-eagle.com" redirect="/projects/military-eagle" />
+      <ProjectCard image={MilitaryEagle} link='https://www.military-eagle.com' linkText="www.military-eagle.com" redirect="/projects/military-eagle" />
       <ProjectCard image={MyoPilatesStudio} link='https://myopilatesstudio.pl' linkText="myopilatesstudio.pl" redirect="/projects/myopilatesstudio" />
       <ProjectCard image={PromaxSport} link='https://promaxsport.pl' linkText="promaxsport.pl" redirect="/projects/promaxsport" />
       <ProjectCard image={Mmagusiak} link='https://www.mmagusiak.com' linkText="mmagusiak.com" redirect="/projects/mmagusiak" />
