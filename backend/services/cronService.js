@@ -29,6 +29,66 @@ class CronService {
     this.jobs.clear();
   }
 
+  startDiscordReminderJob() {
+    // '0 23 * * *' every day at 23:00
+    const job = cron.schedule('0 23 * * *', async () => {
+      await this.sendDiscordReminders();
+    },
+      {
+        scheduled: false,
+        timezone: "Europe/Warsaw"
+      });
+
+    this.jobs.set('discordReminder', job);
+    job.start();
+    logger.info('CronService: Discord reminder job started (runs at 23:00)');
+  }
+
+  async sendDiscordReminders() {
+    const targetUser = process.env.CHORES_APP_USER;
+    const roleId = process.env.DISCORD_CHORE_APP_ROLE;
+
+    if (!this.discordWebhookUrl || !targetUser || !roleId) {
+      logger.warn('CronService: Discord reminder skipped - missing ENV configuration');
+      return;
+    }
+
+    try {
+      const dailyChores = await Chore.find({
+        isRepeatable: true,
+        intervalType: 'daily'
+      });
+
+      let hasUnfinishedTasks = false;
+      for (const chore of dailyChores) {
+        const userEntry = chore.usersList.find(u => u.displayName === targetUser);
+        if (userEntry && userEntry.finished === false) {
+          hasUnfinishedTasks = true;
+          break;
+        }
+      }
+
+      if (!hasUnfinishedTasks) {
+        logger.info(`CronService: ${targetUser} has finished all chores. No Discord ping needed.`);
+        return;
+      }
+
+      const payload = {
+        username: "Chore Master",
+        content: `⚠️ **Uwaga <@&${roleId}>!** ⚠️\n\nUżytkownik **${targetUser}** wciąż nie ukończył wszystkich zadań na dziś! \nZostała tylko godzina do resetu streaka! 🔥`,
+        allowed_mentions: {
+          roles: [roleId]
+        }
+      };
+
+      await axios.post(this.discordWebhookUrl, payload);
+      logger.info(`CronService: Discord reminder sent for ${targetUser}`);
+
+    } catch (error) {
+      logger.error('CronService: Error sending Discord reminder', { error: error.message });
+    }
+  }
+
   startEveningReminderJob() {
     // 0 22 * * * every day at 22:00
     const job = cron.schedule('0 22 * * *', async () => {

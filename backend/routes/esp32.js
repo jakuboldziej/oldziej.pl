@@ -34,7 +34,7 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
       credential: admin.credential.cert(serviceAccount),
       projectId: serviceAccount.project_id
     });
-    console.log('Firebase Admin SDK initialized for FCM');
+    console.info('Firebase Admin SDK initialized for FCM');
   } catch (error) {
     console.error('Error initializing Firebase Admin SDK:', error.message);
   }
@@ -72,7 +72,7 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
 
     // Send FCM notifications if Firebase is available
     if (fcmUsers.length > 0 && firebaseApp) {
-      console.log(`Sending FCM notifications to ${fcmUsers.length} users`);
+      console.info(`Sending FCM notifications to ${fcmUsers.length} users`);
       const fcmResult = await sendFCMNotifications(fcmUsers, title, body, data, isAlarmOrValidation, channelId, soundName);
       results.push({ type: 'fcm', result: fcmResult });
     } else if (fcmUsers.length > 0) {
@@ -81,7 +81,7 @@ const sendDoorPushNotifications = async (title, body, data = {}, isCritical = fa
 
     // Send Expo notifications
     if (expoUsers.length > 0) {
-      console.log(`Sending Expo notifications to ${expoUsers.length} users`);
+      console.info(`Sending Expo notifications to ${expoUsers.length} users`);
       const expoResult = await sendExpoNotifications(expoUsers, title, body, data, isAlarmOrValidation, channelId, soundName);
       results.push({ type: 'expo', result: expoResult });
     }
@@ -155,10 +155,10 @@ const sendFCMNotifications = async (doorUsers, title, body, data, isAlarmOrValid
       return [];
     }
 
-    console.log(`Sending ${messages.length} FCM notifications`);
+    console.info(`Sending ${messages.length} FCM notifications`);
     const response = await admin.messaging().sendAll(messages);
 
-    console.log(`FCM Response: ${response.successCount} successful, ${response.failureCount} failed`);
+    console.info(`FCM Response: ${response.successCount} successful, ${response.failureCount} failed`);
 
     // Handle failed tokens
     if (response.failureCount > 0) {
@@ -1248,7 +1248,7 @@ router.post("/door/register-push-token", async (req, res) => {
       await doorUser.save();
     }
 
-    console.log(`Push token registered - Device: ${deviceId}, Type: ${detectedTokenType}, Environment: ${environment}`);
+    console.info(`Push token registered - Device: ${deviceId}, Type: ${detectedTokenType}, Environment: ${environment}`);
     res.json({
       success: true,
       message: 'Door push token registered',
@@ -1287,7 +1287,7 @@ router.post("/door/test-fcm-notification", async (req, res) => {
   try {
     const { title, body, data, isCritical } = req.body;
 
-    console.log('FCM Test Notification Request:', { title, body, data, isCritical });
+    console.info('FCM Test Notification Request:', { title, body, data, isCritical });
 
     const tickets = await sendDoorPushNotifications(
       title || 'FCM Test Notification',

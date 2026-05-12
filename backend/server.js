@@ -60,6 +60,8 @@ app.set('trust proxy', 1);
 app.use(xssClean());
 app.use(mongoSanitize());
 
+app.use(express.json({ limit: '10kb' }));
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
