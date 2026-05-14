@@ -18,6 +18,7 @@ class CronService {
   startAllJobs() {
     this.startChoreResetJob();
     this.startEveningReminderJob();
+    this.startDiscordReminderJob();
     logger.info('CronService: All cron jobs started');
   }
 
@@ -45,21 +46,23 @@ class CronService {
   }
 
   async sendDiscordReminders() {
+    const discordWebhookUrl = process.env.DISCORD_WEBHOOK_URL;
     const targetUser = process.env.CHORES_APP_USER;
-    const roleId = process.env.DISCORD_CHORE_APP_ROLE;
+    const discordUserId = process.env.DISCORD_CHORE_APP_USER;
 
-    if (!this.discordWebhookUrl || !targetUser || !roleId) {
+    if (!discordWebhookUrl || !targetUser || !discordUserId) {
       logger.warn('CronService: Discord reminder skipped - missing ENV configuration');
       return;
     }
 
     try {
+      let hasUnfinishedTasks = false;
+
       const dailyChores = await Chore.find({
         isRepeatable: true,
         intervalType: 'daily'
       });
 
-      let hasUnfinishedTasks = false;
       for (const chore of dailyChores) {
         const userEntry = chore.usersList.find(u => u.displayName === targetUser);
         if (userEntry && userEntry.finished === false) {
@@ -74,15 +77,21 @@ class CronService {
       }
 
       const payload = {
-        username: "Chore Master",
-        content: `⚠️ **Uwaga <@&${roleId}>!** ⚠️\n\nUżytkownik **${targetUser}** wciąż nie ukończył wszystkich zadań na dziś! \nZostała tylko godzina do resetu streaka! 🔥`,
-        allowed_mentions: {
-          roles: [roleId]
-        }
+        username: "Chores App",
+        content: `⚠️ **Uwaga <@!${discordUserId}>!** ⚠️\n\nUżytkownik **${targetUser}** wciąż nie ukończył wszystkich zadań na dziś! \nZostała tylko godzina do resetu streaka! 🔥`,
       };
 
-      await axios.post(this.discordWebhookUrl, payload);
-      logger.info(`CronService: Discord reminder sent for ${targetUser}`);
+      const response = await fetch(discordWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Discord API responded with status ${response.status}`);
+      }
+
+      logger.info(`CronService: Discord notification sent successfully!`);
 
     } catch (error) {
       logger.error('CronService: Error sending Discord reminder', { error: error.message });
