@@ -27,7 +27,7 @@
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^5.9.1",
-    "mongoose": "^8.9.5",
+    "mongoose": "^8.22.1",
     "multer": "^2.0.2",
     "multer-gridfs-storage": "^5.0.2",
     "node-cron": "^4.2.1",
