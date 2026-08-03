@@ -1193,6 +1193,32 @@ export const getStatisticsStorageUsed = async () => {
   return calcStorageUsage(null, responseInBytes).bytes;
 }
 
+// Quotes
+
+export const postQuotes = async (body) => {
+  try {
+    const response = await fetch(`${mongodbApiUrl}/quotes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${getApiToken()}`
+      },
+      body: JSON.stringify({
+        body
+      })
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error in postQuotes:", error);
+    throw error;
+  }
+}
+export const getQuotes = async (displayName) => {
+  const response = await fetch(`${mongodbApiUrl}/quotes/${displayName}`);
+  return await response.json();
+}
+
 // Get gamesPlayed for portfolio
 export const getGamesPlayedPortfolio = async () => {
   const userResponse = await fetch(`${mongodbApiUrl}/darts/dartsUsers/portfolio/kubek`);

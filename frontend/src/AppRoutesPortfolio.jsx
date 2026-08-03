@@ -14,7 +14,7 @@ function AppRoutesPortfolio() {
       </Route> */}
       <Route path="/">
         <Route index element={<Home />} />
-        <Route path="dictionary" element={<Dictionary />} />
+        <Route path="slownik" element={<Dictionary />} />
         <Route path='projects' element={<Navigate to="/" replace state={{ projectsRedirect: true }} />} />
         <Route path='projects/:projectName' element={<Project />} />
       </Route>
