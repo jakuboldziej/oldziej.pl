@@ -8,6 +8,10 @@ require('dotenv').config()
 
 require('events').EventEmitter.defaultMaxListeners = 20;
 
+if (process.env.BABEL_DISABLE_CACHE === undefined) {
+  process.env.BABEL_DISABLE_CACHE = '1';
+}
+
 require('@babel/register')({
   presets: ['@babel/preset-env', '@babel/preset-react']
 });
@@ -82,7 +86,7 @@ const io = new Server(server, {
       if (!origin || allowedOrigins.includes(origin) || origin === "https://admin.socket.io") {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error("Not allowed by CORS"), false);
       }
     },
     credentials: true,
@@ -155,6 +159,14 @@ bcrypt.hash(process.env.ADMIN_UI_PASSWORD, 10).then((hashedPassword) => {
     // mode: environment
     mode: "development"
   });
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error(`Unhandled promise rejection: ${reason instanceof Error ? reason.stack : reason}`);
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error(`Uncaught exception: ${err.stack}`);
 });
 
 logger.info("Using environment - ", environment)

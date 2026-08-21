@@ -47,7 +47,10 @@ export const FtpContextProvider = ({ children }) => {
       setActiveFolders(storedActiveFolders);
     } else {
       const ftpUser = await getFtpUser(currentUser.displayName);
+      if (!ftpUser) return;
+
       const mainUserFolder = await getFolder(ftpUser.main_folder);
+      if (!mainUserFolder) return;
 
       const parseFolder = {
         _id: mainUserFolder._id,
@@ -60,6 +63,7 @@ export const FtpContextProvider = ({ children }) => {
 
   const firstFetch = async () => {
     const fetchedFtpUser = await getFtpUser(currentUser.displayName);
+    if (!fetchedFtpUser) return;
 
     await fetchFolders(fetchedFtpUser);
     await fetchFiles(fetchedFtpUser);

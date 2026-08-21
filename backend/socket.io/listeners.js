@@ -50,85 +50,117 @@ io.on('connection', (socket) => {
   // Admin Listeners
 
   socket.on("verifyEmailAdmin", (data) => {
-    const verifyData = JSON.parse(data);
+    try {
+      const verifyData = JSON.parse(data);
 
-    io.emit("verifyEmail", JSON.stringify({
-      userDisplayName: verifyData.userDisplayName,
-      verified: verifyData.verified
-    }));
+      io.emit("verifyEmail", JSON.stringify({
+        userDisplayName: verifyData.userDisplayName,
+        verified: verifyData.verified
+      }));
+    } catch (error) {
+      logger.error("Error handling verifyEmailAdmin:", { error: error.message });
+    }
   });
 
   // Live game
 
   socket.on("joinLiveGamePreview", (data) => {
-    const joinData = JSON.parse(data);
-    const newRoom = `game-${joinData.gameCode}`;
+    try {
+      const joinData = JSON.parse(data);
+      const newRoom = `game-${joinData.gameCode}`;
 
-    const currentRooms = Array.from(socket.rooms);
-    for (const room of currentRooms) {
-      if (room.startsWith('game-') && room !== newRoom) {
-        socket.leave(room);
+      const currentRooms = Array.from(socket.rooms);
+      for (const room of currentRooms) {
+        if (room.startsWith('game-') && room !== newRoom) {
+          socket.leave(room);
+        }
       }
+
+      socket.join(newRoom);
+
+      socket.emit("game:joined", {
+        gameCode: joinData.gameCode,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      logger.error("Error handling joinLiveGamePreview:", { error: error.message });
     }
-
-    socket.join(newRoom);
-
-    socket.emit("game:joined", {
-      gameCode: joinData.gameCode,
-      timestamp: Date.now()
-    });
   });
 
   socket.on("leaveLiveGamePreview", (data) => {
-    const leaveData = JSON.parse(data);
-    const room = `game-${leaveData.gameCode}`;
+    try {
+      const leaveData = JSON.parse(data);
+      const room = `game-${leaveData.gameCode}`;
 
-    socket.leave(room);
+      socket.leave(room);
+    } catch (error) {
+      logger.error("Error handling leaveLiveGamePreview:", { error: error.message });
+    }
   });
 
   socket.on("joinLiveGameFromQrCode", (data) => {
-    const joinData = JSON.parse(data);
+    try {
+      const joinData = JSON.parse(data);
 
-    io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(sendData));
+      io.to(joinData.socketId).emit("joinLiveGameFromQrCodeClient", JSON.stringify(joinData));
+    } catch (error) {
+      logger.error("Error handling joinLiveGameFromQrCode:", { error: error.message });
+    }
   });
 
   socket.on("updateLiveGamePreview", (data) => {
-    const gameData = JSON.parse(data);
+    try {
+      const gameData = JSON.parse(data);
 
-    io.to(`game-${gameData.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(gameData));
+      io.to(`game-${gameData.gameCode}`).emit("updateLiveGamePreviewClient", JSON.stringify(gameData));
+    } catch (error) {
+      logger.error("Error handling updateLiveGamePreview:", { error: error.message });
+    }
   });
 
   // Live game preview events
 
   socket.on("playAgainButtonServer", (data) => {
-    const playAgainData = JSON.parse(data);
-    const oldGameCode = playAgainData.oldGameCode;
-    const newGame = playAgainData.newGame;
+    try {
+      const playAgainData = JSON.parse(data);
+      const oldGameCode = playAgainData.oldGameCode;
+      const newGame = playAgainData.newGame;
 
-    // Clean up old game manager
-    removeGameManager(oldGameCode);
+      // Clean up old game manager
+      removeGameManager(oldGameCode);
 
-    const oldRoom = `game-${oldGameCode}`;
+      const oldRoom = `game-${oldGameCode}`;
 
-    io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(newGame));
+      io.to(oldRoom).emit("playAgainButtonClient", JSON.stringify(newGame));
 
-    io.sockets.in(oldRoom).socketsLeave(oldRoom);
+      io.sockets.in(oldRoom).socketsLeave(oldRoom);
+    } catch (error) {
+      logger.error("Error handling playAgainButtonServer:", { error: error.message });
+    }
   });
 
   socket.on("userOverthrow", (data) => {
-    const { userDisplayName, gameCode } = JSON.parse(data);
+    try {
+      const { userDisplayName, gameCode } = JSON.parse(data);
 
-    io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
+      io.to(`game-${gameCode}`).emit("userOverthrowClient", userDisplayName);
+    } catch (error) {
+      logger.error("Error handling userOverthrow:", { error: error.message });
+    }
   });
 
   socket.on("hostDisconnectedFromGame", (data) => {
-    const { gameCode } = JSON.parse(data);
+    try {
+      const { gameCode } = JSON.parse(data);
 
-    // Clean up game manager
-    removeGameManager(gameCode);
+      // Clean up game manager
+      removeGameManager(gameCode);
 
-    io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
-    io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
+      io.to(`game-${gameCode}`).emit("hostDisconnectedFromGameClient", true);
+      io.sockets.in(`game-${gameCode}`).socketsLeave(`game-${gameCode}`);
+    } catch (error) {
+      logger.error("Error handling hostDisconnectedFromGame:", { error: error.message });
+    }
   });
 
   // Mobile App Inputs
@@ -226,9 +258,9 @@ io.on('connection', (socket) => {
   };
 
   socket.on("externalKeyboardPlayAgain", async (data) => {
-    const { gameData } = JSON.parse(data);
-
     try {
+      const { gameData } = JSON.parse(data);
+
       await createPlayAgainGame(gameData, socket, 'externalKeyboardPlayAgain');
     } catch (error) {
       logger.error('[externalKeyboardPlayAgain] Error:', { error: error.message });
@@ -237,9 +269,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on("playAgainRequest", async (data) => {
-    const { gameData } = JSON.parse(data);
-
     try {
+      const { gameData } = JSON.parse(data);
+
       await createPlayAgainGame(gameData, socket, 'playAgainRequest');
     } catch (error) {
       logger.error('[playAgainRequest] Error:', { error: error.message });
@@ -396,14 +428,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on("tournamentBack", async ({ tournamentId, matchId }) => {
-    const updatedTournament =
-      await dartsTournamentManager.revertTournamentMatch(
-        tournamentId,
-        matchId
-      );
+    try {
+      const updatedTournament =
+        await dartsTournamentManager.revertTournamentMatch(
+          tournamentId,
+          matchId
+        );
 
-    io.to(`tournament-spectator-${updatedTournament.tournamentCode}`)
-      .emit("tournamentUpdated", updatedTournament);
+      io.to(`tournament-spectator-${updatedTournament.tournamentCode}`)
+        .emit("tournamentUpdated", updatedTournament);
+    } catch (error) {
+      logger.error('[tournamentBack] Error:', { error: error.message });
+      socket.emit('tournamentBack:error', { message: error.message });
+    }
   });
 
   // Handling Online Users

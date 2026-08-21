@@ -4,12 +4,6 @@ export const sendThrow = async (gameCode, value, action = null) => {
   await ensureSocketConnection();
 
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('Throw timeout - check your connection'));
-    }, 5000);
-
-    socket.emit("game:throw", JSON.stringify({ gameCode, value, action }));
-
     const handleResult = (data) => {
       clearTimeout(timeout);
       socket.off("game:throw-result", handleResult);
@@ -21,6 +15,13 @@ export const sendThrow = async (gameCode, value, action = null) => {
       }
     };
 
+    const timeout = setTimeout(() => {
+      socket.off("game:throw-result", handleResult);
+      reject(new Error('Throw timeout - check your connection'));
+    }, 5000);
+
+    socket.emit("game:throw", JSON.stringify({ gameCode, value, action }));
+
     socket.on("game:throw-result", handleResult);
   });
 };
@@ -29,12 +30,6 @@ export const sendBack = async (gameCode) => {
   await ensureSocketConnection();
 
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('Back timeout - check your connection'));
-    }, 5000);
-
-    socket.emit("game:back", JSON.stringify({ gameCode }));
-
     const handleResult = (data) => {
       clearTimeout(timeout);
       socket.off("game:back-result", handleResult);
@@ -46,18 +41,19 @@ export const sendBack = async (gameCode) => {
       }
     };
 
+    const timeout = setTimeout(() => {
+      socket.off("game:back-result", handleResult);
+      reject(new Error('Back timeout - check your connection'));
+    }, 5000);
+
+    socket.emit("game:back", JSON.stringify({ gameCode }));
+
     socket.on("game:back-result", handleResult);
   });
 };
 
 export const endGame = (gameCode, game = null) => {
   return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error('End game timeout'));
-    }, 5000);
-
-    socket.emit("game:end", JSON.stringify({ gameCode, game }));
-
     const handleResult = (data) => {
       clearTimeout(timeout);
       socket.off("game:end-result", handleResult);
@@ -68,6 +64,13 @@ export const endGame = (gameCode, game = null) => {
         reject(new Error(result.message || 'End game failed'));
       }
     };
+
+    const timeout = setTimeout(() => {
+      socket.off("game:end-result", handleResult);
+      reject(new Error('End game timeout'));
+    }, 5000);
+
+    socket.emit("game:end", JSON.stringify({ gameCode, game }));
 
     socket.on("game:end-result", handleResult);
   });
@@ -158,11 +161,6 @@ export const joinGameRoom = (gameCode) => {
   socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode }));
 
   return new Promise((resolve) => {
-    const timeout = setTimeout(() => {
-      console.warn(`Join confirmation timeout for game ${gameCode}`);
-      resolve(false);
-    }, 3000);
-
     const handleJoined = (data) => {
       if (data.gameCode === gameCode) {
         clearTimeout(timeout);
@@ -170,6 +168,12 @@ export const joinGameRoom = (gameCode) => {
         resolve(true);
       }
     };
+
+    const timeout = setTimeout(() => {
+      console.warn(`Join confirmation timeout for game ${gameCode}`);
+      socket.off("game:joined", handleJoined);
+      resolve(false);
+    }, 3000);
 
     socket.on("game:joined", handleJoined);
   });
