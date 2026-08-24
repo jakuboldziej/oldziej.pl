@@ -468,11 +468,19 @@ io.on('connection', (socket) => {
   // DoorState
 
   socket.on("esp32:checkDoorsState", (data) => {
-    io.emit("esp32:checkDoorsState", { requester: data.requester });
+    try {
+      io.emit("esp32:checkDoorsState", { requester: data.requester });
+    } catch (error) {
+      logger.error("Error handling esp32:checkDoorsState:", { error: error.message });
+    }
   });
 
   socket.on("esp32:doorState-response", (data) => {
-    io.to(data.requester).emit("esp32:doorState-response", data.state);
+    try {
+      io.to(data.requester).emit("esp32:doorState-response", data.state);
+    } catch (error) {
+      logger.error("Error handling esp32:doorState-response:", { error: error.message });
+    }
   });
 
   // Connections

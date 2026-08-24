@@ -49,7 +49,7 @@ function UserDataTable({ users, game }) {
         <TableHeader>
           <TableRow>
             <TableHead className="whitespace-nowrap">Player</TableHead>
-            <TableHead className="whitespace-nowrap">Points</TableHead>
+            <TableHead className="whitespace-nowrap">{game?.gameMode === "Around the Clock" ? "Target" : "Points"}</TableHead>
             <TableHead className="whitespace-nowrap">Throws</TableHead>
             <TableHead className="whitespace-nowrap"><MyTooltip title="Your Highest Round Points thrown"><span>HRP</span></MyTooltip></TableHead>
             <TableHead className="whitespace-nowrap"><MyTooltip title="Your Average of points in a current leg"><span>AVG</span></MyTooltip></TableHead>
@@ -64,7 +64,7 @@ function UserDataTable({ users, game }) {
           {users?.map(user => (
             <TableRow data-userid={user._id} key={user._id} style={dynamicUserStyle(user)}>
               <TableCell className="whitespace-nowrap">{user?.displayName || 'Unknown'}</TableCell>
-              <TableCell className="whitespace-nowrap">{user?.points ?? 0}</TableCell>
+              <TableCell className="whitespace-nowrap">{game?.gameMode === "Around the Clock" ? (user?.currentTarget ?? 1) : (user?.points ?? 0)}</TableCell>
               <TableCell className="whitespace-nowrap">{displayUserThrows(user)}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.highestGameTurnPoints ?? 0}</TableCell>
               <TableCell className="whitespace-nowrap">{user?.avgPointsPerTurn ?? '0.00'}</TableCell>

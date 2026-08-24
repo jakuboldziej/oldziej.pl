@@ -18,7 +18,7 @@ const authenticateUser = async (req, res, next) => {
       if (authHeader.startsWith("Bearer ")) {
         token = authHeader.split(" ")[1];
       } else {
-        return res.status(401).send({ message: "Not authorized. Malformed token format." });
+        token = authHeader;
       }
     } else if (authQuery) {
       if (authQuery.startsWith("Bearer ")) {
@@ -26,10 +26,6 @@ const authenticateUser = async (req, res, next) => {
       } else {
         token = authQuery;
       }
-    }
-
-    if (!token || token === 'undefined' || token === 'null') {
-      return res.status(401).send({ message: "Not authorized. Token is missing or invalid." });
     }
 
     if (!token || token === 'undefined' || token === 'null') {

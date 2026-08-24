@@ -622,11 +622,11 @@ router.post("/refresh-token", async (req, res) => {
 router.post("/check-session", async (req, res) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader) {
     return res.status(401).send({ message: "Not authorized." });
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
 
   if (!token || token === 'undefined' || token === 'null') {
     return res.status(401).send({ message: "Invalid token." });

@@ -216,11 +216,11 @@ function GameSummary({ show, setShow }) {
               </div>
               <div className="flex flex-wrap gap-4 justify-center text-center">
                 <span>Time played: {timePlayed}</span>
-                <span>Start Points: {game.startPoints}</span>
+                {game.gameMode !== "Around the Clock" && <span>Start Points: {game.startPoints}</span>}
               </div>
               <span className="text-center">
                 Gamemode: {game.gameMode}
-                {game.gameMode === "X01" && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
+                {(game.gameMode === "X01" || game.gameMode === "Around the Clock") && <span> | Legs: {game.legs} | Sets: {game.sets}</span>}
               </span>
               <UserDataTable users={game.users} game={game} />
             </div>

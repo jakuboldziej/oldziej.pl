@@ -199,7 +199,7 @@ function Esp32DoorSensor(props) {
       {loading ? (
         <Loading />
       ) : (
-        !ESP32State || !ESP32Info || ESP32State?.message === "fetch failed" ? (
+        !ESP32State || !ESP32Info ? (
           <span className='text-2xl text-red-500'>ESP32 Door sensor connection failed.</span>
         ) : (
           <div className='flex w-full flex-col md:flex-row gap-20 md:gap-0 pb-20'>

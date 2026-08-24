@@ -31,6 +31,20 @@ const calculatePoints = (turnValue) => {
   return parseInt(turnValue) || 0;
 };
 
+const parseSegmentNumber = (turnValue) => {
+  if (turnValue === null || turnValue === undefined) return null;
+
+  const isNumericRegex = /^\d+$/;
+  if (!isNumericRegex.test(turnValue)) {
+    if (turnValue[0] === "D" || turnValue[0] === "T") {
+      return parseInt(turnValue.slice(1));
+    }
+  }
+  return parseInt(turnValue);
+};
+
+const ATC_TARGETS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
+
 const handleTurnsSum = (currentUser) => {
   if (currentUser.turnsSum === undefined || currentUser.turnsSum === null || isNaN(currentUser.turnsSum)) {
     currentUser.turnsSum = 0;
@@ -117,6 +131,37 @@ const handlePodiumReverseX01 = (game, currentUser) => {
   const usersWithoutPodium = game.users.filter(({ place }) => !place);
   if (usersWithoutPodium.length > 0) {
     const sortedUsers = usersWithoutPodium.sort((a, b) => a.allGainedPoints - b.allGainedPoints);
+    if (sortedUsers[0]) { game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2; }
+    if (sortedUsers[1]) { game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3; }
+  }
+};
+
+const handlePodiumAroundTheClock = (game, currentUser) => {
+  currentUser.place = 1;
+  game.podium[1] = currentUser.displayName;
+  game.userWon = currentUser.displayName;
+  game.active = false;
+  game.finished_at = Date.now();
+
+  const usersWithoutPodium = game.users.filter(({ place }) => !place);
+  if (usersWithoutPodium.length > 0) {
+    let sortedUsers = [];
+
+    if (parseInt(game.sets) > 1) {
+      sortedUsers = usersWithoutPodium.sort((a, b) => {
+        if (b.sets !== a.sets) return b.sets - a.sets;
+        if ((b.totalLegsWon || 0) !== (a.totalLegsWon || 0)) return (b.totalLegsWon || 0) - (a.totalLegsWon || 0);
+        return (b.currentTarget || 1) - (a.currentTarget || 1);
+      });
+    } else if (parseInt(game.legs) > 1) {
+      sortedUsers = usersWithoutPodium.sort((a, b) => {
+        if (b.legs !== a.legs) return b.legs - a.legs;
+        return (b.currentTarget || 1) - (a.currentTarget || 1);
+      });
+    } else {
+      sortedUsers = usersWithoutPodium.sort((a, b) => (b.currentTarget || 1) - (a.currentTarget || 1));
+    }
+
     if (sortedUsers[0]) { game.podium[2] = sortedUsers[0].displayName; sortedUsers[0].place = 2; }
     if (sortedUsers[1]) { game.podium[3] = sortedUsers[1].displayName; sortedUsers[1].place = 3; }
   }
@@ -222,6 +267,25 @@ const handlePointsReverseX01 = (game, currentUser) => {
   }
 };
 
+const handlePointsAroundTheClock = (game, currentUser) => {
+  const currentTurnValue = currentUser.turns[currentUser.currentTurn];
+  const hitNumber = parseSegmentNumber(currentTurnValue);
+
+  if (!currentUser.currentTarget) currentUser.currentTarget = 1;
+
+  if (hitNumber === currentUser.currentTarget) {
+    const targetIndex = ATC_TARGETS.indexOf(currentUser.currentTarget);
+
+    if (targetIndex === ATC_TARGETS.length - 1) {
+      return { overthrow: false, gameEnd: true };
+    }
+
+    currentUser.currentTarget = ATC_TARGETS[targetIndex + 1];
+  }
+
+  return { overthrow: false, gameEnd: false };
+};
+
 const handleNextLeg = (game, currentUser) => {
   const legCheckout = calculatePoints(currentUser.turns[1]) + calculatePoints(currentUser.turns[2]) + calculatePoints(currentUser.turns[3]);
   if (legCheckout > currentUser.gameCheckout) currentUser.gameCheckout = legCheckout;
@@ -268,6 +332,7 @@ const handleNextLeg = (game, currentUser) => {
 
   game.users.forEach((user) => {
     user.points = parseInt(game.startPoints);
+    user.currentTarget = 1;
     user.avgPointsPerTurn = "0.00";
     user.turnsSum = 0;
     user.turn = false;
@@ -576,6 +641,8 @@ class DartsGameManager {
       handlePodiumX01(this.game, currentUser);
     } else if (this.game.gameMode === "Reverse X01") {
       handlePodiumReverseX01(this.game, currentUser);
+    } else if (this.game.gameMode === "Around the Clock") {
+      handlePodiumAroundTheClock(this.game, currentUser);
     }
 
     // Update user data for all players (including losers)
@@ -653,6 +720,8 @@ class DartsGameManager {
       result = handlePointsX01(this.game, currentUser, this.io);
     } else if (this.game.gameMode === "Reverse X01") {
       result = handlePointsReverseX01(this.game, currentUser);
+    } else if (this.game.gameMode === "Around the Clock") {
+      result = handlePointsAroundTheClock(this.game, currentUser);
     }
 
     currentUser._lastPointsResult = result;

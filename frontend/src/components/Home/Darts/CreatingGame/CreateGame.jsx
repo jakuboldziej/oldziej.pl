@@ -534,38 +534,39 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
                     <SelectContent>
                       <SelectGroup>
                         <SelectItem value="X01">X01</SelectItem>
+                        <SelectItem value="Around the Clock">Around the Clock</SelectItem>
                         {/* <SelectItem value="Reverse X01">Reverse X01 (2 Players)</SelectItem> */}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
-                  <div className="text-xl">Start Points</div>
-                  <Select
-                    onValueChange={handleSelectStartPoints}
-                    value={selectStartPoints}
-                    modal={false}
-                  >
-                    <SelectTrigger className="text-white">
-                      <SelectValue placeholder="Select Start Points" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="101">101</SelectItem>
-                        <SelectItem value="201">201</SelectItem>
-                        <SelectItem value="301">301</SelectItem>
-                        <SelectItem value="401">401</SelectItem>
-                        <SelectItem value="501">501</SelectItem>
-                        <SelectItem value="601">601</SelectItem>
-                        <SelectItem value="701">701</SelectItem>
-                        <SelectItem value="801">801</SelectItem>
-                        <SelectItem value="901">901</SelectItem>
-                        <SelectItem value="1001">1001</SelectItem>
-                        <SelectItem value="Custom">Custom</SelectItem>
-                        {safeCustomStartPoints && <SelectItem value={safeCustomStartPoints}>{safeCustomStartPoints}</SelectItem>}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  {handleGamemodeOptions() === "X01" ? (
+                  {handleGamemodeOptions() === "X01" && (
                     <>
+                      <div className="text-xl">Start Points</div>
+                      <Select
+                        onValueChange={handleSelectStartPoints}
+                        value={selectStartPoints}
+                        modal={false}
+                      >
+                        <SelectTrigger className="text-white">
+                          <SelectValue placeholder="Select Start Points" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="101">101</SelectItem>
+                            <SelectItem value="201">201</SelectItem>
+                            <SelectItem value="301">301</SelectItem>
+                            <SelectItem value="401">401</SelectItem>
+                            <SelectItem value="501">501</SelectItem>
+                            <SelectItem value="601">601</SelectItem>
+                            <SelectItem value="701">701</SelectItem>
+                            <SelectItem value="801">801</SelectItem>
+                            <SelectItem value="901">901</SelectItem>
+                            <SelectItem value="1001">1001</SelectItem>
+                            <SelectItem value="Custom">Custom</SelectItem>
+                            {safeCustomStartPoints && <SelectItem value={safeCustomStartPoints}>{safeCustomStartPoints}</SelectItem>}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                       <div className="text-lg">Check-Out</div>
                       <Select onValueChange={(value) => setSelectCheckOut(value)} value={selectCheckOut} modal={false}>
                         <SelectTrigger className="text-white">
@@ -580,6 +581,10 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
                           </SelectGroup>
                         </SelectContent>
                       </Select>
+                    </>
+                  )}
+                  {(handleGamemodeOptions() === "X01" || handleGamemodeOptions() === "Around the Clock") && (
+                    <>
                       <div className="text-lg">Legs</div>
                       <Select onValueChange={(value) => setSelectLegs(value)} value={selectLegs} modal={false}>
                         <SelectTrigger className="text-white">
@@ -603,8 +608,6 @@ function CreateGame({ children, drawerOpen, setDrawerOpen, createType }) {
                         </SelectContent>
                       </Select>
                     </>
-                  ) : (
-                    null
                   )}
                 </div>
               </CardContent>

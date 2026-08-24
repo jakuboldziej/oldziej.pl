@@ -28,7 +28,8 @@ const getInitialUsersGameState = (users, startPoints, randomize = false) => {
     displayName: user.displayName,
     visibleName: user.visibleName || user.displayName,
 
-    points: parseInt(startPoints),
+    points: parseInt(startPoints) || 0,
+    currentTarget: 1,
 
     turn: false,
     currentTurn: 1,

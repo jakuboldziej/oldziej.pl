@@ -27,6 +27,8 @@ function DartsGame() {
   const { game, setGame, overthrow, setOverthrow, setHandleShow } = useContext(DartsGameContext);
   const { currentUser } = useContext(AuthContext);
 
+  const isAroundTheClock = game?.gameMode === "Around the Clock";
+
   const canUserInteract = game &&
     currentUser &&
     (game && currentUser && game.users.find((user) => user.displayName === currentUser.displayName) || game?.tournamentId?.admin === currentUser.displayName);
@@ -167,7 +169,7 @@ function DartsGame() {
           <h5 style={{ color: '#E00000' }}>L: {game.legs}</h5>
           <h2 style={{ color: '#E00000' }}>Turn: {game.turn}</h2>
           <h5 style={{ color: '#E00000' }}>S: {game.sets}</h5>
-          <h2 className="hidden sm:block">{game?.checkOut}</h2>
+          <h2 className="hidden sm:block">{isAroundTheClock ? "Around the Clock" : game?.checkOut}</h2>
         </div>
         <div className="users" ref={usersContainerRef}>
           {game.users.map((user, index) => (
@@ -175,12 +177,21 @@ function DartsGame() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="relative w-[33%]">
-                    <NumberTicker
-                      stiffness={300}
-                      startValue={parseInt(game.startPoints)}
-                      value={parseInt(user.points)}
-                      className="font-bold"
-                    />
+                    {isAroundTheClock ? (
+                      <NumberTicker
+                        stiffness={300}
+                        startValue={1}
+                        value={user.currentTarget || 1}
+                        className="font-bold"
+                      />
+                    ) : (
+                      <NumberTicker
+                        stiffness={300}
+                        startValue={parseInt(game.startPoints)}
+                        value={parseInt(user.points)}
+                        className="font-bold"
+                      />
+                    )}
                     <span className="darts-thrown">
                       <img width="12" height="12" src="https://img.icons8.com/external-kosonicon-solid-kosonicon/12/external-dart-sports-equipment-kosonicon-solid-kosonicon.png" alt="external-dart-sports-equipment-kosonicon-solid-kosonicon" />
                       {totalThrows(user)}

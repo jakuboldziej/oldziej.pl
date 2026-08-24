@@ -239,7 +239,10 @@ const sendExpoNotifications = async (doorUsers, title, body, data, isAlarmOrVali
 
 const getWLEDstate = async () => {
   try {
-    const response = await fetch(`${wledDomain}/json/state`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const response = await fetch(`${wledDomain}/json/state`, { signal: controller.signal });
+    clearTimeout(timeoutId);
     const responseData = await response.json();
 
     return responseData;
@@ -289,10 +292,14 @@ const changeWLEDstate = async (data) => {
       };
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
     const response = await fetch(`${wledDomain}/json/state`, {
       method: "POST",
       body: JSON.stringify(patchData),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
     const responseData = await response.json();
 
     return responseData;
@@ -348,12 +355,12 @@ router.patch("/change-state", authenticateUser, async (req, res) => {
     const stateEffect = req.body.effect;
 
     const gameCode = req.body.gameCode;
-    const role = req.body.role;
+    const role = res.authUser.role;
 
-    if (!role) {
+    if (role !== "admin") {
       if (!wledGameCode.code) return res.json({ message: "No running game" });
       if (gameCode !== wledGameCode.code) return res.json({ message: "Game code does not match" });
-    } else if (role !== "admin") return res.json({ message: "Not authorized" });
+    }
 
     const responseData = await changeWLEDstate({
       stateOn: stateOn,
@@ -387,7 +394,7 @@ router.post("/join-game/:gameCode", authenticateUser, async (req, res) => {
       }
     });
 
-    if (response.message) throw new Error("ESP32 failed", response.message);
+    if (response.message) throw new Error(`ESP32 failed: ${response.message}`);
 
     logger.info("WLED joined game", { gameCode, timestamp: wledGameCode.joinedAt });
     res.json(wledGameCode.code);
@@ -1263,7 +1270,7 @@ router.post("/door/register-push-token", async (req, res) => {
 });
 
 router.post("/door/send-notification", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { title, body, data, isCritical } = req.body;
@@ -1372,7 +1379,7 @@ router.get("/door/test-database", authenticateUser, async (req, res) => {
 });
 
 router.get("/door/registered-devices", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const doorUsers = await DoorUser.find({}).select('deviceId lastActive createdAt');
@@ -1388,7 +1395,7 @@ router.get("/door/registered-devices", authenticateUser, async (req, res) => {
 });
 
 router.delete("/door/remove-device/:deviceId", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const { deviceId } = req.params;
@@ -1407,7 +1414,7 @@ router.delete("/door/remove-device/:deviceId", authenticateUser, async (req, res
 });
 
 router.post("/door/cleanup-inactive-devices", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(401).json({ message: "Not authorized" });
 
   try {
     const daysInactive = req.body.days || 30;

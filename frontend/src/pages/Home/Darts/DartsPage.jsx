@@ -193,7 +193,6 @@ function DartsPage() {
             const currentGame = JSON.parse(storedGame);
             if (currentGame?.gameCode === endedGameCode) {
               setPlayerInGame(false);
-              localStorage.setItem('dartsGame', null);
             }
           } catch (e) {
           }

@@ -119,6 +119,10 @@ export const DartsGameContextProvider = ({ children }) => {
 
   useEffect(() => {
     const handleStorageChange = () => {
+      if (Date.now() - lastSocketUpdate.current < 1000) {
+        return;
+      }
+
       const storedGame = localStorage.getItem('dartsGame');
       if (!storedGame || storedGame === 'null') {
         setGame(null);
