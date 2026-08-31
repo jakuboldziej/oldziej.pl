@@ -31,6 +31,7 @@ const portfolioDomain = environment === "production" ? process.env.PORTFOLIO_DOM
 const previewDomain = process.env.PREVIEW_DOMAIN;
 const gamesDomains = [process.env.LOCALHOST_GAMES_DOMAIN, process.env.GAMES_DOMAIN];
 const ngrokDomain = process.env.NGROK_DOMAIN;
+const devDomain = process.env.DEV_DOMAIN;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -41,7 +42,8 @@ const allowedOrigins = [
   portfolioDomain,
   previewDomain,
   ...gamesDomains,
-  ngrokDomain
+  ngrokDomain,
+  devDomain
 ].filter(Boolean);
 
 app.use(helmet({
