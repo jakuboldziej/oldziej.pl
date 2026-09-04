@@ -576,6 +576,8 @@ router.patch("/change-password", changePasswordLimiter, authenticateUser, async 
   }
 });
 
+const REFRESH_GRACE_SECONDS = 30 * 24 * 60 * 60;
+
 router.post("/refresh-token", async (req, res) => {
   const authHeader = req.headers.authorization;
 
@@ -583,11 +585,22 @@ router.post("/refresh-token", async (req, res) => {
     return res.status(401).send({ message: "Not authorized." });
   }
 
+  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : authHeader;
+
+  if (!token || token === 'undefined' || token === 'null') {
+    return res.status(401).send({ message: "Invalid token." });
+  }
+
   try {
-    const decoded = jwt.decode(authHeader);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { ignoreExpiration: true });
 
     if (!decoded || !decoded.userId) {
       return res.status(403).send({ message: "Invalid token" });
+    }
+
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    if (decoded.exp && nowInSeconds - decoded.exp > REFRESH_GRACE_SECONDS) {
+      return res.status(401).send({ message: "Session expired" });
     }
 
     const user = await User.findById(decoded.userId);
@@ -615,7 +628,10 @@ router.post("/refresh-token", async (req, res) => {
     });
   } catch (err) {
     logger.error("Token Refresh Failed", { method: req.method, url: req.url, error: err.message });
-    res.status(403).send({ message: "Token refresh failed" });
+    if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(403).send({ message: "Invalid token" });
+    }
+    res.status(500).send({ message: "Token refresh failed" });
   }
 });
 
