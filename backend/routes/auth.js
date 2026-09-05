@@ -9,7 +9,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
 const authenticateUser = require("../middleware/auth");
+const { requireAdmin, isSelfOrAdmin } = require("../middleware/authorize");
+const { notifyAdminSafely, sendVerificationEmailSafely } = require("../services/emailService");
 const { io } = require("../server");
+const { emitToUsers } = require("../socket.io/rooms");
 const { createRateLimiter } = require("../middleware/rateLimiters");
 const { logger } = require("../middleware/logging");
 
@@ -18,19 +21,7 @@ require('dotenv').config();
 const loginLimiter = createRateLimiter(10, 15 * 60 * 1000, "Too many login attempts. Try again later.");
 const registerLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many registration attempts. Try again later.");
 const changePasswordLimiter = createRateLimiter(3, 30 * 60 * 1000, "Too many change password attempts. Try again later.");
-
-const getAuthUser = async (req, res, next) => {
-  let user;
-  try {
-    const { displayName } = req.params;
-    user = await User.findOne({ displayName });
-    if (user == null) return res.status(404);
-  } catch (err) {
-    return res.json({ message: err.message })
-  }
-  res.user = user;
-  next();
-}
+const checkEmailLimiter = createRateLimiter(20, 15 * 60 * 1000, "Too many lookups. Try again later.");
 
 // Users
 
@@ -43,7 +34,7 @@ router.get('/users', authenticateUser, async (req, res) => {
   }
 });
 
-router.get('/users/:identifier', async (req, res) => {
+router.get('/users/:identifier', authenticateUser, async (req, res) => {
   try {
     const identifier = req.params.identifier;
     if (Types.ObjectId.isValid(identifier)) {
@@ -58,37 +49,72 @@ router.get('/users/:identifier', async (req, res) => {
   }
 });
 
-router.get('/users/check-existing-mail/:email', async (req, res) => {
+router.get('/users/check-existing-name/:displayName', checkEmailLimiter, async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.params.email }, { password: 0 })
-    res.json(user)
+    const exists = await User.exists({ displayName: req.params.displayName });
+    res.json({ exists: !!exists })
   } catch (err) {
-    res.json({ message: err.message })
+    res.status(500).json({ message: err.message })
   }
 });
 
-router.patch("/users/:displayName", getAuthUser, async (req, res) => {
+router.get('/users/check-existing-mail/:email', checkEmailLimiter, async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      res.user._id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedUser) {
-      return res.status(401).json({ message: "User not found" });
+    const exists = await User.exists({ email: req.params.email });
+    res.json({ exists: !!exists })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+});
+
+const USER_SELF_EDITABLE_FIELDS = ["displayName", "friendsCode"];
+const USER_ADMIN_EDITABLE_FIELDS = [...USER_SELF_EDITABLE_FIELDS, "role", "verified", "email"];
+
+router.patch("/users/:displayName", authenticateUser, async (req, res) => {
+  try {
+    const { displayName } = req.params;
+
+    if (!isSelfOrAdmin(res.authUser, displayName)) {
+      return res.status(403).json({ message: "You can only edit your own account." });
     }
 
-    logger.info("PATCH User", { method: req.method, url: req.url, data: updatedUser });
+    const allowedFields = res.authUser.role === "admin"
+      ? USER_ADMIN_EDITABLE_FIELDS
+      : USER_SELF_EDITABLE_FIELDS;
+
+    const updates = {};
+    for (const field of allowedFields) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) updates[field] = req.body[field];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No updatable fields provided." });
+    }
+
+    const user = await User.findOne({ displayName });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      updates,
+      { new: true, projection: { password: 0 } }
+    );
+
+    logger.info("PATCH User", { method: req.method, url: req.url, data: { displayName, updated: Object.keys(updates) } });
     res.json(updatedUser);
   } catch (err) {
     logger.error("PATCH User", { method: req.method, url: req.url, error: err.message });
-    return res.json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 });
 
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
     const displayName = req.params.displayName;
+
+    if (!isSelfOrAdmin(res.authUser, displayName)) {
+      return res.status(403).json({ message: "You can only delete your own account." });
+    }
 
     // Delete user from all related collections
     await Promise.all([
@@ -104,6 +130,12 @@ router.delete('/users/:displayName', authenticateUser, async (req, res) => {
       url: req.url,
       displayName
     });
+
+    notifyAdminSafely(
+      `[Admin] - User Deleted Account: ${displayName}`,
+      `User deleted his account: ${displayName}`
+    );
+
     res.json({ ok: true });
   } catch (err) {
     logger.error("DELETE User - Failed", { method: req.method, url: req.url, error: err.message });
@@ -174,11 +206,12 @@ router.post('/users/send-friends-request/', authenticateUser, async (req, res) =
   try {
     const userFriendCode = req.body.userFriendCode;
 
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let currentUser = await User.findOne({ displayName: res.authUser.displayName }, { password: 0 });
     let user = await User.findOne({ friendsCode: userFriendCode }, { password: 0 });
     if (!user) return res.json({
       message: `Friend code is not valid (${userFriendCode}).`
     });
+    if (!currentUser) return res.status(404).json({ message: "User not found." });
     const userId = user._id.toString()
     const currentUserId = currentUser._id.toString();
 
@@ -214,7 +247,7 @@ router.post('/users/send-friends-request/', authenticateUser, async (req, res) =
         { new: true }
       );
 
-      io.emit("sendFriendsRequest", JSON.stringify({
+      emitToUsers(io, [currentUserId, userId], "sendFriendsRequest", JSON.stringify({
         friendsRequestsReceived: user.friendsRequests.received.length,
         currentUserDisplayName: currentUser.displayName,
         userDisplayName: user.displayName,
@@ -233,8 +266,9 @@ router.post('/users/send-friends-request/', authenticateUser, async (req, res) =
 
 router.post('/users/accept-friends-request/', authenticateUser, async (req, res) => {
   try {
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let currentUser = await User.findOne({ displayName: res.authUser.displayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
+    if (!currentUser || !user) return res.status(404).json({ message: "User not found." });
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
@@ -261,13 +295,13 @@ router.post('/users/accept-friends-request/', authenticateUser, async (req, res)
         { new: true }
       );
 
-      io.emit("acceptFriendsRequest", JSON.stringify({
+      emitToUsers(io, [currentUserId, userId], "acceptFriendsRequest", JSON.stringify({
         accepted: true,
         sentFrom: user.displayName,
         sentTo: currentUser.displayName,
       }));
 
-      io.emit("updateCounters", JSON.stringify({
+      emitToUsers(io, [currentUserId], "updateCounters", JSON.stringify({
         currentUserDisplayName: currentUser.displayName,
         friendsRequestsReceived: currentUser.friendsRequests.received.length
       }));
@@ -284,8 +318,9 @@ router.post('/users/accept-friends-request/', authenticateUser, async (req, res)
 
 router.post('/users/decline-friends-request/', authenticateUser, async (req, res) => {
   try {
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let currentUser = await User.findOne({ displayName: res.authUser.displayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
+    if (!currentUser || !user) return res.status(404).json({ message: "User not found." });
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
@@ -309,18 +344,18 @@ router.post('/users/decline-friends-request/', authenticateUser, async (req, res
         { new: true }
       );
 
-      io.emit("declineFriendsRequest", JSON.stringify({
+      emitToUsers(io, [currentUserId, userId], "declineFriendsRequest", JSON.stringify({
         declined: true,
         sentFrom: user.displayName,
         sentTo: currentUser.displayName,
       }));
 
-      io.emit("updateCounters", JSON.stringify({
+      emitToUsers(io, [currentUserId], "updateCounters", JSON.stringify({
         currentUserDisplayName: currentUser.displayName,
         friendsRequestsReceived: currentUser.friendsRequests.received.length
       }));
 
-      io.emit("updateCounters", JSON.stringify({
+      emitToUsers(io, [userId], "updateCounters", JSON.stringify({
         currentUserDisplayName: user.displayName,
         friendsRequestsPending: user.friendsRequests.pending.length
       }));
@@ -337,8 +372,9 @@ router.post('/users/decline-friends-request/', authenticateUser, async (req, res
 
 router.post('/users/cancel-friends-request/', authenticateUser, async (req, res) => {
   try {
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let currentUser = await User.findOne({ displayName: res.authUser.displayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
+    if (!currentUser || !user) return res.status(404).json({ message: "User not found." });
     const userId = user._id.toString();
     const currentUserId = currentUser._id.toString();
 
@@ -367,19 +403,19 @@ router.post('/users/cancel-friends-request/', authenticateUser, async (req, res)
       );
 
       // Notify the user who received the request that it was canceled
-      io.emit("cancelFriendsRequest", JSON.stringify({
+      emitToUsers(io, [currentUserId, userId], "cancelFriendsRequest", JSON.stringify({
         canceled: true,
         sentFrom: currentUser.displayName,
         sentTo: user.displayName,
       }));
 
       // Update counters for both users
-      io.emit("updateCounters", JSON.stringify({
+      emitToUsers(io, [currentUserId], "updateCounters", JSON.stringify({
         currentUserDisplayName: currentUser.displayName,
         friendsRequestsPending: currentUser.friendsRequests.pending.length
       }));
 
-      io.emit("updateCounters", JSON.stringify({
+      emitToUsers(io, [userId], "updateCounters", JSON.stringify({
         currentUserDisplayName: user.displayName,
         friendsRequestsReceived: user.friendsRequests.received.length
       }));
@@ -396,8 +432,9 @@ router.post('/users/cancel-friends-request/', authenticateUser, async (req, res)
 
 router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
   try {
-    let currentUser = await User.findOne({ displayName: req.body.currentUserDisplayName }, { password: 0 });
+    let currentUser = await User.findOne({ displayName: res.authUser.displayName }, { password: 0 });
     let user = await User.findOne({ displayName: req.body.userDisplayName }, { password: 0 });
+    if (!currentUser || !user) return res.status(404).json({ message: "User not found." });
     const userId = user._id.toString();
 
     const isUserFriendsWithCurrentUser = currentUser.friends.find((friendDisplayName) => friendDisplayName === user.displayName);
@@ -423,7 +460,7 @@ router.post('/users/remove-friend/', authenticateUser, async (req, res) => {
         { new: true }
       );
 
-      io.emit("removeFriend", JSON.stringify({
+      emitToUsers(io, [currentUser._id.toString(), userId], "removeFriend", JSON.stringify({
         removed: true,
         removedBy: currentUser.displayName,
         removedUser: user.displayName,
@@ -471,7 +508,17 @@ router.post("/register", registerLimiter, (req, res) => {
         { expiresIn: "30d" }
       );
 
-      logger.info("Register User", { method: req.method, url: req.url, data: user });
+      sendVerificationEmailSafely(result);
+      notifyAdminSafely(
+        `[Admin] - New User Registered: ${result.displayName}`,
+        `New user is registered: ${result.displayName}`
+      );
+
+      logger.info("Register User", {
+        method: req.method,
+        url: req.url,
+        data: { _id: result._id, displayName: result.displayName }
+      });
       res.status(201).send({
         message: "User Created Successfully",
         verified: user.verified,

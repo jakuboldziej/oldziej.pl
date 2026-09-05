@@ -6,20 +6,68 @@ const DartsGame = require('../models/darts/dartsGame');
 const DartsTournament = require('../models/darts/dartsTournament');
 const dartsTournamentManager = require('../services/dartsTournamentManager');
 const { getInitialUsersGameState } = require('../lib/dartsUtils');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user');
+const { userRoom, gameRoom } = require('./rooms');
+require('dotenv').config();
 
-const socketAuthMiddleware = (socket, next) => {
-  const handshake = socket.handshake;
+const extractHandshakeToken = (handshake) => {
+  const raw = handshake.auth?.token
+    || handshake.query?.token
+    || handshake.headers?.authorization;
 
-  logger.info(`Socket connection attempt from ${socket.id}`, {
-    address: handshake.address,
-    headers: handshake.headers.origin
-  });
+  if (!raw || typeof raw !== 'string') return null;
+  if (raw === 'undefined' || raw === 'null') return null;
 
-  // token validation?
+  return raw.startsWith('Bearer ') ? raw.slice(7) : raw;
+};
+
+const socketAuthMiddleware = async (socket, next) => {
+  const token = extractHandshakeToken(socket.handshake);
+
+  if (!token) return next();
+
+  try {
+    if (process.env.SERVICE_API_KEY && token === process.env.SERVICE_API_KEY) {
+      socket.data.user = { _id: 'service', displayName: 'service', role: 'admin', isService: true };
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId, { password: 0 });
+
+    if (user) {
+      socket.data.user = {
+        _id: user._id.toString(),
+        displayName: user.displayName,
+        role: user.role
+      };
+      socket.join(userRoom(user._id.toString()));
+    }
+  } catch (error) {
+    logger.warn('Socket handshake token rejected', { socketId: socket.id, error: error.message });
+  }
+
   next();
 };
 
 io.use(socketAuthMiddleware);
+
+const requireSocketUser = (socket, event) => {
+  if (socket.data.user) return socket.data.user;
+
+  socket.emit('error', { message: `Not authorized for ${event}.` });
+  return null;
+};
+
+const requireSocketAdmin = (socket, event) => {
+  const user = requireSocketUser(socket, event);
+  if (!user) return null;
+  if (user.role === 'admin') return user;
+
+  socket.emit('error', { message: `Admin privileges required for ${event}.` });
+  return null;
+};
 
 // Connection health monitoring
 const activeConnections = new Map();
@@ -50,6 +98,8 @@ io.on('connection', (socket) => {
   // Admin Listeners
 
   socket.on("verifyEmailAdmin", (data) => {
+    if (!requireSocketAdmin(socket, "verifyEmailAdmin")) return;
+
     try {
       const verifyData = JSON.parse(data);
 
@@ -109,6 +159,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("updateLiveGamePreview", (data) => {
+    if (!requireSocketUser(socket, "updateLiveGamePreview")) return;
+
     try {
       const gameData = JSON.parse(data);
 
@@ -121,6 +173,8 @@ io.on('connection', (socket) => {
   // Live game preview events
 
   socket.on("playAgainButtonServer", (data) => {
+    if (!requireSocketUser(socket, "playAgainButtonServer")) return;
+
     try {
       const playAgainData = JSON.parse(data);
       const oldGameCode = playAgainData.oldGameCode;
@@ -140,6 +194,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("userOverthrow", (data) => {
+    if (!requireSocketUser(socket, "userOverthrow")) return;
+
     try {
       const { userDisplayName, gameCode } = JSON.parse(data);
 
@@ -150,6 +206,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("hostDisconnectedFromGame", (data) => {
+    if (!requireSocketUser(socket, "hostDisconnectedFromGame")) return;
+
     try {
       const { gameCode } = JSON.parse(data);
 
@@ -166,6 +224,8 @@ io.on('connection', (socket) => {
   // Mobile App Inputs
 
   socket.on("externalKeyboardInput", async (data) => {
+    if (!requireSocketUser(socket, "externalKeyboardInput")) return;
+
     try {
       const { gameCode, input, action } = JSON.parse(data);
 
@@ -258,6 +318,8 @@ io.on('connection', (socket) => {
   };
 
   socket.on("externalKeyboardPlayAgain", async (data) => {
+    if (!requireSocketUser(socket, "externalKeyboardPlayAgain")) return;
+
     try {
       const { gameData } = JSON.parse(data);
 
@@ -269,6 +331,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("playAgainRequest", async (data) => {
+    if (!requireSocketUser(socket, "playAgainRequest")) return;
+
     try {
       const { gameData } = JSON.parse(data);
 
@@ -285,6 +349,13 @@ io.on('connection', (socket) => {
   const validateGameAccess = async (socket, gameCode) => {
     if (!gameCode) {
       socket.emit('error', { message: 'Invalid gameCode' });
+      return null;
+    }
+
+    if (!requireSocketUser(socket, 'game actions')) return null;
+
+    if (!socket.rooms.has(gameRoom(gameCode))) {
+      socket.emit('error', { message: 'Join the game preview before sending game actions.' });
       return null;
     }
 
@@ -343,6 +414,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("game:end", async (data) => {
+    if (!requireSocketUser(socket, "game:end")) return;
+
     try {
       const { gameCode, game: endedGame } = JSON.parse(data);
 
@@ -383,6 +456,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("tournamentNextGame", async ({ tournamentCode, currentGameCode }) => {
+    if (!requireSocketUser(socket, "tournamentNextGame")) return;
+
     try {
       const tournament = await DartsTournament.findOne({ tournamentCode }).populate({
         path: "matches",
@@ -428,6 +503,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("tournamentBack", async ({ tournamentId, matchId }) => {
+    if (!requireSocketUser(socket, "tournamentBack")) return;
+
     try {
       const updatedTournament =
         await dartsTournamentManager.revertTournamentMatch(
@@ -445,8 +522,11 @@ io.on('connection', (socket) => {
 
   // Handling Online Users
 
-  socket.on("addingOnlineUser", (data) => {
-    addingOnlineUser(data, socket.id, io);
+  socket.on("addingOnlineUser", () => {
+    const user = requireSocketUser(socket, "addingOnlineUser");
+    if (!user || user.isService) return;
+
+    addingOnlineUser({ user: { _id: user._id, displayName: user.displayName } }, socket.id, io);
   });
 
   socket.on("user:logout", () => {
@@ -458,16 +538,20 @@ io.on('connection', (socket) => {
   // Wifi connection
 
   socket.on("esp32:connection-info", (data) => {
+    if (!requireSocketUser(socket, "esp32:connection-info")) return;
     io.emit("esp32:connection-info", data);
   });
 
   socket.on("esp32-door:check-wifi-connection", (data) => {
+    if (!requireSocketUser(socket, "esp32-door:check-wifi-connection")) return;
     io.emit("esp32-door:check-wifi-connection", data);
   });
 
   // DoorState
 
   socket.on("esp32:checkDoorsState", (data) => {
+    if (!requireSocketUser(socket, "esp32:checkDoorsState")) return;
+
     try {
       io.emit("esp32:checkDoorsState", { requester: data.requester });
     } catch (error) {
@@ -476,6 +560,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("esp32:doorState-response", (data) => {
+    if (!requireSocketUser(socket, "esp32:doorState-response")) return;
+
     try {
       io.to(data.requester).emit("esp32:doorState-response", data.state);
     } catch (error) {

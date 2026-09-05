@@ -5,7 +5,7 @@ const { logger } = require("./logging");
 
 const authenticateUser = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const authQuery = req.query.token;
+  const authQuery = req.method === "GET" ? req.query.token : undefined;
 
   if (!authHeader && !authQuery) {
     return res.status(401).send({ message: "Not authorized. No token provided." });
@@ -33,7 +33,7 @@ const authenticateUser = async (req, res, next) => {
     }
 
     if (process.env.SERVICE_API_KEY && token === process.env.SERVICE_API_KEY) {
-      res.authUser = { _id: "123", displayName: "admin", role: "admin" };
+      res.authUser = { _id: "000000000000000000000000", displayName: "service", role: "admin", isService: true };
       return next();
     }
 
@@ -48,7 +48,7 @@ const authenticateUser = async (req, res, next) => {
     next();
 
   } catch (err) {
-    logger.error("Authenticate User", { method: req.method, url: req.url, error: err.message });
+    logger.error("Authenticate User", { method: req.method, url: req.path, error: err.message });
     if (err.name === 'TokenExpiredError') {
       return res.status(401).send({ message: "Token expired." });
     }

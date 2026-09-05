@@ -1,30 +1,28 @@
 const express = require("express");
-const { Resend } = require("resend");
 const router = express.Router();
 const User = require("../models/user");
 
-import AdminEmail from '../emails/AdminEmail';
-import ChangeEmail from '../emails/ChangeEmail';
-import VerifyEmail from '../emails/VerifyEmail';
 import authenticateUser from '../middleware/auth';
+import { verifyEmailActionToken } from '../lib/emailTokens';
+import { createRateLimiter } from '../middleware/rateLimiters';
+import { logger } from '../middleware/logging';
+import { sendChangeEmailRequest, sendVerificationEmail } from '../services/emailService';
 import { io } from '../server';
 
 const environment = process.env.NODE_ENV || "production";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const sendEmailLimiter = createRateLimiter(5, 60 * 60 * 1000, "Too many email requests. Try again later.");
 
 // Veryfing Email
 
-router.post("/send-verify-email", async (req, res) => {
+router.post("/send-verify-email", sendEmailLimiter, authenticateUser, async (req, res) => {
   try {
-    const { userEmail } = req.body;
+    const userEmail = res.authUser.email;
 
-    const { data, error } = await resend.emails.send({
-      from: "oldziej.pl <noreply@oldziej.pl>",
-      to: userEmail,
-      subject: "Email Verification",
-      react: VerifyEmail({ userEmail: userEmail })
-    });
+    if (!userEmail) return res.status(400).json({ message: "Account has no email address." });
+    if (res.authUser.verified === true) return res.json({ message: "Email already verified." });
+
+    const { data, error } = await sendVerificationEmail(res.authUser);
 
     if (error) {
       return res.status(400).json(error);
@@ -32,51 +30,61 @@ router.post("/send-verify-email", async (req, res) => {
 
     res.status(200).json(data);
   } catch (err) {
-    res.json({ err: err.message });
+    logger.error("POST SendVerifyEmail", { method: req.method, error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
 router.get("/verify-email", async (req, res) => {
+  const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
+
   try {
-    const userEmail = req.query.userEmail;
-    const user = await User.findOne({ email: userEmail }, { password: 0 });
+    const payload = verifyEmailActionToken(req.query.token, "verify-email");
 
-    const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
-    if (user === null || user?.verified === true) res.redirect(domain);
-    else {
-      await User.updateOne({ _id: user._id }, {
-        verified: true,
-      });
+    if (!payload) return res.redirect(`${domain}/?error=invalid-link`);
 
-      io.emit("verifyEmail", JSON.stringify({
-        userDisplayName: user.displayName,
-        verified: true
-      }));
+    const user = await User.findById(payload.userId);
 
-      res.redirect(`${domain}/success?verified=true`);
+    if (user === null || user.email !== payload.userEmail || user.verified === true) {
+      return res.redirect(domain);
     }
+
+    await User.updateOne({ _id: user._id }, {
+      verified: true,
+    });
+
+    io.emit("verifyEmail", JSON.stringify({
+      userDisplayName: user.displayName,
+      verified: true
+    }));
+
+    res.redirect(`${domain}/success?verified=true`);
   } catch (err) {
-    res.json({ err: err.message });
+    logger.error("GET VerifyEmail", { method: req.method, error: err.message });
+    res.redirect(`${domain}/?error=verification-failed`);
   }
 });
 
 // Changing Email
 
-router.patch("/send-change-email", authenticateUser, async (req, res) => {
+router.patch("/send-change-email", sendEmailLimiter, authenticateUser, async (req, res) => {
   try {
+    const { newUserEmail } = req.body;
+    const userEmail = res.authUser.email;
 
-    const { userEmail, newUserEmail } = req.body;
+    if (!newUserEmail || typeof newUserEmail !== "string") {
+      return res.status(400).json({ error: "New email is required." });
+    }
+
+    if (newUserEmail === userEmail) {
+      return res.json({ error: "New email is the same as the current one." });
+    }
 
     const existingUser = await User.findOne({ email: newUserEmail });
 
     if (existingUser) return res.json({ error: "User with that email already exists!" });
 
-    const { data, error } = await resend.emails.send({
-      from: "oldziej.pl <noreply@oldziej.pl>",
-      to: userEmail,
-      subject: "Change Your Email",
-      react: ChangeEmail({ userEmail, newUserEmail })
-    });
+    const { data, error } = await sendChangeEmailRequest(res.authUser, newUserEmail);
 
     if (error) {
       return res.status(400).json({ error });
@@ -84,77 +92,38 @@ router.patch("/send-change-email", authenticateUser, async (req, res) => {
 
     res.status(200).json({ data });
   } catch (err) {
-    res.json({ err: err.message });
+    logger.error("PATCH SendChangeEmail", { method: req.method, error: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 
 router.get("/change-email", async (req, res) => {
+  const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
+
   try {
-    const userEmail = req.query.userEmail;
-    const newUserEmail = req.query.newUserEmail;
-    const user = await User.findOne({ email: userEmail }, { password: 0 });
+    const payload = verifyEmailActionToken(req.query.token, "change-email");
 
-    const domain = environment === "production" ? process.env.DOMAIN : process.env.DOMAIN_LOCAL;
-    if (user === null || userEmail === newUserEmail) res.redirect(domain);
-    else {
-      await User.updateOne({ _id: user._id }, {
-        email: newUserEmail
-      });
+    if (!payload) return res.redirect(`${domain}/?error=invalid-link`);
 
-      res.redirect(`${domain}/success?newUserEmail=true`);
+    const user = await User.findById(payload.userId);
+
+    if (user === null || user.email !== payload.userEmail) {
+      return res.redirect(domain);
     }
-  } catch (err) {
-    res.json({ err: err.message })
-  }
-});
 
-// Admin
+    const existingUser = await User.findOne({ email: payload.newUserEmail });
 
-const adminEmail = process.env.ADMIN_EMAIL;
+    if (existingUser) return res.redirect(`${domain}/?error=email-taken`);
 
-router.post("/new-user-registered", async (req, res) => {
-  try {
-    const newUserDisplayName = req.body.newUserDisplayName;
-
-    const newUser = await User.findOne({ displayName: newUserDisplayName });
-
-    const { data, error } = await resend.emails.send({
-      from: "oldziej.pl <noreply@oldziej.pl>",
-      to: adminEmail,
-      subject: `[Admin] - New User Registered: ${newUser.displayName}`,
-      react: AdminEmail({ message: `New user is registered: ${newUser.displayName}` })
+    await User.updateOne({ _id: user._id }, {
+      email: payload.newUserEmail,
+      verified: false
     });
 
-    if (error) {
-      return res.status(400).json({ error });
-    }
-
-    res.json({ emailData: data, user: newUser })
+    res.redirect(`${domain}/success?newUserEmail=true`);
   } catch (err) {
-    res.json({ err: err.message })
-  }
-});
-
-router.post("/user-deleted-account", async (req, res) => {
-  try {
-    const deletedUserDisplayName = req.body.deletedUserDisplayName;
-
-    const deletedUser = await User.findOne({ displayName: deletedUserDisplayName });
-
-    const { data, error } = await resend.emails.send({
-      from: "oldziej.pl <noreply@oldziej.pl>",
-      to: adminEmail,
-      subject: `[Admin] - User Deleted Account: ${deletedUser.displayName}`,
-      react: AdminEmail({ message: `User deleted his account: ${deletedUser.displayName}` })
-    });
-
-    if (error) {
-      return res.status(400).json({ error });
-    }
-
-    res.json({ emailData: data, user: deletedUser })
-  } catch (err) {
-    res.json({ err: err.message })
+    logger.error("GET ChangeEmail", { method: req.method, error: err.message });
+    res.redirect(`${domain}/?error=change-email-failed`);
   }
 });
 

@@ -33,9 +33,8 @@ const gamesDomains = [process.env.LOCALHOST_GAMES_DOMAIN, process.env.GAMES_DOMA
 const ngrokDomain = process.env.NGROK_DOMAIN;
 const devDomain = process.env.DEV_DOMAIN;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.json())
+app.use(bodyParser.json({ limit: '10kb' }));
+app.use(bodyParser.urlencoded({ extended: false, limit: '10kb' }));
 
 const allowedOrigins = [
   domain,
@@ -65,8 +64,6 @@ app.set('trust proxy', 1);
 
 app.use(xssClean());
 app.use(mongoSanitize());
-
-app.use(express.json({ limit: '10kb' }));
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;

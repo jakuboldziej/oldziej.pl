@@ -1,5 +1,6 @@
 const express = require("express")
 const authenticateUser = require("../middleware/auth");
+const { isAdmin, isSelfOrAdmin, requireAdmin } = require("../middleware/authorize");
 const Chore = require('../models/chores/chore')
 const User = require('../models/user');
 const ChoresUser = require('../models/chores/choresUser');
@@ -20,6 +21,10 @@ router.get('/', authenticateUser, async (req, res) => {
     const filters = {};
 
     if (req.query.userInvolved) {
+      if (!isSelfOrAdmin(res.authUser, req.query.userInvolved)) {
+        return res.status(403).json({ message: "You can only list your own chores." });
+      }
+
       const user = await User.findOne({ displayName: req.query.userInvolved });
       if (user) {
         filters.$or = [
@@ -45,6 +50,10 @@ router.get('/', authenticateUser, async (req, res) => {
 
 router.get('/:displayName', authenticateUser, async (req, res) => {
   try {
+    if (!isSelfOrAdmin(res.authUser, req.params.displayName)) {
+      return res.status(403).json({ message: "You can only list your own chores." });
+    }
+
     const user = await User.findOne({ displayName: req.params.displayName });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -130,11 +139,32 @@ router.post('/', authenticateUser, async (req, res) => {
   }
 });
 
+const canAccessChore = (authUser, chore) => {
+  if (isAdmin(authUser)) return true;
+  if (chore.ownerId?.toString() === authUser._id.toString()) return true;
+
+  return (chore.usersList || []).some((user) =>
+    (typeof user === 'string' ? user : user?.displayName) === authUser.displayName
+  );
+};
+
 router.patch("/:choreId", authenticateUser, async (req, res) => {
   try {
+    const chore = await Chore.findById(req.params.choreId);
+
+    if (!chore) {
+      return res.status(404).json({ message: "Chore not found" });
+    }
+
+    if (!canAccessChore(res.authUser, chore)) {
+      return res.status(403).json({ message: "You do not have access to this chore." });
+    }
+
+    const { ownerId, _id, ...allowedUpdates } = req.body;
+
     const updatedChore = await Chore.findByIdAndUpdate(
       req.params.choreId,
-      req.body,
+      allowedUpdates,
       { new: true }
     );
 
@@ -195,6 +225,16 @@ router.patch("/:choreId", authenticateUser, async (req, res) => {
 
 router.delete("/:choreId", authenticateUser, async (req, res) => {
   try {
+    const chore = await Chore.findById(req.params.choreId);
+
+    if (!chore) {
+      return res.status(404).json({ message: "Chore not found" });
+    }
+
+    if (!isAdmin(res.authUser) && chore.ownerId?.toString() !== res.authUser._id.toString()) {
+      return res.status(403).json({ message: "Only the owner can delete this chore." });
+    }
+
     const deletedChore = await Chore.findByIdAndDelete(req.params.choreId);
 
     if (!deletedChore) {
@@ -237,7 +277,7 @@ router.delete("/:choreId", authenticateUser, async (req, res) => {
 
 // Cron Service Management (for debugging/testing)
 
-router.get('/cron/status', authenticateUser, async (req, res) => {
+router.get('/cron/status', authenticateUser, requireAdmin, async (req, res) => {
   try {
     const cronService = require('../services/cronService');
     const status = cronService.getJobsStatus();
@@ -247,7 +287,7 @@ router.get('/cron/status', authenticateUser, async (req, res) => {
   }
 });
 
-router.post('/cron/trigger-reset', authenticateUser, async (req, res) => {
+router.post('/cron/trigger-reset', authenticateUser, requireAdmin, async (req, res) => {
   try {
     const cronService = require('../services/cronService');
     const resetCount = await cronService.triggerChoreReset();
@@ -263,10 +303,11 @@ router.post('/cron/trigger-reset', authenticateUser, async (req, res) => {
 // Chores Users
 
 router.post('/users/save-expo-token', authenticateUser, async (req, res) => {
-  const { userId, pushToken } = req.body;
+  const { pushToken } = req.body;
+  const userId = res.authUser._id.toString();
 
-  if (!userId || !pushToken) {
-    return res.status(400).json({ error: "Missing userId or pushToken" });
+  if (!pushToken) {
+    return res.status(400).json({ error: "Missing pushToken" });
   }
 
   try {
@@ -283,7 +324,7 @@ router.post('/users/save-expo-token', authenticateUser, async (req, res) => {
       await choresUser.save();
     }
 
-    logger.info("POST SaveExpoToken", { method: req.method, url: req.url, data: { userId, pushToken } });
+    logger.info("POST SaveExpoToken", { method: req.method, url: req.url, data: { userId } });
     res.json({ success: true });
   } catch (err) {
     logger.error("POST SaveExpoToken", { method: req.method, url: req.url, error: err.message });

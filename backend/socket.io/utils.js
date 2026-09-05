@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const { logger } = require('../middleware/logging');
 
 // Handling Online Users
 
@@ -6,15 +7,19 @@ let onlineUsers = [];
 let disconnectTimeouts = {};
 
 const changeDbUserOnlineStatus = async (userId, isOnline) => {
-  await User.findByIdAndUpdate(
-    userId,
-    { online: isOnline },
-    { new: true }
-  );
+  try {
+    await User.findByIdAndUpdate(
+      userId,
+      { online: isOnline },
+      { new: true }
+    );
+  } catch (error) {
+    logger.error('Failed to update online status', { userId, error: error.message });
+  }
 }
 
-const addingOnlineUser = (data, socketId, io) => {
-  const emit = JSON.parse(data);
+const addingOnlineUser = (emit, socketId, io) => {
+  if (!emit?.user?._id) return;
 
   const existingUser = onlineUsers.find((user) => user._id === emit.user._id);
 

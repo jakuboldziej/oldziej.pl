@@ -1,5 +1,10 @@
 const express = require("express");
 const authenticateUser = require("../middleware/auth");
+const { requireAdmin } = require("../middleware/authorize");
+const { createRateLimiter } = require("../middleware/rateLimiters");
+
+const doorActionLimiter = createRateLimiter(10, 5 * 60 * 1000, "Too many door requests. Try again later.");
+const doorValidateLimiter = createRateLimiter(10, 5 * 60 * 1000, "Too many validation attempts. Try again later.");
 const jwt = require("jsonwebtoken");
 const { io } = require("../server");
 const { logger } = require("../middleware/logging");
@@ -982,7 +987,7 @@ router.post("/door/set-validation-active", authenticateUser, async (req, res) =>
   }
 });
 
-router.post("/door/validate", async (req, res) => {
+router.post("/door/validate", doorValidateLimiter, authenticateUser, async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   try {
@@ -1009,7 +1014,7 @@ router.post("/door/validate", async (req, res) => {
   }
 });
 
-router.post("/door/validate-with-geo", async (req, res) => {
+router.post("/door/validate-with-geo", doorValidateLimiter, authenticateUser, async (req, res) => {
   const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   try {
@@ -1080,7 +1085,7 @@ router.post("/door/validate-with-geo", async (req, res) => {
   }
 });
 
-router.get("/door/check-if-validation-needed", async (req, res) => {
+router.get("/door/check-if-validation-needed", authenticateUser, async (req, res) => {
   try {
     return res.json(isValidationPending);
   } catch (err) {
@@ -1088,7 +1093,7 @@ router.get("/door/check-if-validation-needed", async (req, res) => {
   }
 });
 
-router.post("/door/check-geo-authorization", async (req, res) => {
+router.post("/door/check-geo-authorization", doorActionLimiter, authenticateUser, async (req, res) => {
   try {
     const { deviceId } = req.body;
 
@@ -1136,7 +1141,7 @@ router.post("/door/check-geo-authorization", async (req, res) => {
   }
 });
 
-router.post("/door/unlock-via-geo", async (req, res) => {
+router.post("/door/unlock-via-geo", doorActionLimiter, authenticateUser, async (req, res) => {
   try {
     const { deviceId } = req.body;
 
@@ -1210,7 +1215,7 @@ const isValidPushToken = (pushToken, tokenType = 'auto') => {
 
 // Door push notification endpoints
 
-router.post("/door/register-push-token", async (req, res) => {
+router.post("/door/register-push-token", authenticateUser, async (req, res) => {
   try {
     const { pushToken, deviceId, tokenType } = req.body;
 
@@ -1290,7 +1295,7 @@ router.post("/door/send-notification", authenticateUser, async (req, res) => {
 });
 
 // TEST ENDPOINT - FCM Testing (Remove in production)
-router.post("/door/test-fcm-notification", async (req, res) => {
+router.post("/door/test-fcm-notification", authenticateUser, requireAdmin, async (req, res) => {
   try {
     const { title, body, data, isCritical } = req.body;
 
@@ -1364,7 +1369,7 @@ router.get("/door/notification-system-status", authenticateUser, async (req, res
 
 // Additional door user management endpoints
 
-router.get("/door/test-database", authenticateUser, async (req, res) => {
+router.get("/door/test-database", authenticateUser, requireAdmin, async (req, res) => {
   try {
     const allDoorUsers = await DoorUser.find({});
     res.json({
@@ -1559,7 +1564,7 @@ router.delete("/door/remove-geo-authorized-device/:deviceId", authenticateUser, 
 let currentCode = "";
 
 router.get("/door/keypad/get-keypad-strokes", authenticateUser, async (req, res) => {
-  if (res.authUser.role !== "admin") res.status(401).json({ message: "Not authorized" });
+  if (res.authUser.role !== "admin") return res.status(403).json({ message: "Not authorized" });
 
   try {
     res.json(currentCode);
@@ -1568,7 +1573,7 @@ router.get("/door/keypad/get-keypad-strokes", authenticateUser, async (req, res)
   }
 });
 
-router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, async (req, res) => {
+router.post("/door/keypad/send-keypad-stroke/:keyStroke", doorValidateLimiter, authenticateUser, requireAdmin, async (req, res) => {
   try {
     const keyStroke = decodeURIComponent(req.params?.keyStroke);
 
@@ -1603,7 +1608,7 @@ router.post("/door/keypad/send-keypad-stroke/:keyStroke", authenticateUser, asyn
   }
 });
 
-router.post("/door/trigger-alarm", authenticateUser, async (req, res) => {
+router.post("/door/trigger-alarm", authenticateUser, requireAdmin, async (req, res) => {
   try {
     const { eventType, location = "Główne wejście", message, isCritical = true } = req.body;
 

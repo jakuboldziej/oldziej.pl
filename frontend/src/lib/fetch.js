@@ -250,7 +250,10 @@ export const postDartsUser = async (userData) => {
 
 export const joinDartsGame = async (gameCode) => {
   const gameResponse = await fetch(`${mongodbApiUrl}/darts/game/join/${gameCode}`, {
-    method: "POST"
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${getApiToken()}`
+    },
   });
 
   return await gameResponse.json();
@@ -555,15 +558,25 @@ export const getAuthUsers = async () => {
 }
 
 export const getAuthUser = async (identifier) => {
-  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`);
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/${identifier}`, {
+    headers: {
+      "Authorization": `Bearer ${getApiToken()}`
+    },
+  });
   const user = await usersResponse.json();
   return user;
 }
 
 export const checkIfUserWithEmailExists = async (email) => {
   const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-mail/${email}`);
-  const user = await usersResponse.json();
-  return user;
+  const { exists } = await usersResponse.json();
+  return exists;
+}
+
+export const checkIfUserWithDisplayNameExists = async (displayName) => {
+  const usersResponse = await fetch(`${mongodbApiUrl}/auth/users/check-existing-name/${displayName}`);
+  const { exists } = await usersResponse.json();
+  return exists;
 }
 
 export const patchAuthUser = async (userData) => {
@@ -621,18 +634,6 @@ export const handleDeleteAuthUser = async (selectedUser) => {
 
 export const changeDisplaynameUser = async (userData) => {
   try {
-    await fetch(`${mongodbApiUrl}/auth/users/${userData.oldDisplayName}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        displayName: userData.newDisplayName,
-        friendsCode: userData.friendsCode
-      }),
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${getApiToken()}`
-      },
-    });
-
     await fetch(`${mongodbApiUrl}/ftp/users/${userData.oldDisplayName}`, {
       method: "PATCH",
       body: JSON.stringify({
@@ -648,6 +649,18 @@ export const changeDisplaynameUser = async (userData) => {
       method: "PATCH",
       body: JSON.stringify({
         displayName: userData.newDisplayName
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${getApiToken()}`
+      },
+    });
+
+    await fetch(`${mongodbApiUrl}/auth/users/${userData.oldDisplayName}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        displayName: userData.newDisplayName,
+        friendsCode: userData.friendsCode
       }),
       headers: {
         "Content-Type": "application/json",
@@ -857,14 +870,12 @@ export const refreshToken = async () => {
 
 // Emails
 
-export const sendVerificationEmail = async (data) => {
+export const sendVerificationEmail = async () => {
   const response = await fetch(`${mongodbApiUrl}/emails/send-verify-email`, {
     method: "POST",
-    body: JSON.stringify({
-      userEmail: data.userEmail
-    }),
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${getApiToken()}`
     },
   });
 
@@ -875,40 +886,11 @@ export const sendChangeEmail = async (data) => {
   const response = await fetch(`${mongodbApiUrl}/emails/send-change-email`, {
     method: "PATCH",
     body: JSON.stringify({
-      userEmail: data.userEmail,
       newUserEmail: data.newUserEmail
     }),
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${getApiToken()}`
-    },
-  });
-
-  return await response.json();
-}
-
-export const newUserRegisteredEmail = async (data) => {
-  const response = await fetch(`${mongodbApiUrl}/emails/new-user-registered`, {
-    method: "POST",
-    body: JSON.stringify({
-      newUserDisplayName: data.newUserDisplayName,
-    }),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  return await response.json();
-}
-
-export const userDeletedAccountEmail = async (data) => {
-  const response = await fetch(`${mongodbApiUrl}/emails/user-deleted-account`, {
-    method: "POST",
-    body: JSON.stringify({
-      deletedUserDisplayName: data.deletedUserDisplayName,
-    }),
-    headers: {
-      "Content-Type": "application/json",
     },
   });
 
@@ -1028,7 +1010,11 @@ export const postESP32ForceReset = async () => {
 
 export const checkIfValidationNeeded = async () => {
   try {
-    const response = await fetch(`${mongodbApiUrl}/esp32/door/check-if-validation-needed`);
+    const response = await fetch(`${mongodbApiUrl}/esp32/door/check-if-validation-needed`, {
+      headers: {
+        "Authorization": `Bearer ${getApiToken()}`
+      },
+    });
 
     return await response.json();
   } catch (error) {

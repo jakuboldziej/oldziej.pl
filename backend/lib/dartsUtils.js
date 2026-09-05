@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const generateUniqueDartsCode = async () => {
   let dartsCode;
   do {
-    dartsCode = Math.floor(1000 + Math.random() * 9000);
+    dartsCode = crypto.randomInt(1000, 10000);
   } while (await DartsGame.findOne({ gameCode: dartsCode.toString() }));
   return dartsCode.toString();
 }

@@ -1,9 +1,11 @@
 import { io } from 'socket.io-client';
+import { getApiToken } from './tokenManager';
 
 const socketIoUrl = import.meta.env.MODE === "development" ? import.meta.env.VITE_BACKEND_DOMAIN_LOCAL : import.meta.env.VITE_BACKEND_DOMAIN;
 
 export const socket = io(socketIoUrl, {
   autoConnect: false,
+  auth: (cb) => cb({ token: getApiToken() }),
   transports: ['websocket', 'polling'],
   withCredentials: true,
   reconnection: true,

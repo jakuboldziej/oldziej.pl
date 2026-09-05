@@ -3,7 +3,7 @@ import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Section, Link 
 
 require('dotenv').config();
 
-const VerifyEmail = ({ userEmail }) => {
+const VerifyEmail = ({ userEmail, token }) => {
   const environment = process.env.NODE_ENV || "production";
   const domain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
 
@@ -28,7 +28,7 @@ const VerifyEmail = ({ userEmail }) => {
             <Text className="text-xl">Please verify your email to get full experience by clicking the link below:</Text>
             <Button
               className="rounded-md text-white p-4 bg-[#00b524] mt-6"
-              href={`${domain}/api/emails/verify-email?userEmail=${userEmail}`}
+              href={`${domain}/api/emails/verify-email?token=${encodeURIComponent(token)}`}
             >
               Confirm my account
             </Button>

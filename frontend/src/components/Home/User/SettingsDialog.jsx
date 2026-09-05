@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/shadcn/input";
 import { Label } from "@/components/ui/shadcn/label";
 import ShowNewToast from "../MyComponents/ShowNewToast";
 import { useContext, useEffect, useState } from "react";
-import { changeDisplaynameUser, changePassword, handleDeleteAuthUser, sendChangeEmail, userDeletedAccountEmail } from "@/lib/fetch";
+import { changeDisplaynameUser, changePassword, handleDeleteAuthUser, sendChangeEmail } from "@/lib/fetch";
 import Loading from "../Loading";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { useNavigate } from "react-router";
@@ -82,7 +82,6 @@ function SettingsDialog({ props }) {
       }
 
       const response = await sendChangeEmail({
-        userEmail: authUser.email,
         newUserEmail: newEmailInput
       });
       if (response?.error) {
@@ -121,10 +120,6 @@ function SettingsDialog({ props }) {
   }
 
   const handleDeleteUser = async () => {
-    await userDeletedAccountEmail({
-      deletedUserDisplayName: currentUser.displayName
-    });
-
     await handleDeleteAuthUser(authUser);
     setCurrentUser(null);
     signOut();

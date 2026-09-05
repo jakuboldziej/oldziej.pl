@@ -9,6 +9,7 @@ const FtpUser = require("../models/ftpUser");
 const FtpFile = require("../models/ftpFile");
 const FtpFolder = require("../models/ftpFolder");
 const authenticateUser = require("../middleware/auth");
+const { isAdmin, isSelfOrAdmin } = require("../middleware/authorize");
 
 let bucket;
 
@@ -115,6 +116,24 @@ router.post('/upload', authenticateUser, getFtpUser, verifyOwnership, upload.sin
 // create fileObject
 router.post('/files', authenticateUser, getFtpUser, verifyOwnership, async (req, res) => {
   try {
+    const ownerId = res.ftpUser._id.toString();
+
+    if (!req.body.fileId || !Types.ObjectId.isValid(req.body.fileId)) {
+      return res.status(400).json({ message: "Invalid fileId." });
+    }
+
+    const storedFile = (await bucket.find({ _id: new Types.ObjectId(req.body.fileId) }).toArray())[0];
+
+    if (!storedFile || storedFile.metadata?.ownerId !== ownerId) {
+      return res.status(403).json({ message: "Brak dostępu do tego pliku." });
+    }
+
+    const alreadyRegistered = await FtpFile.findOne({ fileId: req.body.fileId });
+
+    if (alreadyRegistered) {
+      return res.status(409).json({ message: "Plik jest już zarejestrowany." });
+    }
+
     const newFtpFile = new FtpFile({
       fileId: req.body.fileId,
       ownerId: res.ftpUser._id.toString(),
@@ -233,7 +252,7 @@ router.get('/files/render/:filename', authenticateUser, getFtpUser, async (req, 
     if (!file || file.length === 0) return res.redirect(process.env.NODE_ENV === "development" ? `${DOMAIN_LOCAL}/ftp` : `${DOMAIN}/ftp`);
 
     res.setHeader('Content-Type', file.contentType);
-    const stream = bucket.openDownloadStreamByName(file.filename);
+    const stream = bucket.openDownloadStream(file._id);
     stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
@@ -254,7 +273,7 @@ router.get('/files/download/:filename', authenticateUser, getFtpUser, async (req
     const encodedFilename = encodeURIComponent(req.params.filename);
     res.set('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
 
-    const stream = bucket.openDownloadStreamByName(file.filename);
+    const stream = bucket.openDownloadStream(file._id);
     stream.pipe(res);
   } catch (err) {
     res.json({ err: err.message })
@@ -375,6 +394,8 @@ router.delete('/folders/:id', authenticateUser, getFtpUser, async (req, res) => 
 // Users
 router.get('/users', authenticateUser, async (req, res) => {
   try {
+    if (!isAdmin(res.authUser)) return res.status(403).json({ message: "Admin privileges required." });
+
     const users = await FtpUser.find()
     res.json(users)
   } catch (err) {
@@ -399,6 +420,10 @@ router.get('/users/:identifier', authenticateUser, async (req, res) => {
 
 router.post('/users', authenticateUser, async (req, res) => {
   try {
+    if (!isSelfOrAdmin(res.authUser, req.body.displayName)) {
+      return res.status(403).json({ message: "You can only create your own FTP profile." });
+    }
+
     const user = new FtpUser({
       displayName: req.body.displayName,
       email: req.body.email,
@@ -414,6 +439,10 @@ router.post('/users', authenticateUser, async (req, res) => {
 
 router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   try {
+    if (!isSelfOrAdmin(res.authUser, req.params.displayName)) {
+      return res.status(403).json({ message: "You can only delete your own FTP profile." });
+    }
+
     await FtpUser.findOneAndDelete({ displayName: req.params.displayName });
 
     res.json({ ok: true });
@@ -422,11 +451,26 @@ router.delete('/users/:displayName', authenticateUser, async (req, res) => {
   }
 });
 
+const FTP_USER_EDITABLE_FIELDS = ["displayName", "main_folder", "email"];
+
 router.patch("/users/:displayName", authenticateUser, getFtpUser, async (req, res) => {
   try {
+    if (!isSelfOrAdmin(res.authUser, req.params.displayName)) {
+      return res.status(403).json({ message: "You can only edit your own FTP profile." });
+    }
+
+    const updates = {};
+    for (const field of FTP_USER_EDITABLE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) updates[field] = req.body[field];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No updatable fields provided." });
+    }
+
     const updatedUser = await FtpUser.findByIdAndUpdate(
-      res.user._id,
-      req.body,
+      res.ftpUser._id,
+      updates,
       { new: true }
     );
     if (!updatedUser) {
@@ -435,7 +479,7 @@ router.patch("/users/:displayName", authenticateUser, getFtpUser, async (req, re
 
     res.json(updatedUser);
   } catch (err) {
-    return res.json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 });
 

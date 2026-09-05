@@ -2,7 +2,7 @@ import { Html, Body, Button, Tailwind, Head, Heading, Text, Font, Link, Section 
 
 require('dotenv').config();
 
-const ChangeEmail = ({ userEmail, newUserEmail }) => {
+const ChangeEmail = ({ userEmail, newUserEmail, token }) => {
   const environment = process.env.NODE_ENV || "production";
   const domain = environment === "production" ? process.env.BACKEND_DOMAIN : process.env.BACKEND_DOMAIN_LOCAL;
 
@@ -28,7 +28,7 @@ const ChangeEmail = ({ userEmail, newUserEmail }) => {
             <Text className="text-xl">Change your email by clicking the link below:</Text>
             <Button
               className="rounded-md text-white p-4 bg-[#00b524] mt-6"
-              href={`${domain}/api/emails/change-email?userEmail=${userEmail}&newUserEmail=${newUserEmail}`}
+              href={`${domain}/api/emails/change-email?token=${encodeURIComponent(token)}`}
             >
               Change email
             </Button>

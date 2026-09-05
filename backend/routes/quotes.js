@@ -35,14 +35,8 @@ router.post('/', authenticateUser, async (req, res) => {
   const body = req.body;
 
   try {
-    const user = await User.findOne({ displayName: req.params.displayName });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
     const quote = new Quote({
-      userId: body.userId,
+      userId: res.authUser._id,
       title: body.title,
       description: body.description,
     });

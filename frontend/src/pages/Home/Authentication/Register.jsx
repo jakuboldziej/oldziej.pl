@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { checkIfUserWithEmailExists, getAuthUser, newUserRegisteredEmail, postDartsUser, postFolder, postFtpUser, patchFtpUser, registerUser, sendVerificationEmail } from "@/lib/fetch";
+import { checkIfUserWithDisplayNameExists, checkIfUserWithEmailExists, postDartsUser, postFolder, postFtpUser, patchFtpUser, registerUser } from "@/lib/fetch";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { AuthContext } from "@/context/Home/AuthContext";
 
@@ -61,17 +61,11 @@ function Register() {
     setIsLoading(true);
 
     try {
-      const existingUser = await getAuthUser(displayName);
+      const existingUser = await checkIfUserWithDisplayNameExists(displayName);
       const existingUserWithEmail = await checkIfUserWithEmailExists(email);
 
       if (existingUser) throw new Error("User with that username already exists");
       if (existingUserWithEmail) throw new Error("User with that email already exists");
-
-      const verificationEmail = await sendVerificationEmail({
-        userEmail: email
-      });
-
-      if (verificationEmail.name && verificationEmail.statusCode) throw new Error(verificationEmail.message);
 
       const randomNumber = Math.floor(Math.random() * 900) + 100;
       const friendsCode = displayName + randomNumber;
@@ -123,10 +117,6 @@ function Register() {
 
       navigate("/", { replace: true });
       setIsLoading(false);
-
-      await newUserRegisteredEmail({
-        newUserDisplayName: displayName
-      });
     } catch (err) {
       setErr(err.message);
     } finally {

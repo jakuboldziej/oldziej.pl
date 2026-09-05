@@ -5,6 +5,7 @@ const DartsUser = require('../models/darts/dartsUser')
 const User = require('../models/user');
 const { Types } = require("mongoose")
 const authenticateUser = require("../middleware/auth")
+const { isSelfOrAdmin } = require("../middleware/authorize")
 const { logger } = require("../middleware/logging")
 const { io } = require('../server')
 const dartsTournamentManager = require('../services/dartsTournamentManager');
@@ -211,10 +212,13 @@ router.post('/dartsTournaments', authenticateUser, async (req, res) => {
 
     let tournemantWithMatches;
 
-    if (settings.type === "bracket") tournemantWithMatches = await dartsTournamentManager.generateBracket(tournament._id);
-    if (settings.type === "ffa") tournemantWithMatches = await dartsTournamentManager.generateFFAMatches(tournament._id);
-    else {
-      res.status({ message: "Settings Type wrong" });
+    if (settings.type === "bracket") {
+      tournemantWithMatches = await dartsTournamentManager.generateBracket(tournament._id);
+    } else if (settings.type === "ffa") {
+      tournemantWithMatches = await dartsTournamentManager.generateFFAMatches(tournament._id);
+    } else {
+      await DartsTournament.findByIdAndDelete(tournament._id);
+      return res.status(400).json({ message: "Settings Type wrong" });
     }
 
     if (!tournemantWithMatches) throw new Error("Failed generating dartsTournament");
@@ -324,11 +328,26 @@ router.get('/dartsUsers/:identifier', authenticateUser, getDartsUser, async (req
   res.send(res.user);
 });
 
+const DARTS_USER_EDITABLE_FIELDS = ["displayName"];
+
 router.patch("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (req, res) => {
   try {
+    if (!isSelfOrAdmin(res.authUser, res.user.displayName)) {
+      return res.status(403).json({ message: "You can only edit your own darts profile." });
+    }
+
+    const updates = {};
+    for (const field of DARTS_USER_EDITABLE_FIELDS) {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) updates[field] = req.body[field];
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: "No updatable fields provided." });
+    }
+
     const updatedUser = await DartsUser.findByIdAndUpdate(
       res.user._id,
-      req.body,
+      updates,
       { new: true }
     );
 
@@ -345,6 +364,10 @@ router.patch("/dartsUsers/:identifier", authenticateUser, getDartsUser, async (r
 });
 
 router.delete('/dartsUsers/:displayName', authenticateUser, async (req, res) => {
+  if (!isSelfOrAdmin(res.authUser, req.params.displayName)) {
+    return res.status(403).json({ message: "You can only delete your own darts profile." });
+  }
+
   try {
     await DartsUser.deleteOne({ displayName: req.params.displayName });
 
@@ -383,7 +406,7 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
 
 // Utils
 
-router.post('/game/join/:gameCode', async (req, res) => {
+router.post('/game/join/:gameCode', authenticateUser, async (req, res) => {
   try {
     const gameCode = req.params.gameCode;
 
