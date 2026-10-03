@@ -249,12 +249,14 @@ export const postDartsUser = async (userData) => {
 // Darts - Utils
 
 export const joinDartsGame = async (gameCode) => {
+  const token = getApiToken();
+
   const gameResponse = await fetch(`${mongodbApiUrl}/darts/game/join/${gameCode}`, {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${getApiToken()}`
-    },
+    headers: token ? { "Authorization": `Bearer ${token}` } : {},
   });
+
+  if (!gameResponse.ok) return null;
 
   return await gameResponse.json();
 }

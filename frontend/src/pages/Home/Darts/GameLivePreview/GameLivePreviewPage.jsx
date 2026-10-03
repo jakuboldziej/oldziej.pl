@@ -1,6 +1,6 @@
 import GameLivePreview from '@/components/Home/Darts/GameLivePreview/GameLivePreview';
 import JoiningLiveGame from '@/components/Home/Darts/GameLivePreview/JoiningLiveGame';
-import { getDartsGame } from '@/lib/fetch';
+import { joinDartsGame } from '@/lib/fetch';
 import { socket, trackRoom, untrackRoom } from '@/lib/socketio';
 import React, { useEffect, useState, useRef } from 'react';
 
@@ -82,8 +82,8 @@ function GameLivePreviewPage() {
     const urlGameCode = urlParams.get("gameCode");
 
     if (urlGameCode) {
-      getDartsGame(urlGameCode).then((game) => {
-        if (game) {
+      joinDartsGame(urlGameCode).then((game) => {
+        if (game?.gameCode) {
           handleInitialJoin(game);
 
           const newUrl = window.location.pathname;

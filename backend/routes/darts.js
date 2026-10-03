@@ -406,15 +406,17 @@ router.post('/dartsUsers', authenticateUser, async (req, res) => {
 
 // Utils
 
-router.post('/game/join/:gameCode', authenticateUser, async (req, res) => {
+router.post('/game/join/:gameCode', async (req, res) => {
   try {
     const gameCode = req.params.gameCode;
 
     const game = await DartsGame.findOne({ gameCode: gameCode });
 
+    if (!game) return res.status(404).json({ message: "Game not found" });
+
     return res.json(game);
   } catch (err) {
-    return res.json({ message: err.message });
+    return res.status(500).json({ message: err.message });
   }
 });
 

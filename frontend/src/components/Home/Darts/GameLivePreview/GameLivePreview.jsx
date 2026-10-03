@@ -11,17 +11,19 @@ function GameLivePreview({ props }) {
   document.title = "Oldziej | Live Game";
 
   const { liveGame, setLiveGame, overthrow } = props;
-  const [users, setUsers] = useState(liveGame.users);
-  const [shownUsers, setShownUsers] = useState(liveGame.users.slice(0, 3));
+  const liveGameUsers = liveGame?.users ?? [];
+  const [users, setUsers] = useState(liveGameUsers);
+  const [shownUsers, setShownUsers] = useState(liveGameUsers.slice(0, 3));
   const [showDialog, setShowDialog] = useState(false);
   const [timePlayed, setTimePlayed] = useState(0);
 
   useEffect(() => {
     const latestRecord = getLatestRecord(liveGame);
-    const usersToUse = latestRecord ? latestRecord.users : liveGame.users;
+    const gameUsers = liveGame?.users ?? [];
+    const usersToUse = latestRecord ? latestRecord.users : gameUsers;
     setUsers(usersToUse);
 
-    if (liveGame.users.length > 3 || (liveGame.users.length > 2 && window.innerWidth < 1028)) {
+    if (gameUsers.length > 3 || (gameUsers.length > 2 && window.innerWidth < 1028)) {
       const currentUserIndex = usersToUse.findIndex((user) => user.turn === true);
       let usersToBeShown = [];
 

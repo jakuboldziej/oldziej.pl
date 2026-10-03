@@ -35,7 +35,7 @@ function JoiningLiveGame({ props }) {
 
     const response = await joinDartsGame(gameCode);
 
-    if (response) {
+    if (response?.gameCode) {
       socket.emit("joinLiveGamePreview", JSON.stringify({ gameCode: response.gameCode }));
 
       setLiveGame(response);
