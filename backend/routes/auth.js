@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { Types } = require("mongoose");
 const authenticateUser = require("../middleware/auth");
+const optionalAuthenticateUser = require("../middleware/optionalAuth");
 const { requireAdmin, isSelfOrAdmin } = require("../middleware/authorize");
 const { notifyAdminSafely, sendVerificationEmailSafely } = require("../services/emailService");
 const { io } = require("../server");
@@ -34,18 +35,33 @@ router.get('/users', authenticateUser, async (req, res) => {
   }
 });
 
-router.get('/users/:identifier', authenticateUser, async (req, res) => {
+const toPublicProfile = (user) => ({
+  _id: user._id,
+  displayName: user.displayName,
+  role: user.role,
+  verified: user.verified,
+  online: user.online,
+  friends: user.friends
+});
+
+router.get('/users/:identifier', optionalAuthenticateUser, async (req, res) => {
   try {
     const identifier = req.params.identifier;
-    if (Types.ObjectId.isValid(identifier)) {
-      const user = await User.findOne({ _id: identifier }, { password: 0 });
-      res.json(user);
-    } else {
-      const user = await User.findOne({ displayName: identifier }, { password: 0 });
-      res.json(user);
-    }
+    const query = Types.ObjectId.isValid(identifier)
+      ? { _id: identifier }
+      : { displayName: identifier };
+
+    const user = await User.findOne(query, { password: 0 });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isOwner = res.authUser && res.authUser._id.toString() === user._id.toString();
+
+    if (isOwner || res.authUser?.role === "admin") return res.json(user);
+
+    res.json(toPublicProfile(user));
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 });
 

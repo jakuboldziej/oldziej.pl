@@ -156,6 +156,11 @@ socket.on('heartbeat-ack', () => {
 
 export const isSocketConnected = () => socket.connected && isConnected;
 
+export const reconnectWithFreshToken = () => {
+  if (socket.connected) socket.disconnect();
+  socket.connect();
+};
+
 export const ensureSocketConnection = () => {
   if (!socket.connected) {
     socket.connect();

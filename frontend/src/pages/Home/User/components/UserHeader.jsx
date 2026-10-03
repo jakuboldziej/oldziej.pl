@@ -19,14 +19,16 @@ function UserHeader({ user, isOwnProfile }) {
             <Badge className="bg-purple-600">Admin</Badge>
           )}
         </div>
-        <div className='flex gap-1'>
-          <p className="text-gray-400">Friends Code: {user.friendsCode}</p>
-          <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
-            <MyTooltip title="Copy code to clipboard">
-              <Copy height={15} />
-            </MyTooltip>
-          </CopyTextButton>
-        </div>
+        {isOwnProfile && (
+          <div className='flex gap-1'>
+            <p className="text-gray-400">Friends Code: {user.friendsCode}</p>
+            <CopyTextButton textToCopy={user.friendsCode} toastTitle="Code copied" toastDesc="Code copied to clipboard">
+              <MyTooltip title="Copy code to clipboard">
+                <Copy height={15} />
+              </MyTooltip>
+            </CopyTextButton>
+          </div>
+        )}
         {isOwnProfile && (
           <p className="text-gray-400 text-sm mt-1">{user.email}</p>
         )}

@@ -5,6 +5,7 @@ import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader';
 import { setApiToken } from '@/lib/tokenManager';
+import { reconnectWithFreshToken } from '@/lib/socketio';
 
 export const useTokenRefresh = (currentUser) => {
   const signIn = useSignIn();
@@ -30,6 +31,8 @@ export const useTokenRefresh = (currentUser) => {
           setApiToken(response.token);
 
           if (response.token) {
+            reconnectWithFreshToken();
+
             signIn({
               auth: { token: response.token, type: "Bearer" },
               userState: {
